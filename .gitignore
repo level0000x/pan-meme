@@ -1,0 +1,31 @@
+# ─── Python ───
+__pycache__/
+*.py[cod]
+*.so
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# ─── Rust ───
+**/target/
+**/*.rs.bk
+
+# ─── IDE ───
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# ─── OS ───
+.DS_Store
+Thumbs.db
+
+# ─── 输出 ───
+*.tsv
+*.csv
+!examples/*.txt
+/output/
+data/*.json
+!data/background_tree.json
