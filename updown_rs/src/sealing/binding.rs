@@ -11,7 +11,7 @@
 
 use crate::encoding::decomposition::PhaseThreeOutput;
 use crate::sealing::merkle::MerkleTree;
-// ── SHA-256（本地编译）：取消 Cargo.toml 中 sha2 注释，并启用下方导入 ──
+// ── SHA-256（本地编译启用）：取消 Cargo.toml sha2 注释 + 下方两行 ──
 // use sha2::{Sha256, Digest};
 // ── 沙箱回退：DefaultHasher ──
 use std::collections::hash_map::DefaultHasher;
@@ -57,7 +57,7 @@ impl HashBinding {
         let mut leaf_hashes: Vec<u64> = Vec::new();
 
         for meme in &phase3.memes {
-            // ── DefaultHasher 实现（沙箱兼容）──
+            // ── DefaultHasher（沙箱兼容）──
             let mut hasher = DefaultHasher::new();
 
             meme.sub_geometry.vertices.hash(&mut hasher);

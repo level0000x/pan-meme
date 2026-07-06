@@ -780,3 +780,375 @@ pub fn decode_phase_two(output: &PhaseTwoOutput) -> crate::emergence::relations:
         node_levels: rd.node_levels.clone(),
     }
 }
+
+// ═══════════════════════════════════════════════════════════════════════
+// 测试
+// ═══════════════════════════════════════════════════════════════════════
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::collections::HashMap;
+
+    #[test]
+    fn test_cw_complex_construction() {
+        // 构建 3 个 0-胞腔（顶点）和 2 个 1-胞腔（边）
+        let mut v0_map = HashMap::new();
+        let mut e1_map = HashMap::new();
+        let mut cells: Vec<Cell> = Vec::new();
+
+        cells.push(Cell {
+            dim: 0,
+            id: 0,
+            boundary: vec![],
+            label: "A".to_string(),
+            domain: "test".to_string(),
+        });
+        cells.push(Cell {
+            dim: 0,
+            id: 1,
+            boundary: vec![],
+            label: "B".to_string(),
+            domain: "test".to_string(),
+        });
+        cells.push(Cell {
+            dim: 0,
+            id: 2,
+            boundary: vec![],
+            label: "C".to_string(),
+            domain: "test".to_string(),
+        });
+        v0_map.insert(0, 0);
+        v0_map.insert(1, 1);
+        v0_map.insert(2, 2);
+
+        cells.push(Cell {
+            dim: 1,
+            id: 3,
+            boundary: vec![0, 1],
+            label: "A-B".to_string(),
+            domain: "test".to_string(),
+        });
+        cells.push(Cell {
+            dim: 1,
+            id: 4,
+            boundary: vec![1, 2],
+            label: "B-C".to_string(),
+            domain: "test".to_string(),
+        });
+        e1_map.insert((0, 1), 3);
+        e1_map.insert((1, 2), 4);
+
+        let complex = CWComplex {
+            cells,
+            v0_map,
+            e1_map,
+            euler_characteristic: 1, // 3 - 2 = 1
+            betti_0: 1,
+            betti_1: 0,
+        };
+
+        assert_eq!(complex.cells.len(), 5, "3 个 0-胞腔 + 2 个 1-胞腔");
+        assert_eq!(complex.v0_map.len(), 3, "3 个顶点映射");
+        assert_eq!(complex.e1_map.len(), 2, "2 条边映射");
+        assert_eq!(complex.euler_characteristic, 1);
+        assert_eq!(complex.betti_0, 1);
+        assert_eq!(complex.betti_1, 0);
+        assert!(complex.v0_map.contains_key(&0));
+        assert!(complex.v0_map.contains_key(&1));
+        assert!(complex.v0_map.contains_key(&2));
+        assert!(complex.e1_map.contains_key(&(0, 1)));
+        assert!(complex.e1_map.contains_key(&(1, 2)));
+    }
+
+    #[test]
+    fn test_scalar_field() {
+        // 创建包含 5 个节点的标量场
+        let mut potential = HashMap::new();
+        potential.insert(0, 0.0);
+        potential.insert(1, 0.25);
+        potential.insert(2, 0.5);
+        potential.insert(3, 0.75);
+        potential.insert(4, 1.0);
+
+        let avg = (0.0 + 0.25 + 0.5 + 0.75 + 1.0) / 5.0;
+        let sf = ScalarField {
+            potential,
+            avg_potential: avg,
+            min_potential: 0.0,
+            max_potential: 1.0,
+        };
+
+        assert_eq!(sf.potential.len(), 5);
+        assert!((sf.avg_potential - avg).abs() < 1e-10);
+        assert_eq!(sf.min_potential, 0.0);
+        assert_eq!(sf.max_potential, 1.0);
+
+        // 验证势场值按 id 单调递增
+        let mut ids: Vec<_> = sf.potential.keys().copied().collect();
+        ids.sort();
+        let mut prev = -1.0;
+        for id in &ids {
+            let phi = sf.potential[id];
+            assert!(phi > prev, "势场值应按 id 单调递增");
+            prev = phi;
+        }
+    }
+
+    #[test]
+    fn test_vector_field_grad_mean_std() {
+        let mut flow = HashMap::new();
+        flow.insert(0, (2.0, 1.0));
+        flow.insert(1, (4.0, -1.0));
+        flow.insert(2, (6.0, 0.0));
+
+        let vf = VectorField {
+            flow,
+            divergence: HashMap::new(),
+            total_flux: 12.0,
+            avg_flux_density: 4.0,
+            source_count: 0,
+            sink_count: 0,
+        };
+
+        let (mean, std_dev) = vf.grad_mean_std();
+        let expected_mean = 4.0; // (2+4+6)/3
+        let expected_var = ((2.0_f64 - 4.0).powi(2) + (4.0_f64 - 4.0).powi(2) + (6.0_f64 - 4.0).powi(2))
+            / 3.0;
+        let expected_std = expected_var.sqrt();
+
+        assert!(
+            (mean - expected_mean).abs() < 1e-10,
+            "梯度均值应为 {}, 得到 {}",
+            expected_mean,
+            mean
+        );
+        assert!(
+            (std_dev - expected_std).abs() < 1e-10,
+            "梯度标准差应为 {}, 得到 {}",
+            expected_std,
+            std_dev
+        );
+    }
+
+    #[test]
+    fn test_vector_field_grad_mean_std_empty() {
+        let vf = VectorField {
+            flow: HashMap::new(),
+            divergence: HashMap::new(),
+            total_flux: 0.0,
+            avg_flux_density: 0.0,
+            source_count: 0,
+            sink_count: 0,
+        };
+        let (mean, std_dev) = vf.grad_mean_std();
+        assert_eq!(mean, 0.0);
+        assert_eq!(std_dev, 0.0);
+    }
+
+    #[test]
+    fn test_invariants() {
+        // 构建最小 CWComplex：2 个 0-胞腔 + 1 个 1-胞腔
+        let mut v0_map = HashMap::new();
+        let mut e1_map = HashMap::new();
+        let mut cells: Vec<Cell> = Vec::new();
+
+        cells.push(Cell {
+            dim: 0,
+            id: 0,
+            boundary: vec![],
+            label: "X".to_string(),
+            domain: "test".to_string(),
+        });
+        cells.push(Cell {
+            dim: 0,
+            id: 1,
+            boundary: vec![],
+            label: "Y".to_string(),
+            domain: "test".to_string(),
+        });
+        v0_map.insert(0, 0);
+        v0_map.insert(1, 1);
+
+        cells.push(Cell {
+            dim: 1,
+            id: 2,
+            boundary: vec![0, 1],
+            label: "X-Y".to_string(),
+            domain: "test".to_string(),
+        });
+        e1_map.insert((0, 1), 2);
+
+        let complex = CWComplex {
+            cells,
+            v0_map,
+            e1_map,
+            euler_characteristic: 1, // 2 - 1 = 1
+            betti_0: 1,
+            betti_1: 0,
+        };
+
+        let inv = encode_invariants(&complex);
+
+        // Euler 示性数 = V - E + F = 2 - 1 + 0 = 1
+        assert_eq!(inv.euler, 1);
+        // Euler = betti_0 - betti_1  (h_i = rank(H_i), h_0 - h_1 + h_2 - ...)
+        assert_eq!(
+            inv.euler,
+            inv.betti_0 as i64 - inv.betti_1 as i64,
+            "Euler = betti_0 - betti_1"
+        );
+        assert_eq!(inv.v0_count, 2);
+        assert_eq!(inv.e1_count, 1);
+        assert_eq!(inv.v2_count, 0);
+        assert_eq!(inv.total_cells, 3);
+    }
+
+    #[test]
+    fn test_compute_entropy() {
+        let levels = vec![0, 1, 2, 0, 1];
+        // 分布: level 0 -> 2个, level 1 -> 2个, level 2 -> 1个
+        // H = -(2/5*log2(2/5) + 2/5*log2(2/5) + 1/5*log2(1/5))
+        let h = compute_entropy(&levels);
+
+        let log2_3 = (3.0_f64).log2();
+        assert!(h > 0.0, "熵应大于 0, 得到 {:.4}", h);
+        assert!(h <= log2_3, "熵应 <= log2(3) ≈ {:.4}, 得到 {:.4}", log2_3, h);
+
+        // 空输入
+        assert_eq!(compute_entropy(&[]), 0.0);
+        // 单层级
+        assert_eq!(compute_entropy(&[0, 0, 0]), 0.0);
+    }
+
+    #[test]
+    fn test_decode_roundtrip() {
+        // 构建最小 CWComplex：2 个 0-胞腔 + 1 个 1-胞腔
+        let mut v0_map = HashMap::new();
+        let mut e1_map = HashMap::new();
+        let mut cells: Vec<Cell> = Vec::new();
+
+        cells.push(Cell {
+            dim: 0,
+            id: 0,
+            boundary: vec![],
+            label: "A".to_string(),
+            domain: "test".to_string(),
+        });
+        cells.push(Cell {
+            dim: 0,
+            id: 1,
+            boundary: vec![],
+            label: "B".to_string(),
+            domain: "test".to_string(),
+        });
+        v0_map.insert(0, 0);
+        v0_map.insert(1, 1);
+
+        cells.push(Cell {
+            dim: 1,
+            id: 2,
+            boundary: vec![0, 1],
+            label: "A-B".to_string(),
+            domain: "test".to_string(),
+        });
+        e1_map.insert((0, 1), 2);
+
+        let complex = CWComplex {
+            cells,
+            v0_map,
+            e1_map,
+            euler_characteristic: 1,
+            betti_0: 1,
+            betti_1: 0,
+        };
+
+        // 构造 ReversibilityData，word_count = 3，含概念、规则、约束
+        let rev_data = ReversibilityData {
+            node_texts: vec![
+                "a".to_string(),
+                "b".to_string(),
+                "c".to_string(),
+                "ab".to_string(),
+                "bc".to_string(),
+            ],
+            node_is_word: vec![false, false, false, true, true],
+            word_count: 3,
+            containment_depth: 2,
+            node_levels: vec![0, 0, 0, 1, 2],
+            concept_levels: vec![
+                vec![
+                    (0, vec![0, 1], 0, vec![]),
+                    (1, vec![1, 2], 0, vec![]),
+                ],
+                vec![(2, vec![3, 4], 1, vec![(0, 0.8)])],
+            ],
+            concept_termination_reasons: vec![
+                "no_new_patterns".to_string(),
+                "max_depth_reached".to_string(),
+            ],
+            serialized_rules: vec![(0u8, vec![0], vec![1], 0.9)],
+            serialized_constraints: vec![(
+                "sum_confidence".to_string(),
+                "x+y=1".to_string(),
+                1.0,
+            )],
+        };
+
+        let output = PhaseTwoOutput {
+            complex,
+            metric: MetricInfo {
+                edge_lengths: HashMap::new(),
+                avg_edge_length: 0.0,
+                min_edge_length: 0.0,
+                max_edge_length: 0.0,
+            },
+            invariants: GeometricInvariants {
+                euler: 1,
+                betti_0: 1,
+                betti_1: 0,
+                total_cells: 3,
+                v0_count: 2,
+                e1_count: 1,
+                v2_count: 0,
+                avg_degree: 1.0,
+                density: 1.0,
+            },
+            scalar_field: ScalarField {
+                potential: HashMap::new(),
+                avg_potential: 0.0,
+                min_potential: 0.0,
+                max_potential: 0.0,
+            },
+            vector_field: VectorField {
+                flow: HashMap::new(),
+                divergence: HashMap::new(),
+                total_flux: 0.0,
+                avg_flux_density: 0.0,
+                source_count: 0,
+                sink_count: 0,
+            },
+            reversibility: vec![],
+            rev_data,
+        };
+
+        let decoded = decode_phase_two(&output);
+
+        // 验证解码结果
+        assert!(decoded.is_consistent, "解码后应标记为自洽");
+        assert_eq!(
+            decoded.node_levels,
+            vec![0, 0, 0, 1, 2],
+            "node_levels 应完整保留"
+        );
+        assert_eq!(decoded.structure.depth, 2, "层级深度应保留");
+        assert_eq!(decoded.structure.levels.len(), 2, "应有 2 层概念");
+        assert_eq!(decoded.rules.len(), 1, "应有 1 条规则");
+        assert_eq!(decoded.constraints.len(), 1, "应有 1 条约束");
+        assert_eq!(
+            decoded.structure.termination_reasons.len(),
+            2,
+            "终止原因应保留"
+        );
+    }
+}

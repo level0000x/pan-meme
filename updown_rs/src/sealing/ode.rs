@@ -582,3 +582,267 @@ fn classify_archetype(traj: &MemeTrajectory) -> MemeArchetype {
 
     MemeArchetype::Undetermined
 }
+
+// ═══════════════════════════════════════════════════════════════════════
+// 测试
+// ═══════════════════════════════════════════════════════════════════════
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::encoding::decomposition::DynamicsParams;
+
+    /// 构造一个所有参数均为 0.1 的 DynamicsParams，用于快速测试。
+    fn test_params() -> DynamicsParams {
+        DynamicsParams {
+            alpha_1: 0.1, alpha_2: 0.1,
+            beta_1: 0.1,  beta_2: 0.1,
+            gamma_1: 0.1, gamma_2: 0.1,
+            delta_1: 0.1, delta_2: 0.1, delta_3: 0.1,
+            epsilon_1: 0.1, epsilon_2: 0.1,
+        }
+    }
+
+    /// 小步数、短时间的快速配置，避免测试耗时过长。
+    fn fast_config() -> OdeConfig {
+        OdeConfig {
+            max_steps: 1000,
+            t_max: 10.0,
+            ..Default::default()
+        }
+    }
+
+    /// 构造一个所有维度均为 0.5 的初始快照。
+    fn half_initial() -> FiveDimSnapshot {
+        FiveDimSnapshot { t: 0.0, d: 0.5, b: 0.5, rho: 0.5, r: 0.5, s: 0.5 }
+    }
+
+    // ── 1. FunctionFamily::evaluate ──────────────────────────────────
+
+    #[test]
+    fn test_function_family_evaluate() {
+        // Power: f(x)=x^k, k=2.0, x=0.5 → 0.25
+        let power_val = FunctionFamily::Power.evaluate(0.5, &[2.0]);
+        assert!((power_val - 0.25).abs() < 1e-10,
+            "Power(2.0) at x=0.5 expected 0.25, got {}", power_val);
+
+        // Exp: f(x)=exp(k*x)-1, k=1.0, x=0.5 → e^0.5 - 1 ≈ 0.64872
+        let exp_val = FunctionFamily::Exp.evaluate(0.5, &[1.0]);
+        assert!((exp_val - 0.6487212707).abs() < 1e-6,
+            "Exp(1.0) at x=0.5 expected ~0.6487, got {}", exp_val);
+
+        // Sigmoid: centered at x0, f(x)=σ(k(x-x0))-0.5.
+        // k=2.0, x0=0.5, x=0.5 → σ(0)-0.5 = 0.0
+        let sig_val = FunctionFamily::Sigmoid.evaluate(0.5, &[2.0, 0.5]);
+        assert!(sig_val.abs() < 1e-10,
+            "Sigmoid(2.0,0.5) at x=0.5 expected 0.0, got {}", sig_val);
+
+        // Log: f(x)=ln(1+k*x), k=1.0, x=0.5 → ln(1.5) ≈ 0.4055
+        let log_val = FunctionFamily::Log.evaluate(0.5, &[1.0]);
+        assert!((log_val - 0.405465108).abs() < 1e-4,
+            "Log(1.0) at x=0.5 expected ~0.4055, got {}", log_val);
+
+        // Piecewise: x=0.5 落在 [0.3, 0.7] 中段
+        // → 0.3 + (0.5-0.3)/(0.7-0.3)*0.6 = 0.6
+        let pw_val = FunctionFamily::Piecewise.evaluate(0.5, &[1.0, 0.3, 0.7]);
+        assert!((pw_val - 0.6).abs() < 1e-10,
+            "Piecewise at x=0.5 expected 0.6, got {}", pw_val);
+    }
+
+    #[test]
+    fn test_function_family_all() {
+        assert_eq!(FunctionFamily::ALL.len(), 5);
+        // 确保 5 个枚举值互不相同
+        let all = &FunctionFamily::ALL;
+        for i in 0..all.len() {
+            for j in (i + 1)..all.len() {
+                assert_ne!(all[i], all[j]);
+            }
+        }
+    }
+
+    // ── 2. OdeConfig::default ───────────────────────────────────────
+
+    #[test]
+    fn test_ode_config_default() {
+        let cfg = OdeConfig::default();
+        assert!((cfg.h0 - 0.01).abs() < 1e-10, "h0 should be 0.01");
+        assert!((cfg.h_min - 1e-8).abs() < 1e-10, "h_min should be 1e-8");
+        assert!((cfg.h_max - 0.5).abs() < 1e-10, "h_max should be 0.5");
+        assert!((cfg.rtol - 1e-6).abs() < 1e-10, "rtol should be 1e-6");
+        assert!((cfg.atol - 1e-8).abs() < 1e-10, "atol should be 1e-8");
+        assert_eq!(cfg.max_steps, 100_000, "max_steps should be 100000");
+        assert!((cfg.t_max - 100.0).abs() < 1e-10, "t_max should be 100.0");
+        assert_eq!(cfg.function_family, 0, "default function_family should be 0 (Power)");
+        assert_eq!(cfg.fn_params, vec![1.5], "default fn_params should be [1.5]");
+    }
+
+    // ── 3. five_dim_rhs ─────────────────────────────────────────────
+
+    #[test]
+    fn test_five_dim_rhs() {
+        let params = test_params();
+        let ff = FunctionFamily::Power;
+        let fn_params = vec![1.5];
+        let rhs = five_dim_rhs(&params, ff, &fn_params);
+        let state = [0.5; 5];
+        let derivatives = rhs(0.0, &state);
+        assert_eq!(derivatives.len(), 5);
+        for (i, d) in derivatives.iter().enumerate() {
+            assert!(d.is_finite(),
+                "derivative[{}] should be finite, got {}", i, d);
+        }
+    }
+
+    // ── 4. solve_single_meme ────────────────────────────────────────
+
+    #[test]
+    fn test_solve_single_meme() {
+        let params = test_params();
+        let config = OdeConfig {
+            max_steps: 1000,
+            t_max: 10.0,
+            function_family: 1, // Exp
+            fn_params: vec![1.0],
+            ..Default::default()
+        };
+        let initial = half_initial();
+        let traj = solve_single_meme(0, &initial, &params, &config);
+
+        assert!(!traj.trajectory.is_empty(),
+            "trajectory should contain at least the initial snapshot");
+
+        // 终止原因应是 Converged / MaxSteps / MaxTime 之一
+        assert!(
+            traj.termination_reason == TerminationReason::Converged
+                || traj.termination_reason == TerminationReason::MaxSteps
+                || traj.termination_reason == TerminationReason::MaxTime,
+            "unexpected termination: {:?}", traj.termination_reason
+        );
+
+        assert_eq!(traj.meme_id, 0);
+        assert!(traj.terminated_at > 0.0, "terminated_at should be positive");
+    }
+
+    // ── 5. classify_equilibrium ────────────────────────────────────
+
+    #[test]
+    fn test_classify_equilibrium() {
+        let params = test_params();
+        let config = fast_config();
+        let initial = half_initial();
+        let traj = solve_single_meme(0, &initial, &params, &config);
+
+        // 必须有足够快照用于分类
+        assert!(traj.trajectory.len() >= 2,
+            "need at least 2 snapshots for classification");
+
+        let eq = super::classify_equilibrium(&traj);
+        assert!(matches!(eq,
+            EquilibriumClass::DegenerateZero
+            | EquilibriumClass::Annihilation
+            | EquilibriumClass::Inert
+            | EquilibriumClass::BreadthRobustness
+            | EquilibriumClass::ProportionalEquilibrium
+            | EquilibriumClass::Unclassified
+        ), "unexpected equilibrium class: {:?}", eq);
+    }
+
+    // ── 6. classify_archetype ───────────────────────────────────────
+
+    #[test]
+    fn test_classify_archetype() {
+        let params = test_params();
+        let config = fast_config();
+        let initial = half_initial();
+        let traj = solve_single_meme(0, &initial, &params, &config);
+
+        let arch = super::classify_archetype(&traj);
+        assert!(matches!(arch,
+            MemeArchetype::Stone
+            | MemeArchetype::Transient
+            | MemeArchetype::Bubble
+            | MemeArchetype::Undetermined
+        ), "unexpected archetype: {:?}", arch);
+    }
+
+    // ── 7. solve_all_memes ──────────────────────────────────────────
+
+    #[test]
+    fn test_solve_all_memes() {
+        let params = vec![test_params(), test_params()];
+        let couplings: Vec<crate::encoding::decomposition::Coupling> = Vec::new();
+        let config = OdeConfig {
+            max_steps: 500,
+            t_max: 10.0,
+            function_family: 0,
+            fn_params: vec![1.5],
+            ..Default::default()
+        };
+
+        let initials = vec![
+            (0, half_initial()),
+            (1, FiveDimSnapshot { t: 0.0, d: 0.3, b: 0.7, rho: 0.2, r: 0.4, s: 0.6 }),
+        ];
+
+        let output = solve_all_memes(&initials, &params, &couplings, &config);
+
+        assert_eq!(output.trajectories.len(), 2,
+            "should have 2 trajectories");
+        assert_eq!(output.archetypes.len(), 2,
+            "should have 2 archetype classifications");
+
+        for (i, (_id, arch, eq)) in output.archetypes.iter().enumerate() {
+            assert!(matches!(arch,
+                MemeArchetype::Stone | MemeArchetype::Transient
+                | MemeArchetype::Bubble | MemeArchetype::Undetermined
+            ), "meme {} unexpected archetype: {:?}", i, arch);
+            assert!(matches!(eq,
+                EquilibriumClass::DegenerateZero | EquilibriumClass::Annihilation
+                | EquilibriumClass::Inert | EquilibriumClass::BreadthRobustness
+                | EquilibriumClass::ProportionalEquilibrium | EquilibriumClass::Unclassified
+            ), "meme {} unexpected equilibrium: {:?}", i, eq);
+        }
+    }
+
+    // ── 8. h-不变性：Ω=[0,1]⁵ 不变集检验（定理7）────────────────
+
+    #[test]
+    fn test_h_invariance() {
+        let params = test_params();
+        // 多组不同的函数族和初始状态，确保不变性在各种条件下成立
+        let families: Vec<(usize, Vec<f64>)> = vec![
+            (0, vec![1.5]),          // Power  k=1.5
+            (1, vec![1.0]),          // Exp    k=1.0
+        ];
+        let initials: Vec<FiveDimSnapshot> = vec![
+            FiveDimSnapshot { t: 0.0, d: 0.5, b: 0.5, rho: 0.5, r: 0.5, s: 0.5 },
+            FiveDimSnapshot { t: 0.0, d: 0.1, b: 0.9, rho: 0.2, r: 0.8, s: 0.3 },
+        ];
+
+        for (ff_idx, fnp) in &families {
+            let config = OdeConfig {
+                max_steps: 1000,
+                t_max: 10.0,
+                function_family: *ff_idx,
+                fn_params: fnp.clone(),
+                ..Default::default()
+            };
+            for init in &initials {
+                let traj = solve_single_meme(99, init, &params, &config);
+                for (step, snap) in traj.trajectory.iter().enumerate() {
+                    assert!(snap.d >= 0.0 && snap.d <= 1.0,
+                        "family={} d={} at step {} out of [0,1]", ff_idx, snap.d, step);
+                    assert!(snap.b >= 0.0 && snap.b <= 1.0,
+                        "family={} b={} at step {} out of [0,1]", ff_idx, snap.b, step);
+                    assert!(snap.rho >= 0.0,
+                        "family={} rho={} at step {} < 0", ff_idx, snap.rho, step);
+                    assert!(snap.r >= 0.0 && snap.r <= 1.0,
+                        "family={} r={} at step {} out of [0,1]", ff_idx, snap.r, step);
+                    assert!(snap.s >= 0.0 && snap.s <= 1.0,
+                        "family={} s={} at step {} out of [0,1]", ff_idx, snap.s, step);
+                }
+            }
+        }
+    }
+}

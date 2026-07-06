@@ -687,3 +687,270 @@ pub fn decode_phase_three(output: &PhaseThreeOutput) -> CWComplex {
         betti_1,
     }
 }
+
+// ═══════════════════════════════════════════════════════════════════════
+// 单元测试
+// ═══════════════════════════════════════════════════════════════════════
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::encoding::geometry::{Cell, CWComplex};
+    use std::collections::HashMap;
+
+    /// 构建两个不相交分量 (0-1, 2-3) 的 CW 复形，
+    /// 验证 decompose_by_betti 返回 n_components == 2 且每分量含 2 个顶点。
+    #[test]
+    fn test_decompose_by_betti_simple() {
+        let cells = vec![
+            Cell { dim: 0, id: 0, boundary: vec![], label: "v0".into(), domain: String::new() },
+            Cell { dim: 0, id: 1, boundary: vec![], label: "v1".into(), domain: String::new() },
+            Cell { dim: 0, id: 2, boundary: vec![], label: "v2".into(), domain: String::new() },
+            Cell { dim: 0, id: 3, boundary: vec![], label: "v3".into(), domain: String::new() },
+            Cell { dim: 1, id: 4, boundary: vec![0, 1], label: "e01".into(), domain: String::new() },
+            Cell { dim: 1, id: 5, boundary: vec![2, 3], label: "e23".into(), domain: String::new() },
+        ];
+
+        let mut v0_map = HashMap::new();
+        v0_map.insert(0, 0);
+        v0_map.insert(1, 1);
+        v0_map.insert(2, 2);
+        v0_map.insert(3, 3);
+
+        let mut e1_map = HashMap::new();
+        e1_map.insert((0, 1), 4);
+        e1_map.insert((2, 3), 5);
+
+        let complex = CWComplex {
+            cells,
+            v0_map,
+            e1_map,
+            euler_characteristic: 4 - 2,
+            betti_0: 2,
+            betti_1: 0,
+        };
+
+        let result = decompose_by_betti(&complex);
+
+        assert_eq!(result.n_components, 2, "应分解为 2 个连通分量");
+        assert_eq!(result.sub_geometries.len(), 2);
+        assert_eq!(result.sub_geometries[0].vertices.len(), 2,
+            "第一个分量应有 2 个顶点");
+        assert_eq!(result.sub_geometries[1].vertices.len(), 2,
+            "第二个分量应有 2 个顶点");
+    }
+
+    /// 用空场/空不变量调用 compute_five_dim，
+    /// 验证五个维度值均在 [0, 1] 区间。
+    #[test]
+    fn test_compute_five_dim() {
+        let sub = SubGeometry {
+            id: 0,
+            vertices: vec![0, 1, 2],
+            edges: vec![3],
+            faces: vec![],
+            external_links: vec![],
+        };
+
+        let state = compute_five_dim(
+            &sub,
+            1,    // total_sub
+            3,    // global_max_cells
+            1,    // depth
+            0.0,  // _global_avg_degree
+            0.0,  // total_flux
+            0.0,  // _grad_mean
+            0.5,  // grad_std
+        );
+
+        assert!((0.0..=1.0).contains(&state.intrinsic_degree),
+            "intrinsic_degree 应在 [0,1]: got {}", state.intrinsic_degree);
+        assert!((0.0..=1.0).contains(&state.binding_degree),
+            "binding_degree 应在 [0,1]: got {}", state.binding_degree);
+        assert!(state.energy_density >= 0.0,
+            "energy_density 应非负: got {}", state.energy_density);
+        assert!((0.0..=1.0).contains(&state.evolution_rate),
+            "evolution_rate 应在 [0,1]: got {}", state.evolution_rate);
+        assert!((0.0..=1.0).contains(&state.structural_robustness),
+            "structural_robustness 应在 [0,1]: got {}", state.structural_robustness);
+    }
+
+    /// 用简单子几何体调用 DynamicsParams::from_sub_geometry，
+    /// 验证 11 个参数均为有限且非负。
+    #[test]
+    fn test_dynamics_params() {
+        let sub = SubGeometry {
+            id: 0,
+            vertices: vec![0, 1, 2],
+            edges: vec![4, 5],
+            faces: vec![6],
+            external_links: vec![],
+        };
+
+        let state = FiveDimState {
+            intrinsic_degree: 0.5,
+            binding_degree: 0.2,
+            energy_density: 1.0,
+            evolution_rate: 0.3,
+            structural_robustness: 0.8,
+        };
+
+        let params = DynamicsParams::from_sub_geometry(
+            &sub, &state, 2,  // depth = 2
+            0.4, // grad_mean
+            0.3, // grad_std
+        );
+
+        // 所有参数有限且 >= 0
+        for (name, val) in [
+            ("alpha_1", params.alpha_1),
+            ("alpha_2", params.alpha_2),
+            ("beta_1", params.beta_1),
+            ("beta_2", params.beta_2),
+            ("gamma_1", params.gamma_1),
+            ("gamma_2", params.gamma_2),
+            ("delta_1", params.delta_1),
+            ("delta_2", params.delta_2),
+            ("delta_3", params.delta_3),
+            ("epsilon_1", params.epsilon_1),
+            ("epsilon_2", params.epsilon_2),
+        ] {
+            assert!(val.is_finite(), "{} 应为有限值，got {}", name, val);
+            assert!(val >= 0.0, "{} 应非负，got {}", name, val);
+        }
+    }
+
+    /// 两个子几何体之间存在 external_links 时，
+    /// compute_coupling 至少生成一条耦合。
+    #[test]
+    fn test_coupling() {
+        let cells = vec![
+            Cell { dim: 0, id: 0, boundary: vec![], label: "v0".into(), domain: String::new() },
+            Cell { dim: 0, id: 1, boundary: vec![], label: "v1".into(), domain: String::new() },
+        ];
+
+        let mut v0_map = HashMap::new();
+        v0_map.insert(0, 0);
+        v0_map.insert(1, 1);
+
+        let complex = CWComplex {
+            cells,
+            v0_map,
+            e1_map: HashMap::new(),
+            euler_characteristic: 2,
+            betti_0: 2,
+            betti_1: 0,
+        };
+
+        let sub_geos = vec![
+            SubGeometry {
+                id: 0,
+                vertices: vec![0],
+                edges: vec![],
+                faces: vec![],
+                external_links: vec![(1, 1)],
+            },
+            SubGeometry {
+                id: 1,
+                vertices: vec![1],
+                edges: vec![],
+                faces: vec![],
+                external_links: vec![],
+            },
+        ];
+
+        let couplings = compute_coupling(&complex, &sub_geos);
+
+        assert!(!couplings.is_empty(),
+            "两个子几何体存在外部链接时应生成至少一条耦合");
+        assert_eq!(couplings[0].i, 0);
+        assert_eq!(couplings[0].j, 1);
+    }
+
+    /// 构建含 2 个 0-胞腔 + 1 个 1-胞腔的 CWComplex，
+    /// 生成 PhaseThreeOutput 后调用 decode_phase_three，
+    /// 验证重建结果包含 2 个 0-胞腔 + 1 个 1-胞腔。
+    #[test]
+    fn test_xi_bijection_decode() {
+        let cells = vec![
+            Cell { dim: 0, id: 0, boundary: vec![], label: "a".into(), domain: String::new() },
+            Cell { dim: 0, id: 1, boundary: vec![], label: "b".into(), domain: String::new() },
+            Cell { dim: 1, id: 2, boundary: vec![0, 1], label: "ab".into(), domain: String::new() },
+        ];
+
+        let mut v0_map = HashMap::new();
+        v0_map.insert(0, 0);
+        v0_map.insert(1, 1);
+
+        let mut e1_map = HashMap::new();
+        e1_map.insert((0, 1), 2);
+
+        let _complex = CWComplex {
+            cells,
+            v0_map,
+            e1_map,
+            euler_characteristic: 2 - 1,
+            betti_0: 1,
+            betti_1: 0,
+        };
+
+        let sub_geo = SubGeometry {
+            id: 0,
+            vertices: vec![0, 1],
+            edges: vec![2],
+            faces: vec![],
+            external_links: vec![],
+        };
+
+        let state = FiveDimState {
+            intrinsic_degree: 0.5,
+            binding_degree: 0.0,
+            energy_density: 1.0,
+            evolution_rate: 0.2,
+            structural_robustness: 0.75,
+        };
+
+        let params = DynamicsParams {
+            alpha_1: 0.5, alpha_2: 0.3,
+            beta_1: 0.5, beta_2: 0.4,
+            gamma_1: 0.1, gamma_2: 0.3,
+            delta_1: 0.1, delta_2: 0.2, delta_3: 0.05,
+            epsilon_1: 0.2, epsilon_2: 0.1,
+        };
+
+        let xi = ExtendedDimension {
+            vertex_cells: vec![
+                CellSnapshot { dim: 0, id: 0, boundary: vec![] },
+                CellSnapshot { dim: 0, id: 1, boundary: vec![] },
+            ],
+            edge_cells: vec![
+                CellSnapshot { dim: 1, id: 2, boundary: vec![0, 1] },
+            ],
+            face_cells: vec![],
+            boundary_links: vec![],
+            vertex_potentials: vec![0.2, 0.4],
+            edge_flux_magnitudes: vec![0.3],
+        };
+
+        let memes = vec![MemeDecomposition {
+            id: 0,
+            sub_geometry: sub_geo,
+            state,
+            params,
+            xi,
+        }];
+
+        let output = PhaseThreeOutput {
+            memes,
+            couplings: vec![],
+            n_memes: 1,
+        };
+
+        let reconstructed = decode_phase_three(&output);
+
+        assert_eq!(reconstructed.v0_map.len(), 2,
+            "重建后应有 2 个 0-胞腔，got {}", reconstructed.v0_map.len());
+        assert_eq!(reconstructed.e1_map.len(), 1,
+            "重建后应有 1 个 1-胞腔，got {}", reconstructed.e1_map.len());
+    }
+}

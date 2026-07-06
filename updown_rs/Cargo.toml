@@ -5,5 +5,5 @@ edition = "2021"
 description = "↑↓ 数据建模引擎 — pan-meme 浮现阶段 / ROSE-SCA 认知循环第一步"
 
 [dependencies]
-# sha2 = "0.10"  # 本地编译时取消注释；沙箱 MinGW 链接器限制
+# sha2 = "0.10"  # 本地编译取消注释；沙箱 MinGW 链接器限制，需在本地 Windows 环境编译
 # 未来可选的加速: ahash (更快的 HashMap), rayon (并行循环)
