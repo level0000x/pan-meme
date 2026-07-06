@@ -1,6 +1,6 @@
 # ↑↓（updown）— 泛模因数据建模引擎
 
-基于**泛模因理论（Pan-Meme Theory）**的信息-结构建模系统。将任意结构化文本映射为数学上可逆的五维模因表示，并通过完整的形式化管线实现从原始信息到可验证密码学凭证的闭合转换。
+基于**泛模因理论（Pan-Meme Theory）**的信息-结构建模系统。将任意结构化数据——文本、图像、音频、代码、知识图谱——通过插件化分词器接入，映射为数学上可逆的五维模因表示，并通过完整的形式化管线实现从原始信息到可验证密码学凭证的闭合转换。
 
 > **核心假说**：在足够丰富的跨领域数据输入下，自适应的结构提取与演化系统将收敛到一组确定的动力学方程。若收敛失败，则该假说被证伪。
 
@@ -142,6 +142,8 @@
 │   ├── core/                         #   核心类型与管线引擎
 │   ├── engines/                      #   加速引擎 (LSH/ODE/GP)
 │   ├── plugins/                      #   函数族与模态插件
+│   │   ├── modalities/               #     多模态分词器 (text_zh, text_en, image_rgb, structured_json)
+│   │   └── functions/               #     5 个函数族 (Power, Exp, Sigmoid, Log, Piecewise)
 │   ├── rust_native/                  #   Rust 原生扩展
 │   ├── tests/                        #   端到端 + 模块测试
 │   ├── PB_ARCHITECTURE.md            #   PB 级工业架构白皮书
@@ -245,6 +247,63 @@ cargo test              # 64 个单元测试（需本地编译环境）
 | sealing/ode | 9 | 5 种函数族 · RKF45 · 不变集 Ω=[0,1]⁵ · 平衡点 · 原型 |
 | sealing/optimizer | 10 | H 空间搜索 · 5 族遍历 · 结果转 OdeConfig |
 | infra/plugins | 2 | Tokenizer 注册与命名 |
+
+---
+
+## 多模态扩展
+
+系统通过 `TokenizerPlugin` trait 实现模态无关的输入层。任何数据类型——只要能够被分解为基本结构单元（"词元"）——都可以通过实现分词器插件接入完整的五阶段管线。
+
+### 插件架构
+
+```rust
+pub trait TokenizerPlugin {
+    fn tokenize(data: &str) -> Vec<String>;  // 模态 → 词元列表
+    fn name() -> &'static str;               // 唯一标识
+}
+```
+
+`PluginRegistry` 以函数指针形式存储所有已注册分词器，编译期单态化，零虚表开销。
+
+### 支持模态（已实现 + 可扩展）
+
+| 模态 | 分词器 | 词元化方式 | 状态 |
+|------|--------|-----------|------|
+| 中文文本 | `chinese_char` | 逐字拆分（CJK 统一表意文字区间） | ✅ 内置 |
+| 英文/空白分隔 | `whitespace` | `split_whitespace` | ✅ 内置 |
+| 中文文本（多粒度） | `text_zh` | 词典匹配 + 统计分词 | 🐍 Python 原型 |
+| 英文文本（语义） | `text_en` | BPE / WordPiece 子词 | 🐍 Python 原型 |
+| 图像（RGB） | `image_rgb` | 像素 → 空间离散化网格 | 🐍 Python 原型 |
+| 结构化数据 | `structured_json` | JSON 路径 + 值 → 词元 | 🐍 Python 原型 |
+| 代码（AST） | `code_ast` | 语法树节点 → Token 序列 | 🔲 可扩展 |
+| 音频（频谱） | `audio_spec` | 频谱帧 → 时频单元 | 🔲 可扩展 |
+| 知识图谱 | `kg_triple` | 三元组 → 实体/关系词元 | 🔲 可扩展 |
+
+> 🐍 = pan_meme Python 原型已实现，待移植至 Rust  
+> 🔲 = 架构就绪，待实现
+
+### 自定义分词器示例
+
+```rust
+use crate::infra::plugins::{TokenizerPlugin, PluginRegistry};
+
+// 示例：代码 AST 分词器
+struct CodeAstTokenizer;
+impl TokenizerPlugin for CodeAstTokenizer {
+    fn tokenize(source: &str) -> Vec<String> {
+        // 解析源码 → AST → 节点序列 → 词元
+        let ast = parse(source);
+        ast.walk().map(|node| node.to_token()).collect()
+    }
+    fn name() -> &'static str { "code_ast" }
+}
+
+// 注册
+let mut registry = PluginRegistry::new();
+registry.register::<CodeAstTokenizer>();
+```
+
+所有分词器的输出统一为 `Vec<String>`，随后进入 Jaccard 关系提取 → ↑↓ 循环 → 推理，管线其余部分无需修改。这与理论命题二（泛模因实在论）一致——基因、观念、代码、图像，都是泛模因的不同实例。
 
 ---
 
