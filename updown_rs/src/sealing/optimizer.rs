@@ -186,8 +186,8 @@ fn get_or_compute_components(
 }
 
 /// 复杂度度量：Complexity(h) = |N| + n_params(F)。
-fn compute_complexity(n: usize, family: FunctionFamily) -> f64 {
-    n as f64 + family.n_params() as f64
+fn compute_complexity(n: usize, family_d: FunctionFamily, family_r: FunctionFamily) -> f64 {
+    n as f64 + family_d.n_params() as f64 + family_r.n_params() as f64
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -199,10 +199,14 @@ fn compute_complexity(n: usize, family: FunctionFamily) -> f64 {
 pub struct Hypothesis {
     /// Jaccard 阈值 T ∈ (0, 1]
     pub t: f64,
-    /// 函数族 F
+    /// 函数族 Φ_D （§4.3.5 R 方程）
     pub family: FunctionFamily,
-    /// 函数族连续参数 Θ
+    /// Φ_D 连续参数 Θ
     pub theta: Vec<f64>,
+    /// 函数族 Φ_R （§4.3.6 S 方程）
+    pub family_r: FunctionFamily,
+    /// Φ_R 连续参数 Θ
+    pub theta_r: Vec<f64>,
     /// 目标模因数 N ∈ [1, |V|]
     pub n: usize,
 }
@@ -231,8 +235,10 @@ impl std::fmt::Display for OptimizationResult {
         writeln!(f, "全局优化结果")?;
         writeln!(f, "  最优假设 h*:")?;
         writeln!(f, "    T     = {:.2}", self.best.t)?;
-        writeln!(f, "    F     = {:?}", self.best.family)?;
-        writeln!(f, "    Θ     = {:?}", self.best.theta)?;
+        writeln!(f, "    F_D   = {:?}", self.best.family)?;
+        writeln!(f, "    Θ_D   = {:?}", self.best.theta)?;
+        writeln!(f, "    F_R   = {:?}", self.best.family_r)?;
+        writeln!(f, "    Θ_R   = {:?}", self.best.theta_r)?;
         writeln!(f, "    N     = {}", self.best.n)?;
         writeln!(f, "  损失 L(h*)    = {:.6}", self.loss)?;
         writeln!(f, "    重建误差    = {:.6}", self.rec_error)?;
@@ -248,14 +254,14 @@ impl std::fmt::Display for OptimizationResult {
 
 /// 全局优化器。
 ///
-/// 在超参数空间 H = T × F × Θ × N 中搜索使损失函数最小的假设 h*。
+/// 在超参数空间 H = T × F_D × Θ_D × F_R × Θ_R × N 中搜索使损失函数最小的假设 h*。
 ///
 /// 数学对应：§D.3 假设0 — 超参数优化
 ///
 /// 搜索顺序：
 ///   for T ∈ T_values:
-///     for F ∈ FunctionFamily::ALL:
-///       for Θ ∈ build_theta_grid(F):
+///     for F_D, Θ_D ∈ family_theta_pairs:
+///       for F_R, Θ_R ∈ family_theta_pairs:
 ///         for N ∈ [1..|V|]:
 ///           loss = proxy_rec_error + λ · complexity
 pub struct Optimizer {
@@ -288,7 +294,7 @@ impl Optimizer {
         let step = config.n_step.max(1);
         let n_values: Vec<usize> = (1..=n_max).step_by(step).collect();
 
-        // 预构建所有 (F, Θ) 组合
+        // 预构建所有 (F_D, Θ_D) 组合
         let mut family_theta_pairs: Vec<(FunctionFamily, Vec<f64>)> = Vec::new();
         for &family in &families {
             for theta in build_theta_grid(family) {
@@ -296,15 +302,17 @@ impl Optimizer {
             }
         }
 
+        let ft_count = family_theta_pairs.len();
         let total_combinations = config.t_values.len()
-            * family_theta_pairs.len()
+            * ft_count * ft_count  // F_D × F_R
             * n_values.len();
 
         if config.verbose {
             eprintln!(
-                "  搜索空间: {}T × {}FΘ × {}N = {} 候选",
+                "  搜索空间: {}T × {}F_DΘ × {}F_RΘ × {}N = {} 候选",
                 config.t_values.len(),
-                family_theta_pairs.len(),
+                ft_count,
+                ft_count,
                 n_values.len(),
                 total_combinations,
             );
@@ -337,10 +345,14 @@ impl Optimizer {
                 }
             });
 
-            for &(family, ref theta) in &family_theta_pairs {
-                // Θ 惩罚（与 T, N 无关，但依赖 family）
-                let lipschitz = family.lipschitz_constant(theta);
-                let theta_penalty = (lipschitz / 20.0).min(1.0) * 0.005;
+            for &(family_d, ref theta_d) in &family_theta_pairs {
+                let lipschitz_d = family_d.lipschitz_constant(theta_d);
+
+                for &(family_r, ref theta_r) in &family_theta_pairs {
+                    // Θ 惩罚：max(L_D, L_R)（§4.3.5-4.3.6 两个 Φ 联合惩罚）
+                    let lipschitz_r = family_r.lipschitz_constant(theta_r);
+                    let lipschitz = lipschitz_d.max(lipschitz_r);
+                    let theta_penalty = (lipschitz / 20.0).min(1.0) * 0.005;
 
                 for &n in &n_values {
                     // 分量失配
@@ -355,7 +367,7 @@ impl Optimizer {
                     let rec_error = edge_loss + component_error + theta_penalty;
 
                     // 复杂度
-                    let complexity = compute_complexity(n, family);
+                    let complexity = compute_complexity(n, family_d, family_r);
 
                     // 总损失：L(h; I) = rec_error + λ · complexity
                     let loss = rec_error + config.lambda * complexity;
@@ -375,12 +387,15 @@ impl Optimizer {
                         best_cplx = complexity;
                         best = Some(Hypothesis {
                             t,
-                            family,
-                            theta: theta.clone(),
+                            family: family_d,
+                            theta: theta_d.clone(),
+                            family_r,
+                            theta_r: theta_r.clone(),
                             n,
                         });
                     }
                 }
+            }
             }
         }
 
@@ -395,6 +410,8 @@ impl Optimizer {
                 t: 0.5,
                 family: FunctionFamily::Power,
                 theta: vec![1.0],
+                family_r: FunctionFamily::Power,
+                theta_r: vec![1.0],
                 n: 1,
             }),
             loss: best_loss,
@@ -436,15 +453,12 @@ pub fn optimize(input: RelationNetwork, config: &OptimizerConfig) -> Optimizatio
 pub fn result_to_ode_config(result: &OptimizationResult) -> crate::sealing::ode::OdeConfig {
     use crate::sealing::ode::OdeConfig;
     OdeConfig {
-        h0: 0.01,
-        h_min: 1e-8,
-        h_max: 0.5,
-        rtol: 1e-6,
-        atol: 1e-8,
-        max_steps: 100_000,
-        t_max: 100.0,
         function_family: result.best.family as usize,
         fn_params: result.best.theta.clone(),
+        function_family_r: result.best.family_r as usize,
+        fn_params_r: result.best.theta_r.clone(),
+        i_ext: 0.0,
+        ..Default::default()
     }
 }
 
@@ -523,8 +537,8 @@ mod tests {
         // 只是粗略检查不为空
         assert!(result.n_evaluated > 0);
         eprintln!("Search space: {} hypotheses evaluated", result.n_evaluated);
-        eprintln!("Best: T={:.2} {:?} Θ={:?} N={} loss={:.6}",
-            result.best.t, result.best.family, result.best.theta, result.best.n, result.loss);
+        eprintln!("Best: T={:.2} F_D={:?} Θ_D={:?} F_R={:?} Θ_R={:?} N={} loss={:.6}",
+            result.best.t, result.best.family, result.best.theta, result.best.family_r, result.best.theta_r, result.best.n, result.loss);
     }
 
     #[test]
@@ -540,6 +554,9 @@ mod tests {
         let ode_cfg = result_to_ode_config(&result);
         assert_eq!(ode_cfg.function_family, result.best.family as usize);
         assert_eq!(ode_cfg.fn_params, result.best.theta);
+        assert_eq!(ode_cfg.function_family_r, result.best.family_r as usize);
+        assert_eq!(ode_cfg.fn_params_r, result.best.theta_r);
+        assert!((ode_cfg.i_ext - 0.0).abs() < 1e-10);
     }
 
     #[test]

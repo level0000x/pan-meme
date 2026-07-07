@@ -35,10 +35,16 @@ pub struct OdeConfig {
     pub max_steps: usize,
     /// 仿真时间上限
     pub t_max: f64,
-    /// 函数族选择: 0=power, 1=exp, 2=sigmoid, 3=log, 4=piecewise
+    /// Φ_D 函数族: 0=power, 1=exp, 2=sigmoid, 3=log, 4=piecewise (§4.3.5 R方程)
     pub function_family: usize,
-    /// 函数族参数 (k for power/exp/log, (k, x0) for sigmoid)
+    /// Φ_D 参数 (k for power/exp/log, (k, x0) for sigmoid)
     pub fn_params: Vec<f64>,
+    /// Φ_R 函数族: 0=power, 1=exp, 2=sigmoid, 3=log, 4=piecewise (§4.3.6 S方程)
+    pub function_family_r: usize,
+    /// Φ_R 参数
+    pub fn_params_r: Vec<f64>,
+    /// 外部输入 I_ext(t) (§4.3.4 ρ 方程) — 常数或可扩展为函数
+    pub i_ext: f64,
 }
 
 impl Default for OdeConfig {
@@ -50,9 +56,12 @@ impl Default for OdeConfig {
             rtol: 1e-6,
             atol: 1e-8,
             max_steps: 100_000,
-            t_max: 100.0,
-            function_family: 0,  // 默认幂函数
-            fn_params: vec![1.5], // k=1.5 超线性
+            t_max: 1000.0,
+            function_family: 0,  // Φ_D: Power
+            fn_params: vec![1.0],
+            function_family_r: 0, // Φ_R: Power
+            fn_params_r: vec![1.0],
+            i_ext: 0.0,           // 默认零外部输入
         }
     }
 }
@@ -346,14 +355,26 @@ fn adapt_step(h: f64, err: f64, rtol: f64, atol: f64, h_max: f64, h_min: f64) ->
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-// 五维 RHS 函数
+// 五维 RHS 函数 — 严格对齐论文 §4.3.5-§4.3.6
 // ═══════════════════════════════════════════════════════════════════════
+//
+//  dD/dt = -α₁·R·D + α₂·S·(1-D)                     (§4.3.5 D)
+//  dB/dt =  β₁·R·(1-B) - β₂·D·B                      (§4.3.5 B)
+//  dρ/dt = -γ₁·R·ρ + γ₂·(1-ρ)·I_ext                   (§4.3.5 ρ)
+//  dR/dt =  δ₁·ρ·B·(1-R) - δ₂·Φ_D(D)·R - δ₃·R       (§4.3.5 R)
+//  dS/dt =  ε₁·D·(1-S) - ε₂·Φ_R(R)·S                 (§4.3.6 S)
+//
+//  Φ_D, Φ_R ∈ F 独立选择，I_ext ∈ ℝ，Ω 裁剪保证不变性（定理7）
 
 /// 5D ODE 右侧函数。
 ///
-/// Ω 裁剪（定理7）：每步后裁剪到 [0,1]⁵ 保证不变性。
-pub fn five_dim_rhs<'a>(params: &'a DynamicsParams, ff: FunctionFamily, fn_params: &'a [f64])
-    -> impl Fn(f64, &[f64; 5]) -> [f64; 5] + 'a
+/// Ω 裁剪（定理7）：每步后裁剪到 [0,1] × [0,1] × ℝ⁺ × [0,1] × [0,1] 保证不变性。
+pub fn five_dim_rhs<'a>(
+    params: &'a DynamicsParams,
+    ff_d: FunctionFamily, fp_d: &'a [f64],
+    ff_r: FunctionFamily, fp_r: &'a [f64],
+    i_ext: f64,
+) -> impl Fn(f64, &[f64; 5]) -> [f64; 5] + 'a
 {
     let a1 = params.alpha_1;
     let a2 = params.alpha_2;
@@ -368,20 +389,21 @@ pub fn five_dim_rhs<'a>(params: &'a DynamicsParams, ff: FunctionFamily, fn_param
     let e2 = params.epsilon_2;
 
     move |_t: f64, y: &[f64; 5]| -> [f64; 5] {
-        let d = y[0].max(0.0).min(1.0);
-        let b = y[1].max(0.0).min(1.0);
-        let rho = y[2].max(0.0);  // ρ ∈ ℝ⁺ 无上界
-        let r = y[3].max(0.0).min(1.0);
-        let s = y[4].max(0.0).min(1.0);
+        let d   = y[0].max(0.0).min(1.0);
+        let b   = y[1].max(0.0).min(1.0);
+        let rho = y[2].max(0.0);
+        let r   = y[3].max(0.0).min(1.0);
+        let s   = y[4].max(0.0).min(1.0);
 
-        let phi_d = ff.evaluate(d, fn_params);
+        let phi_d = ff_d.evaluate(d, fp_d);
+        let phi_r = ff_r.evaluate(r, fp_r);
 
         [
-            a1 * phi_d - a2 * d * b * b,        // dD/dt
-            b1 * b * (1.0 - b) - b2 * d * b,    // dB/dt
-            g1 * d * b - g2 * rho,               // dρ/dt
-            d1 * rho * r * (1.0 - r) - d2 * d * r - d3 * r,  // dR/dt
-            e1 * d * rho - e2 * s,               // dS/dt
+            -a1 * r * d + a2 * s * (1.0 - d),                    // dD/dt
+             b1 * r * (1.0 - b) - b2 * d * b,                    // dB/dt
+            -g1 * r * rho + g2 * (1.0 - rho) * i_ext,            // dρ/dt
+             d1 * rho * b * (1.0 - r) - d2 * phi_d * r - d3 * r, // dR/dt
+             e1 * d * (1.0 - s) - e2 * phi_r * s,                // dS/dt
         ]
     }
 }
@@ -409,8 +431,9 @@ pub fn solve_single_meme(
     params: &DynamicsParams,
     config: &OdeConfig,
 ) -> MemeTrajectory {
-    let ff = FunctionFamily::from_usize(config.function_family);
-    let rhs = five_dim_rhs(params, ff, &config.fn_params);
+    let ff_d = FunctionFamily::from_usize(config.function_family);
+    let ff_r = FunctionFamily::from_usize(config.function_family_r);
+    let rhs = five_dim_rhs(params, ff_d, &config.fn_params, ff_r, &config.fn_params_r, config.i_ext);
 
     let mut y = [initial.d, initial.b, initial.rho, initial.r, initial.s];
     let mut t = initial.t;
@@ -612,7 +635,6 @@ mod tests {
         }
     }
 
-    /// 构造一个所有维度均为 0.5 的初始快照。
     fn half_initial() -> FiveDimSnapshot {
         FiveDimSnapshot { t: 0.0, d: 0.5, b: 0.5, rho: 0.5, r: 0.5, s: 0.5 }
     }
@@ -672,9 +694,12 @@ mod tests {
         assert!((cfg.rtol - 1e-6).abs() < 1e-10, "rtol should be 1e-6");
         assert!((cfg.atol - 1e-8).abs() < 1e-10, "atol should be 1e-8");
         assert_eq!(cfg.max_steps, 100_000, "max_steps should be 100000");
-        assert!((cfg.t_max - 100.0).abs() < 1e-10, "t_max should be 100.0");
-        assert_eq!(cfg.function_family, 0, "default function_family should be 0 (Power)");
-        assert_eq!(cfg.fn_params, vec![1.5], "default fn_params should be [1.5]");
+        assert!((cfg.t_max - 1000.0).abs() < 1e-10, "t_max should be 1000.0");
+        assert_eq!(cfg.function_family, 0, "default Φ_D family should be 0 (Power)");
+        assert_eq!(cfg.fn_params, vec![1.0], "default Φ_D params should be [1.0]");
+        assert_eq!(cfg.function_family_r, 0, "default Φ_R family should be 0 (Power)");
+        assert_eq!(cfg.fn_params_r, vec![1.0], "default Φ_R params should be [1.0]");
+        assert!((cfg.i_ext - 0.0).abs() < 1e-10, "default i_ext should be 0.0");
     }
 
     // ── 3. five_dim_rhs ─────────────────────────────────────────────
@@ -682,9 +707,12 @@ mod tests {
     #[test]
     fn test_five_dim_rhs() {
         let params = test_params();
-        let ff = FunctionFamily::Power;
-        let fn_params = vec![1.5];
-        let rhs = five_dim_rhs(&params, ff, &fn_params);
+        let ff_d = FunctionFamily::Power;
+        let fp_d = vec![1.5];
+        let ff_r = FunctionFamily::Exp;
+        let fp_r = vec![1.0];
+        let i_ext = 0.0;
+        let rhs = five_dim_rhs(&params, ff_d, &fp_d, ff_r, &fp_r, i_ext);
         let state = [0.5; 5];
         let derivatives = rhs(0.0, &state);
         assert_eq!(derivatives.len(), 5);
@@ -826,6 +854,9 @@ mod tests {
                 t_max: 10.0,
                 function_family: *ff_idx,
                 fn_params: fnp.clone(),
+                function_family_r: *ff_idx,
+                fn_params_r: fnp.clone(),
+                i_ext: 0.0,
                 ..Default::default()
             };
             for init in &initials {
