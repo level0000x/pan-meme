@@ -354,48 +354,48 @@ impl Optimizer {
                     let lipschitz = lipschitz_d.max(lipschitz_r);
                     let theta_penalty = (lipschitz / 20.0).min(1.0) * 0.005;
 
-                for &n in &n_values {
-                    // 分量失配
-                    let actual_components =
-                        get_or_compute_components(&self.input, t, n_char, &mut component_cache);
-                    let component_error = {
-                        let denom = actual_components.max(n).max(1) as f64;
-                        (actual_components as isize - n as isize).abs() as f64 / denom
-                    };
+                    for &n in &n_values {
+                        // 分量失配
+                        let actual_components =
+                            get_or_compute_components(&self.input, t, n_char, &mut component_cache);
+                        let component_error = {
+                            let denom = actual_components.max(n).max(1) as f64;
+                            (actual_components as isize - n as isize).abs() as f64 / denom
+                        };
 
-                    // 重建误差
-                    let rec_error = edge_loss + component_error + theta_penalty;
+                        // 重建误差
+                        let rec_error = edge_loss + component_error + theta_penalty;
 
-                    // 复杂度
-                    let complexity = compute_complexity(n, family_d, family_r);
+                        // 复杂度
+                        let complexity = compute_complexity(n, family_d, family_r);
 
-                    // 总损失：L(h; I) = rec_error + λ · complexity
-                    let loss = rec_error + config.lambda * complexity;
+                        // 总损失：L(h; I) = rec_error + λ · complexity
+                        let loss = rec_error + config.lambda * complexity;
 
-                    n_evaluated += 1;
-                    loss_sum += loss;
-                    if loss < loss_min {
-                        loss_min = loss;
-                    }
-                    if loss > loss_max {
-                        loss_max = loss;
-                    }
+                        n_evaluated += 1;
+                        loss_sum += loss;
+                        if loss < loss_min {
+                            loss_min = loss;
+                        }
+                        if loss > loss_max {
+                            loss_max = loss;
+                        }
 
-                    if loss < best_loss {
-                        best_loss = loss;
-                        best_rec = rec_error;
-                        best_cplx = complexity;
-                        best = Some(Hypothesis {
-                            t,
-                            family: family_d,
-                            theta: theta_d.clone(),
-                            family_r,
-                            theta_r: theta_r.clone(),
-                            n,
-                        });
+                        if loss < best_loss {
+                            best_loss = loss;
+                            best_rec = rec_error;
+                            best_cplx = complexity;
+                            best = Some(Hypothesis {
+                                t,
+                                family: family_d,
+                                theta: theta_d.clone(),
+                                family_r,
+                                theta_r: theta_r.clone(),
+                                n,
+                            });
+                        }
                     }
                 }
-            }
             }
         }
 
