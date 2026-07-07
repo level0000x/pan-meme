@@ -205,4 +205,134 @@ mod tests {
         let output = run_phase_five(&p3, &config, None);
         assert_eq!(output.evolutions.len(), 5);
     }
+
+    #[test]
+    fn diagnostic_archetype_scan() {
+        // 诊断: 用 biology 文本跑完整 pipeline，检查原型分布
+        // 使用 extract_ngrams 分词（与 main.rs --text 模式一致）
+        let text = std::fs::read_to_string("../experiments/003-cross-domain/inputs/biology.txt")
+            .unwrap_or_else(|_| "信息论 熵 量子力学 深度学习 区块链 基因编辑 相对论 进化论".to_string());
+        let words = crate::io::tokenizer::extract_ngrams(&text);
+        println!("\n=== DIAGNOSTIC: biology r=2.0 ===");
+        println!("text chars={}, ngrams={}", text.chars().count(), words.len());
+
+        let p1 = crate::pipeline::phase1_emergence::run_phase_one(words, 100);
+        println!("Phase1: nodes={} edges={} depth={:.1}",
+            p1.s.vertices.len(), p1.s.edges.len(), p1.max_depth);
+
+        let p2 = crate::pipeline::phase2_encoding::run_phase_two(&p1);
+        println!("Phase2: cells={}v+{}e χ={} β₀={} β₁={}",
+            p2.complex.n_vertices(), p2.complex.n_edges(),
+            p2.invariants.euler_char, p2.invariants.betti_0, p2.invariants.betti_1);
+
+        let p3 = crate::pipeline::phase3_decomposition::run_phase_three(&p2, 2.0);
+        println!("Phase3: n_memes={}", p3.n_memes);
+        for (i, meme) in p3.memes.iter().enumerate() {
+            println!("  M{}: D={:.3} B={:.3} ρ={:.3} R={:.3} S={:.3} nv={}",
+                i, meme.five_dim.intrinsic_degree, meme.five_dim.binding_degree,
+                meme.five_dim.energy_density, meme.five_dim.evolution_rate,
+                meme.five_dim.structural_robustness, meme.vertices.len());
+        }
+
+        // t_max=50 确保足够时间收敛，收敛阈值放宽到 5e-3
+        let config = OdeConfig {
+            t_max: 50.0,
+            max_steps: 50000,
+            convergence_threshold: 5e-3,
+            ..OdeConfig::default()
+        };
+        let output = run_phase_five(&p3, &config, None);
+
+        println!("\n=== Phase5: archetype distribution ===");
+        let mut archetypes: std::collections::HashMap<String, usize> = std::collections::HashMap::new();
+        let mut terminations: std::collections::HashMap<String, usize> = std::collections::HashMap::new();
+        for evo in &output.evolutions {
+            let arch = format!("{:?}", evo.archetype);
+            *archetypes.entry(arch).or_insert(0) += 1;
+            let term = format!("{:?}", evo.termination);
+            *terminations.entry(term).or_insert(0) += 1;
+            if let Some(last) = evo.trajectory.last() {
+                println!("  M{}: D={:.4} B={:.4} R={:.4} S={:.4} ρ={:.4} t={:.2} steps={} [{:?}] → {:?}",
+                    evo.meme_idx, last.d, last.b, last.r, last.s, last.rho,
+                    last.t, evo.trajectory.len(), evo.termination, evo.archetype);
+            }
+        }
+        println!("Archetypes: {:?}", archetypes);
+        println!("Terminations: {:?}", terminations);
+        let unique = archetypes.len();
+        println!("Unique archetypes: {}", unique);
+
+        // 收敛率
+        let conv_report = crate::theory::ode::evaluate_convergence(&output.evolutions, &config);
+        println!("Convergence: rate={:.1}% converged={}/{} std_ok={} undet={:.1}% → {}",
+            conv_report.convergence_rate * 100.0,
+            conv_report.converged_count, conv_report.total_memes,
+            conv_report.criteria.std_ok,
+            conv_report.undetermined_pct * 100.0,
+            if conv_report.is_converged { "PASS" } else { "FAIL" });
+
+        assert!(output.evolutions.len() > 0, "Should have evolutions");
+        assert!(unique >= 1, "Should have at least 1 archetype");
+    }
+
+    #[test]
+    fn diagnostic_archetype_diversity() {
+        // 诊断: γ=2.0 高分辨率 + t_max=25，检查是否产生多种原型
+        // 大社区收敛快 → Stone/StableCore，小社区收敛慢 → Transient/Burst
+        let text = std::fs::read_to_string("../experiments/003-cross-domain/inputs/biology.txt")
+            .unwrap_or_else(|_| "信息论 熵 量子力学 深度学习 区块链 基因编辑 相对论 进化论".to_string());
+        let words = crate::io::tokenizer::extract_ngrams(&text);
+        println!("\n=== DIAGNOSTIC: biology r=2.0 t=25 (diversity) ===");
+        println!("text chars={}, ngrams={}", text.chars().count(), words.len());
+
+        let p1 = crate::pipeline::phase1_emergence::run_phase_one(words, 100);
+        let p2 = crate::pipeline::phase2_encoding::run_phase_two(&p1);
+        let p3 = crate::pipeline::phase3_decomposition::run_phase_three(&p2, 2.0);
+        println!("Phase3: n_memes={}", p3.n_memes);
+        for (i, meme) in p3.memes.iter().enumerate() {
+            println!("  M{}: D={:.3} B={:.3} ρ={:.3} R={:.3} S={:.3} nv={}",
+                i, meme.five_dim.intrinsic_degree, meme.five_dim.binding_degree,
+                meme.five_dim.energy_density, meme.five_dim.evolution_rate,
+                meme.five_dim.structural_robustness, meme.vertices.len());
+        }
+
+        let config = OdeConfig {
+            t_max: 25.0,
+            max_steps: 25000,
+            convergence_threshold: 5e-3,
+            ..OdeConfig::default()
+        };
+        let output = run_phase_five(&p3, &config, None);
+
+        println!("\n=== Phase5: archetype distribution ===");
+        let mut archetypes: std::collections::HashMap<String, usize> = std::collections::HashMap::new();
+        let mut terminations: std::collections::HashMap<String, usize> = std::collections::HashMap::new();
+        for evo in &output.evolutions {
+            let arch = format!("{:?}", evo.archetype);
+            *archetypes.entry(arch).or_insert(0) += 1;
+            let term = format!("{:?}", evo.termination);
+            *terminations.entry(term).or_insert(0) += 1;
+            if let Some(last) = evo.trajectory.last() {
+                println!("  M{}: D={:.4} B={:.4} R={:.4} S={:.4} ρ={:.4} t={:.2} [{:?}] → {:?}",
+                    evo.meme_idx, last.d, last.b, last.r, last.s, last.rho,
+                    last.t, evo.termination, evo.archetype);
+            }
+        }
+        println!("Archetypes: {:?}", archetypes);
+        println!("Terminations: {:?}", terminations);
+        let unique = archetypes.len();
+        println!("Unique archetypes: {}", unique);
+
+        let conv_report = crate::theory::ode::evaluate_convergence(&output.evolutions, &config);
+        println!("Convergence: rate={:.1}% converged={}/{} std_ok={} undet={:.1}% → {}",
+            conv_report.convergence_rate * 100.0,
+            conv_report.converged_count, conv_report.total_memes,
+            conv_report.criteria.std_ok,
+            conv_report.undetermined_pct * 100.0,
+            if conv_report.is_converged { "PASS" } else { "FAIL" });
+
+        assert!(output.evolutions.len() > 0, "Should have evolutions");
+        // 强验证要求: 至少 3 种不同原型
+        assert!(unique >= 3, "强验证: 需要 >=3 种原型，实际 {} 种", unique);
+    }
 }

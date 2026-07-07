@@ -361,9 +361,13 @@ pub fn classify_equilibrium(state: &FiveDimState) -> EquilibriumType {
 
 /// 分类原型 — 定理 5.8（基于轨迹动力学特征）
 ///
-/// 与旧版不同，不依赖 TerminationReason 决定原型族，而是分析轨迹的
-/// 形状特征（峰值、衰减、振荡等）来分类。这使分类对 ODE 参数
-/// 和初始条件的变化更敏感，能产生多样化的原型。
+/// 分类策略：
+/// 1. 先检查是否已接近收敛态（D>0.85, S>0.85, R<0.1）→ Stone/StableCore/Resilient
+/// 2. 再检查振荡特征 → Oscillatory
+/// 3. 最后按轨迹动态特征分类 → Burst/Decay/Transient/Source/Sink
+///
+/// 关键区分：Burst 要求 R 先上升再下降（r_peak > r_init + 0.05），
+/// 而非简单地从高初值单调衰减（那是收敛路径，不是 Burst）。
 pub fn classify(trajectory: &[StateSnapshot], _reason: &TerminationReason) -> Archetype {
     if trajectory.len() < 2 {
         return Archetype::Undetermined;
@@ -374,7 +378,6 @@ pub fn classify(trajectory: &[StateSnapshot], _reason: &TerminationReason) -> Ar
     let last = &trajectory[n - 1];
 
     // ── 轨迹特征提取 ──
-    // 各维度: 初始值、终值、峰值、峰值时间、谷值
     let d_init = first.d;
     let d_final = last.d;
     let b_init = first.b;
@@ -394,28 +397,20 @@ pub fn classify(trajectory: &[StateSnapshot], _reason: &TerminationReason) -> Ar
     let mut r_peak = r_init;
     let mut rho_peak = rho_init;
     let mut s_min = s_init;
+    let mut d_min = d_init;
+    let mut b_min = b_init;
 
     for snap in trajectory {
-        if snap.d > d_peak {
-            d_peak = snap.d;
-            d_peak_t = snap.t;
-        }
-        if snap.b > b_peak {
-            b_peak = snap.b;
-            _b_peak_t = snap.t;
-        }
-        if snap.r > r_peak {
-            r_peak = snap.r;
-        }
-        if snap.rho > rho_peak {
-            rho_peak = snap.rho;
-        }
-        if snap.s < s_min {
-            s_min = snap.s;
-        }
+        if snap.d > d_peak { d_peak = snap.d; d_peak_t = snap.t; }
+        if snap.d < d_min { d_min = snap.d; }
+        if snap.b > b_peak { b_peak = snap.b; _b_peak_t = snap.t; }
+        if snap.b < b_min { b_min = snap.b; }
+        if snap.r > r_peak { r_peak = snap.r; }
+        if snap.rho > rho_peak { rho_peak = snap.rho; }
+        if snap.s < s_min { s_min = snap.s; }
     }
 
-    // 振荡检测: 计算各维度导数的符号变化次数
+    // 振荡检测
     let oscillation_count = count_sign_changes(trajectory);
 
     // 增长/衰减速率: 前 20% 到 后 20% 的变化
@@ -427,111 +422,84 @@ pub fn classify(trajectory: &[StateSnapshot], _reason: &TerminationReason) -> Ar
     let _r_growth = late.r - early.r;
     let _b_growth = late.b - early.b;
 
-    // 收敛速度: 达到终值 90% 的时间
-    let d_target = d_init + 0.9 * (d_final - d_init);
-    let mut _d_converge_t = last.t;
-    for snap in trajectory {
-        if (d_final - d_init).abs() > 1e-6
-            && (snap.d - d_init).abs() >= (d_target - d_init).abs() * 0.99
-        {
-            _d_converge_t = snap.t;
-            break;
-        }
-    }
+    // R 峰值相对于初值的增量（区分 Burst 和简单衰减）
+    let r_surge = r_peak - r_init;
 
     // ── 原型判定 ──
-    let eps = 0.15;
 
-    // 检测轨迹是否仍在显著演化中（末尾 20% 步长内总变化 > 0.05）
-    let tail_start = (n as f64 * 0.8) as usize;
-    let tail_slice = &trajectory[tail_start.min(n - 1)..];
-    let tail_change = if tail_slice.len() >= 2 {
-        let ts = &tail_slice[0];
-        let te = &tail_slice[tail_slice.len() - 1];
-        (te.d - ts.d).abs() + (te.b - ts.b).abs() + (te.r - ts.r).abs() + (te.s - ts.s).abs()
-    } else {
-        0.0
-    };
-    let still_evolving = tail_change > 0.05;
+    // 优先: 已接近收敛态 → 按终值分类
+    // 这个检查必须在 still_evolving 之前，因为收敛态也可能有微小尾变化
+    let near_converged = d_final > 0.85 && s_final > 0.85 && r_final < 0.15;
 
-    // 振荡型: 多维度导数符号变化 ≥ 3
-    if oscillation_count >= 3 {
-        return Archetype::Oscillatory;
-    }
-
-    // 过客族: 峰值明显高于终值（先升后降）
-    let d_decay = d_peak - d_final;
-    let r_decay = r_peak - r_final;
-
-    if d_decay > 0.3 && d_peak > 0.5 {
-        // Burst: R 峰值高，爆发性强
-        if r_peak > 0.4 {
-            return Archetype::Burst;
-        }
-        // Transient: 快速上升后衰减，峰值时间早
-        if d_peak_t < last.t * 0.4 {
-            return Archetype::Transient;
-        }
-        return Archetype::Decay;
-    }
-
-    // 仍在演化中（MaxTime/MaxSteps）→ 按轨迹动态分类，不按终值
-    if still_evolving {
-        // R 从高峰值衰减 → Burst
-        if r_peak > 0.5 && r_decay > 0.2 {
-            return Archetype::Burst;
-        }
-        // D 和 B 都在增长 → Source（向外扩展中）
-        if d_growth > 0.3 && b_final > 0.4 {
-            return Archetype::Source;
-        }
-        // R 保持在中等水平以上 → 活跃中
-        if r_final > 0.05 {
-            return Archetype::Transient;
-        }
-        // D 显著增长但 R 已衰减 → 趋稳中
-        if d_growth > 0.3 {
-            return Archetype::StableCore;
-        }
-        // 已接近 Stone 吸引子 (D≈1, S≈1, R≈0) → Stone
-        if d_final > 0.9 && s_final > 0.9 && r_final < 0.1 {
+    if near_converged {
+        // Stone: 完全收敛
+        if d_final > 0.98 && s_final > 0.98 && r_final < 0.02 {
             return Archetype::Stone;
         }
-        // 兜底: 仍在演化但无法归类
-        return Archetype::Undetermined;
-    }
-
-    // 泡沫族: 特殊模式
-    // Source: 向外输出 (B 和 R 持续高)
-    if b_final > 0.3 && r_final > 0.2 && d_final > 0.3 {
-        return Archetype::Source;
-    }
-    // Sink: 吸收型 (ρ 高, D 和 B 低)
-    if rho_final > 0.7 && d_final < 0.3 && b_final < 0.3 {
-        return Archetype::Sink;
-    }
-
-    // 基石族: 稳定收敛
-    if d_final > 1.0 - eps && s_final > 1.0 - eps && r_final < eps {
-        return Archetype::Stone;
-    }
-
-    if s_final > 0.7 && s_min > 0.5 {
-        return Archetype::Resilient;
-    }
-
-    // StableCore: 收敛到中等值
-    if d_final > 0.3 && s_final > 0.3 {
+        // Resilient: S 领先于 D (S 一直很高)
+        if s_min > 0.7 && s_final > d_final + 0.05 {
+            return Archetype::Resilient;
+        }
+        // StableCore: 接近收敛
         return Archetype::StableCore;
     }
 
-    // 兜底: 按终值判断
-    if d_final < 0.2 && s_final < 0.2 {
-        if d_growth < -0.1 {
-            Archetype::Decay
-        } else {
-            Archetype::Transient
+    // 振荡型
+    if oscillation_count >= 8 {
+        return Archetype::Oscillatory;
+    }
+
+    // 仍在演化中 → 按轨迹动态分类
+    let d_decay = d_peak - d_final;
+    let r_decay = r_peak - r_final;
+
+    // Burst: R 先上升再下降（真正的脉冲），而非从高初值单调衰减
+    if r_surge > 0.05 && r_decay > 0.2 && d_peak > 0.5 {
+        return Archetype::Burst;
+    }
+
+    // 从高 R 初值衰减但 D 和 S 还没到收敛态 → 检查衰减方向
+    if r_decay > 0.3 && r_init > 0.5 {
+        // D 和 S 在增长 → 收敛中，但还没到 near_converged
+        if d_growth > 0.2 && s_final > s_init + 0.3 {
+            return Archetype::StableCore;
         }
+        // D 在衰减 → Decay
+        if d_decay > 0.2 && d_final < 0.5 {
+            return Archetype::Decay;
+        }
+        // R 衰减但 D/S 中等 → Transient
+        if r_final > 0.05 {
+            return Archetype::Transient;
+        }
+    }
+
+    // Decay: D 和 B 都在衰减
+    if d_decay > 0.3 && d_peak > 0.5 && d_peak_t < last.t * 0.5 {
+        return Archetype::Decay;
+    }
+
+    // Source: D 和 B 都在增长，且 R 仍在驱动
+    if d_growth > 0.3 && b_final > 0.4 && r_final > 0.1 {
+        return Archetype::Source;
+    }
+
+    // Sink: ρ 高但 D 和 B 低（吸收但不扩散）
+    if rho_final > 0.6 && d_final < 0.4 && b_final < 0.4 {
+        return Archetype::Sink;
+    }
+
+    // Transient: R 保持在中等水平，其他维度变化不大
+    if r_final > 0.15 && d_final > 0.3 && d_final < 0.7 {
+        return Archetype::Transient;
+    }
+
+    // 兜底逻辑
+    if d_final > 0.7 && s_final > 0.7 {
+        Archetype::StableCore
+    } else if d_final < 0.3 && s_final < 0.3 {
+        if d_growth < -0.1 { Archetype::Decay }
+        else { Archetype::Transient }
     } else if r_final > 0.3 {
         Archetype::Burst
     } else {

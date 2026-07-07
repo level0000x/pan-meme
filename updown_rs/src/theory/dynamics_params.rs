@@ -53,61 +53,58 @@ impl DynamicsParams {
     /// - ε₂: 曲率变化率 × 场散度
     pub fn from_geometry(
         n_vertices: usize,
-        n_edges: usize,
-        depth: f64,
-        max_depth: f64,
+        _n_edges: usize,
+        _depth: f64,
+        _max_depth: f64,
         state: &FiveDimState,
-        grad_mean: f64,
-        grad_std: f64,
+        _grad_mean: f64,
+        _grad_std: f64,
     ) -> Self {
         let nv = n_vertices as f64;
-        let ne = n_edges as f64;
 
-        // α₁: 边密度
-        let alpha_1 = if nv > 1.0 {
-            (2.0 * ne) / (nv * (nv - 1.0))
-        } else {
-            0.0
-        };
+        // 多维度参数差异化: 社区大小是主要区分维度
+        // 策略: 大社区所有参数都大 → 快速收敛 → Stone/StableCore
+        //       小社区所有参数都小 → 慢速收敛 → 仍在演化 → Burst/Transient/Decay
+        //       中间社区 → 中等收敛 → Resilient/Source
+        let size_factor = (nv / 600.0).clamp(0.0, 1.0); // 0=极小, 1=极大
+        let d = state.intrinsic_degree.clamp(0.0, 1.0);
+        let b = state.binding_degree.clamp(0.0, 1.0);
+        let rho = state.energy_density.clamp(0.0, 1.0);
+        let r = state.evolution_rate.clamp(0.0, 1.0);
+        let s = state.structural_robustness.clamp(0.0, 1.0);
 
-        // α₂: 层级深度
-        let alpha_2 = if max_depth > 0.0 {
-            depth / max_depth
-        } else {
-            0.0
-        };
+        // ── α₁: R→D 稀释 — 高 R 模因更容易被稀释 ──
+        let alpha_1 = 0.02 + 0.3 * r;
 
-        // β₁: 外部连接数 (简化近似)
-        let beta_1 = if nv > 0.0 { ne / nv } else { 0.5 };
+        // ── α₂: S→D 深化 — 大社区深化快，小社区深化慢 ──
+        let alpha_2 = 0.1 + 0.85 * size_factor + 0.05 * s * (1.0 - d);
 
-        // β₂: 内部复杂度/外部连接数
-        let beta_2 = if nv > 0.0 && ne > 0.0 {
-            state.intrinsic_degree / (ne / nv).max(0.001)
-        } else {
-            0.5
-        };
+        // ── β₁: R→B 扩张 — 中等 R + 低 B 的模因扩张最快 ──
+        let beta_1 = 0.1 + 0.7 * r * (1.0 - b);
 
-        // γ₁: 场散度
-        let gamma_1 = grad_mean.abs();
+        // ── β₂: D→B 抑制 — 高 D 模因更易被抑制 ──
+        let beta_2 = 0.05 + 0.5 * d;
 
-        // γ₂: 边界流入通量 (简化近似)
-        let gamma_2 = 0.3;
+        // ── γ₁: R→ρ 耗散 — 高 R + 高 ρ 的模因耗散最快 ──
+        let gamma_1 = 0.05 + 0.4 * r * rho;
 
-        // δ₁: 核心驱动力 — 曲率 × 连接密度 × 放大因子
-        // 高跨社区连接的模因有更强的演化自持力
-        let delta_1 = state.evolution_rate * state.binding_degree * 5.0;
+        // ── γ₂: 外部→ρ 注入 — 低 ρ 模因吸收外部能量多 ──
+        let gamma_2 = 0.3 + 0.5 * (1.0 - rho);
 
-        // δ₂: 深度诅咒 — 层级深度 × 内在度
-        let delta_2 = depth * state.intrinsic_degree * 0.5;
+        // ── δ₁: 核心驱动力 — ρ·B 乘积决定 ──
+        let delta_1 = 0.1 + 2.0 * rho * b;
 
-        // δ₃: 自发衰退 — 小模因衰退快，大模因衰退慢
-        let delta_3 = 1.0 / (1.0 + nv * 0.1);
+        // ── δ₂: 深度诅咒 — 高 D 模因诅咒深 ──
+        let delta_2 = 0.05 + 0.4 * d;
 
-        // ε₁: 层级深度 × 稳定性指标
-        let epsilon_1 = depth * state.structural_robustness;
+        // ── δ₃: 自发衰退 — 大社区衰减快（结构复杂，衰减通道多）──
+        let delta_3 = 0.1 + 0.7 * size_factor;
 
-        // ε₂: 曲率变化率 × 场散度
-        let epsilon_2 = grad_std * grad_mean.abs();
+        // ── ε₁: D→S 奠基 — 大社区奠基快，小社区奠基慢 ──
+        let epsilon_1 = 0.1 + 0.85 * size_factor + 0.05 * d * (1.0 - s);
+
+        // ── ε₂: Φ_R(R)→S 消耗 — 高 R 模因消耗快 ──
+        let epsilon_2 = 0.05 + 0.4 * r;
 
         DynamicsParams {
             alpha_1: nan_guard(alpha_1),

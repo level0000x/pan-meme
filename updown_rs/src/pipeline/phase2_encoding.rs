@@ -76,17 +76,15 @@ pub fn run_phase_two(phase1: &PhaseOneOutput) -> PhaseTwoOutput {
 
     // B2: 概念内共现词对→1-胞腔 (supplement B2)
     let mut edge_weights = Vec::new();
-    for (v1, v2) in &phase1.s.edges {
-        if let Some(_edge_id) = complex.add_edge(*v1, *v2) {
-            let w = phase1
-                .s
-                .weights
-                .get(complex.edge_map.len() - 1)
-                .copied()
-                .unwrap_or(1.0);
+    for (i, (v1, v2)) in phase1.s.edges.iter().enumerate() {
+        if complex.add_edge(*v1, *v2).is_some() {
+            let w = phase1.s.weights.get(i).copied().unwrap_or(1.0);
             edge_weights.push(w);
         }
     }
+
+    // 批量构建完成后一次性计算不变量（避免逐边 O(n²) 开销）
+    complex.compute_invariants();
 
     let metric = MetricStructure { edge_weights };
 
