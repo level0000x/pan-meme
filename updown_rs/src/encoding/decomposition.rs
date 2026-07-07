@@ -11,8 +11,10 @@
 //!   mᵢ = (D,B,ρ,R,S) ∈ [0,1]⁵ 为核心五维
 //!   ξᵢ ∈ Ξ 为扩展维度，编码 Kᵢ 上所有微观结构快照
 
-use crate::encoding::geometry::{CWComplex, GeometricInvariants, ScalarField, VectorField};
 use std::collections::{HashMap, HashSet};
+
+use crate::emergence::louvain::run_louvain_single_layer;
+use crate::encoding::geometry::{CWComplex, GeometricInvariants, ScalarField, VectorField};
 
 // ═══════════════════════════════════════════════════════════════════════
 // 3.4.1 几何分解
@@ -119,6 +121,135 @@ pub fn decompose_by_betti(complex: &CWComplex) -> DecompositionResult {
         sub_geos.push(SubGeometry {
             id: comp_id,
             vertices: vertices.clone(),
+            edges,
+            faces,
+            external_links: ext_links.into_iter().collect(),
+        });
+    }
+
+    DecompositionResult {
+        n_components: sub_geos.len(),
+        sub_geometries: sub_geos,
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// Louvain 社区分解（替代 Betti 连通分量分解，论文 §3.2.4）
+// ═══════════════════════════════════════════════════════════════════════
+
+/// 用 Louvain 社区检测将巨连通分量分解为多个模因。
+///
+/// 与 Betti 分解的关键区别：
+///   - Betti: 仅按连通性切分（β₀ 个分量）
+///   - Louvain: 按模块度最大化切分（社区内边稠密、社区间边稀疏）
+///
+/// Louvain 社区数 Δ ≥ β₀（Louvain 可以在连通分量内部继续细分），
+/// 从而解决 T 偏低时 β₀=1 导致模因数=1 的问题。
+///
+/// 边权使用向量场通量幅值 |F(e)|，反映信息流强度。
+pub fn decompose_by_louvain(
+    complex: &CWComplex,
+    vector_field: &VectorField,
+) -> DecompositionResult {
+    // Step 1: 收集所有 0-胞腔，建立 compact_idx ↔ real_id 互映射
+    let v0_ids: Vec<usize> = complex.cells.iter()
+        .filter(|c| c.dim == 0)
+        .map(|c| c.id)
+        .collect();
+    if v0_ids.len() < 2 {
+        // 0 或 1 个顶点 → 直接退回 Betti
+        return decompose_by_betti(complex);
+    }
+
+    let real_to_compact: HashMap<usize, usize> = v0_ids.iter()
+        .enumerate()
+        .map(|(ci, &ri)| (ri, ci))
+        .collect();
+    let n = v0_ids.len();
+
+    // Step 2: 构建邻接表 —— 1-胞腔提供边，通量幅值为权重
+    let mut adj: Vec<Vec<(usize, f64)>> = vec![Vec::new(); n];
+    for cell in &complex.cells {
+        if cell.dim != 1 || cell.boundary.len() != 2 { continue; }
+        let a = cell.boundary[0];
+        let b = cell.boundary[1];
+        let ca = real_to_compact.get(&a);
+        let cb = real_to_compact.get(&b);
+        if ca.is_none() || cb.is_none() { continue; }
+        let ca = *ca.unwrap();
+        let cb = *cb.unwrap();
+        let weight = vector_field.flow.get(&cell.id)
+            .map(|&(m, _)| m)
+            .unwrap_or(0.1)
+            .max(0.01);  // 极小正权避免 0
+        adj[ca].push((cb, weight));
+        adj[cb].push((ca, weight));
+    }
+
+    // 孤立顶点：添加自环（Louvain 会将其作为独立社区）
+    for i in 0..n {
+        if adj[i].is_empty() {
+            adj[i].push((i, 0.01));
+        }
+    }
+
+    // Step 3: 运行 Louvain 单层
+    let louvain = match run_louvain_single_layer(&adj) {
+        Some(l) => l,
+        None => return decompose_by_betti(complex),
+    };
+    let communities = &louvain.node_to_community;
+    let n_communities = louvain.n_communities;
+
+    if n_communities < 2 {
+        // 只有一个社区 → 保留 Betti 结果
+        return decompose_by_betti(complex);
+    }
+
+    // Step 4: 将每个社区映射为 SubGeometry
+    let mut comm_vertices: Vec<Vec<usize>> = vec![Vec::new(); n_communities];
+    let mut comm_vset: Vec<HashSet<usize>> = vec![HashSet::new(); n_communities];
+    for (ci, &comm_id) in communities.iter().enumerate() {
+        let real_id = v0_ids[ci];
+        comm_vertices[comm_id].push(real_id);
+        comm_vset[comm_id].insert(real_id);
+    }
+
+    let mut sub_geos = Vec::new();
+    for comp_id in 0..n_communities {
+        let v_set = &comm_vset[comp_id];
+        if v_set.is_empty() { continue; }
+
+        let mut edges = Vec::new();
+        let mut faces = Vec::new();
+        let mut ext_links: HashMap<usize, usize> = HashMap::new();
+
+        for cell in &complex.cells {
+            if cell.dim == 1 && cell.boundary.len() == 2 {
+                let a_in = v_set.contains(&cell.boundary[0]);
+                let b_in = v_set.contains(&cell.boundary[1]);
+                if a_in && b_in {
+                    edges.push(cell.id);  // 内部边
+                } else if a_in || b_in {
+                    // 跨社区边 → 外部连接
+                    let other_end = if a_in { cell.boundary[1] } else { cell.boundary[0] };
+                    for oc in 0..n_communities {
+                        if oc != comp_id && comm_vset[oc].contains(&other_end) {
+                            *ext_links.entry(oc).or_insert(0) += 1;
+                            break;
+                        }
+                    }
+                }
+            }
+            if cell.dim == 2 {
+                let all_in = cell.boundary.iter().all(|b| v_set.contains(b));
+                if all_in { faces.push(cell.id); }
+            }
+        }
+
+        sub_geos.push(SubGeometry {
+            id: comp_id,
+            vertices: comm_vertices[comp_id].clone(),
             edges,
             faces,
             external_links: ext_links.into_iter().collect(),
