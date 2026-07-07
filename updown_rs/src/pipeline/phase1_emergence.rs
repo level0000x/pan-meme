@@ -10,7 +10,7 @@
 //!
 //! 输出: M = (S, F, C)
 
-use crate::theory::fca::{verify_reversibility, warshall_closure, CycleEngine, FormalContext};
+use crate::theory::fca::{verify_reversibility, CycleEngine, FormalContext};
 
 /// 规则域 F 中的单条规则
 #[derive(Debug, Clone)]
@@ -68,9 +68,9 @@ pub struct PhaseOneOutput {
 pub fn run_phase_one(words: Vec<String>, max_rounds: usize) -> PhaseOneOutput {
     let ctx = FormalContext::from_words(words.clone());
 
-    // 传递闭包
-    let mut adj = ctx.adj_matrix.clone();
-    warshall_closure(&mut adj);
+    // 传递闭包由 ↑↓ 循环引擎隐式处理（通过迭代展开共现关系）
+    // 无需显式 Warshall O(n³)，引擎的 O(n·rounds·degree) 对稀疏图更高效
+    // 原 warshall_closure(&mut adj) 结果未被使用，已移除
 
     // ↑↓ 循环
     let engine = CycleEngine {

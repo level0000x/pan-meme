@@ -489,11 +489,15 @@ pub fn classify(trajectory: &[StateSnapshot], _reason: &TerminationReason) -> Ar
         if r_final > 0.05 {
             return Archetype::Transient;
         }
-        // D 显著增长但 R 已衰减 → 趋稳中（接近 Stone）
+        // D 显著增长但 R 已衰减 → 趋稳中
         if d_growth > 0.3 {
             return Archetype::StableCore;
         }
-        // 兜底
+        // 已接近 Stone 吸引子 (D≈1, S≈1, R≈0) → Stone
+        if d_final > 0.9 && s_final > 0.9 && r_final < 0.1 {
+            return Archetype::Stone;
+        }
+        // 兜底: 仍在演化但无法归类
         return Archetype::Undetermined;
     }
 
