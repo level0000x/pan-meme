@@ -415,11 +415,14 @@ pub fn encode_field(
             let mut sw = 0.0; let mut ws = 0.0;
             for &(_, nb, d) in edges {
                 let nb_p = phi.get(&nb).copied().unwrap_or(0.0);
-                let w = if d > 0.0 { 1.0 / d } else { 1000.0 };
+                // 溢出防护：d 极小会导致 1/d 极大；clip 到安全范围
+                let w = if d > 1e-8 { (1.0 / d).min(1e8) } else { 1e8 };
                 ws += nb_p * w; sw += w;
             }
             // 自稳系数 0.3：保持自身信息深度不被过度稀释
-            new_phi.insert(cell_id, if sw > 0.0 { 0.3 * old_phi + 0.7 * ws / sw } else { old_phi });
+            // NaN 防护：若 sw=0（所有邻居无势能），保留 old_phi
+            let smooth = if sw > 0.0 { 0.3 * old_phi + 0.7 * ws / sw } else { old_phi };
+            new_phi.insert(cell_id, if smooth.is_finite() { smooth } else { old_phi });
         }
         phi = new_phi;
     }

@@ -205,6 +205,7 @@ mod tests {
                 boundary_links: Vec::new(),
                 vertex_potentials: vec![0.5; n_verts],
                 edge_flux_magnitudes: vec![0.3; n_edges],
+                node_texts: (0..n_verts).map(|i| format!("v{}", i)).collect(),
             },
         }
     }

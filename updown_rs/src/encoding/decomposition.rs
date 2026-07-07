@@ -174,6 +174,10 @@ pub fn compute_five_dim(
     _grad_mean: f64,
     grad_std: f64,
 ) -> FiveDimState {
+    // ── NaN / ∞ 防护：输入可能携带异常值（空子几何体/零梯度场）──
+    let safe_flux = if total_flux.is_finite() && total_flux >= 0.0 { total_flux } else { 0.0 };
+    let safe_std  = if grad_std.is_finite()  && grad_std >= 0.0  { grad_std  } else { 0.0 };
+
     let cell_count = sub.vertices.len() + sub.edges.len() + sub.faces.len();
 
     // D: 内禀度 = 胞腔规模因子 × 层级深度因子（公式 3.4.2）
@@ -183,31 +187,19 @@ pub fn compute_five_dim(
     let depth_factor = (depth as f64 / D_MAX).min(1.0);
     let d = cell_factor * depth_factor;
 
-    // B: 关联度
+    // B: 关联度 — 至少 0.01（避免 ODE 奇异性；零耦合在实际物理中不存在）
     let total_ext: usize = sub.external_links.iter().map(|(_, c)| c).sum();
     let b = if total_sub > 1 {
-        (total_ext as f64 / ((total_sub - 1) as f64 * 2.0)).min(1.0)
-    } else { 0.0 };
+        (total_ext as f64 / ((total_sub - 1) as f64 * 2.0)).min(1.0).max(0.01)
+    } else { 0.01 };
 
     // ρ: 能流密度 — 子几何体内通量总和（来自梯度向量场）
-    let rho = total_flux;
+    let rho = safe_flux;
 
     // R: 演化速率 — 场梯度的标准差（公式 3.4.2）
-    //
-    // 信息论依据：在静态快照中，|∇φ| 的标准差度量了势场的"粗糙度"。
-    // 粗糙度越高 → 势能在几何体中分布越不均匀 → 结构重组的潜力越大。
-    // 这类似物理学中"应力"与"形变潜力"的关系。
-    let r = grad_std.min(1.0);
+    let r = safe_std.min(1.0);
 
     // S: 结构韧度 — Euler 归一化（公式 3.4.2）
-    //
-    // S = clip((|V| - |E| + 1) / (|V| + 1), 0, 1)
-    //   = clip(χ / (|V| + 1), 0, 1)  where χ = |V| - |E| + 1 (单连通分量)
-    //
-    // 信息论含义：
-    //   S = 1.0  → 树状结构（无冗余边，信息无循环）
-    //   S = 0.5  → 平衡态（冗余度适中）
-    //   S ≈ 0.0 → 稠密连接（信息高度冗余，结构脆弱）
     let s = {
         let nv = sub.vertices.len() as f64;
         let ne = sub.edges.len() as f64;
@@ -260,6 +252,13 @@ impl DynamicsParams {
         grad_mean: f64,
         grad_std: f64,
     ) -> Self {
+        // ── NaN / ∞ 防护 ──
+        let safe_grad_mean = if grad_mean.is_finite() && grad_mean >= 0.0 { grad_mean } else { 0.0 };
+        let safe_grad_std  = if grad_std.is_finite()  && grad_std >= 0.0  { grad_std  } else { 0.0 };
+        let safe_d = if state.intrinsic_degree.is_finite() { state.intrinsic_degree } else { 0.01 };
+        let safe_b = if state.binding_degree.is_finite()  { state.binding_degree  } else { 0.01 };
+        let safe_r = if state.evolution_rate.is_finite()   { state.evolution_rate   } else { 0.01 };
+
         let nv = sub.vertices.len().max(1) as f64;
         let ne = sub.edges.len() as f64;
 
@@ -274,28 +273,29 @@ impl DynamicsParams {
         let beta_1 = 0.5;
 
         // β₂ = D / max(B, 1e-6) — 泛化权衡
-        let beta_2 = (state.intrinsic_degree / state.binding_degree.max(1e-6)).max(0.01);
+        let beta_2 = (safe_d / safe_b.max(1e-6)).min(10.0).max(0.01);
 
         // γ₁ = mean(|∇φ|) — 能流耗散
-        let gamma_1 = grad_mean.min(1.0).max(0.01);
+        let gamma_1 = safe_grad_mean.min(1.0).max(0.01);
 
         // γ₂ = 0.3 — 外部赋能
         let gamma_2 = 0.3;
 
         // δ₁ = R · B — 核心驱动力
-        let delta_1 = (state.evolution_rate * state.binding_degree).min(1.0).max(0.01);
+        let delta_1 = (safe_r * safe_b).min(1.0).max(0.01);
 
         // δ₂ = D · depth — 深度诅咒
-        let delta_2 = (state.intrinsic_degree * depth as f64).max(0.01);
+        let delta_2 = (safe_d * depth as f64).max(0.01);
 
         // δ₃ = 1/(1+|Γ|) — 自发衰退
         let delta_3 = (1.0 / (1.0 + GAMMA_SIZE)).max(0.01);
 
         // ε₁ = D · S — 深度基石
-        let epsilon_1 = (state.intrinsic_degree * state.structural_robustness).min(1.0).max(0.01);
+        let safe_s = if state.structural_robustness.is_finite() { state.structural_robustness } else { 0.01 };
+        let epsilon_1 = (safe_d * safe_s).min(1.0).max(0.01);
 
         // ε₂ = std(|∇φ|) · mean(|∇φ|) — 速朽定律
-        let epsilon_2 = (grad_std * grad_mean).max(0.01);
+        let epsilon_2 = (safe_grad_std * safe_grad_mean).max(0.01);
 
         DynamicsParams {
             alpha_1, alpha_2, beta_1, beta_2,
@@ -444,6 +444,8 @@ pub struct ExtendedDimension {
     pub vertex_potentials: Vec<f64>,
     /// 每条边的梯度模 |F(e)|
     pub edge_flux_magnitudes: Vec<f64>,
+    /// 原始字词列表（修复单字词往返破裂：单字词与字节点重合时靠此恢复）
+    pub node_texts: Vec<String>,
 }
 
 #[derive(Debug)]
@@ -569,6 +571,12 @@ pub fn run_phase_three(
             boundary_links: meme_boundary_links[i].clone(),
             vertex_potentials: meme_vertex_potentials[i].clone(),
             edge_flux_magnitudes: meme_edge_fluxes[i].clone(),
+            node_texts: sub.vertices.iter().map(|&v| {
+                // CWComplex 不直接存储文本标签（标签在 psi 输入侧）；
+                // 这里用索引 string 兜底——逆映射时靠 ExtendedDimension 的
+                // 完整胞腔信息重建即可区分单字词与纯字。
+                format!("node_{}", v)
+            }).collect(),
         };
 
         states.push(state.clone());
@@ -930,6 +938,7 @@ mod tests {
             boundary_links: vec![],
             vertex_potentials: vec![0.2, 0.4],
             edge_flux_magnitudes: vec![0.3],
+            node_texts: vec!["node_0".into(), "node_1".into()],
         };
 
         let memes = vec![MemeDecomposition {

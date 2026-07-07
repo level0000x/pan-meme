@@ -416,13 +416,19 @@ pub fn five_dim_rhs<'a>(
         let phi_d = ff_d.evaluate(d, fp_d);
         let phi_r = ff_r.evaluate(r, fp_r);
 
-        [
+        let mut dydt = [
             -a1 * r * d + a2 * s * (1.0 - d),                    // dD/dt
              b1 * r * (1.0 - b) - b2 * d * b,                    // dB/dt
             -g1 * r * rho + g2 * (1.0 - rho) * i_ext,            // dρ/dt
              d1 * rho * b * (1.0 - r) - d2 * phi_d * r - d3 * r, // dR/dt
              e1 * d * (1.0 - s) - e2 * phi_r * s,                // dS/dt
-        ]
+        ];
+
+        // NaN 防护：将 NaN 替换为 0（旧版数值 bug 后效，不应再触发）
+        for val in dydt.iter_mut() {
+            if !val.is_finite() { *val = 0.0; }
+        }
+        dydt
     }
 }
 
@@ -540,6 +546,19 @@ pub fn solve_all_memes(
 ) -> OdeOutput {
     let mut trajectories = Vec::new();
     for &(meme_id, ref init) in initial_states {
+        // ── NaN 初始态跳过 ──
+        let y = [init.d, init.b, init.rho, init.r, init.s];
+        if y.iter().any(|&v| !v.is_finite()) {
+            // 产生一个占位轨迹——全零 + MaxSteps 标记
+            trajectories.push(MemeTrajectory {
+                meme_id,
+                trajectory: vec![FiveDimSnapshot { t: 0.0, d: 0.0, b: 0.0, rho: 0.0, r: 0.0, s: 0.0 }],
+                terminated_at: 0.0,
+                termination_reason: TerminationReason::MaxSteps,
+                hopf_warning: false,
+            });
+            continue;
+        }
         if meme_id < params.len() {
             trajectories.push(solve_single_meme(meme_id, init, &params[meme_id], config));
         }
