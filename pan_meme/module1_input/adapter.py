@@ -212,25 +212,17 @@ class InputAdapter:
         # Step 4: 推理引擎 — 补全传递性/对称性隐含关系
         # 数学对应：公理3 传递性 — 若 a↗b 且 b↗c 则 a↗c
         self._reasoner: Optional[object] = (
-            Reasoner(
-                transitive_decay=self.config.transitive_decay,
-                symmetric_decay=self.config.symmetric_decay,
-            ) if Reasoner is not None else None
+            Reasoner() if Reasoner is not None else None
         )
 
         # Step 5: 完整性检查器 — 验证前提0+1
         self._completeness_checker: Optional[object] = (
-            CompletenessChecker(
-                max_component_threshold=self.config.max_component_threshold,
-                max_isolated_ratio=self.config.max_isolated_ratio,
-            ) if CompletenessChecker is not None else None
+            CompletenessChecker() if CompletenessChecker is not None else None
         )
 
         # Step 6: 概念组合器 — 跨层级语义组合
         self._concept_composer: Optional[object] = (
-            ConceptComposer(
-                max_levels=self.config.concept_max_levels,
-            ) if ConceptComposer is not None else None
+            ConceptComposer() if ConceptComposer is not None else None
         )
 
         # Step 7: 规则提取器 — Ψ ↦ (F, C)

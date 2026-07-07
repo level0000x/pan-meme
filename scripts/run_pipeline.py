@@ -68,14 +68,14 @@ def run_pipeline_full(text: str, hypernym_dict: Dict[str, List[str]],
     config = InputConfig(
         cycle_mode='converge',
         cycle_max_rounds=20,
-        threshold_default=0.5,
+        threshold_default=0.2,
         transitive_decay=0.9,
         symmetric_decay=0.85,
-        max_nodes_reason=max_nodes,
-        hypernym_dict=hypernym_dict or {},
     )
-
+    # 注入词典模式：hypernym_dict 和 max_nodes 通过 adapter 属性传入
     adapter = InputAdapter(config)
+    adapter._hypernym_dict = hypernym_dict or {}
+    adapter._max_nodes_reason = max_nodes
     data = adapter.adapt(text)
 
     if data.psi is None or not data.psi.nodes:
@@ -85,7 +85,7 @@ def run_pipeline_full(text: str, hypernym_dict: Dict[str, List[str]],
 
     # 从 HierarchyTree 还原原始文本
     tree = adapter._cycle_engine._last_tree
-    node_texts = tree.token_texts if tree and tree.token_texts else psi.nodes
+    node_texts = psi.nodes
 
     print(f"  PSI: {len(node_texts)} 节点, {len(psi.edges)} 边")
     if data.math_model:
@@ -97,14 +97,13 @@ def run_pipeline_full(text: str, hypernym_dict: Dict[str, List[str]],
 def run_pipeline_from_words(words: List[str],
                              hypernym_dict: Dict[str, List[str]],
                              max_nodes: int = 300) -> Tuple[List[str], List, List, Dict]:
-    """
-    字典模式：跳过 jieba 分词，直接将词列表作为 token 注入管线。
+    """从词列表直接运行管线（字典 / 种子词模式）。
 
-    字典词本身就是 token，不需要 jieba 二次分词。
-    此函数绕过 Tokenizer，直接构造 Token 对象送入 CycleEngine。
+    此函数跳过 Tokenizer 和 CycleEngine，直接构造字符级 Jaccard 共现边，
+    然后送入后续管线（Reasoner / ConceptComposer / RuleExtract）。
 
     参数:
-      words: 预分词的词列表
+      words: 输入词列表
       hypernym_dict: 背景上下位词典
       max_nodes: 最大节点数
 
@@ -113,39 +112,38 @@ def run_pipeline_from_words(words: List[str],
     from pan_meme.module1_input.adapter import InputAdapter, InputConfig
     from pan_meme.core.types import Token
 
-    config = InputConfig(
-        cycle_mode='converge',
-        cycle_max_rounds=20,
-        threshold_default=0.5,
-        transitive_decay=0.9,
-        symmetric_decay=0.85,
-        max_nodes_reason=max_nodes,
-        hypernym_dict=hypernym_dict or {},
-    )
+    n = len(words)
+    if n < 2:
+        return words, [], [], {}
 
-    adapter = InputAdapter(config)
+    # ── 字典模式：字符级 Jaccard 直接构建 PSI ──
+    # 数学对应：定义1 — Ψ = (V, E, w), w_ij = Jaccard(char_set_i, char_set_j)
+    char_sets = [set(w) for w in words]
+    edges = []
+    weights = []
+    for i in range(n):
+        si = char_sets[i]
+        for j in range(i + 1, n):
+            sj = char_sets[j]
+            inter = len(si & sj)
+            if inter == 0:
+                continue
+            union = len(si | sj)
+            w = inter / union
+            if w >= 0.3:  # 中阈值过滤噪声
+                edges.append((i, j))
+                weights.append(w)
 
-    # 直接构造 Token 对象，绕过 jieba 分词
-    tokens = [Token(text=w, modality="dict", span=(0, len(w)), pos="") for w in words]
+    # 构建 node_levels（平坦：全为 1）
+    hierarchy = {
+        "levels": 1,
+        "node_levels": {i: 1 for i in range(n)},
+        "combination_path": [],
+        "parent_map": {},
+    }
 
-    # Step 2: CycleEngine（↑↓ 循环 + 虚拟节点注入）
-    tree = adapter._step_cycle(tokens)
-
-    # Step 3: RelationExtractor
-    psi = adapter._step_relation_extract(tree, config.threshold_default)
-
-    # 性能控制：节点过多时跳过后续步骤
-    n_nodes = len(psi.nodes)
-    if n_nodes > config.max_nodes_concept:
-        pass  # 跳过 Reasoner/ConceptComposer 等
-
-    if psi is None or not psi.nodes:
-        return [], [], [], {}
-
-    node_texts = tree.token_texts if tree and tree.token_texts else psi.nodes
-
-    print(f"  PSI: {len(node_texts)} 节点, {len(psi.edges)} 边")
-    return node_texts, psi.edges, list(psi.weights), psi.hierarchy
+    print(f"  PSI: {n} 节点, {len(edges)} 边 (char-Jaccard)")
+    return words, edges, weights, hierarchy
 
 
 def process_text(text: str, source_label: str,
