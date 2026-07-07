@@ -4,6 +4,6 @@
 //!
 //! 数学对应: 泛模因理论 §3-§4, §6.2-§6.4
 
-pub mod theory;
-pub mod pipeline;
 pub mod io;
+pub mod pipeline;
+pub mod theory;

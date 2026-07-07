@@ -10,9 +10,9 @@
 //!
 //! 输出: G = (K, g, ω, Γ, R)
 
+use crate::pipeline::phase1_emergence::PhaseOneOutput;
 use crate::theory::cw_complex::CWComplex;
 use crate::theory::vector_field::{ScalarField, VectorField};
-use crate::pipeline::phase1_emergence::PhaseOneOutput;
 
 /// 度量结构 g — 论文 §3.3.3
 #[derive(Debug, Clone)]
@@ -78,8 +78,12 @@ pub fn run_phase_two(phase1: &PhaseOneOutput) -> PhaseTwoOutput {
     let mut edge_weights = Vec::new();
     for (v1, v2) in &phase1.s.edges {
         if let Some(_edge_id) = complex.add_edge(*v1, *v2) {
-            let w = phase1.s.weights.get(complex.edge_map.len() - 1)
-                .copied().unwrap_or(1.0);
+            let w = phase1
+                .s
+                .weights
+                .get(complex.edge_map.len() - 1)
+                .copied()
+                .unwrap_or(1.0);
             edge_weights.push(w);
         }
     }
@@ -106,7 +110,9 @@ pub fn run_phase_two(phase1: &PhaseOneOutput) -> PhaseTwoOutput {
     // 可逆性记录 R (supplement B4)
     let reversibility = ReversibilityRecord {
         node_texts: phase1.s.vertices.clone(),
-        node_is_word: (0..n_vertices).map(|i| i >= phase1.s.vertices.len() - phase1.s.vertices.len()).collect(),
+        node_is_word: (0..n_vertices)
+            .map(|i| i >= phase1.s.vertices.len() - phase1.s.vertices.len())
+            .collect(),
         word_count: phase1.s.vertices.len(),
         containment_depth: phase1.max_depth,
         node_levels: phase1.s.node_depths.iter().map(|&d| d as usize).collect(),

@@ -14,8 +14,8 @@
 //! dR/dt = δ₁ρB(1-R) - δ₂Φ_D(D)R - δ₃R
 //! dS/dt = ε₁D(1-S) - ε₂Φ_R(R)S
 
-use crate::theory::five_dim::FiveDimState;
 use crate::theory::dynamics_params::DynamicsParams;
+use crate::theory::five_dim::FiveDimState;
 use crate::theory::function_families::FamilyParams;
 
 /// ODE 求解器配置
@@ -150,7 +150,13 @@ pub fn ode_rhs(
         - params.delta_3 * r;
     let ds = params.epsilon_1 * d * (1.0 - s) - params.epsilon_2 * phi_r.evaluate(r) * s;
 
-    [nan_guard(dd), nan_guard(db), nan_guard(drho), nan_guard(dr), nan_guard(ds)]
+    [
+        nan_guard(dd),
+        nan_guard(db),
+        nan_guard(drho),
+        nan_guard(dr),
+        nan_guard(ds),
+    ]
 }
 
 /// RKF45 单步 — Dormand-Prince 5(4)
@@ -210,7 +216,7 @@ pub fn rkf45_step(
     let y4 = add(state, &scale(&k1, h * 25.0 / 216.0));
     let y4 = add(&y4, &scale(&k3, h * 1408.0 / 2565.0));
     let y4 = add(&y4, &scale(&k4, h * 2197.0 / 4104.0));
-    let y4 = add(&y4, &scale(&k5, h * -1.0 / 5.0));
+    let y4 = add(&y4, &scale(&k5, -h / 5.0));
 
     // 误差估计
     let mut error: f64 = 0.0;
@@ -242,7 +248,12 @@ pub fn integrate(
     let mut h = config.h0;
 
     trajectory.push(StateSnapshot {
-        t, d: state[0], b: state[1], rho: state[2], r: state[3], s: state[4],
+        t,
+        d: state[0],
+        b: state[1],
+        rho: state[2],
+        r: state[3],
+        s: state[4],
     });
 
     let convergence_window = 5;
@@ -263,25 +274,38 @@ pub fn integrate(
         }
 
         // 裁剪到 Ω = [0,1]⁴ × [0,∞) — 定理 7
-        let clamped = FiveDimState::from_array(&new_state).clamp_to_omega().to_array();
+        let clamped = FiveDimState::from_array(&new_state)
+            .clamp_to_omega()
+            .to_array();
 
         t += h_actual;
         state = clamped;
         trajectory.push(StateSnapshot {
-            t, d: state[0], b: state[1], rho: state[2], r: state[3], s: state[4],
+            t,
+            d: state[0],
+            b: state[1],
+            rho: state[2],
+            r: state[3],
+            s: state[4],
         });
 
         // 收敛检测: 连续 5 步总变化 < 1e-3
-        if trajectory.len() >= convergence_window + 1 {
+        if trajectory.len() > convergence_window {
             let start = trajectory.len() - convergence_window - 1;
             let end = trajectory.len() - 1;
             let prev = FiveDimState::new(
-                trajectory[start].d, trajectory[start].b, trajectory[start].rho,
-                trajectory[start].r, trajectory[start].s,
+                trajectory[start].d,
+                trajectory[start].b,
+                trajectory[start].rho,
+                trajectory[start].r,
+                trajectory[start].s,
             );
             let curr = FiveDimState::new(
-                trajectory[end].d, trajectory[end].b, trajectory[end].rho,
-                trajectory[end].r, trajectory[end].s,
+                trajectory[end].d,
+                trajectory[end].b,
+                trajectory[end].rho,
+                trajectory[end].r,
+                trajectory[end].s,
             );
             if prev.total_change(&curr) < convergence_threshold {
                 return (trajectory, TerminationReason::Converged);
@@ -309,8 +333,11 @@ pub fn classify_equilibrium(state: &FiveDimState) -> EquilibriumType {
     if d < eps && b < eps && rho < eps && r < eps && s < eps {
         EquilibriumType::DegenerateZero
     } else if d < eps && r < eps && s < eps {
-        if b > eps { EquilibriumType::Annihilation }
-        else { EquilibriumType::BreadthRobustness }
+        if b > eps {
+            EquilibriumType::Annihilation
+        } else {
+            EquilibriumType::BreadthRobustness
+        }
     } else if d > 1.0 - eps && b < eps && r < eps && s > 1.0 - eps {
         EquilibriumType::Inertial
     } else if d > eps && b > eps && rho > eps && r > eps && s > eps {
@@ -358,9 +385,7 @@ pub fn classify(trajectory: &[StateSnapshot], reason: &TerminationReason) -> Arc
                 Archetype::Transient
             }
         }
-        TerminationReason::JumpDetected => {
-            Archetype::Transient
-        }
+        TerminationReason::JumpDetected => Archetype::Transient,
         _ => Archetype::Undetermined,
     }
 }
@@ -370,11 +395,21 @@ fn scale(v: &[f64; 5], s: f64) -> [f64; 5] {
 }
 
 fn add(a: &[f64; 5], b: &[f64; 5]) -> [f64; 5] {
-    [a[0] + b[0], a[1] + b[1], a[2] + b[2], a[3] + b[3], a[4] + b[4]]
+    [
+        a[0] + b[0],
+        a[1] + b[1],
+        a[2] + b[2],
+        a[3] + b[3],
+        a[4] + b[4],
+    ]
 }
 
 fn nan_guard(v: f64) -> f64 {
-    if v.is_nan() || v.is_infinite() { 0.0 } else { v }
+    if v.is_nan() || v.is_infinite() {
+        0.0
+    } else {
+        v
+    }
 }
 
 #[cfg(test)]
@@ -403,13 +438,19 @@ mod tests {
     fn test_integrate_converges() {
         let init = FiveDimState::new(0.5, 0.5, 1.0, 0.3, 0.8);
         let params = DynamicsParams::default_params();
-        let config = OdeConfig { max_steps: 1000, ..OdeConfig::default() };
+        let config = OdeConfig {
+            max_steps: 1000,
+            ..OdeConfig::default()
+        };
         let phi_d = FamilyParams::new(FunctionFamily::Power, 1.0, 0.0);
         let phi_r = FamilyParams::new(FunctionFamily::Power, 1.0, 0.0);
         let (trajectory, reason) = integrate(&init, &params, &config, &phi_d, &phi_r);
         assert!(trajectory.len() > 1);
         let archetype = classify(&trajectory, &reason);
-        assert!(matches!(archetype, Archetype::Stone | Archetype::StableCore | Archetype::Decay | _));
+        assert!(matches!(
+            archetype,
+            Archetype::Stone | Archetype::StableCore | Archetype::Decay | _
+        ));
     }
 
     #[test]

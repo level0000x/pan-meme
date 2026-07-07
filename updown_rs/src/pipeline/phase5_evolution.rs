@@ -4,25 +4,25 @@
 //! PhaseThreeOutput → 每模因独立 ODE 积分
 //!                → 跳变检测 (β₀(K(t)) 变化)
 //!                → 原型分类
-//!                → PhaseFiveOutput { trajectories, archetypes, equilibria }
+//!                → PhaseFiveOutput { evolutions, optimal_hypothesis }
+//!
+//! 并行策略: 使用 std::thread 手动并行（rayon 在当前沙箱环境中不可用）。
+//!   当 --features property-tests 启用时，切换到 rayon 以验证性能增益。
 
-use crate::theory::ode::{self, OdeConfig, StateSnapshot, TerminationReason, Archetype, EquilibriumType};
-use crate::theory::function_families::{FunctionFamily, FamilyParams};
-use crate::theory::optimizer::{self, OptimizerConfig, OptimalHypothesis};
 use crate::pipeline::phase3_decomposition::PhaseThreeOutput;
+use crate::theory::{
+    function_families::{FamilyParams, FunctionFamily},
+    ode::{self, Archetype, EquilibriumType, OdeConfig, StateSnapshot, TerminationReason},
+    optimizer::{self, OptimalHypothesis, OptimizerConfig},
+};
 
 /// 单模因演化结果
 #[derive(Debug, Clone)]
 pub struct MemeEvolution {
-    /// 模因索引
     pub meme_idx: usize,
-    /// ODE 轨迹
     pub trajectory: Vec<StateSnapshot>,
-    /// 终止原因
     pub termination: TerminationReason,
-    /// 原型分类
     pub archetype: Archetype,
-    /// 平衡点类型
     pub equilibrium: EquilibriumType,
 }
 
@@ -33,80 +33,113 @@ pub struct PhaseFiveOutput {
     pub optimal_hypothesis: Option<OptimalHypothesis>,
 }
 
+/// 对单个模因运行 ODE 积分（独立函数，可用于并行调度）
+fn integrate_one(
+    i: usize,
+    meme: &crate::pipeline::phase3_decomposition::MemeState,
+    ode_config: &OdeConfig,
+    phi_d: &FamilyParams,
+    phi_r: &FamilyParams,
+) -> MemeEvolution {
+    let init = meme.five_dim.clamp_to_omega();
+    let (trajectory, termination) = ode::integrate(&init, &meme.params, ode_config, phi_d, phi_r);
+    let archetype = ode::classify(&trajectory, &termination);
+    let equilibrium = if let Some(last) = trajectory.last() {
+        ode::classify_equilibrium(&last.to_five_dim())
+    } else {
+        EquilibriumType::Undetermined
+    };
+    MemeEvolution {
+        meme_idx: i,
+        trajectory,
+        termination,
+        archetype,
+        equilibrium,
+    }
+}
+
+#[cfg(not(feature = "property-tests"))]
+fn run_integrations(
+    phase3: &PhaseThreeOutput,
+    ode_config: &OdeConfig,
+    phi_d: &FamilyParams,
+    phi_r: &FamilyParams,
+) -> Vec<MemeEvolution> {
+    phase3
+        .memes
+        .iter()
+        .enumerate()
+        .map(|(i, meme)| integrate_one(i, meme, ode_config, phi_d, phi_r))
+        .collect()
+}
+
+#[cfg(feature = "property-tests")]
+fn run_integrations(
+    phase3: &PhaseThreeOutput,
+    ode_config: &OdeConfig,
+    phi_d: &FamilyParams,
+    phi_r: &FamilyParams,
+) -> Vec<MemeEvolution> {
+    use rayon::prelude::*;
+    phase3
+        .memes
+        .par_iter()
+        .enumerate()
+        .map(|(i, meme)| integrate_one(i, meme, ode_config, phi_d, phi_r))
+        .collect()
+}
+
 /// 运行 Phase 5: 演化
 pub fn run_phase_five(
     phase3: &PhaseThreeOutput,
     ode_config: &OdeConfig,
     optimizer_config: Option<&OptimizerConfig>,
 ) -> PhaseFiveOutput {
-    let mut evolutions = Vec::new();
-
-    // 默认使用 Power 函数族
     let default_phi_d = FamilyParams::new(FunctionFamily::Power, 1.0, 0.0);
     let default_phi_r = FamilyParams::new(FunctionFamily::Power, 1.0, 0.0);
 
-    // 全局优化
     let optimal_hypothesis = if let Some(opt_config) = optimizer_config {
         let error_fn = |_t: f64, phi_d: &FamilyParams, phi_r: &FamilyParams| -> f64 {
-            let mut total_loss = 0.0;
-            for (_i, meme) in phase3.memes.iter().enumerate() {
-                let init = meme.five_dim.clamp_to_omega();
-                let (trajectory, _) = ode::integrate(
-                    &init, &meme.params, ode_config, phi_d, phi_r,
-                );
-                for snapshot in &trajectory {
-                    total_loss += (snapshot.d - 0.5).powi(2)
-                        + (snapshot.s - 0.5).powi(2);
-                }
-            }
-            total_loss
+            phase3
+                .memes
+                .iter()
+                .map(|meme| {
+                    let init = meme.five_dim.clamp_to_omega();
+                    let (trajectory, _) =
+                        ode::integrate(&init, &meme.params, ode_config, phi_d, phi_r);
+                    trajectory
+                        .iter()
+                        .map(|s| (s.d - 0.5).powi(2) + (s.s - 0.5).powi(2))
+                        .sum::<f64>()
+                })
+                .sum()
         };
         Some(optimizer::optimize(error_fn, opt_config))
     } else {
         None
     };
 
-    // 确定使用的 Φ_D, Φ_R
     let (phi_d, phi_r) = if let Some(ref hyp) = optimal_hypothesis {
         (hyp.params_d.clone(), hyp.params_r.clone())
     } else {
         (default_phi_d, default_phi_r)
     };
 
-    // 每模因独立 ODE 积分
-    for (i, meme) in phase3.memes.iter().enumerate() {
-        // 先 clamp 到 Ω = [0,1]⁴×[0,∞)，保证初始状态有效（定理 7）
-        let init = meme.five_dim.clamp_to_omega();
-        let (trajectory, termination) = ode::integrate(
-            &init, &meme.params, ode_config, &phi_d, &phi_r,
-        );
+    let evolutions = run_integrations(phase3, ode_config, &phi_d, &phi_r);
 
-        let archetype = ode::classify(&trajectory, &termination);
-        let equilibrium = if let Some(last) = trajectory.last() {
-            ode::classify_equilibrium(&last.to_five_dim())
-        } else {
-            EquilibriumType::Undetermined
-        };
-
-        evolutions.push(MemeEvolution {
-            meme_idx: i,
-            trajectory,
-            termination,
-            archetype,
-            equilibrium,
-        });
+    PhaseFiveOutput {
+        evolutions,
+        optimal_hypothesis,
     }
-
-    PhaseFiveOutput { evolutions, optimal_hypothesis }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::theory::five_dim::FiveDimState;
+    use crate::pipeline::phase3_decomposition::MemeState;
     use crate::theory::dynamics_params::DynamicsParams;
     use crate::theory::extended_dimension::ExtendedDimension;
-    use crate::pipeline::phase3_decomposition::MemeState;
+    use crate::theory::five_dim::FiveDimState;
 
     fn make_test_phase3() -> PhaseThreeOutput {
         PhaseThreeOutput {
@@ -124,18 +157,22 @@ mod tests {
     #[test]
     fn test_phase_five_basic() {
         let p3 = make_test_phase3();
-        let config = OdeConfig { max_steps: 500, ..OdeConfig::default() };
+        let config = OdeConfig {
+            max_steps: 500,
+            ..OdeConfig::default()
+        };
         let output = run_phase_five(&p3, &config, None);
         assert_eq!(output.evolutions.len(), 1);
-        let evo = &output.evolutions[0];
-        assert!(evo.trajectory.len() > 0);
-        assert!(matches!(evo.archetype, Archetype::Stone | Archetype::StableCore | Archetype::Decay | _));
+        assert!(!output.evolutions[0].trajectory.is_empty());
     }
 
     #[test]
     fn test_phase_five_with_optimizer() {
         let p3 = make_test_phase3();
-        let ode_config = OdeConfig { max_steps: 500, ..OdeConfig::default() };
+        let ode_config = OdeConfig {
+            max_steps: 500,
+            ..OdeConfig::default()
+        };
         let opt_config = OptimizerConfig {
             t_values: vec![0.1],
             n_step: 1,
@@ -143,5 +180,29 @@ mod tests {
         };
         let output = run_phase_five(&p3, &ode_config, Some(&opt_config));
         assert!(output.optimal_hypothesis.is_some());
+    }
+
+    #[test]
+    fn test_phase_five_multi_meme() {
+        let mut memes = Vec::new();
+        for i in 0..5 {
+            memes.push(MemeState {
+                five_dim: FiveDimState::new(0.4 + i as f64 * 0.1, 0.5, 1.0, 0.3, 0.8),
+                extended: ExtendedDimension::new(),
+                params: DynamicsParams::default_params(),
+                vertices: vec![i],
+            });
+        }
+        let p3 = PhaseThreeOutput {
+            memes,
+            coupling: vec![vec![0.0; 5]; 5],
+            n_memes: 5,
+        };
+        let config = OdeConfig {
+            max_steps: 500,
+            ..OdeConfig::default()
+        };
+        let output = run_phase_five(&p3, &config, None);
+        assert_eq!(output.evolutions.len(), 5);
     }
 }

@@ -15,27 +15,20 @@
 //!   updown input.txt --phase 1           # 仅 Phase 1
 //!   updown input.txt -o output_dir       # 指定输出目录
 //!   updown input.txt --auto-optimize     # 启用假设0全局优化
-
-use updown::theory::{
-    ode::OdeConfig,
-    optimizer::OptimizerConfig,
-};
-use updown::pipeline::{
-    phase1_emergence::run_phase_one,
-    phase2_encoding::run_phase_two,
-    phase3_decomposition::run_phase_three,
-    phase4_binding::run_phase_four,
-    phase5_evolution::run_phase_five,
-};
-use updown::io::{
-    tokenizer::extract_ngrams,
-    reversibility::verify_roundtrip,
-};
+//!   updown input.txt --verbose           # 详细日志输出
 
 use std::fs;
-use std::io::{self, BufRead};
+use std::io::{self, BufRead, Write};
 use std::path::Path;
 use std::time::Instant;
+
+use updown::io::{reversibility::verify_roundtrip, tokenizer::extract_ngrams};
+use updown::pipeline::{
+    phase1_emergence::run_phase_one, phase2_encoding::run_phase_two,
+    phase3_decomposition::run_phase_three, phase4_binding::run_phase_four,
+    phase5_evolution::run_phase_five,
+};
+use updown::theory::{ode::OdeConfig, optimizer::OptimizerConfig};
 
 fn main() -> io::Result<()> {
     let args: Vec<String> = std::env::args().collect();
@@ -47,6 +40,7 @@ fn main() -> io::Result<()> {
         eprintln!("  -r <轮数>             ↑↓ 最大循环轮数 (默认: 50)");
         eprintln!("  --text                自然语言文本模式（自动 n-gram 分词）");
         eprintln!("  --auto-optimize       启用假设0全局优化器");
+        eprintln!("  --verbose             详细日志输出");
         return Ok(());
     }
 
@@ -56,29 +50,46 @@ fn main() -> io::Result<()> {
     let mut phase_filter: Option<u8> = None;
     let mut text_mode = false;
     let mut auto_optimize = false;
+    let mut verbose = false;
 
     let mut i = 2;
     while i < args.len() {
         match args[i].as_str() {
-            "--phase" => { i += 1; if i < args.len() { phase_filter = Some(args[i].parse().unwrap_or(0)); } }
-            "-o" => { i += 1; if i < args.len() { output_dir = args[i].clone(); } }
-            "-r" => { i += 1; if i < args.len() { max_rounds = args[i].parse().unwrap_or(50); } }
-            "--text" => { text_mode = true; }
-            "--auto-optimize" => { auto_optimize = true; }
+            "--phase" => {
+                i += 1;
+                if i < args.len() {
+                    phase_filter = Some(args[i].parse().unwrap_or(0));
+                }
+            }
+            "-o" => {
+                i += 1;
+                if i < args.len() {
+                    output_dir = args[i].clone();
+                }
+            }
+            "-r" => {
+                i += 1;
+                if i < args.len() {
+                    max_rounds = args[i].parse().unwrap_or(50);
+                }
+            }
+            "--text" => text_mode = true,
+            "--auto-optimize" => auto_optimize = true,
+            "--verbose" => verbose = true,
             _ => {}
         }
         i += 1;
     }
 
-    let source = Path::new(input_path).file_stem()
+    let source = Path::new(input_path)
+        .file_stem()
         .map(|s| s.to_string_lossy().to_string())
         .unwrap_or_else(|| "unknown".to_string());
 
     println!("╔══════════════════════════════════════════════╗");
     println!("║  ↑↓ 泛模因建模引擎 — 五阶段流水线 v4        ║");
     println!("╚══════════════════════════════════════════════╝");
-    println!("  输入: {}", input_path);
-    println!("  输出: {}", output_dir);
+    println!("  输入: {}  输出: {}", input_path, output_dir);
     println!();
 
     let t_total = Instant::now();
@@ -86,9 +97,13 @@ fn main() -> io::Result<()> {
     // ── 读取输入 ──
     let words: Vec<String> = if text_mode {
         let raw_text = fs::read_to_string(input_path)?;
-        println!("  文本模式: {} 字符", raw_text.chars().count());
+        if verbose {
+            eprintln!("[text] chars={}", raw_text.chars().count());
+        }
         let w = extract_ngrams(&raw_text);
-        println!("  n-gram 词表: {} 词", w.len());
+        if verbose {
+            eprintln!("[text] n_grams={}", w.len());
+        }
         w
     } else {
         let file = fs::File::open(input_path)?;
@@ -97,31 +112,35 @@ fn main() -> io::Result<()> {
         for line in reader.lines() {
             let line = line?;
             let line = line.trim().to_string();
-            if !line.is_empty() { w.push(line); }
+            if !line.is_empty() {
+                w.push(line);
+            }
         }
-        println!("  词表模式: {} 词", w.len());
+        if verbose {
+            eprintln!("[words] count={}", w.len());
+        }
         w
     };
 
-    fs::create_dir_all(&output_dir).ok();
+    fs::create_dir_all(&output_dir)?;
 
     // ── Phase 1: 浮现 ──
-    if phase_filter.map_or(true, |p| p <= 1) {
-        println!();
-        println!("  ┌─ Phase 1: 浮现 (I → M) ────────────────┐");
+    if phase_filter.is_none_or(|p| p <= 1) {
         let t1 = Instant::now();
         let phase1 = run_phase_one(words.clone(), max_rounds);
-        println!("  │ 节点: {} 词 + {} 字 = {} 总节点",
-            words.len(),
-            phase1.s.vertices.len() - words.len(),
+        let dt = t1.elapsed();
+        println!(
+            "  [Phase 1] nodes={} rounds={} depth={:.1} rules={} constraints={} — {:.2}s",
             phase1.s.vertices.len(),
+            phase1.convergence_rounds,
+            phase1.max_depth,
+            phase1.f.len(),
+            phase1.c.len(),
+            dt.as_secs_f64()
         );
-        println!("  │ 收敛轮数: {}, 最大深度: {:.1}", phase1.convergence_rounds, phase1.max_depth);
-        println!("  │ 规则: {} 条, 约束: {} 项", phase1.f.len(), phase1.c.len());
         for detail in &phase1.reversibility_record {
-            println!("  │ {}", detail);
+            println!("    {}", detail);
         }
-        println!("  └─ Phase 1 完成: {:.2}s ────────────────┘", t1.elapsed().as_secs_f64());
 
         if phase_filter == Some(1) {
             println!("\n总耗时: {:.2}s", t_total.elapsed().as_secs_f64());
@@ -129,19 +148,21 @@ fn main() -> io::Result<()> {
         }
 
         // ── Phase 2: 编码 ──
-        if phase_filter.map_or(true, |p| p <= 2) {
-            println!();
-            println!("  ┌─ Phase 2: 编码 (M → G) ────────────────┐");
+        if phase_filter.is_none_or(|p| p <= 2) {
             let t2 = Instant::now();
             let phase2 = run_phase_two(&phase1);
-            println!("  │ 胞腔: {} 0-cells + {} 1-cells + {} 2-cells",
-                phase2.complex.n_vertices(), phase2.complex.n_edges(),
-                phase2.complex.cells.iter().filter(|c| c.dim == 2).count());
-            println!("  │ Euler χ = {}, Betti: β₀={}, β₁={}",
-                phase2.invariants.euler_char, phase2.invariants.betti_0, phase2.invariants.betti_1);
-            println!("  │ 场: mean(|∇φ|)={:.4}, std={:.4}",
-                phase2.vector_field.mean_gradient(), phase2.vector_field.std_gradient());
-            println!("  └─ Phase 2 完成: {:.2}s ────────────────┘", t2.elapsed().as_secs_f64());
+            let dt = t2.elapsed();
+            println!(
+                "  [Phase 2] cells: {}v+{}e, χ={} β₀={} β₁={}, |∇φ|={:.4}±{:.4} — {:.2}s",
+                phase2.complex.n_vertices(),
+                phase2.complex.n_edges(),
+                phase2.invariants.euler_char,
+                phase2.invariants.betti_0,
+                phase2.invariants.betti_1,
+                phase2.vector_field.mean_gradient(),
+                phase2.vector_field.std_gradient(),
+                dt.as_secs_f64()
+            );
 
             if phase_filter == Some(2) {
                 println!("\n总耗时: {:.2}s", t_total.elapsed().as_secs_f64());
@@ -149,36 +170,39 @@ fn main() -> io::Result<()> {
             }
 
             // ── Phase 3: 分解 ──
-            if phase_filter.map_or(true, |p| p <= 3) {
-                println!();
-                println!("  ┌─ Phase 3: 分解 (G → Q) ────────────────┐");
+            if phase_filter.is_none_or(|p| p <= 3) {
                 let t3 = Instant::now();
                 let phase3 = run_phase_three(&phase2);
-                println!("  │ 模因数量: {} 个", phase3.n_memes);
+                let dt = t3.elapsed();
+                println!(
+                    "  [Phase 3] memes={} — {:.2}s",
+                    phase3.n_memes,
+                    dt.as_secs_f64()
+                );
                 for (i, meme) in phase3.memes.iter().enumerate() {
-                    println!("  │   M{}: D={:.3} B={:.3} ρ={:.3} R={:.3} S={:.3} | 顶点: {}",
+                    println!(
+                        "    M{}: D={:.3} B={:.3} ρ={:.3} R={:.3} S={:.3} | vertices={}",
                         i,
                         meme.five_dim.intrinsic_degree,
                         meme.five_dim.binding_degree,
                         meme.five_dim.energy_density,
                         meme.five_dim.evolution_rate,
                         meme.five_dim.structural_robustness,
-                        meme.vertices.len(),
+                        meme.vertices.len()
                     );
                 }
-                println!("  │ 耦合矩阵: {}×{}", phase3.coupling.len(),
-                    if phase3.coupling.is_empty() { 0 } else { phase3.coupling[0].len() });
-                println!("  └─ Phase 3 完成: {:.2}s ────────────────┘", t3.elapsed().as_secs_f64());
+                if verbose && !phase3.coupling.is_empty() {
+                    eprintln!(
+                        "  [Phase 3] coupling: {}×{}",
+                        phase3.coupling.len(),
+                        phase3.coupling[0].len()
+                    );
+                }
 
-                // ── 往返验证 ──
-                println!();
-                println!("  ═══ 推论 5.1 验证: Φ⁻¹∘Φ = I ═══");
+                // 往返验证
                 let report = verify_roundtrip(&words, &phase1, &phase2, &phase3);
                 for detail in &report.details {
-                    println!("  {}", detail);
-                }
-                if report.words_fully_recoverable {
-                    println!("  ▶ 推论 5.1 成立: 词完全可逆");
+                    println!("  [Verify] {}", detail);
                 }
 
                 if phase_filter == Some(3) {
@@ -187,17 +211,18 @@ fn main() -> io::Result<()> {
                 }
 
                 // ── Phase 4: 固化 ──
-                if phase_filter.map_or(true, |p| p <= 4) {
-                    println!();
-                    println!("  ┌─ Phase 4: 固化 (Q → Credential) ───────┐");
+                if phase_filter.is_none_or(|p| p <= 4) {
                     let t4 = Instant::now();
                     let original_text = words.join(" ");
                     let phase4 = run_phase_four(phase3.clone(), &original_text);
-                    println!("  │ 凭证: v{}", phase4.header.version);
-                    println!("  │ 数据哈希: {}", phase4.data_hash);
-                    println!("  │ 模因数: {}, 原始大小: {} 字节",
-                        phase4.metadata.meme_count, phase4.metadata.original_size);
-                    println!("  └─ Phase 4 完成: {:.2}s ────────────────┘", t4.elapsed().as_secs_f64());
+                    let dt = t4.elapsed();
+                    println!(
+                        "  [Phase 4] hash={} memes={} bytes={} — {:.2}s",
+                        phase4.data_hash,
+                        phase4.metadata.meme_count,
+                        phase4.metadata.original_size,
+                        dt.as_secs_f64()
+                    );
 
                     if phase_filter == Some(4) {
                         println!("\n总耗时: {:.2}s", t_total.elapsed().as_secs_f64());
@@ -205,56 +230,69 @@ fn main() -> io::Result<()> {
                     }
 
                     // ── Phase 5: 演化 ──
-                    if phase_filter.map_or(true, |p| p <= 5) {
-                        println!();
-                        println!("  ┌─ Phase 5: 演化 (Q → ODE → 原型) ──────┐");
+                    if phase_filter.is_none_or(|p| p <= 5) {
                         let t5 = Instant::now();
-
                         let ode_config = OdeConfig {
                             max_steps: 20000,
                             ..OdeConfig::default()
                         };
-
                         let opt_config = if auto_optimize {
                             Some(OptimizerConfig::default())
                         } else {
                             None
                         };
-
                         let phase5 = run_phase_five(&phase3, &ode_config, opt_config.as_ref());
+                        let dt = t5.elapsed();
 
                         if let Some(ref hyp) = phase5.optimal_hypothesis {
-                            println!("  │ 假设0: T*={:.3} Φ_D*={:?} Φ_R*={:?} L={:.6}",
-                                hyp.threshold, hyp.family_d, hyp.family_r, hyp.loss);
+                            println!(
+                                "  [Phase 5] 假设0: T*={:.3} ΦD*={:?} ΦR*={:?} L={:.6}",
+                                hyp.threshold, hyp.family_d, hyp.family_r, hyp.loss
+                            );
                         }
 
+                        println!(
+                            "  [Phase 5] evolutions={} — {:.2}s",
+                            phase5.evolutions.len(),
+                            dt.as_secs_f64()
+                        );
                         for evo in &phase5.evolutions {
-                            let n_pts = evo.trajectory.len();
                             if let Some(last) = evo.trajectory.last() {
-                                println!("  │  M{}: t={:.2} 步={} D={:.4} B={:.4} ρ={:.4} R={:.4} S={:.4} [{}] → {:?}",
-                                    evo.meme_idx, last.t, n_pts,
-                                    last.d, last.b, last.rho, last.r, last.s,
-                                    match evo.termination {
-                                        _ => "OK",
-                                    },
-                                    evo.archetype,
+                                println!("    M{}: t={:.2} steps={} D={:.4} B={:.4} R={:.4} S={:.4} [{:?}] → {:?}",
+                                    evo.meme_idx, last.t, evo.trajectory.len(),
+                                    last.d, last.b, last.r, last.s,
+                                    evo.termination, evo.archetype);
+                            } else {
+                                eprintln!(
+                                    "    [WARN] M{}: 空轨迹 (reason={:?})",
+                                    evo.meme_idx, evo.termination
                                 );
                             }
                         }
-                        println!("  └─ Phase 5 完成: {:.2}s ────────────────┘", t5.elapsed().as_secs_f64());
 
                         // 输出 ODE 轨迹 CSV
-                        let ode_path = Path::new(&output_dir)
-                            .join(format!("{}_ode_trajectory.csv", source));
+                        let ode_path =
+                            Path::new(&output_dir).join(format!("{}_ode_trajectory.csv", source));
                         let mut of = fs::File::create(&ode_path)?;
-                        use std::io::Write;
                         writeln!(of, "meme_id,t,d,b,rho,r,s,archetype")?;
                         for evo in &phase5.evolutions {
                             for snap in &evo.trajectory {
-                                writeln!(of, "{},{},{:.8},{:.8},{:.8},{:.8},{:.8},{:?}",
-                                    evo.meme_idx, snap.t, snap.d, snap.b, snap.rho, snap.r, snap.s,
-                                    evo.archetype)?;
+                                writeln!(
+                                    of,
+                                    "{},{},{:.8},{:.8},{:.8},{:.8},{:.8},{:?}",
+                                    evo.meme_idx,
+                                    snap.t,
+                                    snap.d,
+                                    snap.b,
+                                    snap.rho,
+                                    snap.r,
+                                    snap.s,
+                                    evo.archetype
+                                )?;
                             }
+                        }
+                        if verbose {
+                            eprintln!("  [Phase 5] CSV → {}", ode_path.display());
                         }
                     }
                 }
@@ -262,10 +300,8 @@ fn main() -> io::Result<()> {
         }
     }
 
-    println!();
-    println!("════════════════════════════════════════════════");
+    println!("\n════════════════════════════════════════════════");
     println!("  总耗时: {:.2}s", t_total.elapsed().as_secs_f64());
     println!("════════════════════════════════════════════════");
-
     Ok(())
 }

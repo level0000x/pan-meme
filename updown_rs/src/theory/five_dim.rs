@@ -30,26 +30,56 @@ impl FiveDimState {
     /// 创建五维状态，自动 NaN 防护
     pub fn new(d: f64, b: f64, rho: f64, r: f64, s: f64) -> Self {
         FiveDimState {
-            intrinsic_degree: if d.is_nan() || d.is_infinite() { 0.0 } else { d },
-            binding_degree: if b.is_nan() || b.is_infinite() { 0.0 } else { b },
-            energy_density: if rho.is_nan() || rho.is_infinite() { 0.0 } else { rho },
-            evolution_rate: if r.is_nan() || r.is_infinite() { 0.0 } else { r },
-            structural_robustness: if s.is_nan() || s.is_infinite() { 0.0 } else { s },
+            intrinsic_degree: if d.is_nan() || d.is_infinite() {
+                0.0
+            } else {
+                d
+            },
+            binding_degree: if b.is_nan() || b.is_infinite() {
+                0.0
+            } else {
+                b
+            },
+            energy_density: if rho.is_nan() || rho.is_infinite() {
+                0.0
+            } else {
+                rho
+            },
+            evolution_rate: if r.is_nan() || r.is_infinite() {
+                0.0
+            } else {
+                r
+            },
+            structural_robustness: if s.is_nan() || s.is_infinite() {
+                0.0
+            } else {
+                s
+            },
         }
     }
 
     /// 零状态
     pub fn zero() -> Self {
-        FiveDimState { intrinsic_degree: 0.0, binding_degree: 0.0, energy_density: 0.0, evolution_rate: 0.0, structural_robustness: 0.0 }
+        FiveDimState {
+            intrinsic_degree: 0.0,
+            binding_degree: 0.0,
+            energy_density: 0.0,
+            evolution_rate: 0.0,
+            structural_robustness: 0.0,
+        }
     }
 
     /// 验证状态在有效域 Ω = [0,1]⁴ × [0,∞) 内 — 定理 7
     pub fn is_valid(&self) -> bool {
-        self.intrinsic_degree >= 0.0 && self.intrinsic_degree <= 1.0
-            && self.binding_degree >= 0.0 && self.binding_degree <= 1.0
+        self.intrinsic_degree >= 0.0
+            && self.intrinsic_degree <= 1.0
+            && self.binding_degree >= 0.0
+            && self.binding_degree <= 1.0
             && self.energy_density >= 0.0
-            && self.evolution_rate >= 0.0 && self.evolution_rate <= 1.0
-            && self.structural_robustness >= 0.0 && self.structural_robustness <= 1.0
+            && self.evolution_rate >= 0.0
+            && self.evolution_rate <= 1.0
+            && self.structural_robustness >= 0.0
+            && self.structural_robustness <= 1.0
     }
 
     /// 裁剪到 Ω = [0,1]⁴ × [0,∞) — 定理 7 不变性
@@ -74,7 +104,13 @@ impl FiveDimState {
 
     /// 转换为数组 [D, B, ρ, R, S]
     pub fn to_array(&self) -> [f64; 5] {
-        [self.intrinsic_degree, self.binding_degree, self.energy_density, self.evolution_rate, self.structural_robustness]
+        [
+            self.intrinsic_degree,
+            self.binding_degree,
+            self.energy_density,
+            self.evolution_rate,
+            self.structural_robustness,
+        ]
     }
 
     /// 从数组创建

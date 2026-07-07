@@ -7,7 +7,7 @@
 //! 搜索空间: H = T × F_D × Θ_D × F_R × Θ_R × N
 //! 搜索策略: 网格搜索 |T| × |F_D| × |Θ_D| × |F_R| × |Θ_R| = 7 × 5 × 5 × 5 × 5 = 4375
 
-use crate::theory::function_families::{FunctionFamily, FamilyParams};
+use crate::theory::function_families::{FamilyParams, FunctionFamily};
 
 /// 全局优化配置
 #[derive(Debug, Clone)]
@@ -51,10 +51,7 @@ pub struct OptimalHypothesis {
 ///
 /// 搜索空间: H = T × F_D × Θ_D × F_R × Θ_R × N
 /// 使用网格搜索，外层遍历 T × F_D × F_R，内层在 Θ 上搜索
-pub fn optimize<F>(
-    reconstruction_error: F,
-    config: &OptimizerConfig,
-) -> OptimalHypothesis
+pub fn optimize<F>(reconstruction_error: F, config: &OptimizerConfig) -> OptimalHypothesis
 where
     F: Fn(f64, &FamilyParams, &FamilyParams) -> f64,
 {
@@ -72,9 +69,8 @@ where
         for &family_d in &families {
             for &family_r in &families {
                 // 在 Θ 上搜索最优参数
-                let (params_d, params_r, loss) = optimize_theta(
-                    t, family_d, family_r, &reconstruction_error, config,
-                );
+                let (params_d, params_r, loss) =
+                    optimize_theta(t, family_d, family_r, &reconstruction_error, config);
 
                 if loss < best.loss {
                     best = OptimalHypothesis {
@@ -165,9 +161,7 @@ mod tests {
             ..OptimizerConfig::default()
         };
 
-        let error_fn = |_t: f64, _pd: &FamilyParams, _pr: &FamilyParams| -> f64 {
-            0.5
-        };
+        let error_fn = |_t: f64, _pd: &FamilyParams, _pr: &FamilyParams| -> f64 { 0.5 };
 
         let result = optimize(error_fn, &config);
         assert!(result.loss <= 0.5);
@@ -177,19 +171,25 @@ mod tests {
     fn test_falsifiability_convergent() {
         let results = vec![
             OptimalHypothesis {
-                threshold: 0.1, family_d: FunctionFamily::Power, family_r: FunctionFamily::Power,
+                threshold: 0.1,
+                family_d: FunctionFamily::Power,
+                family_r: FunctionFamily::Power,
                 params_d: FamilyParams::new(FunctionFamily::Power, 1.0, 0.0),
                 params_r: FamilyParams::new(FunctionFamily::Power, 1.0, 0.0),
                 loss: 0.1,
             },
             OptimalHypothesis {
-                threshold: 0.2, family_d: FunctionFamily::Power, family_r: FunctionFamily::Power,
+                threshold: 0.2,
+                family_d: FunctionFamily::Power,
+                family_r: FunctionFamily::Power,
                 params_d: FamilyParams::new(FunctionFamily::Power, 1.5, 0.0),
                 params_r: FamilyParams::new(FunctionFamily::Power, 0.5, 0.0),
                 loss: 0.2,
             },
             OptimalHypothesis {
-                threshold: 0.3, family_d: FunctionFamily::Power, family_r: FunctionFamily::Power,
+                threshold: 0.3,
+                family_d: FunctionFamily::Power,
+                family_r: FunctionFamily::Power,
                 params_d: FamilyParams::new(FunctionFamily::Power, 1.2, 0.0),
                 params_r: FamilyParams::new(FunctionFamily::Power, 0.8, 0.0),
                 loss: 0.15,
@@ -202,19 +202,25 @@ mod tests {
     fn test_falsifiability_divergent() {
         let results = vec![
             OptimalHypothesis {
-                threshold: 0.1, family_d: FunctionFamily::Power, family_r: FunctionFamily::Power,
+                threshold: 0.1,
+                family_d: FunctionFamily::Power,
+                family_r: FunctionFamily::Power,
                 params_d: FamilyParams::new(FunctionFamily::Power, 1.0, 0.0),
                 params_r: FamilyParams::new(FunctionFamily::Power, 1.0, 0.0),
                 loss: 0.1,
             },
             OptimalHypothesis {
-                threshold: 0.2, family_d: FunctionFamily::Exponential, family_r: FunctionFamily::Power,
+                threshold: 0.2,
+                family_d: FunctionFamily::Exponential,
+                family_r: FunctionFamily::Power,
                 params_d: FamilyParams::new(FunctionFamily::Exponential, 1.0, 0.0),
                 params_r: FamilyParams::new(FunctionFamily::Power, 1.0, 0.0),
                 loss: 0.2,
             },
             OptimalHypothesis {
-                threshold: 0.3, family_d: FunctionFamily::Power, family_r: FunctionFamily::Logarithm,
+                threshold: 0.3,
+                family_d: FunctionFamily::Power,
+                family_r: FunctionFamily::Logarithm,
                 params_d: FamilyParams::new(FunctionFamily::Power, 1.0, 0.0),
                 params_r: FamilyParams::new(FunctionFamily::Logarithm, 1.0, 0.0),
                 loss: 0.15,

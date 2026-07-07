@@ -26,7 +26,13 @@ pub enum FunctionFamily {
 impl FunctionFamily {
     /// 所有函数族
     pub fn all() -> [FunctionFamily; 5] {
-        [FunctionFamily::Power, FunctionFamily::Exponential, FunctionFamily::Sigmoid, FunctionFamily::Logarithm, FunctionFamily::PiecewiseLinear]
+        [
+            FunctionFamily::Power,
+            FunctionFamily::Exponential,
+            FunctionFamily::Sigmoid,
+            FunctionFamily::Logarithm,
+            FunctionFamily::PiecewiseLinear,
+        ]
     }
 
     /// 函数族名称
@@ -57,12 +63,22 @@ pub struct FamilyParams {
 impl FamilyParams {
     /// 创建参数
     pub fn new(family: FunctionFamily, k: f64, x0: f64) -> Self {
-        FamilyParams { family, k, x0, breakpoints: Vec::new() }
+        FamilyParams {
+            family,
+            k,
+            x0,
+            breakpoints: Vec::new(),
+        }
     }
 
     /// 创建分段线性参数
     pub fn piecewise_linear(breakpoints: Vec<(f64, f64)>) -> Self {
-        FamilyParams { family: FunctionFamily::PiecewiseLinear, k: 0.0, x0: 0.0, breakpoints }
+        FamilyParams {
+            family: FunctionFamily::PiecewiseLinear,
+            k: 0.0,
+            x0: 0.0,
+            breakpoints,
+        }
     }
 
     /// 评估函数值 Φ(x) — 论文 §4.3.8
@@ -71,17 +87,19 @@ impl FamilyParams {
     pub fn evaluate(&self, x: f64) -> f64 {
         let result = match self.family {
             FunctionFamily::Power => {
-                if x <= 0.0 { 0.0 } else { x.powf(self.k) }
+                if x <= 0.0 {
+                    0.0
+                } else {
+                    x.powf(self.k)
+                }
             }
-            FunctionFamily::Exponential => {
-                (self.k * x).exp() - 1.0
-            }
+            FunctionFamily::Exponential => (self.k * x).exp() - 1.0,
             FunctionFamily::Sigmoid => {
                 // 1/(1+e^{-k(x-x₀)}) - 1/2
                 // 减 1/2 保证 Φ(0) = 0 当 x₀ = 0.5 时
                 let exponent = -self.k * (x - self.x0);
                 if exponent > 50.0 {
-                    1.0 - 0.5  // 避免溢出
+                    1.0 - 0.5 // 避免溢出
                 } else if exponent < -50.0 {
                     0.0 - 0.5
                 } else {
@@ -89,13 +107,19 @@ impl FamilyParams {
                 }
             }
             FunctionFamily::Logarithm => {
-                if x <= 0.0 { 0.0 } else { (1.0 + self.k * x).ln() }
+                if x <= 0.0 {
+                    0.0
+                } else {
+                    (1.0 + self.k * x).ln()
+                }
             }
-            FunctionFamily::PiecewiseLinear => {
-                piecewise_evaluate(x, &self.breakpoints)
-            }
+            FunctionFamily::PiecewiseLinear => piecewise_evaluate(x, &self.breakpoints),
         };
-        if result.is_nan() || result.is_infinite() { 0.0 } else { result }
+        if result.is_nan() || result.is_infinite() {
+            0.0
+        } else {
+            result
+        }
     }
 
     /// 验证参数在有效范围内（supplement §6.2 紧致化范围）
@@ -107,9 +131,7 @@ impl FamilyParams {
             FunctionFamily::Sigmoid => {
                 self.k >= 0.5 && self.k <= 2.5 && self.x0 >= 0.0 && self.x0 <= 1.0
             }
-            FunctionFamily::PiecewiseLinear => {
-                !self.breakpoints.is_empty()
-            }
+            FunctionFamily::PiecewiseLinear => !self.breakpoints.is_empty(),
         }
     }
 }

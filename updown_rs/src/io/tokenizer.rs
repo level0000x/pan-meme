@@ -8,7 +8,8 @@
 ///
 /// 对中文文本，按 1-gram（字）、2-gram（双字词）、3-gram（三字词）提取
 pub fn extract_ngrams(text: &str) -> Vec<String> {
-    let chars: Vec<char> = text.chars()
+    let chars: Vec<char> = text
+        .chars()
         .filter(|c| !c.is_whitespace() && !c.is_ascii_punctuation())
         .collect();
 
@@ -43,7 +44,8 @@ pub struct Extractor;
 impl Extractor {
     /// 从原始文本提取节点（词）和边（字-词包含关系）
     pub fn extract(text: &str) -> (Vec<String>, Vec<(usize, usize)>) {
-        let chars: Vec<char> = text.chars()
+        let chars: Vec<char> = text
+            .chars()
             .filter(|c| !c.is_whitespace() && !c.is_ascii_punctuation())
             .collect();
 

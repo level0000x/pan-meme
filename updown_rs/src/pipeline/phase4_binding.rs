@@ -8,9 +8,9 @@
 //! - verify_credential: 凭证 + 待验证信息 → 哈希比对
 //! - restore_info: 凭证 → 还原原始信息 + 模因状态
 
+use crate::pipeline::phase3_decomposition::PhaseThreeOutput;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
-use crate::pipeline::phase3_decomposition::PhaseThreeOutput;
 
 /// 凭证头
 #[derive(Debug, Clone)]
@@ -88,10 +88,10 @@ pub fn run_phase_four(phase3: PhaseThreeOutput, original_input: &str) -> Credent
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::pipeline::phase3_decomposition::{PhaseThreeOutput, MemeState};
-    use crate::theory::five_dim::FiveDimState;
-    use crate::theory::extended_dimension::ExtendedDimension;
+    use crate::pipeline::phase3_decomposition::{MemeState, PhaseThreeOutput};
     use crate::theory::dynamics_params::DynamicsParams;
+    use crate::theory::extended_dimension::ExtendedDimension;
+    use crate::theory::five_dim::FiveDimState;
 
     fn make_test_phase3() -> PhaseThreeOutput {
         PhaseThreeOutput {

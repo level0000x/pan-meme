@@ -15,12 +15,12 @@
 //!
 //! 输出: Q = {X_i, Θ, C}
 
-use crate::theory::five_dim::FiveDimState;
-use crate::theory::extended_dimension::ExtendedDimension;
-use crate::theory::dynamics_params::DynamicsParams;
-use crate::theory::coupling::build_coupling_matrix;
-use crate::theory::louvain::run_louvain;
 use crate::pipeline::phase2_encoding::PhaseTwoOutput;
+use crate::theory::coupling::build_coupling_matrix;
+use crate::theory::dynamics_params::DynamicsParams;
+use crate::theory::extended_dimension::ExtendedDimension;
+use crate::theory::five_dim::FiveDimState;
+use crate::theory::louvain::run_louvain;
 
 /// 单模因状态
 #[derive(Debug, Clone)]
@@ -86,15 +86,16 @@ pub fn run_phase_three(phase2: &PhaseTwoOutput) -> PhaseThreeOutput {
     let grad_std = phase2.vector_field.std_gradient();
 
     let mut memes = Vec::new();
-    for ci in 0..n_communities {
-        let verts = &meme_vertices[ci];
+    for verts in &meme_vertices {
         if verts.is_empty() {
             continue;
         }
 
         let nv = verts.len() as f64;
-        let depth = if let Some(&d) = verts.first()
-            .and_then(|&v| phase2.reversibility.node_levels.get(v)) {
+        let depth = if let Some(&d) = verts
+            .first()
+            .and_then(|&v| phase2.reversibility.node_levels.get(v))
+        {
             d as f64
         } else {
             0.0
@@ -114,9 +115,14 @@ pub fn run_phase_three(phase2: &PhaseTwoOutput) -> PhaseThreeOutput {
 
         // 扩展维度 ξ (supplement 定义 3.3)
         let extended = ExtendedDimension {
-            cell_snapshots_v: verts.iter().map(|&v| {
-                crate::theory::extended_dimension::CellSnapshot { dim: 0, id: v, boundary: vec![] }
-            }).collect(),
+            cell_snapshots_v: verts
+                .iter()
+                .map(|&v| crate::theory::extended_dimension::CellSnapshot {
+                    dim: 0,
+                    id: v,
+                    boundary: vec![],
+                })
+                .collect(),
             cell_snapshots_e: Vec::new(),
             cell_snapshots_f: Vec::new(),
             boundary_links: Vec::new(),
@@ -126,7 +132,13 @@ pub fn run_phase_three(phase2: &PhaseTwoOutput) -> PhaseThreeOutput {
 
         // 11 参数
         let params = DynamicsParams::from_geometry(
-            verts.len(), 0, depth, max_depth, &five_dim, grad_mean, grad_std,
+            verts.len(),
+            0,
+            depth,
+            max_depth,
+            &five_dim,
+            grad_mean,
+            grad_std,
         );
 
         memes.push(MemeState {
@@ -142,7 +154,11 @@ pub fn run_phase_three(phase2: &PhaseTwoOutput) -> PhaseThreeOutput {
     let meme_vert_lists: Vec<Vec<usize>> = memes.iter().map(|m| m.vertices.clone()).collect();
     let coupling = build_coupling_matrix(&five_dim_states, &meme_vert_lists);
 
-    PhaseThreeOutput { memes, coupling, n_memes }
+    PhaseThreeOutput {
+        memes,
+        coupling,
+        n_memes,
+    }
 }
 
 #[cfg(test)]

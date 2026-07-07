@@ -40,7 +40,8 @@ impl FormalContext {
         let mut chars: Vec<char> = char_set.into_iter().collect();
         chars.sort();
 
-        let char_to_idx: HashMap<char, usize> = chars.iter().enumerate().map(|(i, &c)| (c, i)).collect();
+        let char_to_idx: HashMap<char, usize> =
+            chars.iter().enumerate().map(|(i, &c)| (c, i)).collect();
         let n_chars = chars.len();
         let n_words = words.len();
 
@@ -65,7 +66,13 @@ impl FormalContext {
             }
         }
 
-        FormalContext { words, chars, char_to_words, word_to_chars, adj_matrix }
+        FormalContext {
+            words,
+            chars,
+            char_to_words,
+            word_to_chars,
+            adj_matrix,
+        }
     }
 
     /// 总节点数 |V| = |W| + |C|
@@ -84,8 +91,9 @@ pub fn warshall_closure(adj: &mut [Vec<bool>]) {
     for k in 0..n {
         for i in 0..n {
             if adj[i][k] {
-                for j in 0..n {
-                    adj[i][j] = adj[i][j] || adj[k][j];
+                let row_k = adj[k].clone();
+                for (val, ref_k) in adj[i].iter_mut().zip(row_k.iter()) {
+                    *val = *val || *ref_k;
                 }
             }
         }
@@ -132,7 +140,8 @@ impl CycleEngine {
         let mut char_closures = Vec::new();
 
         // 初始: ↑(c) = 包含 c 的所有词
-        let mut current_words: HashSet<usize> = self.ctx.char_to_words[char_idx].iter().cloned().collect();
+        let mut current_words: HashSet<usize> =
+            self.ctx.char_to_words[char_idx].iter().cloned().collect();
         word_closures.push(current_words.clone());
 
         // 初始: ↓(↑(c)) = 这些词中所有字
@@ -196,10 +205,7 @@ impl CycleEngine {
 
 /// 验证 ↑↓ 互逆性: ↓(↑(c)) = c 和 ↑(↓(w)) = w
 /// 对应 formal-concept-analysis-proof.md 公理 3
-pub fn verify_reversibility(
-    ctx: &FormalContext,
-    cycles: &[ElementCycle],
-) -> bool {
+pub fn verify_reversibility(ctx: &FormalContext, cycles: &[ElementCycle]) -> bool {
     // 验证 ↓(↑(c)): 循环后字闭包包含原字自身
     for cycle in cycles {
         if let Some(last_char_closure) = cycle.char_closures.last() {

@@ -5,10 +5,10 @@
 //! - ↓(↑(c)) = c 和 ↑(↓(w)) = w（formal-concept-analysis-proof 公理 3）
 //! - Shannon 熵跨阶段比较（近似 Kolmogorov 复杂度，proof-supplement-complete 推论 4.4）
 
-use std::collections::HashMap;
 use crate::pipeline::phase1_emergence::PhaseOneOutput;
 use crate::pipeline::phase2_encoding::PhaseTwoOutput;
 use crate::pipeline::phase3_decomposition::PhaseThreeOutput;
+use std::collections::HashMap;
 
 /// 往返验证报告
 #[derive(Debug, Clone)]
@@ -35,7 +35,8 @@ fn shannon_entropy(frequencies: &[f64]) -> f64 {
     if total == 0.0 {
         return 0.0;
     }
-    frequencies.iter()
+    frequencies
+        .iter()
         .filter(|&&f| f > 0.0)
         .map(|&f| {
             let p = f / total;
@@ -54,7 +55,8 @@ pub fn verify_roundtrip(
     let mut details = Vec::new();
 
     // 验证原始词是否可恢复
-    let _original_set: HashMap<&str, usize> = original_words.iter()
+    let _original_set: HashMap<&str, usize> = original_words
+        .iter()
         .enumerate()
         .map(|(i, w)| (w.as_str(), i))
         .collect();
@@ -83,7 +85,10 @@ pub fn verify_roundtrip(
     // P1: 字符 vs 词的频次分布
     // P2: 胞腔维数分布 (0-cells / 1-cells / 2-cells)
     // P3: 模因顶点数分布
-    let char_freq: Vec<f64> = phase1.s.node_depths.iter()
+    let char_freq: Vec<f64> = phase1
+        .s
+        .node_depths
+        .iter()
         .take(phase1.s.vertices.len())
         .map(|&d| d.max(0.0))
         .collect();
@@ -95,7 +100,9 @@ pub fn verify_roundtrip(
     let cell_dim_counts = vec![n0, n1, n2];
     let entropy_p2 = shannon_entropy(&cell_dim_counts);
 
-    let meme_counts: Vec<f64> = phase3.memes.iter()
+    let meme_counts: Vec<f64> = phase3
+        .memes
+        .iter()
         .map(|m| m.vertices.len() as f64)
         .collect();
     let entropy_p3 = shannon_entropy(&meme_counts);
@@ -108,7 +115,7 @@ pub fn verify_roundtrip(
     let relative_diff = if avg_entropy > 0.01 {
         (max_entropy - min_entropy) / avg_entropy
     } else {
-        0.0  // 退化情况（近乎零熵），视为守恒
+        0.0 // 退化情况（近乎零熵），视为守恒
     };
     let entropy_conserved = relative_diff < 0.5;
 

@@ -71,7 +71,11 @@ impl DynamicsParams {
         };
 
         // α₂: 层级深度
-        let alpha_2 = if max_depth > 0.0 { depth / max_depth } else { 0.0 };
+        let alpha_2 = if max_depth > 0.0 {
+            depth / max_depth
+        } else {
+            0.0
+        };
 
         // β₁: 外部连接数 (简化近似)
         let beta_1 = if nv > 0.0 { ne / nv } else { 0.5 };
@@ -122,18 +126,28 @@ impl DynamicsParams {
     /// 默认参数（用于测试）
     pub fn default_params() -> Self {
         DynamicsParams {
-            alpha_1: 0.1, alpha_2: 0.2,
-            beta_1: 0.1, beta_2: 0.1,
-            gamma_1: 0.1, gamma_2: 0.3,
-            delta_1: 0.2, delta_2: 0.1, delta_3: 0.05,
-            epsilon_1: 0.2, epsilon_2: 0.1,
+            alpha_1: 0.1,
+            alpha_2: 0.2,
+            beta_1: 0.1,
+            beta_2: 0.1,
+            gamma_1: 0.1,
+            gamma_2: 0.3,
+            delta_1: 0.2,
+            delta_2: 0.1,
+            delta_3: 0.05,
+            epsilon_1: 0.2,
+            epsilon_2: 0.1,
         }
     }
 }
 
 /// NaN 防护
 fn nan_guard(v: f64) -> f64 {
-    if v.is_nan() || v.is_infinite() { 0.0 } else { v }
+    if v.is_nan() || v.is_infinite() {
+        0.0
+    } else {
+        v
+    }
 }
 
 #[cfg(test)]

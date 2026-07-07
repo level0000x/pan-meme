@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+jobs:
+  test:
+    name: Test & Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.toml') }}
+          restore-keys: ${{ runner.os }}-cargo-
+
+      - name: Build
+        run: cargo build --release
+        working-directory: updown_rs
+
+      - name: Run unit tests
+        run: cargo test --lib
+        working-directory: updown_rs
+
+      - name: Run integration tests
+        run: cargo test --test '*' -- --test-threads=1
+        working-directory: updown_rs
+
+      - name: Run property tests
+        run: cargo test --test property_tests -- --test-threads=1
+        working-directory: updown_rs
+
+      - name: Run golden test
+        run: cargo test --test golden_test -- --test-threads=1
+        working-directory: updown_rs
+
+      - name: Clippy
+        run: cargo clippy -- -D warnings
+        working-directory: updown_rs
+
+      - name: Check formatting
+        run: cargo fmt --check
+        working-directory: updown_rs

@@ -10,7 +10,7 @@
 //!
 //! 输出: M = (S, F, C)
 
-use crate::theory::fca::{FormalContext, CycleEngine, warshall_closure, verify_reversibility};
+use crate::theory::fca::{verify_reversibility, warshall_closure, CycleEngine, FormalContext};
 
 /// 规则域 F 中的单条规则
 #[derive(Debug, Clone)]
@@ -73,20 +73,30 @@ pub fn run_phase_one(words: Vec<String>, max_rounds: usize) -> PhaseOneOutput {
     warshall_closure(&mut adj);
 
     // ↑↓ 循环
-    let engine = CycleEngine { ctx: ctx.clone(), max_rounds };
+    let engine = CycleEngine {
+        ctx: ctx.clone(),
+        max_rounds,
+    };
     let cycles = engine.cycle_all();
 
     // 信息深度 = 收敛轮数
-    let max_depth = cycles.iter().map(|c| c.convergence_rounds as f64).fold(0.0_f64, f64::max);
+    let max_depth = cycles
+        .iter()
+        .map(|c| c.convergence_rounds as f64)
+        .fold(0.0_f64, f64::max);
     let total_rounds = cycles.iter().map(|c| c.convergence_rounds).sum::<usize>();
 
     // 结构域 S
-    let vertices: Vec<String> = ctx.chars.iter().map(|c| c.to_string())
+    let vertices: Vec<String> = ctx
+        .chars
+        .iter()
+        .map(|c| c.to_string())
         .chain(ctx.words.iter().cloned())
         .collect();
-    let node_depths: Vec<f64> = cycles.iter()
+    let node_depths: Vec<f64> = cycles
+        .iter()
         .map(|c| c.convergence_rounds as f64)
-        .chain(vec![0.0; ctx.words.len()].into_iter())
+        .chain(vec![0.0; ctx.words.len()])
         .collect();
 
     let mut edges = Vec::new();
@@ -98,31 +108,33 @@ pub fn run_phase_one(words: Vec<String>, max_rounds: usize) -> PhaseOneOutput {
         }
     }
 
-    let s = StructureDomain { vertices, edges, weights, node_depths };
+    let s = StructureDomain {
+        vertices,
+        edges,
+        weights,
+        node_depths,
+    };
 
     // 规则域 F（简化推导）
-    let f = vec![
-        Rule {
-            rule_type: "传递性".to_string(),
-            description: "传递性推理闭合".to_string(),
-            support: Vec::new(),
-        },
-    ];
+    let f = vec![Rule {
+        rule_type: "传递性".to_string(),
+        description: "传递性推理闭合".to_string(),
+        support: Vec::new(),
+    }];
 
     // 约束域 C（简化推导）
-    let c = vec![
-        Constraint {
-            constraint_type: "层级一致性".to_string(),
-            description: "概念层级应满足森林封闭性".to_string(),
-            domain: Vec::new(),
-        },
-    ];
+    let c = vec![Constraint {
+        constraint_type: "层级一致性".to_string(),
+        description: "概念层级应满足森林封闭性".to_string(),
+        domain: Vec::new(),
+    }];
 
     // 可逆性记录
     let reversibility_ok = verify_reversibility(&ctx, &cycles);
-    let reversibility_record = vec![
-        format!("reversibility: {}", if reversibility_ok { "OK" } else { "FAIL" }),
-    ];
+    let reversibility_record = vec![format!(
+        "reversibility: {}",
+        if reversibility_ok { "OK" } else { "FAIL" }
+    )];
 
     PhaseOneOutput {
         s,

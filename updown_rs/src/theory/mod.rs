@@ -11,15 +11,16 @@
 //! - 跳变点处理 + Π 投影映射
 //! - 假设 0 全局优化
 
-pub mod fca;
-pub mod cw_complex;
-pub mod vector_field;
-pub mod louvain;
-pub mod five_dim;
-pub mod extended_dimension;
-pub mod function_families;
-pub mod dynamics_params;
 pub mod coupling;
-pub mod ode;
+pub mod cw_complex;
+pub mod dynamics_params;
+pub mod extended_dimension;
+pub mod fca;
+pub mod five_dim;
+pub mod function_families;
 pub mod jump_handler;
+pub mod louvain;
+pub mod ode;
 pub mod optimizer;
+pub mod types;
+pub mod vector_field;

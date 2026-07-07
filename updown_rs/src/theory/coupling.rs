@@ -22,22 +22,29 @@ pub fn compute_coupling(
 
     // Jaccard 相似度
     let union = total_i + total_j - shared;
-    let jaccard = if union > 0 { shared as f64 / union as f64 } else { 0.0 };
+    let jaccard = if union > 0 {
+        shared as f64 / union as f64
+    } else {
+        0.0
+    };
 
     // 状态相似度: 1 - 归一化欧氏距离
-    let state_diff = (
-        (state_i.intrinsic_degree - state_j.intrinsic_degree).powi(2)
+    let state_diff = ((state_i.intrinsic_degree - state_j.intrinsic_degree).powi(2)
         + (state_i.binding_degree - state_j.binding_degree).powi(2)
         + (state_i.energy_density - state_j.energy_density).powi(2)
         + (state_i.evolution_rate - state_j.evolution_rate).powi(2)
-        + (state_i.structural_robustness - state_j.structural_robustness).powi(2)
-    ).sqrt();
+        + (state_i.structural_robustness - state_j.structural_robustness).powi(2))
+    .sqrt();
 
     let state_similarity = 1.0 / (1.0 + state_diff);
 
     // 耦合强度 = Jaccard 相似度 × 状态相似度
     let coupling = jaccard * state_similarity;
-    if coupling.is_nan() || coupling.is_infinite() { 0.0 } else { coupling }
+    if coupling.is_nan() || coupling.is_infinite() {
+        0.0
+    } else {
+        coupling
+    }
 }
 
 /// 构建耦合矩阵 C — 论文 §6.4.4
@@ -53,7 +60,8 @@ pub fn build_coupling_matrix(
 
     for i in 0..n {
         for j in (i + 1)..n {
-            let shared = meme_vertices[i].iter()
+            let shared = meme_vertices[i]
+                .iter()
                 .filter(|v| meme_vertices[j].contains(v))
                 .count();
             let coupling = compute_coupling(

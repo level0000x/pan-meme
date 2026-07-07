@@ -55,7 +55,11 @@ impl VectorField {
                 let phi1 = scalar.get(v1);
                 let phi2 = scalar.get(v2);
                 let grad = -(phi2 - phi1);
-                let grad = if grad.is_nan() || grad.is_infinite() { 0.0 } else { grad };
+                let grad = if grad.is_nan() || grad.is_infinite() {
+                    0.0
+                } else {
+                    grad
+                };
                 edge_gradients.push(grad);
             }
         }
@@ -77,9 +81,12 @@ impl VectorField {
             return 0.0;
         }
         let mean = self.mean_gradient();
-        let variance: f64 = self.edge_gradients.iter()
+        let variance: f64 = self
+            .edge_gradients
+            .iter()
             .map(|&g| (g - mean).powi(2))
-            .sum::<f64>() / self.edge_gradients.len() as f64;
+            .sum::<f64>()
+            / self.edge_gradients.len() as f64;
         variance.sqrt()
     }
 }
@@ -105,7 +112,9 @@ mod tests {
         let v1 = c.add_vertex();
         c.add_edge(v0, v1);
 
-        let sf = ScalarField { values: vec![0.0, 1.0] };
+        let sf = ScalarField {
+            values: vec![0.0, 1.0],
+        };
         let vf = VectorField::compute(&c, &sf);
         assert_eq!(vf.edge_gradients.len(), 1);
         // 梯度 = -(1.0 - 0.0) = -1.0
@@ -119,7 +128,9 @@ mod tests {
         let v1 = c.add_vertex();
         c.add_edge(v0, v1);
 
-        let sf = ScalarField { values: vec![f64::NAN, 1.0] };
+        let sf = ScalarField {
+            values: vec![f64::NAN, 1.0],
+        };
         let vf = VectorField::compute(&c, &sf);
         assert_eq!(vf.edge_gradients[0], 0.0);
     }

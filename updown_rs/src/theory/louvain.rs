@@ -33,16 +33,19 @@ pub fn run_louvain(adj: &[Vec<(usize, f64)>]) -> Option<LouvainLayer> {
     }
 
     // 计算总权重
-    let total_weight: f64 = adj.iter()
+    let total_weight: f64 = adj
+        .iter()
         .flat_map(|neighbors| neighbors.iter().map(|(_, w)| *w))
-        .sum::<f64>() / 2.0;
+        .sum::<f64>()
+        / 2.0;
 
     if total_weight == 0.0 {
         return None;
     }
 
     // 计算每个节点的加权度
-    let weighted_degree: Vec<f64> = adj.iter()
+    let weighted_degree: Vec<f64> = adj
+        .iter()
         .map(|neighbors| neighbors.iter().map(|(_, w)| *w).sum())
         .collect();
 
@@ -105,20 +108,27 @@ pub fn run_louvain(adj: &[Vec<(usize, f64)>]) -> Option<LouvainLayer> {
     // 重新编号社区
     let mut community_map = std::collections::HashMap::new();
     let mut next_id = 0;
-    let node_to_community: Vec<usize> = community.iter().map(|&c| {
-        *community_map.entry(c).or_insert_with(|| {
-            let id = next_id;
-            next_id += 1;
-            id
+    let node_to_community: Vec<usize> = community
+        .iter()
+        .map(|&c| {
+            *community_map.entry(c).or_insert_with(|| {
+                let id = next_id;
+                next_id += 1;
+                id
+            })
         })
-    }).collect();
+        .collect();
 
     let n_communities = next_id;
 
     // 计算模块度 Q
     let modularity_q = compute_modularity(adj, &node_to_community, n_communities, total_weight);
 
-    Some(LouvainLayer { node_to_community, n_communities, modularity_q })
+    Some(LouvainLayer {
+        node_to_community,
+        n_communities,
+        modularity_q,
+    })
 }
 
 /// 计算模块度 Q

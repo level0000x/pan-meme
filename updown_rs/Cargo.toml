@@ -5,5 +5,23 @@ edition = "2021"
 description = "↑↓ 数据建模引擎 — pan-meme 浮现阶段 / ROSE-SCA 认知循环第一步"
 
 [dependencies]
+# 零 build-script 依赖（沙箱兼容）
+# tracing 系列暂不引入: tracing-subscriber 需要 build-script
+# rayon: build-script 被策略阻止, 回退到 std::thread 手动并行
+
 # sha2 = "0.10"  # 本地编译取消注释；沙箱 MinGW 链接器限制，需在本地 Windows 环境编译
-# 未来可选的加速: ahash (更快的 HashMap), rayon (并行循环)
+
+[dev-dependencies]
+# tempfile = "3"  # 移除: 拖入 getrandom/fastrand -> MinGW dlltool 中文路径失败
+# proptest = "1"  # CI (Linux) 启用；Windows MinGW + 中文路径下 dlltool 有限制
+
+[features]
+default = []
+property-tests = []  # 需要 proptest + rayon，仅在 CI/Linux 环境启用
+
+[lib]
+bench = false
+
+[[bench]]
+name = "pipeline"
+harness = false

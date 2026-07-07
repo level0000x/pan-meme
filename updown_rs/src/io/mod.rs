@@ -4,6 +4,6 @@
 //! - tsv: WikiLine TSV 输出
 //! - reversibility: Φ⁻¹∘Φ 往返验证 + 互逆性验证
 
+pub mod reversibility;
 pub mod tokenizer;
 pub mod tsv;
-pub mod reversibility;

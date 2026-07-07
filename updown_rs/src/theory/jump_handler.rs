@@ -9,8 +9,8 @@
 //! 2. 新模因初始化: n_i > n_{i-1} → 从父模因 ξ 解码初始化
 //! 3. 模因消失: n_i < n_{i-1} → 消失模因状态被吸收进存续模因的 ξ
 
-use crate::theory::five_dim::FiveDimState;
 use crate::theory::extended_dimension::ExtendedDimension;
+use crate::theory::five_dim::FiveDimState;
 
 /// 跳变类型
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -48,7 +48,8 @@ impl JumpHandler {
         old_vertices: &[usize],
         new_vertices: &[usize],
     ) -> FiveDimState {
-        let overlap = old_vertices.iter()
+        let overlap = old_vertices
+            .iter()
             .filter(|v| new_vertices.contains(v))
             .count();
         let retention = if old_vertices.is_empty() {

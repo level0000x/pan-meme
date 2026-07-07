@@ -54,7 +54,11 @@ impl CWComplex {
     /// 添加顶点 (0-胞腔)
     pub fn add_vertex(&mut self) -> usize {
         let id = self.cells.len();
-        self.cells.push(Cell { dim: 0, id, boundary: vec![] });
+        self.cells.push(Cell {
+            dim: 0,
+            id,
+            boundary: vec![],
+        });
         self.vertex_map.push(id);
         self.update_invariants();
         id
@@ -74,7 +78,11 @@ impl CWComplex {
         let id = self.cells.len();
         let v1_cell = self.vertex_map[v1];
         let v2_cell = self.vertex_map[v2];
-        self.cells.push(Cell { dim: 1, id, boundary: vec![v1_cell, v2_cell] });
+        self.cells.push(Cell {
+            dim: 1,
+            id,
+            boundary: vec![v1_cell, v2_cell],
+        });
         self.edge_map.insert(key, id);
         self.update_invariants();
         Some(id)
@@ -85,7 +93,11 @@ impl CWComplex {
     /// 对应 supplement B3: 对含 ≥3 字的概念建立面
     pub fn add_face(&mut self, edge_ids: Vec<usize>) -> usize {
         let id = self.cells.len();
-        self.cells.push(Cell { dim: 2, id, boundary: edge_ids });
+        self.cells.push(Cell {
+            dim: 2,
+            id,
+            boundary: edge_ids,
+        });
         self.update_invariants();
         id
     }
