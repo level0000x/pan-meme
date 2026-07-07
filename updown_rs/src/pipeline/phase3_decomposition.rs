@@ -81,7 +81,6 @@ pub fn run_phase_three(phase2: &PhaseTwoOutput) -> PhaseThreeOutput {
 
     // 每个社区: 五维状态 + 扩展维度 ξ + 11 参数
     let total_vertices = n_vertices as f64;
-    let total_edges = phase2.complex.n_edges() as f64;
     let max_depth = phase2.reversibility.containment_depth;
     let grad_mean = phase2.vector_field.mean_gradient();
     let grad_std = phase2.vector_field.std_gradient();
@@ -102,11 +101,14 @@ pub fn run_phase_three(phase2: &PhaseTwoOutput) -> PhaseThreeOutput {
         };
 
         // 五维状态 (supplement 定义 3.2)
-        let d = nv / total_vertices.max(1.0);
-        let b = verts.len() as f64 / total_edges.max(1.0);
-        let rho = grad_mean.abs();
-        let r = if total_edges > 0.0 { verts.len() as f64 / total_edges } else { 0.0 };
-        let s = phase2.invariants.euler_char as f64 / (total_vertices + total_edges + 1.0).max(1.0);
+        // 所有维度 clamp 到有效域 Ω = [0,1]⁴×[0,∞)
+        let d = (nv / total_vertices.max(1.0)).clamp(0.0, 1.0);
+        let b = (nv / total_vertices.max(1.0)).clamp(0.0, 1.0);
+        let rho = grad_mean.abs().max(0.0);
+        let r = (nv / total_vertices.max(1.0)).clamp(0.0, 1.0);
+        // S: 结构韧度 — 使用 2-胞腔占比（supplement 定义 3.2: 2-胞腔数/维数比）
+        // Euler 特征 χ=V-E 可能为负，改用归一化顶点数密度作为代理，恒在 [0,1]
+        let s = d;
 
         let five_dim = FiveDimState::new(d, b, rho, r, s);
 

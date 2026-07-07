@@ -50,8 +50,9 @@ pub fn run_phase_five(
         let error_fn = |_t: f64, phi_d: &FamilyParams, phi_r: &FamilyParams| -> f64 {
             let mut total_loss = 0.0;
             for (_i, meme) in phase3.memes.iter().enumerate() {
+                let init = meme.five_dim.clamp_to_omega();
                 let (trajectory, _) = ode::integrate(
-                    &meme.five_dim, &meme.params, ode_config, phi_d, phi_r,
+                    &init, &meme.params, ode_config, phi_d, phi_r,
                 );
                 for snapshot in &trajectory {
                     total_loss += (snapshot.d - 0.5).powi(2)
@@ -74,8 +75,10 @@ pub fn run_phase_five(
 
     // 每模因独立 ODE 积分
     for (i, meme) in phase3.memes.iter().enumerate() {
+        // 先 clamp 到 Ω = [0,1]⁴×[0,∞)，保证初始状态有效（定理 7）
+        let init = meme.five_dim.clamp_to_omega();
         let (trajectory, termination) = ode::integrate(
-            &meme.five_dim, &meme.params, ode_config, &phi_d, &phi_r,
+            &init, &meme.params, ode_config, &phi_d, &phi_r,
         );
 
         let archetype = ode::classify(&trajectory, &termination);
