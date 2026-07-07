@@ -147,7 +147,7 @@ mod tests {
         let words = vec!["苹果".to_string(), "香蕉".to_string(), "水果".to_string()];
         let p1 = run_phase_one(words.clone(), 100);
         let p2 = run_phase_two(&p1);
-        let p3 = run_phase_three(&p2);
+        let p3 = run_phase_three(&p2, 1.0);
         let report = verify_roundtrip(&words, &p1, &p2, &p3);
         assert!(report.recovery_rate >= 1.0);
         // 小数据集的 Shannon 熵跨模态比较是近似值，不强制严格守恒

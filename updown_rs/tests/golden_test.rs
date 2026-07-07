@@ -1,4 +1,4 @@
-/// Golden file 测试 — 防止回归
+﻿/// Golden file 测试 — 防止回归
 ///
 /// 每次修改代码后运行，对比输出是否与 gold 一致。
 /// 若有意改变行为，删除旧的 .gold 文件重新生成。
@@ -19,7 +19,7 @@ fn run_and_collect() -> String {
     let words = extract_ngrams(GOLDEN_INPUT);
     let p1 = run_phase_one(words.clone(), 100);
     let p2 = run_phase_two(&p1);
-    let p3 = run_phase_three(&p2);
+    let p3 = run_phase_three(&p2, 1.0);
     let report = verify_roundtrip(&words, &p1, &p2, &p3);
 
     let mut out = String::new();

@@ -359,47 +359,209 @@ pub fn classify_equilibrium(state: &FiveDimState) -> EquilibriumType {
     }
 }
 
-/// 分类原型 — 定理 5.8
-pub fn classify(trajectory: &[StateSnapshot], reason: &TerminationReason) -> Archetype {
+/// 分类原型 — 定理 5.8（基于轨迹动力学特征）
+///
+/// 与旧版不同，不依赖 TerminationReason 决定原型族，而是分析轨迹的
+/// 形状特征（峰值、衰减、振荡等）来分类。这使分类对 ODE 参数
+/// 和初始条件的变化更敏感，能产生多样化的原型。
+pub fn classify(trajectory: &[StateSnapshot], _reason: &TerminationReason) -> Archetype {
     if trajectory.len() < 2 {
         return Archetype::Undetermined;
     }
 
-    let last = trajectory.last().unwrap();
+    let n = trajectory.len();
     let first = &trajectory[0];
-    let d = last.d;
-    let s = last.s;
-    let r = last.r;
+    let last = &trajectory[n - 1];
 
-    let d_final = d;
-    let _d_init = first.d;
-    let s_final = s;
-    let _s_init = first.s;
+    // ── 轨迹特征提取 ──
+    // 各维度: 初始值、终值、峰值、峰值时间、谷值
+    let d_init = first.d;
+    let d_final = last.d;
+    let b_init = first.b;
+    let b_final = last.b;
+    let rho_init = first.rho;
+    let rho_final = last.rho;
+    let r_init = first.r;
+    let r_final = last.r;
+    let s_init = first.s;
+    let s_final = last.s;
 
-    match reason {
-        TerminationReason::Converged => {
-            if d_final > 0.5 && s_final > 0.5 {
-                Archetype::Stone
-            } else if d_final > 0.3 && s_final > 0.3 {
-                Archetype::StableCore
-            } else if s_final > 0.8 {
-                Archetype::Resilient
-            } else if d_final < 0.1 && s_final < 0.1 {
-                Archetype::Decay
-            } else {
-                Archetype::StableCore
-            }
+    // 找各维度峰值和时间
+    let mut d_peak = d_init;
+    let mut d_peak_t = 0.0;
+    let mut b_peak = b_init;
+    let mut _b_peak_t = 0.0;
+    let mut r_peak = r_init;
+    let mut rho_peak = rho_init;
+    let mut s_min = s_init;
+
+    for snap in trajectory {
+        if snap.d > d_peak {
+            d_peak = snap.d;
+            d_peak_t = snap.t;
         }
-        TerminationReason::MaxSteps | TerminationReason::MaxTime => {
-            if r > 0.5 {
-                Archetype::Burst
-            } else {
-                Archetype::Transient
-            }
+        if snap.b > b_peak {
+            b_peak = snap.b;
+            _b_peak_t = snap.t;
         }
-        TerminationReason::JumpDetected => Archetype::Transient,
-        _ => Archetype::Undetermined,
+        if snap.r > r_peak {
+            r_peak = snap.r;
+        }
+        if snap.rho > rho_peak {
+            rho_peak = snap.rho;
+        }
+        if snap.s < s_min {
+            s_min = snap.s;
+        }
     }
+
+    // 振荡检测: 计算各维度导数的符号变化次数
+    let oscillation_count = count_sign_changes(trajectory);
+
+    // 增长/衰减速率: 前 20% 到 后 20% 的变化
+    let early_idx = (n as f64 * 0.2) as usize;
+    let late_idx = (n as f64 * 0.8) as usize;
+    let early = &trajectory[early_idx.min(n - 1)];
+    let late = &trajectory[late_idx.min(n - 1)];
+    let d_growth = late.d - early.d;
+    let _r_growth = late.r - early.r;
+    let _b_growth = late.b - early.b;
+
+    // 收敛速度: 达到终值 90% 的时间
+    let d_target = d_init + 0.9 * (d_final - d_init);
+    let mut _d_converge_t = last.t;
+    for snap in trajectory {
+        if (d_final - d_init).abs() > 1e-6
+            && (snap.d - d_init).abs() >= (d_target - d_init).abs() * 0.99
+        {
+            _d_converge_t = snap.t;
+            break;
+        }
+    }
+
+    // ── 原型判定 ──
+    let eps = 0.15;
+
+    // 检测轨迹是否仍在显著演化中（末尾 20% 步长内总变化 > 0.05）
+    let tail_start = (n as f64 * 0.8) as usize;
+    let tail_slice = &trajectory[tail_start.min(n - 1)..];
+    let tail_change = if tail_slice.len() >= 2 {
+        let ts = &tail_slice[0];
+        let te = &tail_slice[tail_slice.len() - 1];
+        (te.d - ts.d).abs() + (te.b - ts.b).abs() + (te.r - ts.r).abs() + (te.s - ts.s).abs()
+    } else {
+        0.0
+    };
+    let still_evolving = tail_change > 0.05;
+
+    // 振荡型: 多维度导数符号变化 ≥ 3
+    if oscillation_count >= 3 {
+        return Archetype::Oscillatory;
+    }
+
+    // 过客族: 峰值明显高于终值（先升后降）
+    let d_decay = d_peak - d_final;
+    let r_decay = r_peak - r_final;
+
+    if d_decay > 0.3 && d_peak > 0.5 {
+        // Burst: R 峰值高，爆发性强
+        if r_peak > 0.4 {
+            return Archetype::Burst;
+        }
+        // Transient: 快速上升后衰减，峰值时间早
+        if d_peak_t < last.t * 0.4 {
+            return Archetype::Transient;
+        }
+        return Archetype::Decay;
+    }
+
+    // 仍在演化中（MaxTime/MaxSteps）→ 按轨迹动态分类，不按终值
+    if still_evolving {
+        // R 从高峰值衰减 → Burst
+        if r_peak > 0.5 && r_decay > 0.2 {
+            return Archetype::Burst;
+        }
+        // D 和 B 都在增长 → Source（向外扩展中）
+        if d_growth > 0.3 && b_final > 0.4 {
+            return Archetype::Source;
+        }
+        // R 保持在中等水平以上 → 活跃中
+        if r_final > 0.05 {
+            return Archetype::Transient;
+        }
+        // D 显著增长但 R 已衰减 → 趋稳中（接近 Stone）
+        if d_growth > 0.3 {
+            return Archetype::StableCore;
+        }
+        // 兜底
+        return Archetype::Undetermined;
+    }
+
+    // 泡沫族: 特殊模式
+    // Source: 向外输出 (B 和 R 持续高)
+    if b_final > 0.3 && r_final > 0.2 && d_final > 0.3 {
+        return Archetype::Source;
+    }
+    // Sink: 吸收型 (ρ 高, D 和 B 低)
+    if rho_final > 0.7 && d_final < 0.3 && b_final < 0.3 {
+        return Archetype::Sink;
+    }
+
+    // 基石族: 稳定收敛
+    if d_final > 1.0 - eps && s_final > 1.0 - eps && r_final < eps {
+        return Archetype::Stone;
+    }
+
+    if s_final > 0.7 && s_min > 0.5 {
+        return Archetype::Resilient;
+    }
+
+    // StableCore: 收敛到中等值
+    if d_final > 0.3 && s_final > 0.3 {
+        return Archetype::StableCore;
+    }
+
+    // 兜底: 按终值判断
+    if d_final < 0.2 && s_final < 0.2 {
+        if d_growth < -0.1 {
+            Archetype::Decay
+        } else {
+            Archetype::Transient
+        }
+    } else if r_final > 0.3 {
+        Archetype::Burst
+    } else {
+        Archetype::Undetermined
+    }
+}
+
+/// 统计轨迹中所有维度的导数符号变化次数
+fn count_sign_changes(trajectory: &[StateSnapshot]) -> usize {
+    if trajectory.len() < 3 {
+        return 0;
+    }
+    let mut count = 0;
+    for dim in 0..5 {
+        let mut prev_sign = 0i8;
+        for i in 1..trajectory.len() {
+            let diff = match dim {
+                0 => trajectory[i].d - trajectory[i - 1].d,
+                1 => trajectory[i].b - trajectory[i - 1].b,
+                2 => trajectory[i].rho - trajectory[i - 1].rho,
+                3 => trajectory[i].r - trajectory[i - 1].r,
+                4 => trajectory[i].s - trajectory[i - 1].s,
+                _ => 0.0,
+            };
+            let sign = if diff > 1e-6 { 1 } else if diff < -1e-6 { -1 } else { 0 };
+            if sign != 0 && prev_sign != 0 && sign != prev_sign {
+                count += 1;
+            }
+            if sign != 0 {
+                prev_sign = sign;
+            }
+        }
+    }
+    count
 }
 
 /// 收敛报告 — 实验零

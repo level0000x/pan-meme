@@ -1,4 +1,4 @@
-/// Property-based 测试 — 不变量验证
+﻿/// Property-based 测试 — 不变量验证
 ///
 /// 需要 `--features property-tests` 启用（依赖 proptest）。
 /// CI (Linux) 环境自动启用，Windows MinGW 因 dlltool 路径限制跳过。
@@ -61,7 +61,7 @@ proptest! {
         if words.is_empty() { return Ok(()); }
         let p1 = run_phase_one(words, 50);
         let p2 = run_phase_two(&p1);
-        let p3 = run_phase_three(&p2);
+        let p3 = run_phase_three(&p2, 1.0);
 
         for meme in &p3.memes {
             let s = meme.five_dim;
@@ -85,7 +85,7 @@ proptest! {
         if words.is_empty() { return Ok(()); }
         let p1 = run_phase_one(words.clone(), 50);
         let p2 = run_phase_two(&p1);
-        let p3 = run_phase_three(&p2);
+        let p3 = run_phase_three(&p2, 1.0);
         let report = verify_roundtrip(&words, &p1, &p2, &p3);
         prop_assert!(report.words_fully_recoverable,
             "词不可逆: rate={}", report.recovery_rate);
@@ -98,7 +98,7 @@ proptest! {
         if words.is_empty() { return Ok(()); }
         let p1 = run_phase_one(words, 50);
         let p2 = run_phase_two(&p1);
-        let p3 = run_phase_three(&p2);
+        let p3 = run_phase_three(&p2, 1.0);
         if p3.memes.is_empty() { return Ok(()); }
 
         let config = OdeConfig { max_steps: 500, ..OdeConfig::default() };

@@ -20,7 +20,7 @@ use crate::theory::coupling::build_coupling_matrix;
 use crate::theory::dynamics_params::DynamicsParams;
 use crate::theory::extended_dimension::ExtendedDimension;
 use crate::theory::five_dim::FiveDimState;
-use crate::theory::louvain::run_louvain;
+use crate::theory::louvain::run_louvain_with_resolution;
 
 /// 单模因状态
 #[derive(Debug, Clone)]
@@ -44,7 +44,7 @@ pub struct PhaseThreeOutput {
 }
 
 /// 运行 Phase 3: 分解
-pub fn run_phase_three(phase2: &PhaseTwoOutput) -> PhaseThreeOutput {
+pub fn run_phase_three(phase2: &PhaseTwoOutput, louvain_resolution: f64) -> PhaseThreeOutput {
     let n_vertices = phase2.complex.n_vertices();
 
     // 构建 Louvain 邻接表（边权 = 通量 |Γ¹(e)|）
@@ -61,7 +61,7 @@ pub fn run_phase_three(phase2: &PhaseTwoOutput) -> PhaseThreeOutput {
 
     // Louvain 社区检测
     let mut communities = vec![0; n_vertices];
-    let _n_memes = if let Some(layer) = run_louvain(&adj) {
+    let _n_memes = if let Some(layer) = run_louvain_with_resolution(&adj, louvain_resolution) {
         communities = layer.node_to_community;
         layer.n_communities
     } else {
@@ -85,8 +85,44 @@ pub fn run_phase_three(phase2: &PhaseTwoOutput) -> PhaseThreeOutput {
     let grad_mean = phase2.vector_field.mean_gradient();
     let grad_std = phase2.vector_field.std_gradient();
 
+    // 预计算每个社区的顶点集合（用于快速查找）
+    let mut vertex_to_community = vec![0usize; n_vertices];
+    for (ci, verts) in meme_vertices.iter().enumerate() {
+        for &v in verts {
+            if v < n_vertices {
+                vertex_to_community[v] = ci;
+            }
+        }
+    }
+
+    // 预计算每个社区的边统计
+    let n_communities = meme_vertices.len();
+    let mut internal_edges = vec![0usize; n_communities];
+    let mut cross_edges = vec![0usize; n_communities];
+    let mut community_degree = vec![0.0f64; n_communities]; // 社区总度数
+    for cell in &phase2.complex.cells {
+        if cell.dim == 1 && cell.boundary.len() == 2 {
+            let v1 = cell.boundary[0];
+            let v2 = cell.boundary[1];
+            if v1 < n_vertices && v2 < n_vertices {
+                let c1 = vertex_to_community[v1];
+                let c2 = vertex_to_community[v2];
+                if c1 < n_communities && c2 < n_communities {
+                    community_degree[c1] += 1.0;
+                    community_degree[c2] += 1.0;
+                    if c1 == c2 {
+                        internal_edges[c1] += 1;
+                    } else {
+                        cross_edges[c1] += 1;
+                        cross_edges[c2] += 1;
+                    }
+                }
+            }
+        }
+    }
+
     let mut memes = Vec::new();
-    for verts in &meme_vertices {
+    for (ci, verts) in meme_vertices.iter().enumerate() {
         if verts.is_empty() {
             continue;
         }
@@ -101,15 +137,44 @@ pub fn run_phase_three(phase2: &PhaseTwoOutput) -> PhaseThreeOutput {
             0.0
         };
 
-        // 五维状态 (supplement 定义 3.2)
-        // 所有维度 clamp 到有效域 Ω = [0,1]⁴×[0,∞)
-        let d = (nv / total_vertices.max(1.0)).clamp(0.0, 1.0);
-        let b = (nv / total_vertices.max(1.0)).clamp(0.0, 1.0);
-        let rho = grad_mean.abs().max(0.0);
-        let r = (nv / total_vertices.max(1.0)).clamp(0.0, 1.0);
-        // S: 结构韧度 — 使用 2-胞腔占比（supplement 定义 3.2: 2-胞腔数/维数比）
-        // Euler 特征 χ=V-E 可能为负，改用归一化顶点数密度作为代理，恒在 [0,1]
-        let s = d;
+        // ── 五维状态 (supplement 定义 3.2) ──
+        // 每个模因根据其内部结构计算独立初始状态
+
+        // D: 内在度 = 内部边密度 + 顶点占比的混合
+        let internal_density = if nv > 1.0 {
+            (2.0 * internal_edges[ci] as f64) / (nv * (nv - 1.0))
+        } else {
+            0.0
+        };
+        let d = (0.5 * internal_density + 0.5 * (nv / total_vertices.max(1.0)))
+            .clamp(0.0, 1.0);
+
+        // B: 广度 = 顶点占比 + 跨社区连接度
+        let total_touching = internal_edges[ci] as f64 + cross_edges[ci] as f64;
+        let cross_ratio = if total_touching > 0.0 {
+            cross_edges[ci] as f64 / total_touching
+        } else {
+            0.0
+        };
+        let b = (0.6 * (nv / total_vertices.max(1.0)) + 0.4 * cross_ratio)
+            .clamp(0.0, 1.0);
+
+        // ρ: 能量密度 = 全局场强 + 内部边密度调制
+        let rho = (grad_mean.abs() * (0.3 + 0.7 * internal_density))
+            .max(0.0).min(1.0);
+
+        // R: 演化速率 — 小模因更活跃（高 R），大而密集的模因更稳定（低 R）
+        // 用大小和密度共同决定，使 R 在 [0.15, 0.9] 范围内拉开
+        let size_factor = (nv / total_vertices.max(1.0)).clamp(0.0, 1.0); // 大模因 → 低 R
+        let r_base = cross_ratio.clamp(0.0, 1.0);
+        let sparsity_factor = (1.0 - internal_density).max(0.1);
+        // 混合: 40% 跨社区 + 30% 稀疏度 + 30% 大小反比
+        let r = (r_base * 0.4 + sparsity_factor * 0.3 + (1.0 - size_factor) * 0.3)
+            .clamp(0.15, 0.9);
+
+        // S: 结构韧度 = 内部边密度 + 顶点占比
+        let s = (0.7 * internal_density + 0.3 * (nv / total_vertices.max(1.0)))
+            .clamp(0.0, 1.0);
 
         let five_dim = FiveDimState::new(d, b, rho, r, s);
 
@@ -130,10 +195,12 @@ pub fn run_phase_three(phase2: &PhaseTwoOutput) -> PhaseThreeOutput {
             micro_fluctuation: Vec::new(),
         };
 
-        // 11 参数
+        // 11 参数 — 根据模因结构差异化
+        // δ₁ 核心驱动力: 高 ρ 和 B 的模因有更强的自持力
+        // δ₃ 自发衰退: 大模因衰退慢，小模因衰退快
         let params = DynamicsParams::from_geometry(
             verts.len(),
-            0,
+            internal_edges[ci],
             depth,
             max_depth,
             &five_dim,
@@ -172,7 +239,7 @@ mod tests {
         let words = vec!["苹果".to_string(), "香蕉".to_string(), "水果".to_string()];
         let p1 = run_phase_one(words, 100);
         let p2 = run_phase_two(&p1);
-        let p3 = run_phase_three(&p2);
+        let p3 = run_phase_three(&p2, 1.0);
         assert!(p3.n_memes > 0);
         assert_eq!(p3.coupling.len(), p3.n_memes);
         for meme in &p3.memes {

@@ -93,14 +93,15 @@ impl DynamicsParams {
         // γ₂: 边界流入通量 (简化近似)
         let gamma_2 = 0.3;
 
-        // δ₁: 曲率 × 连接密度
-        let delta_1 = state.evolution_rate * state.binding_degree;
+        // δ₁: 核心驱动力 — 曲率 × 连接密度 × 放大因子
+        // 高跨社区连接的模因有更强的演化自持力
+        let delta_1 = state.evolution_rate * state.binding_degree * 5.0;
 
-        // δ₂: 层级深度 × 内部复杂度
-        let delta_2 = depth * state.intrinsic_degree;
+        // δ₂: 深度诅咒 — 层级深度 × 内在度
+        let delta_2 = depth * state.intrinsic_degree * 0.5;
 
-        // δ₃: 拓扑不变量数量倒数
-        let delta_3 = 1.0 / (1.0 + (ne - nv + 1.0).abs());
+        // δ₃: 自发衰退 — 小模因衰退快，大模因衰退慢
+        let delta_3 = 1.0 / (1.0 + nv * 0.1);
 
         // ε₁: 层级深度 × 稳定性指标
         let epsilon_1 = depth * state.structural_robustness;

@@ -1,4 +1,4 @@
-use updown::io::reversibility::verify_roundtrip;
+﻿use updown::io::reversibility::verify_roundtrip;
 /// 完整管线集成测试 v4: 五阶段流水线 + 往返验证 + ODE 收敛
 ///
 /// 验证内容:
@@ -39,7 +39,7 @@ fn test_full_pipeline_with_text() {
     assert!(p2.invariants.betti_0 > 0, "Phase 2 应有 Betti 数");
 
     // Phase 3: 分解
-    let p3 = run_phase_three(&p2);
+    let p3 = run_phase_three(&p2, 1.0);
     assert!(p3.n_memes > 0, "Phase 3 应有至少一个模因");
 
     // 往返验证
@@ -70,7 +70,7 @@ fn test_pipeline_with_optimizer() {
     let words = extract_ngrams(TEST_TEXT);
     let p1 = run_phase_one(words.clone(), 100);
     let p2 = run_phase_two(&p1);
-    let p3 = run_phase_three(&p2);
+    let p3 = run_phase_three(&p2, 1.0);
 
     let ode_config = OdeConfig {
         max_steps: 500,
@@ -98,7 +98,7 @@ fn test_falsifiability_criterion() {
         let words = extract_ngrams(text);
         let p1 = run_phase_one(words, 100);
         let p2 = run_phase_two(&p1);
-        let p3 = run_phase_three(&p2);
+        let p3 = run_phase_three(&p2, 1.0);
 
         let ode_config = OdeConfig {
             max_steps: 500,
@@ -128,7 +128,7 @@ fn test_reversibility_roundtrip() {
     let words = vec!["苹果".to_string(), "香蕉".to_string(), "水果".to_string()];
     let p1 = run_phase_one(words.clone(), 100);
     let p2 = run_phase_two(&p1);
-    let p3 = run_phase_three(&p2);
+    let p3 = run_phase_three(&p2, 1.0);
     let report = verify_roundtrip(&words, &p1, &p2, &p3);
     assert!(report.words_fully_recoverable);
 }

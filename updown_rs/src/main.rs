@@ -53,6 +53,7 @@ fn main() -> io::Result<()> {
     let mut verbose = false;
     let mut t_max = 5.0;
     let mut max_steps = 20000usize;
+    let mut louvain_resolution = 1.0;
 
     let mut i = 2;
     while i < args.len() {
@@ -88,6 +89,12 @@ fn main() -> io::Result<()> {
                 i += 1;
                 if i < args.len() {
                     max_steps = args[i].parse().unwrap_or(20000);
+                }
+            }
+            "--louvain-resolution" => {
+                i += 1;
+                if i < args.len() {
+                    louvain_resolution = args[i].parse().unwrap_or(1.0);
                 }
             }
             _ => {}
@@ -186,7 +193,7 @@ fn main() -> io::Result<()> {
             // ── Phase 3: 分解 ──
             if phase_filter.is_none_or(|p| p <= 3) {
                 let t3 = Instant::now();
-                let phase3 = run_phase_three(&phase2);
+                let phase3 = run_phase_three(&phase2, louvain_resolution);
                 let dt = t3.elapsed();
                 println!(
                     "  [Phase 3] memes={} — {:.2}s",
