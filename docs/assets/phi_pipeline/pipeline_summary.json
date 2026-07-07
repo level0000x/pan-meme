@@ -1,0 +1,30 @@
+{
+  "pipeline": "Φ_A→Φ_B→Φ_C→Φ_D→Φ⁻¹",
+  "input": {
+    "total_chars": 1000,
+    "top5": [
+      "不",
+      "一",
+      "可",
+      "人",
+      "无"
+    ]
+  },
+  "phi_a": {
+    "psi_nodes": 1000,
+    "psi_edges": 53674,
+    "clusters": 17
+  },
+  "phi_d": {
+    "t_max": 500.0,
+    "trajectories": 17,
+    "elapsed_sec": 0.5
+  },
+  "roundtrip": {
+    "recovery_rate": 1.0,
+    "passed": true
+  },
+  "archetypes": {
+    "Stone": 17
+  }
+}
