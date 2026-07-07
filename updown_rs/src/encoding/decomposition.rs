@@ -187,11 +187,28 @@ pub fn compute_five_dim(
     let depth_factor = (depth as f64 / D_MAX).min(1.0);
     let d = cell_factor * depth_factor;
 
-    // B: 关联度 — 至少 0.01（避免 ODE 奇异性；零耦合在实际物理中不存在）
-    let total_ext: usize = sub.external_links.iter().map(|(_, c)| c).sum();
+    // B: 关联度 — 此模因对外界结构的依赖程度
+    //
+    // 两种情形：
+    //   n>1: B = external_edges / max_possible_external  (标准跨分量耦合)
+    //   n=1: B = (1 - edge_density) × depth_discount
+    //         单连通分量无法计算跨模因耦合。改用"未实现的连接比例"作为
+    //         对外耦合潜力度量：边密度越小 → 结构越稀疏 → 耦合潜力越大。
+    //         直观含义：此模因内部只实现了 B% 的可能关系——
+    //         其余 (1 - B) 的"关系空间"都可能来自外部结构。
     let b = if total_sub > 1 {
-        (total_ext as f64 / ((total_sub - 1) as f64 * 2.0)).min(1.0).max(0.01)
-    } else { 0.01 };
+        let total_ext: usize = sub.external_links.iter().map(|(_, c)| c).sum();
+        (total_ext as f64 / ((total_sub - 1) as f64 * 2.0)).min(1.0)
+    } else {
+        let nv = sub.vertices.len().max(2) as f64;
+        let ne = sub.edges.len() as f64;
+        let density = (2.0 * ne / (nv * (nv - 1.0))).min(1.0);
+        // 未实现的连接比例 → 基耦合
+        let base = 1.0 - density;
+        // 深度折扣：浅层模因更依赖外部，深层的"缺口"是有意设计的自足
+        let depth_factor = (depth as f64 / D_MAX).min(1.0);
+        (base * (1.0 - depth_factor * 0.5)).max(0.0)
+    };
 
     // ρ: 能流密度 — 子几何体内通量总和（来自梯度向量场）
     let rho = safe_flux;
