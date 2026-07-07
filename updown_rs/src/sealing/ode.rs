@@ -1,15 +1,16 @@
 //! Phase 5: ODE 求解器
 //!
-//! 数学对应：§D.5 五维动力学系统 + 定理6+7+8+10
+//! 数学对应：§4.3.5-§4.3.6 五维动力学系统 + 定理6+7+8+10
 //!
-//! 5D ODE 系统（每个模因独立）：
-//!   dD/dt = α₁·Φ_D(D) - α₂·D·B²
-//!   dB/dt = β₁·B·(1-B) - β₂·D·B
-//!   dρ/dt = γ₁·D·B - γ₂·ρ
-//!   dR/dt = δ₁·ρ·R·(1-R) - δ₂·D·R - δ₃·R
-//!   dS/dt = ε₁·D·ρ - ε₂·S
+//! 5D ODE 系统（每个模因独立，严格对齐论文 + proof-supplement §5.1）：
+//!   dD/dt = -α₁·R·D + α₂·S·(1-D)                     (§4.3.5 D — R-S 对偶耦合)
+//!   dB/dt =  β₁·R·(1-B) - β₂·D·B                       (§4.3.5 B)
+//!   dρ/dt = -γ₁·R·ρ + γ₂·(1-ρ)·I_ext                   (§4.3.5 ρ)
+//!   dR/dt =  δ₁·ρ·B·(1-R) - δ₂·Φ_D(D)·R - δ₃·R       (§4.3.5 R — Φ_D 非线性衰减)
+//!   dS/dt =  ε₁·D·(1-S) - ε₂·Φ_R(R)·S                 (§4.3.6 S — Φ_R 速朽定律)
 //!
 //! 求解器：RKF45 (Runge-Kutta-Fehlberg 4(5)) 自适应步长
+//! 原型分类：趋势阈值判定（对应 proof-supplement 定理5.8 的 Jacobian 吸引域分析）
 //! 定理7：Ω = [0,1]⁵ 是不变集（逐维边界裁剪）
 
 use crate::encoding::decomposition::{DynamicsParams, Coupling};
@@ -590,10 +591,12 @@ fn classify_equilibrium(traj: &MemeTrajectory) -> EquilibriumClass {
 
 /// 九类原型分类（定理10 — 三类主原型 + 细粒度子类型）
 ///
-/// 第一步：按论文 §4.4 判定三类主原型（基石/过客/泡沫）
+/// 第一步：按论文 §4.4 + proof-supplement 引理 5.3-5.7 判定三类主原型
+///   Jacobian 分析给出：退零点是鞍点（diag(α₂, 0, -γ₂, -δ₃, ε₁)），
+///   基石型平衡点有全负实部特征值（稳定结点），过客/泡沫族对应不稳定流形上的轨道。
 /// 第二步：在每个主原型内按五维趋势细分为子类型
 ///
-/// 趋势判定：比较轨迹前半段 vs 后半段各维度的均值
+/// 趋势判定：比较轨迹前半段 vs 后半段各维度的均值（对应 proof-supplement 定理 5.8 的吸引域边界）
 fn classify_archetype(traj: &MemeTrajectory) -> MemeArchetype {
     let n = traj.trajectory.len();
     if n < 10 { return MemeArchetype::Undetermined; }
