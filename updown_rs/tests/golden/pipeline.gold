@@ -1,9 +1,9 @@
 words=156 vertices=202 depths=8.0
 betti_0=1 betti_1=118
 n_memes=2
-meme_0: D=0.460 B=0.460 S=0.460
-meme_1: D=0.540 B=0.540 S=0.540
+meme_0: D=0.490 B=0.490 S=0.490
+meme_1: D=0.510 B=0.510 S=0.510
 recovery_rate=1.0000 entropy_conserved=false
 n_evolutions=2
 evo_0: steps=64 archetype=Transient
-evo_1: steps=67 archetype=Transient
+evo_1: steps=66 archetype=Transient

@@ -28,7 +28,7 @@ use updown::pipeline::{
     phase3_decomposition::run_phase_three, phase4_binding::run_phase_four,
     phase5_evolution::run_phase_five,
 };
-use updown::theory::{ode::OdeConfig, optimizer::OptimizerConfig};
+use updown::theory::{ode::OdeConfig, ode::evaluate_convergence, optimizer::OptimizerConfig};
 
 fn main() -> io::Result<()> {
     let args: Vec<String> = std::env::args().collect();
@@ -268,6 +268,30 @@ fn main() -> io::Result<()> {
                                     evo.meme_idx, evo.termination
                                 );
                             }
+                        }
+
+                        // ── 收敛报告（实验零）──
+                        let conv_report = evaluate_convergence(&phase5.evolutions, &ode_config);
+                        println!(
+                            "  [Convergence] rate={:.1}% converged={}/{} std_ok={} undetermined={:.1}% → {}",
+                            conv_report.convergence_rate * 100.0,
+                            conv_report.converged_count,
+                            conv_report.total_memes,
+                            conv_report.criteria.std_ok,
+                            conv_report.undetermined_pct * 100.0,
+                            if conv_report.is_converged {
+                                "PASS"
+                            } else {
+                                "FAIL"
+                            }
+                        );
+                        if !conv_report.is_converged {
+                            eprintln!(
+                                "  [Convergence] 判据: all_converged={} std_ok={} undet_ok={}",
+                                conv_report.criteria.all_converged,
+                                conv_report.criteria.std_ok,
+                                conv_report.criteria.undetermined_ok
+                            );
                         }
 
                         // 输出 ODE 轨迹 CSV

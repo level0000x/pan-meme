@@ -35,6 +35,15 @@ pub struct OdeConfig {
     pub max_steps: usize,
     /// 最大时间
     pub t_max: f64,
+    // ── 收敛判据（实验零）──
+    /// 收敛检测窗口大小（连续 N 步）
+    pub convergence_window: usize,
+    /// 收敛阈值（窗口首尾总变化 < 此值）
+    pub convergence_threshold: f64,
+    /// 轨迹末尾连续 N 步各维度标准差上限
+    pub std_threshold: f64,
+    /// Undetermined 分类最大占比（超出则收敛不足）
+    pub undetermined_max_pct: f64,
 }
 
 impl Default for OdeConfig {
@@ -47,6 +56,10 @@ impl Default for OdeConfig {
             atol: 1e-8,
             max_steps: 20000,
             t_max: 5.0,
+            convergence_window: 5,
+            convergence_threshold: 1e-3,
+            std_threshold: 1e-3,
+            undetermined_max_pct: 0.10,
         }
     }
 }
@@ -81,6 +94,8 @@ pub enum TerminationReason {
     InvalidInitialState,
     /// 检测到跳变（β₀(K(t)) 变化）
     JumpDetected,
+    /// 收敛不足（未满足收敛判据）— 实验零
+    InsufficientConvergence,
 }
 
 /// 5 种平衡点类型 — 定理 8
@@ -256,9 +271,6 @@ pub fn integrate(
         s: state[4],
     });
 
-    let convergence_window = 5;
-    let convergence_threshold = 1e-3;
-
     for _step in 0..config.max_steps {
         if t >= config.t_max {
             return (trajectory, TerminationReason::MaxTime);
@@ -289,9 +301,9 @@ pub fn integrate(
             s: state[4],
         });
 
-        // 收敛检测: 连续 5 步总变化 < 1e-3
-        if trajectory.len() > convergence_window {
-            let start = trajectory.len() - convergence_window - 1;
+        // 收敛检测: 连续 N 步总变化 < threshold
+        if trajectory.len() > config.convergence_window {
+            let start = trajectory.len() - config.convergence_window - 1;
             let end = trajectory.len() - 1;
             let prev = FiveDimState::new(
                 trajectory[start].d,
@@ -307,7 +319,7 @@ pub fn integrate(
                 trajectory[end].r,
                 trajectory[end].s,
             );
-            if prev.total_change(&curr) < convergence_threshold {
+            if prev.total_change(&curr) < config.convergence_threshold {
                 return (trajectory, TerminationReason::Converged);
             }
         }
@@ -388,6 +400,150 @@ pub fn classify(trajectory: &[StateSnapshot], reason: &TerminationReason) -> Arc
         TerminationReason::JumpDetected => Archetype::Transient,
         _ => Archetype::Undetermined,
     }
+}
+
+/// 收敛报告 — 实验零
+///
+/// 评估整个 Phase 5 输出的收敛质量，按四条判据逐项检查。
+#[derive(Debug, Clone)]
+pub struct ConvergenceReport {
+    /// 总模因数
+    pub total_memes: usize,
+    /// 收敛模因数（TerminationReason::Converged）
+    pub converged_count: usize,
+    /// 收敛率
+    pub convergence_rate: f64,
+    /// 轨迹末尾维度标准差超标的模因数
+    pub std_violations: usize,
+    /// Undetermined 分类数
+    pub undetermined_count: usize,
+    /// Undetermined 占比
+    pub undetermined_pct: f64,
+    /// 四条判据逐一通过状态
+    pub criteria: ConvergenceCriteria,
+    /// 整体是否收敛
+    pub is_converged: bool,
+}
+
+/// 四条收敛判据
+#[derive(Debug, Clone)]
+pub struct ConvergenceCriteria {
+    /// 判据 1: 所有模因 Converged（非 MaxSteps/NaN）
+    pub all_converged: bool,
+    /// 判据 2: 轨迹末尾维度标准差 < threshold
+    pub std_ok: bool,
+    /// 判据 3: Undetermined < 10%
+    pub undetermined_ok: bool,
+    /// 判据 4: 原型分布一致（需多次运行，此处仅标记）
+    pub reproducibility_note: &'static str,
+}
+
+/// 评估收敛质量 — 实验零核心函数
+///
+/// 参数:
+/// - evolutions: Phase 5 输出的所有模因演化结果
+/// - config: ODE 配置（含收敛判据参数）
+pub fn evaluate_convergence(
+    evolutions: &[crate::pipeline::phase5_evolution::MemeEvolution],
+    config: &OdeConfig,
+) -> ConvergenceReport {
+    let total = evolutions.len();
+    let converged = evolutions
+        .iter()
+        .filter(|e| e.termination == TerminationReason::Converged)
+        .count();
+
+    let mut std_violations = 0;
+    for evo in evolutions {
+        if evo.trajectory.len() < config.convergence_window {
+            std_violations += 1;
+            continue;
+        }
+        // 轨迹末尾连续 N 步各维度标准差
+        let tail: Vec<_> = evo
+            .trajectory
+            .iter()
+            .rev()
+            .take(config.convergence_window)
+            .collect();
+        if tail.len() < config.convergence_window {
+            std_violations += 1;
+            continue;
+        }
+        let means = mean_of_snapshots(&tail);
+        let stds = std_of_snapshots(&tail, &means);
+        if stds.iter().any(|s| *s > config.std_threshold) {
+            std_violations += 1;
+        }
+    }
+
+    let undetermined = evolutions
+        .iter()
+        .filter(|e| e.archetype == Archetype::Undetermined)
+        .count();
+
+    let convergence_rate = if total > 0 {
+        converged as f64 / total as f64
+    } else {
+        0.0
+    };
+    let undetermined_pct = if total > 0 {
+        undetermined as f64 / total as f64
+    } else {
+        0.0
+    };
+
+    let criteria = ConvergenceCriteria {
+        all_converged: converged == total,
+        std_ok: std_violations == 0,
+        undetermined_ok: undetermined_pct <= config.undetermined_max_pct,
+        reproducibility_note: "需多次独立运行验证原型分布一致性",
+    };
+
+    let is_converged = criteria.all_converged && criteria.std_ok && criteria.undetermined_ok;
+
+    ConvergenceReport {
+        total_memes: total,
+        converged_count: converged,
+        convergence_rate,
+        std_violations,
+        undetermined_count: undetermined,
+        undetermined_pct,
+        criteria,
+        is_converged,
+    }
+}
+
+fn mean_of_snapshots(snapshots: &[&StateSnapshot]) -> [f64; 5] {
+    let n = snapshots.len() as f64;
+    let mut sums = [0.0; 5];
+    for s in snapshots {
+        sums[0] += s.d;
+        sums[1] += s.b;
+        sums[2] += s.rho;
+        sums[3] += s.r;
+        sums[4] += s.s;
+    }
+    [sums[0] / n, sums[1] / n, sums[2] / n, sums[3] / n, sums[4] / n]
+}
+
+fn std_of_snapshots(snapshots: &[&StateSnapshot], means: &[f64; 5]) -> [f64; 5] {
+    let n = snapshots.len() as f64;
+    let mut sums = [0.0; 5];
+    for s in snapshots {
+        sums[0] += (s.d - means[0]).powi(2);
+        sums[1] += (s.b - means[1]).powi(2);
+        sums[2] += (s.rho - means[2]).powi(2);
+        sums[3] += (s.r - means[3]).powi(2);
+        sums[4] += (s.s - means[4]).powi(2);
+    }
+    [
+        (sums[0] / n).sqrt(),
+        (sums[1] / n).sqrt(),
+        (sums[2] / n).sqrt(),
+        (sums[3] / n).sqrt(),
+        (sums[4] / n).sqrt(),
+    ]
 }
 
 fn scale(v: &[f64; 5], s: f64) -> [f64; 5] {
