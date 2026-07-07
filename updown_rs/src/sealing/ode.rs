@@ -234,15 +234,32 @@ pub enum EquilibriumClass {
     Unclassified,
 }
 
-/// 三类原型（定理10 — 能量函数 V + LaSalle 不变原理）
+/// 九类演化原型 — 基于五维轨迹的细粒度分类
+///
+/// 三类主原型（论文 §4.4）细化为九种子类型（README §4.4.1-§4.4.9）：
+///   基石族 → Stone, StableCore, Resilient
+///   过客族 → Burst, Transient, Decay
+///   泡沫族 → Oscillatory, Source, Sink
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum MemeArchetype {
-    /// 基石模因：V 快速下降到低值，所有维度稳定
+    /// 基石型：D↑ B↑ ρ↑ R→ S↑ — 深度稳固的核心结构
     Stone,
-    /// 过客模因：V 先上升后下降，短暂活跃后湮灭
+    /// 稳定核：D→ B→ ρ→ R→ S→ — 长期稳态平衡
+    StableCore,
+    /// 爆发型：D↓ B↑↑ ρ↑↑ R↑↑ S↓ — 快速扩张后收缩
+    Burst,
+    /// 衰减型：D↓ B↓ ρ↓ R→ S↓ — 渐近消亡的结构
+    Decay,
+    /// 振荡型：D↻ B↻ ρ↻ R↻ S↻ — 周期性波动
+    Oscillatory,
+    /// 瞬变型：D↑↓ B↑↓ ρ↑↓ R↑↓ S↑↓ — 短暂出现后消失
     Transient,
-    /// 泡沫模因：V 持续下降但 D→0，最终坍缩
-    Bubble,
+    /// 韧态： D→ B↓ ρ↓ R→ S↑↑ — 低活动高稳定
+    Resilient,
+    /// 源型： D→ B↑ ρ↑↑ R↑ S→ — 信息-结构净产出者
+    Source,
+    /// 汇型： D→ B↓ ρ↑ R↓ S→ — 信息-结构净吸收者
+    Sink,
     /// 无法判断
     Undetermined,
 }
@@ -571,36 +588,117 @@ fn classify_equilibrium(traj: &MemeTrajectory) -> EquilibriumClass {
     }
 }
 
-/// 三类原型分类（定理10 — 能量函数判定）。
+/// 九类原型分类（定理10 — 三类主原型 + 细粒度子类型）
 ///
-/// 能量函数 V(t) = D² + B² + ρ² + R² + S²
+/// 第一步：按论文 §4.4 判定三类主原型（基石/过客/泡沫）
+/// 第二步：在每个主原型内按五维趋势细分为子类型
+///
+/// 趋势判定：比较轨迹前半段 vs 后半段各维度的均值
 fn classify_archetype(traj: &MemeTrajectory) -> MemeArchetype {
-    if traj.trajectory.len() < 10 { return MemeArchetype::Undetermined; }
+    let n = traj.trajectory.len();
+    if n < 10 { return MemeArchetype::Undetermined; }
 
-    let vs: Vec<f64> = traj.trajectory.iter()
-        .map(|s| s.d.powi(2) + s.b.powi(2) + s.rho.powi(2) + s.r.powi(2) + s.s.powi(2))
-        .collect();
+    let mid = n / 2;
+    let first_half = &traj.trajectory[..mid];
+    let second_half = &traj.trajectory[mid..];
 
-    let v_start = vs[0];
-    let v_end = *vs.last().unwrap();
-    let v_max = vs.iter().cloned().fold(0.0_f64, f64::max);
+    let avg = |half: &[FiveDimSnapshot]| -> [f64; 5] {
+        let len = half.len() as f64;
+        [
+            half.iter().map(|s| s.d).sum::<f64>() / len,
+            half.iter().map(|s| s.b).sum::<f64>() / len,
+            half.iter().map(|s| s.rho).sum::<f64>() / len,
+            half.iter().map(|s| s.r).sum::<f64>() / len,
+            half.iter().map(|s| s.s).sum::<f64>() / len,
+        ]
+    };
 
-    let final_d = traj.trajectory.last().unwrap().d;
-    let final_b = traj.trajectory.last().unwrap().b;
+    let a1 = avg(first_half);
+    let a2 = avg(second_half);
 
-    // 基石：V 持续下降，最终 D,B > 0.1
-    if v_end < 0.01 && final_d > 0.1 && final_b > 0.1 {
-        return MemeArchetype::Stone;
+    // 趋势方向：+1=↑, -1=↓, 0=→（阈值 0.03 防止微小波动误判）
+    let trend = |v1: f64, v2: f64| -> i8 {
+        if v2 - v1 > 0.03 { 1 } else if v1 - v2 > 0.03 { -1 } else { 0 }
+    };
+
+    let td = trend(a1[0], a2[0]);
+    let tb = trend(a1[1], a2[1]);
+    let trho = trend(a1[2], a2[2]);
+    let tr = trend(a1[3], a2[3]);
+    let ts = trend(a1[4], a2[4]);
+
+    let final_state = traj.trajectory.last().unwrap();
+    let final_d = final_state.d;
+    let final_b = final_state.b;
+    let final_rho = final_state.rho;
+    let final_s = final_state.s;
+
+    // 检测振荡：标准差 / 均值 > 0.2
+    let osc = |vals: &[f64]| -> bool {
+        let mean = vals.iter().sum::<f64>() / vals.len() as f64;
+        if mean < 0.01 { return false; }
+        let var = vals.iter().map(|v| (v - mean).powi(2)).sum::<f64>() / vals.len() as f64;
+        (var.sqrt() / mean) > 0.2
+    };
+
+    let dims: Vec<Vec<f64>> = vec![
+        traj.trajectory.iter().map(|s| s.d).collect(),
+        traj.trajectory.iter().map(|s| s.b).collect(),
+        traj.trajectory.iter().map(|s| s.rho).collect(),
+        traj.trajectory.iter().map(|s| s.r).collect(),
+        traj.trajectory.iter().map(|s| s.s).collect(),
+    ];
+    let osc_count = dims.iter().filter(|v| osc(v)).count();
+
+    // ── 基石族：终态 D > 0.1, B > 0.1, S > 0.2 ──
+    if final_d > 0.1 && final_b > 0.1 && final_s > 0.2 {
+        if td >= 0 && tb >= 0 && ts >= 0 && tr == 0 && osc_count <= 1 {
+            return MemeArchetype::StableCore;        // 全维度稳态
+        }
+        if td == 1 && ts == 1 && tr == 0 {
+            return MemeArchetype::Stone;              // D,S 攀升 + R 平稳
+        }
+        if tb <= 0 && trho <= 0 && ts == 1 {
+            return MemeArchetype::Resilient;           // 低关联低能流 + S 攀升
+        }
+        return MemeArchetype::Stone;                  // 基石族兜底
     }
 
-    // 过客：V 有峰值（先升后降），终值 < 初始
-    if v_max > v_start * 1.5 && v_end < v_start * 0.3 {
+    // ── 过客族：终态 D < 0.1 且 S < 0.2 ──
+    if final_d < 0.1 && final_s < 0.2 {
+        if tb == 1 && trho == 1 && tr == 1 && ts == -1 {
+            return MemeArchetype::Burst;               // B,ρ,R 冲高 + S 崩溃
+        }
+        if td == -1 && tb == -1 && trho == -1 {
+            return MemeArchetype::Decay;               // 全面衰减
+        }
+        if osc_count >= 3 {
+            return MemeArchetype::Oscillatory;         // 多维度振荡
+        }
+        return MemeArchetype::Transient;               // 过客族兜底
+    }
+
+    // ── 泡沫族 / 中间态 ──
+    if final_rho > 0.3 && final_d < 0.15 {
+        if tb == 1 && trho == 1 && tr == 1 {
+            return MemeArchetype::Source;              // B,ρ 净产出 + R 高
+        }
+        if tb == -1 && trho == 1 && tr == -1 {
+            return MemeArchetype::Sink;                // 关联萎缩 + 能流累积 + 慢演化
+        }
+    }
+
+    // 振荡检测（跨族）
+    if osc_count >= 3 {
+        return MemeArchetype::Oscillatory;
+    }
+
+    // 终态判定兜底
+    if final_d < 0.05 && final_s < 0.1 {
         return MemeArchetype::Transient;
     }
-
-    // 泡沫：V 下降但 D → 0
-    if v_end < v_start * 0.1 && final_d < 0.05 {
-        return MemeArchetype::Bubble;
+    if final_d > 0.1 && final_s > 0.3 {
+        return MemeArchetype::Stone;
     }
 
     MemeArchetype::Undetermined
@@ -787,10 +885,11 @@ mod tests {
 
         let arch = super::classify_archetype(&traj);
         assert!(matches!(arch,
-            MemeArchetype::Stone
-            | MemeArchetype::Transient
-            | MemeArchetype::Bubble
-            | MemeArchetype::Undetermined
+            MemeArchetype::Stone | MemeArchetype::StableCore
+            | MemeArchetype::Burst | MemeArchetype::Decay
+            | MemeArchetype::Oscillatory | MemeArchetype::Transient
+            | MemeArchetype::Resilient | MemeArchetype::Source
+            | MemeArchetype::Sink | MemeArchetype::Undetermined
         ), "unexpected archetype: {:?}", arch);
     }
 
@@ -822,8 +921,11 @@ mod tests {
 
         for (i, (_id, arch, eq)) in output.archetypes.iter().enumerate() {
             assert!(matches!(arch,
-                MemeArchetype::Stone | MemeArchetype::Transient
-                | MemeArchetype::Bubble | MemeArchetype::Undetermined
+                MemeArchetype::Stone | MemeArchetype::StableCore
+                | MemeArchetype::Burst | MemeArchetype::Decay
+                | MemeArchetype::Oscillatory | MemeArchetype::Transient
+                | MemeArchetype::Resilient | MemeArchetype::Source
+                | MemeArchetype::Sink | MemeArchetype::Undetermined
             ), "meme {} unexpected archetype: {:?}", i, arch);
             assert!(matches!(eq,
                 EquilibriumClass::DegenerateZero | EquilibriumClass::Annihilation
