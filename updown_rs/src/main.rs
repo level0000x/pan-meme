@@ -51,6 +51,8 @@ fn main() -> io::Result<()> {
     let mut text_mode = false;
     let mut auto_optimize = false;
     let mut verbose = false;
+    let mut t_max = 5.0;
+    let mut max_steps = 20000usize;
 
     let mut i = 2;
     while i < args.len() {
@@ -76,6 +78,18 @@ fn main() -> io::Result<()> {
             "--text" => text_mode = true,
             "--auto-optimize" => auto_optimize = true,
             "--verbose" => verbose = true,
+            "--t-max" => {
+                i += 1;
+                if i < args.len() {
+                    t_max = args[i].parse().unwrap_or(5.0);
+                }
+            }
+            "--max-steps" => {
+                i += 1;
+                if i < args.len() {
+                    max_steps = args[i].parse().unwrap_or(20000);
+                }
+            }
             _ => {}
         }
         i += 1;
@@ -233,9 +247,19 @@ fn main() -> io::Result<()> {
                     if phase_filter.is_none_or(|p| p <= 5) {
                         let t5 = Instant::now();
                         let ode_config = OdeConfig {
-                            max_steps: 20000,
+                            t_max,
+                            max_steps,
                             ..OdeConfig::default()
                         };
+                        if verbose {
+                            eprintln!(
+                                "  [ODE] t_max={:.1} max_steps={} window={} thresh={:.4}",
+                                ode_config.t_max,
+                                ode_config.max_steps,
+                                ode_config.convergence_window,
+                                ode_config.convergence_threshold
+                            );
+                        }
                         let opt_config = if auto_optimize {
                             Some(OptimizerConfig::default())
                         } else {
