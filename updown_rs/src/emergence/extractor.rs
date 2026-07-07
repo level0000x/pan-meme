@@ -39,8 +39,7 @@ impl Default for ExtractorConfig {
 /// 关系网络 Ψ = (V, E, w)
 ///
 /// 数学对应：泛模因定义 1 — Ψ = A(I) = (V, E, w)
-/// w: E → [0,1] 为 Jaccard 连接强度（3.2.2）
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct RelationNetwork {
     pub node_texts: Vec<String>,
     pub is_word: Vec<bool>,

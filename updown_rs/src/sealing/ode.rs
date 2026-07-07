@@ -490,13 +490,13 @@ pub fn solve_single_meme(
             };
             trajectory.push(snap);
 
-            // 收敛检测：连续 10 步变化 < atol
-            if trajectory.len() > 10 {
+            // 收敛检测：连续 5 步总变化 < 1e-3（刚性不动点判据）
+            if trajectory.len() > 5 {
                 let last = &trajectory[trajectory.len() - 1];
-                let prev = &trajectory[trajectory.len() - 11];
+                let prev = &trajectory[trajectory.len() - 6];
                 let change = (last.d - prev.d).abs() + (last.b - prev.b).abs()
                     + (last.rho - prev.rho).abs() + (last.r - prev.r).abs() + (last.s - prev.s).abs();
-                if change < config.atol * 50.0 {
+                if change < 1e-3 {
                     return MemeTrajectory {
                         meme_id, trajectory, terminated_at: t,
                         termination_reason: TerminationReason::Converged, hopf_warning,
@@ -618,7 +618,7 @@ fn classify_equilibrium(traj: &MemeTrajectory) -> EquilibriumClass {
 /// 趋势判定：比较轨迹前半段 vs 后半段各维度的均值（对应 proof-supplement 定理 5.8 的吸引域边界）
 fn classify_archetype(traj: &MemeTrajectory) -> MemeArchetype {
     let n = traj.trajectory.len();
-    if n < 10 { return MemeArchetype::Undetermined; }
+    if n < 4 { return MemeArchetype::Undetermined; }
 
     let mid = n / 2;
     let first_half = &traj.trajectory[..mid];
@@ -654,6 +654,14 @@ fn classify_archetype(traj: &MemeTrajectory) -> MemeArchetype {
     let final_b = final_state.b;
     let final_rho = final_state.rho;
     let final_s = final_state.s;
+    let final_r = final_state.r;
+
+    // 退化零态：系统在原点附近静止 → Transient（过客族，无演化能量）
+    if final_d < 0.12 && final_b < 0.015 && final_rho < 0.001 && final_r < 0.001 {
+        if final_s < 0.001 {
+            return MemeArchetype::Transient;  // 零态过客 — 输入信号过弱
+        }
+    }
 
     // 检测振荡：标准差 / 均值 > 0.2
     let osc = |vals: &[f64]| -> bool {

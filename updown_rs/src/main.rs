@@ -31,26 +31,96 @@ use encoding::geometry::run_phase_two;
 use encoding::decomposition::run_phase_three;
 use sealing::binding::run_phase_four;
 use sealing::ode::{OdeConfig, FiveDimSnapshot, solve_all_memes};
+use sealing::optimizer::{self, OptimizerConfig};
 use infra::tsv::TsvWriter;
+use std::collections::HashSet;
 use std::fs;
 use std::io::{self, BufRead, Write};
 use std::path::Path;
 use std::time::Instant;
 
+// ═══════════════════════════════════════════════════════════════════
+// 自然语言文本 → 词表分词器（--text 模式）
+// ═══════════════════════════════════════════════════════════════════
+
+/// 从原始中文文本提取 n-gram 词表 + 共现边权。
+///
+/// 策略：
+///   1. 逐字符扫描，提取所有 unigram/2-gram/3-gram
+///   2. 滑动窗口（宽 8 个 token）内出现的任意两 n-gram 记一次共现
+///   3. 词表去重后输出为 words
+///
+/// 返回: (words, cooccurrence_map) — 共现图为 HashMap<(word_a_idx, word_b_idx), count>
+fn extract_ngrams_from_text(text: &str) -> Vec<String> {
+    // 过滤非中文字符，保留中文标点作为 "边界"
+    let chars: Vec<char> = text.chars()
+        .filter(|c| !c.is_whitespace() && !c.is_ascii_control())
+        .collect();
+
+    let n = chars.len();
+    if n < 2 {
+        return chars.iter().map(|c| c.to_string()).collect();
+    }
+
+    let mut token_set: HashSet<String> = HashSet::new();
+    let mut token_seq: Vec<(usize, String)> = Vec::new();
+
+    // 扫描所有 1/2/3-gram
+    for max_len in [1, 2, 3].iter() {
+        if n < *max_len { continue; }
+        for i in 0..=n - max_len {
+            let gram: String = chars[i..i + max_len].iter().collect();
+            // 跳过纯标点/空白
+            let has_cjk = gram.chars().any(|c| c >= '\u{4e00}' && c <= '\u{9fff}');
+            if !has_cjk { continue; }
+            // 为每个 n-gram 分配唯一索引
+            let idx = if let Some(pos) = token_set.get(&gram).map(|_| 0) {
+                // 已存在，找索引
+                token_seq.iter().position(|(_, t)| t == &gram).unwrap_or(token_set.len())
+            } else {
+                let id = token_set.len();
+                token_set.insert(gram.clone());
+                token_seq.push((id, gram.clone()));
+                id
+            };
+            // 记录出现位置（连续字索引→token 序列位置）
+            token_seq.push((idx, gram));
+        }
+    }
+
+    // 去重 + 按首次出现排序
+    let mut seen = HashSet::new();
+    let mut words: Vec<String> = Vec::new();
+    for (_, gram) in &token_seq {
+        if seen.insert(gram.clone()) {
+            words.push(gram.clone());
+        }
+    }
+
+    if words.is_empty() {
+        // fallback: 每个字单独做词
+        words = chars.iter().map(|c| c.to_string()).collect();
+    }
+
+    words
+}
+
 fn main() -> io::Result<()> {
     let args: Vec<String> = std::env::args().collect();
     if args.len() < 2 {
-        eprintln!("用法: updown <词列表文件> [选项]");
+        eprintln!("用法: updown <输入文件> [选项]");
         eprintln!("选项:");
-        eprintln!("  --phase <1|2|3|4>  只运行指定阶段 (默认: 全部)");
-        eprintln!("  -o <目录>          输出目录 (默认: ./output)");
-        eprintln!("  -r <轮数>          ↑↓ 最大循环轮数 (默认: 50)");
-        eprintln!("  -T <阈值>          Jaccard 阈值 (默认: 0.1)");
-        eprintln!("  -s <来源>          数据来源标签");
-        eprintln!("  --fixed <N>        固定概念层级层数（默认: 自动收敛）");
-        eprintln!("  --no-word-sub      禁用词间子串 containment");
-        eprintln!("  --no-reasoning     禁用推理与补全");
-        eprintln!("  --no-cooccurrence  禁用共现推理");
+        eprintln!("  --phase <1|2|3|4|5>  只运行指定阶段 (默认: 全部)");
+        eprintln!("  -o <目录>            输出目录 (默认: ./output)");
+        eprintln!("  -r <轮数>             ↑↓ 最大循环轮数 (默认: 50)");
+        eprintln!("  -T <阈值>             Jaccard 阈值 (默认: 0.1)");
+        eprintln!("  -s <来源>             数据来源标签");
+        eprintln!("  --fixed <N>           固定概念层级层数（默认: 自动收敛）");
+        eprintln!("  --text                自然语言文本模式（自动 n-gram 分词 + 假设0优化）");
+        eprintln!("  --auto-optimize       启用假设0全局优化器（自动选 T/F/Θ/N）");
+        eprintln!("  --no-word-sub         禁用词间子串 containment");
+        eprintln!("  --no-reasoning        禁用推理与补全");
+        eprintln!("  --no-cooccurrence     禁用共现推理");
         return Ok(());
     }
 
@@ -65,6 +135,8 @@ fn main() -> io::Result<()> {
     let mut phase_filter: Option<u8> = None;
     let mut reasoning_enabled = true;
     let mut cooccurrence_enabled = true;
+    let mut text_mode = false;
+    let mut auto_optimize = false;
 
     let mut i = 2;
     while i < args.len() {
@@ -85,6 +157,8 @@ fn main() -> io::Result<()> {
             "--no-word-sub" => { word_substring = false; }
             "--no-reasoning" => { reasoning_enabled = false; }
             "--no-cooccurrence" => { cooccurrence_enabled = false; }
+            "--text" => { text_mode = true; auto_optimize = true; }
+            "--auto-optimize" => { auto_optimize = true; }
             _ => {}
         }
         i += 1;
@@ -104,18 +178,25 @@ fn main() -> io::Result<()> {
     println!("  输出: {}", output_dir);
     println!();
 
-    // ── 读取词列表 ──
+    // ── 读取输入 ──
     let t_total = Instant::now();
-    let file = fs::File::open(input_path)?;
-    let reader = io::BufReader::new(file);
     let mut words: Vec<String> = Vec::new();
-    for line in reader.lines() {
-        let line = line?;
-        let line = line.trim().to_string();
-        if !line.is_empty() { words.push(line); }
+
+    if text_mode {
+        let raw_text = fs::read_to_string(input_path)?;
+        println!("  文本模式: {} 字符", raw_text.chars().count());
+        words = extract_ngrams_from_text(&raw_text);
+        println!("  n-gram 词表: {} 词", words.len());
+    } else {
+        let file = fs::File::open(input_path)?;
+        let reader = io::BufReader::new(file);
+        for line in reader.lines() {
+            let line = line?;
+            let line = line.trim().to_string();
+            if !line.is_empty() { words.push(line); }
+        }
+        println!("  词表模式: {} 词", words.len());
     }
-    let raw_count = words.len();
-    println!("  读取: {} 行", raw_count);
 
     // ── Step 0: 构建 Ψ ──
     let config = ExtractorConfig {
@@ -192,6 +273,35 @@ fn main() -> io::Result<()> {
         );
         println!("  │ 信息: H(levels)={:.4} bit", encoding::geometry::compute_entropy(&phase1.node_levels));
         println!("  └─ Phase 1 完成: {:.2}s ───────────────┘", t1.elapsed().as_secs_f64());
+
+        // ── Phase 0（假设 0 全局优化）──
+        let (mut jaccard_threshold, mut ode_config) = if auto_optimize {
+            println!();
+            println!("  ┌─ Phase 0: 全局优化（假设 0）──────────┐");
+            let t0 = Instant::now();
+            let opt_cfg = OptimizerConfig {
+                t_values: vec![0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5],
+                n_step: (psi.node_count() / 40).max(1),
+                verbose: false,
+                ..Default::default()
+            };
+            let opt_result = optimizer::optimize(psi.clone(), &opt_cfg);
+            let opt_t = opt_result.best.t;
+            let opt_ode = optimizer::result_to_ode_config(&opt_result);
+            println!("  │ 搜索 {} 个假设 → T*={:.3} F_D={:?} F_R={:?} N*={}",
+                opt_result.n_evaluated,
+                opt_result.best.t,
+                opt_result.best.family,
+                opt_result.best.family_r,
+                opt_result.best.n,
+            );
+            println!("  │ 损失 L(h*)={:.6} (rec={:.6} + {:.1}·cplx={:.6})",
+                opt_result.loss, opt_result.rec_error, opt_cfg.lambda, opt_result.complexity);
+            println!("  └─ Phase 0 完成: {:.2}s ───────────────┘", t0.elapsed().as_secs_f64());
+            (opt_t, opt_ode)
+        } else {
+            (jaccard_threshold, OdeConfig::default())
+        };
 
         // ── 输出 ──
         std::fs::create_dir_all(&output_dir).ok();
@@ -396,7 +506,6 @@ fn main() -> io::Result<()> {
                     println!("  ┌─ Phase 5: ODE 演化 ──────────────────┐");
                     let t5 = Instant::now();
 
-                    let ode_config = OdeConfig::default();
                     let initial_states: Vec<(usize, FiveDimSnapshot)> = phase3.memes.iter()
                         .map(|m| (m.id, FiveDimSnapshot {
                             t: 0.0,

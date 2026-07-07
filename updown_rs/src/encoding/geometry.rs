@@ -443,11 +443,13 @@ pub fn encode_field(
         let a = cell.boundary[0]; let b = cell.boundary[1];
         let pa = phi.get(&a).copied().unwrap_or(0.0);
         let pb = phi.get(&b).copied().unwrap_or(0.0);
-        let d = metric.edge_lengths.get(&(a.min(b), a.max(b))).copied().unwrap_or(0.001);
+        let d_raw = metric.edge_lengths.get(&(a.min(b), a.max(b))).copied().unwrap_or(0.001);
+        let d = if d_raw > 1e-6 { d_raw } else { 0.001 };
         let mag = (pb - pa).abs() / d;
+        let mag_safe = if mag.is_finite() { mag } else { 0.0 };
         let sign = if pb > pa { 1.0 } else if pa > pb { -1.0 } else { 0.0 };
-        flow.insert(i, (mag, sign));
-        total_flux += mag;
+        flow.insert(i, (mag_safe, sign));
+        total_flux += mag_safe;
     }
     let fc = flow.len().max(1);
 
