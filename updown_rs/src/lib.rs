@@ -1,7 +1,9 @@
-// lib.rs — 库 target，供集成测试引用内部模块。
-// binary 入口仍在 main.rs，两者共享同一套源码。
+//! ↑↓ 泛模因建模引擎 — 库入口
+//!
+//! 三层架构: theory/ (核心数学构造) → pipeline/ (五阶段管线) → io/ (输入输出)
+//!
+//! 数学对应: 泛模因理论 §3-§4, §6.2-§6.4
 
-pub mod emergence;
-pub mod encoding;
-pub mod infra;
-pub mod sealing;
+pub mod theory;
+pub mod pipeline;
+pub mod io;
