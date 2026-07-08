@@ -144,7 +144,7 @@ $\mathbf{W}$ 直接由 $I$ 唯一确定——**没有自由参数**。
 
 $$\mathcal{B}_{\text{DG}} = \{A \to B \mid A \subseteq C, B \subseteq C, \text{在 } \mathbb{K} \text{ 中成立，且不可由更短的蕴涵推导}\}$$
 
-限制规则长度 $|A| \le 2, |B| \le 2$。$\mathcal{B}_{\text{DG}}$ 的大小为 $O(p)$，可在 $O(p^3)$ 时间内用 Next Closure 算法计算（Ganter & Wille 1999）。
+限制规则长度 $|A| \le 2, |B| \le 2$。$\mathcal{B}_{\text{DG}}$ 在最坏情形下大小为 $O(p^2)$（所有二属性对均构成非平凡蕴涵的前件），实际词表中 FCA 闭包的高度稀疏性使其远小于此上界。可在 $O(p^2 m)$ 时间内用 Next Closure 算法计算（Ganter & Wille 1999）。
 
 **定义 4b（概念等价类）**。在 FCA 中，两个词 $w_i, w_j$ 属于同一形式概念当且仅当属性闭包相等：
 $$w_i \sim w_j \iff w_i^\downarrow = w_j^\downarrow$$
