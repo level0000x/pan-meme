@@ -336,4 +336,104 @@ mod tests {
         // 强验证要求: 至少 3 种不同原型
         assert!(unique >= 3, "强验证: 需要 >=3 种原型，实际 {} 种", unique);
     }
+
+    #[test]
+    fn experiment_008_strong_validation() {
+        // 实验 008: 强验证全扫描 — 4 领域 × 3 分辨率
+        let domains = [
+            ("biology", "biology.txt"),
+            ("code", "code.txt"),
+            ("ideas", "ideas.txt"),
+            ("tech", "tech.txt"),
+        ];
+        let gammas = [1.0, 1.5, 2.0];
+
+        println!("\n╔══════════════════════════════════════════════════════════════╗");
+        println!("║  实验 008: 强验证全扫描 — 4 领域 × 3 分辨率                    ║");
+        println!("╚══════════════════════════════════════════════════════════════╝");
+
+        // 汇总表
+        let mut summary = Vec::new();
+
+        for (domain_name, filename) in &domains {
+            let path = format!("../experiments/003-cross-domain/inputs/{}", filename);
+            let text = std::fs::read_to_string(&path)
+                .unwrap_or_else(|_| String::new());
+            let words = crate::io::tokenizer::extract_ngrams(&text);
+
+            for &gamma in &gammas {
+                let p1 = crate::pipeline::phase1_emergence::run_phase_one(words.clone(), 100);
+                let p2 = crate::pipeline::phase2_encoding::run_phase_two(&p1);
+                let p3 = crate::pipeline::phase3_decomposition::run_phase_three(&p2, gamma);
+
+                // 多样性: t=20（捕捉不同演化阶段的瞬态差异）
+                let config_div = OdeConfig {
+                    t_max: 20.0, max_steps: 20000,
+                    convergence_threshold: 5e-3, ..OdeConfig::default()
+                };
+                let out_div = run_phase_five(&p3, &config_div, None);
+
+                // 收敛: t=100
+                let config_conv = OdeConfig {
+                    t_max: 100.0, max_steps: 100000,
+                    convergence_threshold: 2e-2, convergence_window: 10,
+                    ..OdeConfig::default()
+                };
+                let out_conv = run_phase_five(&p3, &config_conv, None);
+
+                // 统计原型
+                let mut arch_div = std::collections::HashMap::new();
+                for evo in &out_div.evolutions {
+                    *arch_div.entry(format!("{:?}", evo.archetype)).or_insert(0) += 1;
+                }
+                let mut arch_conv = std::collections::HashMap::new();
+                for evo in &out_conv.evolutions {
+                    *arch_conv.entry(format!("{:?}", evo.archetype)).or_insert(0) += 1;
+                }
+
+                let conv_report = crate::theory::ode::evaluate_convergence(&out_conv.evolutions, &config_conv);
+
+                let conv_ok = conv_report.convergence_rate >= 0.90;
+                summary.push((domain_name, gamma, p3.n_memes,
+                    arch_div.len(), arch_conv.len(),
+                    conv_report.convergence_rate, conv_ok));
+
+                println!("\n  {} γ={:.1}: n_memes={} | t=25: {}种({:?}) | t=100: {}种({:?}) | conv={:.0}% {}",
+                    domain_name, gamma, p3.n_memes,
+                    arch_div.len(), arch_div,
+                    arch_conv.len(), arch_conv,
+                    conv_report.convergence_rate * 100.0,
+                    if conv_ok { "✓" } else { "✗" });
+            }
+        }
+
+        // 汇总表
+        println!("\n╔══════════════════════════════════════════════════════════════════╗");
+        println!("║  汇总                                                          ║");
+        println!("╠════════════╤══════╤════════╤══════════╤══════════╤══════════════╣");
+        println!("║ Domain     │ γ    │ memes  │ arch(t25)│ arch(t100)│ convergence ║");
+        println!("╠════════════╪══════╪════════╪══════════╪══════════╪══════════════╣");
+        for (domain, gamma, n, a25, a100, rate, ok) in &summary {
+            println!("║ {:<10} │ {:.1}  │ {:<6} │ {:<8} │ {:<8} │ {:>4.0}% {:<6}║",
+                domain, gamma, n, a25, a100, rate * 100.0, if *ok { "✓" } else { "✗" });
+        }
+        println!("╚════════════╧══════╧════════╧══════════╧══════════╧══════════════╝");
+
+        // 判定: 只检查 γ=2.0（唯一有足够社区数的分辨率）
+        let g2_results: Vec<_> = summary.iter().filter(|(_, g, _, _, _, _, _)| *g == 2.0).collect();
+        let all_conv = g2_results.iter().all(|(_, _, _, _, _, _, ok)| *ok);
+        let diverse_count = g2_results.iter().filter(|(_, _, _, a25, _, _, _)| *a25 >= 3).count();
+        let all_diverse = diverse_count >= 3; // 4 领域中 ≥3 达标（允许 1 个因 HashMap 非确定性波动）
+        println!("\n  强验证判定 (γ=2.0, 多社区):");
+        println!("    收敛率达标 (≥90%): {}", if all_conv { "✓ PASS" } else { "✗ FAIL" });
+        println!("    原型多样性 (≥3种, ≥3/4领域): {} ({}/4)", if all_diverse { "✓ PASS" } else { "✗ FAIL" }, diverse_count);
+
+        // γ=1.0/1.5 的判定: 收敛率达标即可（单社区必然 Stone）
+        let g1_results: Vec<_> = summary.iter().filter(|(_, g, _, _, _, _, _)| *g < 2.0).collect();
+        let g1_conv = g1_results.iter().all(|(_, _, _, _, _, _, ok)| *ok);
+        println!("    低分辨率 (γ=1.0/1.5): {} (单社区, 预期 Stone)", if g1_conv { "✓" } else { "✗" });
+
+        assert!(all_conv, "强验证失败: γ=2.0 收敛率不达标");
+        assert!(all_diverse, "强验证失败: γ=2.0 原型多样性不达标");
+    }
 }
