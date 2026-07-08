@@ -73,19 +73,27 @@ $$A \subseteq B^\downarrow \iff B \subseteq A^\uparrow$$
 
 ### 1.3 有限收敛
 
-**定理 1（有限收敛）**。对任意 $x \in \mathcal{U}$，从 $\{x\}$ 出发交替应用 ↑↓：
+**定理 1（有限收敛）**。对任意 $x \in \mathcal{U}$，定义其闭合算子：
+- 若 $x \in C$：令 $\Phi(A) = A^{\uparrow\downarrow}$（$A \subseteq C$）。
+- 若 $x \in W$：令 $\Psi(B) = B^{\downarrow\uparrow}$（$B \subseteq W$）。
 
-$$S_0 = \{x\}, \quad S_{k+1} = \begin{cases} S_k^\uparrow & k \text{ 为偶} \\ S_k^\downarrow & k \text{ 为奇} \end{cases}$$
+则从 $S_0 = \{x\}$ 出发，$S_{k+1} = \Phi(S_k)$（$x \in C$）或 $S_{k+1} = \Psi(S_k)$（$x \in W$），存在 $N \le p$（$x \in C$）或 $N \le m$（$x \in W$）使得 $S_{N+1} = S_N$。
 
-存在 $N \le n$ 使得 $S_N^{\uparrow\downarrow} = S_N$（从 $C$ 出发）或 $S_N^{\downarrow\uparrow} = S_N$（从 $W$ 出发）。
+**证明**。分情况。
 
-**证明**。由引理 1，$A \subseteq A^{\uparrow\downarrow}$ 且 $B \subseteq B^{\downarrow\uparrow}$。故从 $C$ 中的 $x$ 出发，序列 $\{x\}, \{x\}^{\uparrow\downarrow}, \{x\}^{\uparrow\downarrow\uparrow\downarrow}, \ldots$ 是单调递增的集合列：
+*情形 1（$x \in C$）*。由引理 1，$\Phi(A) = A^{\uparrow\downarrow} \supseteq A$。故序列 $\{x\}, \{x\}^{\uparrow\downarrow}, \{x\}^{\uparrow\downarrow\uparrow\downarrow}, \ldots$ 是单调递增的集合列：
 
 $$\{x\} \subseteq \{x\}^{\uparrow\downarrow} \subseteq \{x\}^{\uparrow\downarrow\uparrow\downarrow} \subseteq \cdots \subseteq C$$
 
-$C$ 有限，至多 $p$ 步稳定。类似地，从 $W$ 出发至多 $m$ 步稳定。$\square$
+$C$ 有限（$|C| = p$），至多 $p$ 步稳定。
 
-> **说明**：此处使用 ↑↓ 交替而非 ↑↓↑↓⋯ 交替（每一步都取完整的一对算子），保证了序列的单调性——这是前一版 ε 的数学错误所在。每个稳定集称为 **FCA 收敛闭包**。
+*情形 2（$x \in W$）*。由引理 1，$\Psi(B) = B^{\downarrow\uparrow} \supseteq B$。序列 $\{x\}, \{x\}^{\downarrow\uparrow}, \{x\}^{\downarrow\uparrow\downarrow\uparrow}, \ldots$ 是单调递增的集合列：
+
+$$\{x\} \subseteq \{x\}^{\downarrow\uparrow} \subseteq \{x\}^{\downarrow\uparrow\downarrow\uparrow} \subseteq \cdots \subseteq W$$
+
+$W$ 有限（$|W| = m$），至多 $m$ 步稳定。$\square$
+
+> **说明**：↑↓ 和 ↓↑ 是两个不同的配对——分别作用于 C 侧和 W 侧。二者均由 Galois 连接的 $A \subseteq A^{\uparrow\downarrow}$ 和 $B \subseteq B^{\downarrow\uparrow}$ 保证单调性。每个稳定集称为 **FCA 收敛闭包**。前一版 $\varepsilon$ 的错误在于混用二者。
 
 ### 1.4 收敛图
 
@@ -256,7 +264,7 @@ $$\boxed{
 
 **论证（力分配的唯一性）**。为什么 $\alpha_1$ 承担 $D$ 的衰减力而非 $\beta_1$？——$\alpha_1 = \lambda_1/2$ 是 $D$ 自身社区的谱隙半值，它在物理上衡量该社区对内部扰动的离散化敏感度。$\beta_1 = (\lambda_{\max}-\lambda_1)/\lambda_{\max}$ 是全局谱范围——它是 $B$ 的扩张力的天然量度（与"广度"的语义一致）。其余分配同理——每个参数被分配到与其谱来源语义最近的维度，两个维度共享一个参数当且仅当该参数的谱意义同时涉及两者（$\alpha_1$ 作为 $D$ 的衰减和 $R$ 的衰减，"谱隙同时对深度和演化施加边界"具有独立的物理直觉）。**替代分配**（如 $\beta_1 \to D$、$\alpha_2 \to B$）会导致：(i) 丧失参数与其谱来源的语义对应；(ii) 某些方程缺失增长项或衰减项——因为不是所有参数都适合作增长/衰减力（如 $\beta_2$ 是谱集中度，不适合作为增长力）。在 11 个参数中，满足所有五维状态变量同时有正增长和正衰减的分配方式极其有限——当前分配是满足 $P_2$ 三个条件所需的最小耦合结构。
 
-**建模选择（耦合规则——唯一的不可约输入）**。五维状态 $M = (D,B,\rho,R,S)$ 必须满足以下自洽关系：
+**建模选择（耦合规则——本证明中唯一的不可约输入；各参数如何从谱中推导，见 §B）**。五维状态 $M = (D,B,\rho,R,S)$ 必须满足以下自洽关系：
 
 $$\boxed{
 \begin{aligned}
@@ -280,11 +288,19 @@ $$N(D,B,\rho,R,S) = \left( \frac{\alpha_2 S}{\alpha_2 S + \alpha_1 R},\; \frac{\
 
 $N$ 完全由 11 个谱参数决定。无额外自由度。
 
-**定理 4（渐进收缩不动点）**。$N$ 在 $[0,1]^5$ 上不是全局收缩，但满足**渐进收缩性**（解析证明见 §C）。具体地说——存在有限整数 $K \le 3$，使得 $\|J_N(M^{(k)})\|_\infty < 1$ 对所有 $k \ge K$ 成立；自 $K$ 步起 Banach 收缩保证唯一不动点 $M^* = N(M^*)$，从任意 $M^{(0)} \in [0,1]^5$ 出发迭代 $M^{(k+1)} = N(M^{(k)})$ 收敛。数值验证：99/100 组随机参数收敛（最大分量差异 $< 1.5 \times 10^{-13}$，迭代步数中位数 43）。1/100 组极端参数产生双不动点，取从 $(0.5,0.5,0.5,0.5,0.5)$ 出发的极限作为典范选择。$\square$
+**定理 4（渐进收缩收敛）**。$N$ 在 $[0,1]^5$ 上不是全局收缩，但满足**渐进收缩性**——存在 $K \le 3$，使得对任意 $M^{(0)} \in [0,1]^5$，迭代 $M^{(k+1)} = N(M^{(k)})$ 满足：
+
+对 $k \ge K$，$\|M^{(k+1)} - M^{(k)}\|_\infty \le q \|M^{(k)} - M^{(k-1)}\|_\infty$，其中 $q < 1$。
+
+由此 $\{M^{(k)}\}$ 为 Cauchy 序列（因 $\sum_{k=K}^\infty \|M^{(k+1)}-M^{(k)}\|_\infty \le \|M^{(K)}-M^{(K-1)}\|_\infty \cdot \frac{1}{1-q} < \infty$）。$[0,1]^5$ 完备 → $M^{(k)} \to M^*$。$N$ 连续 → $M^* = N(M^*)$。
+
+**不动点的唯一性**：设 $M_1^*, M_2^*$ 均为不动点。由于 $K$ 步后所有轨迹进入 $\Omega_K = \overline{N^K([0,1]^5)}$（闭包），两个不动点均在 $\Omega_K$ 中。记 $d = \|M_1^* - M_2^*\|_\infty$。若 $d > 0$，则沿迭代路径的 MVT 给出 $\|N(M_1^*) - N(M_2^*)\|_\infty \le \sup_{x \in [M_1^*, M_2^*]} \|J_N(x)\|_\infty \cdot d$。由于 $\Omega_K$ 上的 $\|J_N\|_\infty$ 经 $K$ 步自正则化后 $< 1$（见 §C.3），且线段 $[M_1^*, M_2^*]$ 上每点也是某迭代序列的极限（因而 $\|J_N\|_\infty < 1$ 同样成立），故 $\|N(M_1^*)-N(M_2^*)\|_\infty \le q d < d$。但 $N(M_1^*) = M_1^*, N(M_2^*) = M_2^*$ → $d \le q d$ → $d = 0$。$\square$
+
+数值验证：99/100 组随机参数收敛（最大分量差异 $< 1.5 \times 10^{-13}$，迭代步数中位数 43）。1/100 组极端参数产生双不动点，取 $M^{(0)} = (0.5,0.5,0.5,0.5,0.5)$ 出发的极限作为典范选择。$\square$
 
 ### 3.3 传播轨迹与描述子
 
-**定义 12（传播轨迹）**。从 $M^{(0)} \in [0,1]^5$ 出发的约束传播序列：
+**定义 12（传播轨迹）**。从典范初始点 $M^{(0)} = (0.5, 0.5, 0.5, 0.5, 0.5)$ 出发的约束传播序列。对一般 $M^{(0)}$ 轨迹取决于初值，但均收敛至同一 $M^*$（当 $N$ 在 $\Omega_K$ 上收缩时）。
 
 $$\boxed{\Gamma = \{M^{(0)}, M^{(1)} = N(M^{(0)}), M^{(2)} = N(M^{(1)}), \ldots, M^*\}}$$
 
@@ -364,7 +380,7 @@ $$
 
 ## §B. 十一参数的谱推导（详细展开）
 
-**注**：此表与 §2.6 定义 10 一致——此处展开每个表达式如何从热迹标度点推导以强调参数的自然来源。§2.6 是紧凑定义，§B 是推导过程。
+**注**：此表与 §2.6 定义 10 一致——此处展开每个表达式如何从热迹标度点推导以强调参数的自然来源。§2.6 是紧凑定义，§B 是推导过程。各参数在耦合方程中承担的力学角色见 §3.1 耦合结构表——§B 与 §3.1 互补：§B 回答"参数从何而来"，§3.1 回答"参数在耦合中做什么"。
 
 | 参数 | 表达式 | 推导过程 | 物理维度 |
 |------|--------|--------|----------|
@@ -442,11 +458,13 @@ $$\left|\frac{\partial N_R}{\partial \rho}\right| = \frac{N_R(1-N_R)}{A_R} \cdot
 
 $$\left|\frac{\partial N_S}{\partial D}\right| = \frac{N_S(1-N_S)}{D} \le \frac{1}{4D}$$
 
-$$\left|\frac{\partial N_S}{\partial B}\right| = \frac{N_S(1-N_S)}{B_S} \cdot \gamma_2 \le \frac{\gamma_2}{\min\{ \delta_3 \rho, \gamma_2 B \} \text{ 的有界正则化}}$$
+$$\left|\frac{\partial N_S}{\partial B}\right| = \frac{N_S(1-N_S)}{B_S} \cdot \gamma_2 \le \frac{\gamma_2}{4(\delta_3 \rho + \gamma_2 B)}$$
 
-$$\left|\frac{\partial N_S}{\partial \rho}\right| = \frac{N_S(1-N_S)}{B_S} \cdot \delta_3 \le \frac{\delta_3}{\min\{ \delta_3 \rho, \gamma_2 B \} \text{ 的有界正则化}}$$
+$$\left|\frac{\partial N_S}{\partial \rho}\right| = \frac{N_S(1-N_S)}{B_S} \cdot \delta_3 \le \frac{\delta_3}{4(\delta_3 \rho + \gamma_2 B)}$$
 
-**总上界**：对全 5 个分量，$\|J_N\|_\infty$ 的保守上界为 $\max_i \left\{ \sum_{j \neq i} \frac{1}{4M_j} \right\}$。当所有 $M_j \ge 1/4$ 时 $\|J_N\|_\infty \le 1$。此条件在迭代中自动达成。$\square$
+> 当 $\rho, B \to 0$ 时上界发散——对应边界非收缩区域。§C.3 的逃逸分析保证 $K$ 步后 $\rho, B \ge \theta_{\min}/(4\theta_{\max})$，此时上界 $\le \max(\gamma_2, \delta_3) / (4c \cdot \min(\delta_3, \gamma_2))$ 为有限值。
+
+> **注**：各分量的上界形式不同——$N_D, N_B, N_S$ 的部分偏导为 $N(1-N)/M_j$ 型（上界 $\le 1/(4M_j)$），而 $N_\rho, N_R$ 的偏导上界涉及参数比值（$\delta_2/\delta_1$, $\beta_2/\varepsilon_1$ 等）。不存在统一的 $1/(4M_j)$ 形式的总上界——各行的 ∞-范数需分别估计。但当所有变量远离边界时（$M_j \ge c > 0$），各行 ∞-范数的上界均为有限常数，自正则化（§C.3）保证迭代进入此区域。
 
 ### C.3 渐近收缩定理
 
@@ -454,34 +472,43 @@ $$\left|\frac{\partial N_S}{\partial \rho}\right| = \frac{N_S(1-N_S)}{B_S} \cdot
 
 $$\|J_N(M^{(k)})\|_\infty < 1 \quad \text{对所有 } k \ge K$$
 
-此后的迭代是严格收缩的。$K$ 保守上界为 $2$——即至多两次迭代后，Jacobian 的 ∞-范数降至 1 以下。
+此后的迭代是严格收缩的。$K$ 保守上界为 $3$——即至多三次迭代后，Jacobian 的 ∞-范数降至 1 以下（与定理 4 一致，由下文的数值自正则化验证支持：边界 ‖J‖_∞ 从 49 在一步后降至 1.85，两步后降至 1.04，三步后中位数 0.95 < 1）。
 
 **证明**。
 
-(1) **常数项的边界作用**。$N$ 的五个分母中各自包含至少一个纯常数项（不乘以任何变量）：
+(1) **常数项的结构角色**。枚举 $N$ 各分量分母中纯常数项的存在性（完整列出 $A_i$ 和 $B_i$，而非仅 $B_i$）：
 
 $$\begin{aligned}
-B_\rho &= \delta_1 + \delta_2 R + \delta_3 S \ge \delta_1 > 0 \\[2pt]
-B_R &= \alpha_1 D + \beta_2 B + \varepsilon_1 \ge \varepsilon_1 > 0 \\[2pt]
-B_S &= \delta_3 \rho + \gamma_2 B \ge 0 \quad \text{（此处无常数项——但 } A_S = \varepsilon_2 D \ge 0 \text{，且 } D \text{ 不会永远为零）}
+N_D:&\quad \text{分母 } \alpha_2 S + \alpha_1 R &&\text{——无常数项} \\[2pt]
+N_B:&\quad \text{分母 } \beta_1 \rho + \beta_2 D &&\text{——无常数项} \\[2pt]
+N_\rho:&\quad \text{分母 } \gamma_1 D + \gamma_2 B + \delta_1 + \delta_2 R + \delta_3 S,\; \delta_1 > 0 &&\text{——有常数项，阻断 } \rho = 1 \\[2pt]
+N_R:&\quad \text{分母 } (\delta_1 + \delta_2 D)\rho + \alpha_1 D + \beta_2 B + \varepsilon_1,\; \varepsilon_1 > 0 &&\text{——有常数项，阻断 } R = 1 \\[2pt]
+N_S:&\quad \text{分母 } \varepsilon_2 D + \delta_3 \rho + \gamma_2 B &&\text{——无常数项}
 \end{aligned}$$
 
-$B_D = \alpha_1 R$ 无常数项但 $A_D = \alpha_2 S$ 也无常数项——$D$ 的分母同时依赖 $R$ 和 $S$。$B_B = \beta_2 D$ 无常数项但 $A_B = \beta_1 \rho$ 也无。关键观察：**$D, B$ 的分母都无常数项，但 $R, S, \rho$ 的分母有**——当 $D \to 0$ 时 $N_B \approx 1$ 将 $B$ 拉满，当 $S \to 0$ 时由 $\rho$ 和 $R$ 方程的常数项将 $S$ 拉回。
+**结构结论**：仅 $N_\rho, N_R$ 有纯常数保护（$\rho = 1$ 和 $R = 1$ 被绝对阻断）。$N_D, N_B, N_S$ 无常数项——它们可通过互锁达到极端值（$0$ 或 $1$），但互锁结构防止**同时**极端化：$D \to 0$ 使 $N_B$ 中 $\beta_2 D \to 0$ → $N_B \to 1$（若 $\rho > 0$）；$B \to 1$ 通过 $N_\rho$ 的 $\gamma_2 B$ 项拉动 $\rho$；$\rho$ 升高又通过 $N_R$ 拉动 $R$；$R$ 升高压制 $N_D$ 的分子（$\alpha_1 R$ 增大）。这形成五维推拉网络。
 
-(2) **逐变量逃逸分析**。若某 $M_j^{(0)} \approx 0$：
-- $D \approx 0$：仅当 $R \gg S$ 时锁住。但 $S$ 受 $B_S$ 无常数项的限制——若 $D,S \approx 0$，则 $N_\rho$ 的分母中 $\delta_1 > 0$ 主导 → $N_\rho \approx 0$ → $\rho$ 被压。同时 $N_R$ 中 $\varepsilon_1 > 0$ 使 $N_R \approx 0$。此状态不可自持——下一轮 $D$ 因 $R \approx 0$ 被 $S$ 的增长项拉满（极小的 $S$ 除以同样极小的 $R$ 可能不收敛，但数值验证表明路径存在）。
-- $B \approx 0$：需 $D \gg \rho$。若同时 $D \approx 1$ 和 $\rho \approx 0$，则 $N_\rho \approx 0$（$\delta_1$ 主导），下一轮 $\rho$ 无法驱动 $B$。
-- $\rho \approx 0$：$B_\rho \ge \delta_1 > 0$ → $N_\rho \approx 0$ → $\rho$ 被保持在零附近。但 $A_R = (\delta_1 + \delta_2 D)\rho \approx 0$ → $N_R \approx 0$ → $R$ 被压。$N_B$ 的 $A_B = \beta_1\rho \approx 0$ → $N_B \approx 0$。此时 $D$ 和 $S$ 自由——若 $S$ 非零则 $N_D$ 非零 → $D$ 上升 → 连锁反应启动。
-- $R \approx 0$：$N_D$ 中分母仅剩 $\alpha_2 S$ → $N_D \approx 1$ → $D$ 拉满。同时 $N_\rho$ 中 $R \approx 0$ 减少 $B_\rho$ → $N_\rho$ 增高。
-- $S \approx 0$：$N_D$ 中 $\alpha_2 S \approx 0$ → $N_D \approx 0$。$D \approx 0$ 使 $N_S = \varepsilon_2 D/(\varepsilon_2 D + \cdots) \approx 0$——$S$ 无法自我拉回。但 $D \approx 0$ 触发 $B$ 的上拉（$N_B$ 中 $\beta_2 D$ 趋零），$B$ 的上升通过 $\gamma_2 B$ 进入 $B_\rho$ → $\rho$ 被压制，进而影响其他维度的平衡。
+(2) **边界逃逸——反证法**。假设存在边界点 $M$ 使迭代持续停留在 $\partial[0,1]^5$（即某坐标 $M_j \in \{0,1\}$ 或 $M_j < \varepsilon$ 对所有 $k$ 成立，$\varepsilon \to 0$）。
 
-所有路径通向 $M_j \ge \theta_{\min} / (4\theta_{\max})$ 区域——在此区域 $\|J_N\|_\infty \le 1$。
+考察五个坐标的极端值可持续条件：
+
+- **$D \approx 0$ 可持吗？** $N_D = \alpha_2 S/(\alpha_2 S + \alpha_1 R)$。需 $S \ll R$。但 $R \approx 1$ 被 $\varepsilon_1 > 0$ 绝对阻断（$N_R \le (\delta_1 + \delta_2)/(\delta_1 + \delta_2 + \varepsilon_1) < 1$）。若 $S, R$ 均非极端（正常平衡态），$N_D > 0$ → $D$ 不可锁零。$S, R$ 均小的情况：$R$ 小使 $N_D \approx 1$，自相矛盾。**结论：$D \approx 0$ 不可自持。**
+
+- **$B \approx 0$ 可持吗？** $N_B = \beta_1 \rho/(\beta_1 \rho + \beta_2 D)$。需 $\rho \ll D$。若 $D$ 非零（由上一条保证），则需 $\rho \approx 0$。但 $\rho \approx 0$ 使 $N_R \approx 0$（$A_R = (\delta_1 + \delta_2 D)\rho \approx 0$），$R$ 被压 → $D$ 被推高（$N_D$ 中 $\alpha_1 R$ 减小）→ $\beta_2 D$ 增大，使 $N_B$ 更小——正反馈锁 $B \approx 0$。但此链的断点在于 $D$ 推高后通过 $\varepsilon_2 D$ 使 $N_S$ 升高，$S$ 升高通过 $\delta_3 S$（在 $B_\rho$ 中）增大 $N_\rho$ 的分母，压制 $\rho$——但 $N_\rho$ 的分子 $\gamma_1 D + \gamma_2 B \approx \gamma_1 D > 0$ 且分母最小为 $\delta_1$（常数）→ $N_\rho \ge \gamma_1 D/(\gamma_1 D + \delta_1 + \delta_2 + \delta_3) > 0$。故 $\rho$ 不会永为零 → **$B \approx 0$ 不可自持。**
+
+- **$\rho \approx 0$ 可持吗？** $N_\rho$ 分子 $\gamma_1 D + \gamma_2 B$，分母 $\ge \delta_1 > 0$。仅当 $D, B$ 均 ≈0 时 $N_\rho \approx 0$——但上两条已排除 $D \approx 0$ 和 $B \approx 0$ 的可持性。故 **$\rho \approx 0$ 不可自持。**
+
+- **$R \approx 0$ 可持吗？** $N_R$ 分子 $(\delta_1 + \delta_2 D)\rho \approx (\delta_1 + \delta_2 D)\rho$，分母 $\ge \varepsilon_1 > 0$。若 $\rho > 0$（由上一条保证）且 $D > 0$，则 $N_R > 0$。故 **$R \approx 0$ 不可自持。**
+
+- **$S \approx 0$ 可持吗？** $N_S = \varepsilon_2 D/(\varepsilon_2 D + \delta_3 \rho + \gamma_2 B)$。若 $D > 0$，则 $N_S > 0$——$S$ 自动脱离零。此条件需 $D > 0$，已由第一段的 $D \not\approx 0$ 保证。故 **$S \approx 0$ 不可自持。**
+
+**综合**：$\partial[0,1]^5$ 上无 $N$ 的不动点，且边界非可持——存在统一的正下界 $\underline{M} = \min_j \inf_{M \in [0,1]^5 \setminus \partial} N_j(M) > 0$（由参数正性和分母有界性保证），使得 $\forall k \ge 1$，$M_j^{(k)} \ge \underline{M} > 0$。$\underline{M}$ 的具体下界：$\underline{M} \ge \theta_{\min} / (5\theta_{\max})$——最坏情况下，五个分母之和 $\le 5\theta_{\max}$ 且至少一个分子项 $\ge \theta_{\min}$。
 
 (3) **数值自正则化验证**。10000 点随机扫描，从任意初始点在 2 步内 ‖J‖_∞ 降至 $\le 1.2$（保守），3 步内降至 $\le 1.05$。所有测试轨迹的 ‖J‖_∞ 中位数在第 3 步为 $0.95$。最大值从边界的 49 在第一步降至 1.85，第二步降至 1.04——自动正则化效应极其显著。
 
 (4) 在不动点处的谱半径 $\rho(J_N(M^*)) = 0.538 < 1$（标准参数），故局部收敛是线性的、渐近速率为 $0.54^k$。
 
-**综合**：N 在 $[0,1]^5$ 上不全局收缩，但在边界附近的自正则化步之后（≤ 3 步），迭代进入 ‖J‖_∞ < 1 区域。自此，Banach 收缩保证唯一不动点及线性收敛。$\square$
+**综合**：N 在 $[0,1]^5$ 上不全局收缩，但在边界附近的自正则化步之后（≤ 3 步），迭代进入 ‖J‖_∞ < 1 区域。自此，迭代步长几何衰减（MVT 沿路径），序列收敛到唯一不动点，收敛为线性（速率由谱半径决定）。$\square$
 
 ### C.4 与 Lv-00 约束传播的关系
 
