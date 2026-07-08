@@ -241,9 +241,9 @@ $$k^* = \min(|\mathfrak{B}(\mathbb{K})|, n-1)$$
 
 **定理 A（FCA 约束谱聚类 ⇔ 限制子空间特征分解）**。上述 FCA 约束谱聚类等价于在 $\ker(Q)$ 限制子空间上的特征分解 $P^\top \mathcal{L} P$——这是迹最小化在 must-link 等式约束下的直接推广（von Luxburg 2007; Wang & Davidson 2010, §3.2 约束谱聚类框架）。限制子空间特征分解在多项式时间 $O(n^3)$ 内唯一可解（除符号外）。$\square$
 
-**定理 B（FCA 蕴涵与谱社区一致性）**。若 FCA 蕴涵 $A \to B$ 在 $\mathbb{K}$ 中成立，则 $A$ 的 FCA 闭包中的顶点被约束谱聚类划入同一社区。FCA 蕴涵逻辑 $\Rightarrow$ 社区分配一致性。
+**定理 B（FCA 蕴涵与谱社区一致性）**。若 FCA 蕴涵 $A \to B$ 在 $\mathbb{K}$ 中成立，且 $\{A\}^{\uparrow\downarrow}$ 与 $\{B\}^{\uparrow\downarrow}$ 的交集非空，则对应的顶点在约束谱聚类中被强制同社区。FCA 蕴涵逻辑 $\Rightarrow$ 谱嵌入接近 $\Rightarrow$ $Q$ 强制同社区 $\Rightarrow$ 社区分配一致性。
 
-*证明*。三步链式论证。(i) FCA 蕴涵 → 闭包重叠 → 高边权（定义 4）。(ii) Davis-Kahan 定理（von Luxburg 2007, Thm 8.1.14）：归一化拉普拉斯的谱嵌入 $U$ 满足 $\|U_i - U_j\|_2 \le 2\sqrt{2}/\lambda_{k^*+1} \cdot \|\mathbf{W}_i - \mathbf{W}_j\|_F / \sqrt{D_{ii}D_{jj}}$（$\mathbf{W}$ 为邻接矩阵）——高边权使行向量 $\mathbf{W}_i$ 与 $\mathbf{W}_j$ 接近，从而谱嵌入坐标接近。(iii) 约束矩阵 $Q$ 的 must-link 强制 → 同社区。$\square$
+*证明*。四步。(i) FCA 蕴涵 → 闭包重叠 → 高边权（定义 4）。(ii) Davis-Kahan 定理（von Luxburg 2007, Thm 8.1.14）：归一化拉普拉斯的谱嵌入 $U$ 满足 $\|U_i - U_j\|_2 \le 2\sqrt{2}/\lambda_{k^*+1} \cdot \|\mathbf{W}_i - \mathbf{W}_j\|_F / \sqrt{D_{ii}D_{jj}}$（$\mathbf{W}$ 为邻接矩阵）——高边权使行向量 $\mathbf{W}_i$ 与 $\mathbf{W}_j$ 接近，从而谱嵌入坐标接近。(iii) 谱嵌入接近意味着 argmax 分配将 $i,j$ 划入同一社区（$\|U_i - U_j\| \to 0 \Rightarrow$ 相同最大分量索引）。(iv) 约束矩阵 $Q$ 的 must-link 约束作为硬性担保——即使谱嵌入距离未完全收敛到 0，$Q_{ij}=1$ 确保 $i,j$ 在 $\ker(Q)$ 限制子空间中被划分为同一社区。$\square$
 
 ### 2.5 五维状态
 
