@@ -1,0 +1,1093 @@
+{
+  "items": [
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2015070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 1863
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2015080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 1562
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2015090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 2102
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2015100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 2537
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2015110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 2463
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2015120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 2260
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2016010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 2478
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2016020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8526
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2016030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8426
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2016040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 9278
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2016050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 18138
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2016060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 154972
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2016070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 108691
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2016080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 242395
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2016090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 241920
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2016100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 420470
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2016110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 685900
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2016120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 224389
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2017010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 306838
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2017020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 214489
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2017030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 338272
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2017040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 226706
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2017050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 187452
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2017060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 238240
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2017070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 147835
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2017080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 121734
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2017090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 138010
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2017100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 152772
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2017110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 152380
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2017120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 160553
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2018010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 133095
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2018020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 126036
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2018030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 149083
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2018040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 128987
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2018050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 143181
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2018060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 153485
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2018070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 259478
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2018080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 145615
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2018090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 190307
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2018100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 241224
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2018110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 329374
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2018120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 370584
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2019010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 686574
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2019020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 344547
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2019030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 900594
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2019040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 513796
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2019050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 458902
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2019060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 259181
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2019070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 258102
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2019080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 372061
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2019090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 727865
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2019100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 746636
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2019110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 289719
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2019120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 375692
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2020010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 453921
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2020020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 517864
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2020030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 166457
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2020040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 156478
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2020050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 141915
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2020060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 127086
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2020070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 116619
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2020080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 123997
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2020090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 161209
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2020100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 169804
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2020110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 194824
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2020120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 339754
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2021010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 279698
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2021020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 158336
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2021030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 156285
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2021040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 138309
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2021050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 129015
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2021060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 122623
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2021070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 125025
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2021080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 98627
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2021090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 123338
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2021100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 131741
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2021110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 105734
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2021120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 108612
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2022010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 118053
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2022020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 110797
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2022030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 124748
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2022040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 101844
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2022050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 110921
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2022060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 106325
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2022070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 127648
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2022080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 92295
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2022090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 149044
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2022100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 167491
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2022110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 119176
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2022120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 87646
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2023010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 106616
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2023020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 106647
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2023030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 118670
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2023040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 90716
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2023050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 108983
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2023060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 97428
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2023070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 95206
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2023080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 94209
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2023090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 96417
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2023100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 96521
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2023110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 102649
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2023120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 95781
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2024010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 124900
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2024020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 102123
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2024030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 114452
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2024040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 104564
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2024050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 106472
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2024060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 118901
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2024070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 133000
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2024080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 86273
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2024090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 85375
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2024100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 88404
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2024110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 103053
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2024120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 89401
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2025010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 106124
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2025020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 88437
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2025030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 101745
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2025040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 96328
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2025050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 100070
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2025060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 74318
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Brexit",
+      "granularity": "monthly",
+      "timestamp": "2025070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 2208
+    }
+  ]
+}

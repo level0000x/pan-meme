@@ -1,0 +1,598 @@
+{
+  "items": [
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2020020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 251573
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2020030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 591323
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2020040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 302860
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2020050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 124982
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2020060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 69463
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2020070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 79479
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2020080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 59481
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2020090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 57932
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2020100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 67930
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2020110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 55239
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2020120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 73794
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2021010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 64058
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2021020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 52112
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2021030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 324871
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2021040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 605838
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2021050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 673378
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2021060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 520664
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2021070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 470473
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2021080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 551200
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2021090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 594172
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2021100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 515478
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2021110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 543294
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2021120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 669229
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2022010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 875707
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2022020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 521763
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2022030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 472513
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2022040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 383203
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2022050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 311686
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2022060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 263243
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2022070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 266784
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2022080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 273380
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2022090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 279210
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2022100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 225650
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2022110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 235313
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2022120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 258995
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2023010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 255553
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2023020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 211167
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2023030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 269553
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2023040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 188807
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2023050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 226765
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2023060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 204759
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2023070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 229752
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2023080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 237440
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2023090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 265506
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2023100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 264982
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2023110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 228709
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2023120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 291112
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2024010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 283501
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2024020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 220243
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2024030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 216111
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2024040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 198324
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2024050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 214062
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2024060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 178429
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2024070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 191750
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2024080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 274474
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2024090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 255615
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2024100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 233597
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2024110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 213620
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2024120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 219078
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2025010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 252645
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2025020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 172521
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2025030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 194264
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2025040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 209060
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2025050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 219448
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2025060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 214343
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "COVID-19",
+      "granularity": "monthly",
+      "timestamp": "2025070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 4486
+    }
+  ]
+}

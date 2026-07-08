@@ -1,0 +1,1093 @@
+{
+  "items": [
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2015070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 80351
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2015080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 119350
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2015090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 326295
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2015100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 2795502
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2015110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 892048
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2015120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 114420
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2016010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 86188
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2016020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 80462
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2016030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 85865
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2016040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 84333
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2016050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 80246
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2016060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 70628
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2016070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 74099
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2016080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 106972
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2016090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 263890
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2016100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 2509116
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2016110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 698406
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2016120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 114225
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2017010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 82105
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2017020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 81429
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2017030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 85451
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2017040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 80343
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2017050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 76376
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2017060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 65465
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2017070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 74951
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2017080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 100578
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2017090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 227433
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2017100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 2571543
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2017110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 798188
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2017120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 101120
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2018010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 75817
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2018020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 71780
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2018030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 80134
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2018040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 72766
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2018050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 73220
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2018060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 88567
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2018070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 81491
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2018080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 103060
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2018090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 245734
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2018100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 2345703
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2018110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 797768
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2018120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 119146
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2019010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 80152
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2019020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 65047
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2019030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 73689
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2019040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 67466
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2019050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 64940
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2019060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 59428
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2019070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 91969
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2019080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 112999
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2019090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 259454
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2019100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 1707872
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2019110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 619958
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2019120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 102683
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2020010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 73563
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2020020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 64634
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2020030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 63561
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2020040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 76618
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2020050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 76329
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2020060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 62908
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2020070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 70955
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2020080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 85074
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2020090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 193571
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2020100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 1546775
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2020110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 535150
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2020120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 96801
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2021010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 70539
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2021020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 70076
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2021030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 77283
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2021040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 74431
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2021050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 74414
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2021060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 72021
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2021070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 85222
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2021080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 112788
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2021090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 299510
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2021100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 1969060
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2021110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 510834
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2021120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 94805
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2022010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 75357
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2022020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 73882
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2022030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 80437
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2022040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 71780
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2022050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 74128
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2022060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 70316
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2022070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 96420
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2022080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 164634
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2022090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 452076
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2022100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 3215198
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2022110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 914258
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2022120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 109799
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2023010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 99190
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2023020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 117416
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2023030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 134682
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2023040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 121987
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2023050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 133316
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2023060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 106474
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2023070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 124366
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2023080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 161948
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2023090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 323752
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2023100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 2130175
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2023110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 661037
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2023120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 145915
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2024010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 143145
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2024020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 155931
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2024030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 130836
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2024040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 94437
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2024050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 76512
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2024060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 63227
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2024070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 69115
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2024080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 98658
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2024090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 224365
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2024100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 1338038
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2024110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 436338
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2024120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 93458
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2025010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 75272
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2025020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 67539
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2025030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 70072
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2025040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 71045
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2025050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 68044
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2025060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 69383
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Halloween",
+      "granularity": "monthly",
+      "timestamp": "2025070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 2429
+    }
+  ]
+}

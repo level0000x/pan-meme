@@ -1,0 +1,1093 @@
+{
+  "items": [
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2015070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 40328
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2015080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 46271
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2015090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 67855
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2015100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 41798
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2015110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 55341
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2015120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 51359
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2016010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 52698
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2016020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 66726
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2016030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 67758
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2016040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 83021
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2016050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 556513
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2016060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 65007
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2016070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 39741
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2016080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 35737
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2016090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 34276
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2016100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 34667
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2016110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 35257
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2016120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 39954
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2017010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 50375
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2017020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 60386
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2017030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 75439
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2017040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 63319
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2017050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 456244
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2017060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 41225
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2017070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 35441
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2017080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 37384
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2017090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 41024
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2017100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 33685
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2017110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 36286
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2017120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 35767
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2018010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 47831
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2018020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 55855
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2018030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 68641
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2018040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 65767
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2018050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 502280
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2018060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 49343
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2018070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 42507
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2018080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 38746
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2018090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 36980
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2018100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 38457
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2018110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 37837
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2018120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 40463
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2019010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 54998
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2019020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 68238
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2019030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 66038
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2019040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 54208
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2019050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 454666
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2019060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 47967
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2019070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 39104
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2019080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 41578
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2019090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 34874
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2019100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 39672
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2019110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 41598
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2019120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 42129
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2020010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 46128
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2020020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 61050
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2020030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 92303
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2020040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 70643
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2020050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 157426
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2020060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 277143
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2020070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 342562
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2020080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 115515
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2020090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 63939
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2020100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 49447
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2020110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 49510
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2020120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 53447
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2021010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 60198
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2021020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 72279
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2021030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 112355
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2021040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 94470
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2021050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 704831
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2021060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 113977
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2021070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 69144
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2021080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 52822
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2021090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 51663
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2021100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 54909
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2021110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 54646
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2021120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 61389
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2022010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 77491
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2022020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 105998
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2022030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 117020
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2022040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 87246
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2022050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 598034
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2022060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 70529
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2022070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 60091
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2022080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 61906
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2022090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 47090
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2022100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 63306
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2022110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 49604
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2022120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 56691
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2023010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 70121
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2023020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 88972
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2023030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 109444
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2023040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 111012
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2023050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 822301
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2023060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 77697
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2023070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 57620
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2023080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 51413
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2023090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 49480
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2023100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 49879
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2023110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 57221
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2023120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 70139
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2024010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 84805
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2024020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 100535
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2024030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 110680
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2024040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 117493
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2024050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 682167
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2024060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 72184
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2024070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 52805
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2024080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 47412
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2024090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 44814
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2024100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 43015
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2024110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 46699
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2024120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 49626
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2025010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 58668
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2025020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 81828
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2025030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 99934
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2025040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 83073
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2025050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 579812
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2025060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 79909
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Eurovision_Song_Contest",
+      "granularity": "monthly",
+      "timestamp": "2025070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 1611
+    }
+  ]
+}

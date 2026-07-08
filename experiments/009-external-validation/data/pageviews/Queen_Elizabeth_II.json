@@ -1,0 +1,1093 @@
+{
+  "items": [
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2015070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 30280
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2015080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 27021
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2015090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 44702
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2015100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 25827
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2015110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 27708
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2015120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 27786
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2016010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 31430
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2016020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 27078
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2016030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 24097
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2016040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 27042
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2016050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 19933
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2016060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 20498
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2016070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 18811
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2016080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 17674
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2016090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 21032
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2016100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 24062
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2016110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 90483
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2016120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 92176
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2017010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 130984
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2017020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 69324
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2017030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 55532
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2017040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 47920
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2017050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 60755
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2017060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 71421
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2017070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 75332
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2017080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 119729
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2017090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 129968
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2017100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 66507
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2017110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 115028
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2017120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 656529
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2018010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 418587
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2018020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 159887
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2018030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 157985
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2018040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 242678
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2018050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 667726
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2018060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 169852
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2018070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 147088
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2018080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 126926
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2018090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 105971
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2018100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 237733
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2018110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 138463
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2018120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 122309
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2019010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 136748
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2019020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 97573
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2019030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 99239
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2019040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 107853
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2019050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 191744
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2019060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 132535
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2019070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 140769
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2019080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 175536
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2019090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 137926
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2019100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 142268
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2019110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 406051
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2019120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 254973
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2020010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 346197
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2020020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 140800
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2020030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 177727
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2020040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 201419
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2020050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 148160
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2020060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 173094
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2020070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 170044
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2020080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 147784
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2020090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 127755
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2020100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 144762
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2020110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 798908
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2020120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 434234
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2021010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 216129
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2021020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 159664
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2021030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 417892
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2021040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 326812
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2021050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 99037
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2021060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 82061
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2021070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 82796
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2021080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 85258
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2021090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 81770
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2021100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 78370
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2021110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 76294
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2021120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 83838
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2022010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 132723
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2022020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 106815
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2022030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 78697
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2022040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 75177
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2022050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 88792
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2022060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 136998
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2022070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 66522
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2022080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 71265
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2022090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 578149
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2022100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 82129
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2022110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 117037
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2022120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 79705
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2023010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 72027
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2023020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 46214
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2023030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 57463
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2023040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 50357
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2023050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 108510
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2023060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 45733
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2023070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 45757
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2023080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 47223
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2023090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 50635
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2023100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 47356
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2023110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 69109
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2023120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 164872
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2024010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 130279
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2024020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 82816
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2024030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 84286
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2024040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 62853
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2024050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 56323
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2024060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 54008
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2024070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 53441
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2024080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 49456
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2024090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 54045
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2024100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 53309
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2024110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 56478
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2024120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 52015
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2025010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 58210
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2025020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 52486
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2025030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 65275
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2025040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 56322
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2025050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 57516
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2025060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 48406
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Queen_Elizabeth_II",
+      "granularity": "monthly",
+      "timestamp": "2025070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 1762
+    }
+  ]
+}

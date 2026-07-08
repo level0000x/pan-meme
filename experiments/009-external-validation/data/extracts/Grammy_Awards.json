@@ -1,0 +1,19 @@
+{
+  "batchcomplete": "",
+  "query": {
+    "normalized": [
+      {
+        "from": "Grammy_Awards",
+        "to": "Grammy Awards"
+      }
+    ],
+    "pages": {
+      "44635": {
+        "pageid": 44635,
+        "ns": 0,
+        "title": "Grammy Awards",
+        "extract": "The Grammy Awards, stylized as GRAMMY, and often referred to as the Grammys, are awards presented by the Recording Academy of the United States to recognize outstanding achievements in music. The trophy depicts a gilded gramophone, and the original idea was to call them the \"Gramophone Awards\".\nThe Grammys are the first of the Big Three networks' major music awards held annually, and are considered one of the four major annual American entertainment awards with the Academy Awards (for films), the Emmy Awards (for television), and the Tony Awards (for Broadway theater). The first Grammy Awards ceremony was held on May 4, 1959, to honor the musical accomplishments of performers for the year 1958. After the 2011 ceremony, the Recording Academy overhauled many Grammy Award categories for 2012. Since 2023, the ceremony was held on the first Sunday of February and one week before the Super Bowl. The 68th Annual Grammy Awards, featuring a total of 95 categories, were presented on February 1, 2026.\nAfter over fifty years being broadcast on CBS, it was announced on October 30, 2024, that the Grammys would move to ABC, Disney+ and Hulu as part of a ten-year broadcast deal between the Recording Academy and the Walt Disney Company. The 2027 broadcast will mark the first time the Grammys are streamed simultaneously on multiple Disney-owned platforms, including Hulu and Disney+, alongside ABC's traditional television airing.\nThe 69th annual ceremony is scheduled for February 7, 2027, at Crypto.com Arena in Los Angeles, marking the first broadcast on ABC since 1972 after more than five decades on CBS. The telecast will also stream live on Hulu and Disney+.\n\n"
+      }
+    }
+  }
+}

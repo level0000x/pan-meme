@@ -1,0 +1,1093 @@
+{
+  "items": [
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2015070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 153116
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2015080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 168001
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2015090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 160427
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2015100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 145843
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2015110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 117797
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2015120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 132248
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2016010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 125778
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2016020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 132279
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2016030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 117862
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2016040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 120955
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2016050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 116069
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2016060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 110903
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2016070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 195979
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2016080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 148789
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2016090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 167829
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2016100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 135978
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2016110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 104568
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2016120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 115456
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2017010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 146416
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2017020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 105399
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2017030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 115025
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2017040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 113843
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2017050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 107777
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2017060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 137115
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2017070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 117348
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2017080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 114019
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2017090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 106516
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2017100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 138571
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2017110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 120629
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2017120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 153012
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2018010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 124817
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2018020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 123512
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2018030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 133336
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2018040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 145774
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2018050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 126246
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2018060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 110048
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2018070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 131161
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2018080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 131832
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2018090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 144198
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2018100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 129602
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2018110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 134579
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2018120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 143606
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2019010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 136865
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2019020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 99878
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2019030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 107261
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2019040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 107019
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2019050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 107752
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2019060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 105040
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2019070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 107724
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2019080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 123487
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2019090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 134286
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2019100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 132937
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2019110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 146787
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2019120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 126848
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2020010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 1528440
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2020020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 107739
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2020030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 104528
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2020040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 115330
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2020050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 106632
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2020060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 91152
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2020070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 95758
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2020080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 123959
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2020090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 114471
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2020100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 128420
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2020110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 122184
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2020120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 128226
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2021010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 142077
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2021020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 122350
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2021030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 150455
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2021040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 128663
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2021050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 119644
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2021060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 112914
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2021070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 161709
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2021080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 151176
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2021090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 170096
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2021100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 1967465
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2021110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 112071
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2021120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 133263
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2022010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 121996
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2022020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 219120
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2022030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 128226
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2022040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 206928
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2022050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 135501
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2022060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 169970
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2022070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 261539
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2022080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 177144
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2022090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 149446
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2022100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 132576
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2022110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 130374
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2022120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 128473
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2023010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 106625
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2023020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 102561
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2023030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 115492
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2023040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 102185
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2023050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 266368
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2023060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 265704
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2023070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 271727
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2023080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 153939
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2023090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 103384
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2023100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 102139
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2023110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 126080
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2023120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 193208
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2024010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 954603
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2024020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 259906
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2024030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 218419
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2024040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 250259
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2024050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 188521
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2024060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 120470
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2024070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 118354
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2024080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 123687
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2024090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 26470
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2024100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 23981
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2024110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 26517
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2024120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 26746
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2025010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 28358
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2025020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 25677
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2025030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 28520
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2025040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 16890
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2025050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 17288
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2025060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 17025
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Yahoo!",
+      "granularity": "monthly",
+      "timestamp": "2025070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 478
+    }
+  ]
+}

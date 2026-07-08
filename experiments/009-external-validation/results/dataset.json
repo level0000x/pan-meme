@@ -1,0 +1,435 @@
+{
+  "n_concepts": 43,
+  "concepts": [
+    {
+      "concept": "Newton",
+      "type": "Stable",
+      "real_type": "Declining",
+      "n_chars": 133,
+      "n_months": 121,
+      "mean_views": 10729.859504132231,
+      "cv": 0.534072176805038,
+      "trend_ratio": 0.39850752052161054
+    },
+    {
+      "concept": "Darwin",
+      "type": "Stable",
+      "real_type": "Fluctuating",
+      "n_chars": 286,
+      "n_months": 121,
+      "mean_views": 4100.033057851239,
+      "cv": 0.30931002533353774,
+      "trend_ratio": 0.688518186190145
+    },
+    {
+      "concept": "Democracy",
+      "type": "Stable",
+      "real_type": "Stable",
+      "n_chars": 3233,
+      "n_months": 121,
+      "mean_views": 147672.56198347107,
+      "cv": 0.23238402247799858,
+      "trend_ratio": 0.9016136711502236
+    },
+    {
+      "concept": "Gravity",
+      "type": "Stable",
+      "real_type": "Stable",
+      "n_chars": 2210,
+      "n_months": 121,
+      "mean_views": 105181.64462809918,
+      "cv": 0.23224722994274904,
+      "trend_ratio": 0.7643445638756328
+    },
+    {
+      "concept": "Evolution",
+      "type": "Stable",
+      "real_type": "Stable",
+      "n_chars": 2989,
+      "n_months": 121,
+      "mean_views": 86935.18181818182,
+      "cv": 0.24000896328813126,
+      "trend_ratio": 0.7133988921973736
+    },
+    {
+      "concept": "Oxygen",
+      "type": "Stable",
+      "real_type": "Stable",
+      "n_chars": 3096,
+      "n_months": 121,
+      "mean_views": 117112.60330578513,
+      "cv": 0.28974330535385195,
+      "trend_ratio": 0.7291665405528073
+    },
+    {
+      "concept": "DNA",
+      "type": "Stable",
+      "real_type": "Stable",
+      "n_chars": 2993,
+      "n_months": 121,
+      "mean_views": 159195.0082644628,
+      "cv": 0.25885169439052497,
+      "trend_ratio": 0.709678714115596
+    },
+    {
+      "concept": "Photosynthesis",
+      "type": "Stable",
+      "real_type": "Stable",
+      "n_chars": 4089,
+      "n_months": 121,
+      "mean_views": 112727.35537190082,
+      "cv": 0.24990512719536712,
+      "trend_ratio": 0.7511931667764306
+    },
+    {
+      "concept": "Calculus",
+      "type": "Stable",
+      "real_type": "Stable",
+      "n_chars": 1207,
+      "n_months": 121,
+      "mean_views": 89176.19834710743,
+      "cv": 0.17023434637521448,
+      "trend_ratio": 0.8800687341292202
+    },
+    {
+      "concept": "Periodic_table",
+      "type": "Stable",
+      "real_type": "Fluctuating",
+      "n_chars": 2707,
+      "n_months": 121,
+      "mean_views": 563837.0413223141,
+      "cv": 0.3853751126836865,
+      "trend_ratio": 0.8811252833174049
+    },
+    {
+      "concept": "Algebra",
+      "type": "Stable",
+      "real_type": "Stable",
+      "n_chars": 2312,
+      "n_months": 121,
+      "mean_views": 62985.86776859504,
+      "cv": 0.18849809813147744,
+      "trend_ratio": 0.8896709550168733
+    },
+    {
+      "concept": "Carbon",
+      "type": "Stable",
+      "real_type": "Fluctuating",
+      "n_chars": 2541,
+      "n_months": 121,
+      "mean_views": 100709.09917355372,
+      "cv": 0.3258611226476409,
+      "trend_ratio": 0.6443009314641291
+    },
+    {
+      "concept": "ChatGPT",
+      "type": "Burst",
+      "real_type": "Declining",
+      "n_chars": 1353,
+      "n_months": 32,
+      "mean_views": 3350743.1875,
+      "cv": 0.7195148807405441,
+      "trend_ratio": 0.5113382382953541
+    },
+    {
+      "concept": "COVID-19",
+      "type": "Burst",
+      "real_type": "Fluctuating",
+      "n_chars": 3178,
+      "n_months": 66,
+      "mean_views": 280696.1515151515,
+      "cv": 0.6203066120799788,
+      "trend_ratio": 0.6552902877976176
+    },
+    {
+      "concept": "Bitcoin",
+      "type": "Burst",
+      "real_type": "Fluctuating",
+      "n_chars": 1402,
+      "n_months": 121,
+      "mean_views": 493503.1570247934,
+      "cv": 1.0459996915469436,
+      "trend_ratio": 0.7686034451103638
+    },
+    {
+      "concept": "Elon_Musk",
+      "type": "Burst",
+      "real_type": "Growth",
+      "n_chars": 3162,
+      "n_months": 121,
+      "mean_views": 1588618.0082644627,
+      "cv": 0.7310219716657338,
+      "trend_ratio": 1.842207055147167
+    },
+    {
+      "concept": "Taylor_Swift",
+      "type": "Burst",
+      "real_type": "Growth",
+      "n_chars": 2565,
+      "n_months": 121,
+      "mean_views": 899158.8595041322,
+      "cv": 0.7743328662005011,
+      "trend_ratio": 1.9189334547008539
+    },
+    {
+      "concept": "Barbie_(film)",
+      "type": "Burst",
+      "real_type": "Growth",
+      "n_chars": 2287,
+      "n_months": 120,
+      "mean_views": 252767.925,
+      "cv": 4.049915748161697,
+      "trend_ratio": 560.9458473053337
+    },
+    {
+      "concept": "Oppenheimer_(film)",
+      "type": "Burst",
+      "real_type": "Fluctuating",
+      "n_chars": 2637,
+      "n_months": 46,
+      "mean_views": 1178118.1304347827,
+      "cv": 2.212487500292409,
+      "trend_ratio": 0.6632086150158794
+    },
+    {
+      "concept": "Black_Lives_Matter",
+      "type": "Burst",
+      "real_type": "Fluctuating",
+      "n_chars": 2466,
+      "n_months": 121,
+      "mean_views": 162211.04132231406,
+      "cv": 1.7746930096883367,
+      "trend_ratio": 1.1800795924541048
+    },
+    {
+      "concept": "Brexit",
+      "type": "Burst",
+      "real_type": "Declining",
+      "n_chars": 3812,
+      "n_months": 121,
+      "mean_views": 178735.69421487604,
+      "cv": 0.8898258809652354,
+      "trend_ratio": 0.49452237193590126
+    },
+    {
+      "concept": "GameStop_short_squeeze",
+      "type": "Burst",
+      "real_type": "Fluctuating",
+      "n_chars": 1987,
+      "n_months": 55,
+      "mean_views": 81127.27272727272,
+      "cv": 1.2418190446274362,
+      "trend_ratio": 0.881107371260419
+    },
+    {
+      "concept": "Tesla,_Inc.",
+      "type": "Burst",
+      "real_type": "Fluctuating",
+      "n_chars": 2221,
+      "n_months": 102,
+      "mean_views": 306232.3137254902,
+      "cv": 0.32115529627379175,
+      "trend_ratio": 1.1699740637084908
+    },
+    {
+      "concept": "Adobe_Flash",
+      "type": "Decay",
+      "real_type": "Fluctuating",
+      "n_chars": 264,
+      "n_months": 121,
+      "mean_views": 42274.00826446281,
+      "cv": 0.35800233532012327,
+      "trend_ratio": 0.6043132213184472
+    },
+    {
+      "concept": "MySpace",
+      "type": "Decay",
+      "real_type": "Fluctuating",
+      "n_chars": 1818,
+      "n_months": 121,
+      "mean_views": 68654.61157024793,
+      "cv": 0.3172046294127568,
+      "trend_ratio": 0.8989982037706479
+    },
+    {
+      "concept": "BlackBerry",
+      "type": "Decay",
+      "real_type": "Growth",
+      "n_chars": 3410,
+      "n_months": 121,
+      "mean_views": 77793.61983471074,
+      "cv": 0.5759195745553063,
+      "trend_ratio": 1.5882490147328845
+    },
+    {
+      "concept": "Internet_Explorer",
+      "type": "Decay",
+      "real_type": "Fluctuating",
+      "n_chars": 3139,
+      "n_months": 121,
+      "mean_views": 82129.00826446281,
+      "cv": 0.34790083580939424,
+      "trend_ratio": 0.7984500962084752
+    },
+    {
+      "concept": "Nokia",
+      "type": "Decay",
+      "real_type": "Stable",
+      "n_chars": 2614,
+      "n_months": 121,
+      "mean_views": 115417.88429752066,
+      "cv": 0.26485099897829006,
+      "trend_ratio": 0.7454901509633198
+    },
+    {
+      "concept": "Windows_XP",
+      "type": "Decay",
+      "real_type": "Stable",
+      "n_chars": 1804,
+      "n_months": 121,
+      "mean_views": 73270.72727272728,
+      "cv": 0.22215952141541923,
+      "trend_ratio": 0.9794725975033851
+    },
+    {
+      "concept": "LimeWire",
+      "type": "Decay",
+      "real_type": "Stable",
+      "n_chars": 1487,
+      "n_months": 121,
+      "mean_views": 21002.057851239668,
+      "cv": 0.25241212883106806,
+      "trend_ratio": 0.7975027290202854
+    },
+    {
+      "concept": "Vine_(service)",
+      "type": "Decay",
+      "real_type": "Fluctuating",
+      "n_chars": 1832,
+      "n_months": 121,
+      "mean_views": 49105.31404958678,
+      "cv": 0.4217124507826417,
+      "trend_ratio": 0.7599630960739336
+    },
+    {
+      "concept": "Google%2B",
+      "type": "Decay",
+      "real_type": "Fluctuating",
+      "n_chars": 922,
+      "n_months": 120,
+      "mean_views": 61105.89166666667,
+      "cv": 0.7642441636198279,
+      "trend_ratio": 1.4077138577300456
+    },
+    {
+      "concept": "Second_Life",
+      "type": "Decay",
+      "real_type": "Growth",
+      "n_chars": 1649,
+      "n_months": 121,
+      "mean_views": 55805.586776859505,
+      "cv": 0.6055409063379783,
+      "trend_ratio": 1.7215602594992991
+    },
+    {
+      "concept": "FarmVille",
+      "type": "Decay",
+      "real_type": "Stable",
+      "n_chars": 1664,
+      "n_months": 121,
+      "mean_views": 8875.950413223141,
+      "cv": 0.1835958621418319,
+      "trend_ratio": 1.0245135031438402
+    },
+    {
+      "concept": "Clubhouse_(app)",
+      "type": "Decay",
+      "real_type": "Declining",
+      "n_chars": 902,
+      "n_months": 55,
+      "mean_views": 39219.61818181818,
+      "cv": 2.030249397026282,
+      "trend_ratio": 0.19991451770225566
+    },
+    {
+      "concept": "Myspace",
+      "type": "Decay",
+      "real_type": "Fluctuating",
+      "n_chars": 1818,
+      "n_months": 121,
+      "mean_views": 68654.61157024793,
+      "cv": 0.3172046294127568,
+      "trend_ratio": 0.8989982037706479
+    },
+    {
+      "concept": "Christmas",
+      "type": "Oscillatory",
+      "real_type": "Fluctuating",
+      "n_chars": 2953,
+      "n_months": 121,
+      "mean_views": 223584.62809917354,
+      "cv": 1.496903583202989,
+      "trend_ratio": 0.982252808875242
+    },
+    {
+      "concept": "Thanksgiving",
+      "type": "Oscillatory",
+      "real_type": "Fluctuating",
+      "n_chars": 555,
+      "n_months": 121,
+      "mean_views": 208267.88429752065,
+      "cv": 1.9708460241306796,
+      "trend_ratio": 0.8227005009259949
+    },
+    {
+      "concept": "Halloween",
+      "type": "Oscillatory",
+      "real_type": "Fluctuating",
+      "n_chars": 1968,
+      "n_months": 121,
+      "mean_views": 329351.4876033058,
+      "cv": 1.8622339948825228,
+      "trend_ratio": 0.9003951235701407
+    },
+    {
+      "concept": "Super_Bowl",
+      "type": "Oscillatory",
+      "real_type": "Fluctuating",
+      "n_chars": 3440,
+      "n_months": 121,
+      "mean_views": 295650.2809917355,
+      "cv": 1.6311588330385813,
+      "trend_ratio": 1.3231061617744297
+    },
+    {
+      "concept": "Olympic_Games",
+      "type": "Oscillatory",
+      "real_type": "Fluctuating",
+      "n_chars": 4072,
+      "n_months": 121,
+      "mean_views": 224860.61157024794,
+      "cv": 1.3289248802978753,
+      "trend_ratio": 1.0337909263049434
+    },
+    {
+      "concept": "FIFA_World_Cup",
+      "type": "Oscillatory",
+      "real_type": "Growth",
+      "n_chars": 1800,
+      "n_months": 121,
+      "mean_views": 531961.0165289256,
+      "cv": 2.2638733937279247,
+      "trend_ratio": 1.9945545932092408
+    },
+    {
+      "concept": "Academy_Awards",
+      "type": "Oscillatory",
+      "real_type": "Fluctuating",
+      "n_chars": 1162,
+      "n_months": 121,
+      "mean_views": 292957.2809917355,
+      "cv": 0.6496998091197379,
+      "trend_ratio": 1.1211479440880534
+    }
+  ]
+}

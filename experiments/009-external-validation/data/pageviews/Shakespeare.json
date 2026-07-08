@@ -1,0 +1,1093 @@
+{
+  "items": [
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2015070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 33294
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2015080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 42980
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2015090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 66962
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2015100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 39934
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2015110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 48214
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2015120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 44756
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2016010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 37446
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2016020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 34662
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2016030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 35541
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2016040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 40770
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2016050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 36948
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2016060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 31261
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2016070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 28982
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2016080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 30494
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2016090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 29756
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2016100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 29823
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2016110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 27046
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2016120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 28063
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2017010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 30385
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2017020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 26928
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2017030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 30474
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2017040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 31365
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2017050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 32823
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2017060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 30317
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2017070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 29755
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2017080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 26454
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2017090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 29788
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2017100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 29714
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2017110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 28035
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2017120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 26420
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2018010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 27683
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2018020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 24928
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2018030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 28945
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2018040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 28963
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2018050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 30414
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2018060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 28316
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2018070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 29785
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2018080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 29537
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2018090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 30371
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2018100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 28312
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2018110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 28773
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2018120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 25198
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2019010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 28864
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2019020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 23046
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2019030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 26648
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2019040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 26320
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2019050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 24528
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2019060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 22985
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2019070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 29146
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2019080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 29903
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2019090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 25782
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2019100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 28966
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2019110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 28929
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2019120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 19805
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2020010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 15781
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2020020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 15405
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2020030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 17556
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2020040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 16460
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2020050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 16805
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2020060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 15955
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2020070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 15161
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2020080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 14262
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2020090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 14472
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2020100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 15087
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2020110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 15554
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2020120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 15185
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2021010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 13060
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2021020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 13922
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2021030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 11376
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2021040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 12314
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2021050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 11646
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2021060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 9392
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2021070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8935
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2021080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 9251
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2021090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 9932
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2021100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 10176
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2021110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 9652
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2021120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 9889
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2022010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 11822
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2022020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 12150
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2022030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 12290
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2022040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 14745
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2022050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 12444
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2022060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 9354
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2022070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 9062
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2022080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 9697
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2022090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 9425
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2022100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 9681
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2022110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 9223
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2022120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 9664
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2023010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 9794
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2023020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 7333
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2023030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 16535
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2023040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8907
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2023050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8695
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2023060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 7329
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2023070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 10540
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2023080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 7899
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2023090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8170
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2023100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8010
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2023110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8433
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2023120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 9282
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2024010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8314
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2024020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8792
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2024030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 14784
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2024040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 9386
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2024050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8550
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2024060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 7389
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2024070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 6750
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2024080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 7100
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2024090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8803
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2024100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8030
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2024110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8517
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2024120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8584
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2025010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 10446
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2025020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8359
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2025030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8544
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2025040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8630
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2025050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8256
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2025060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 7689
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Shakespeare",
+      "granularity": "monthly",
+      "timestamp": "2025070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 295
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "batchcomplete": "",
+  "query": {
+    "normalized": [
+      {
+        "from": "Queen_Elizabeth_II",
+        "to": "Queen Elizabeth II"
+      }
+    ],
+    "pages": {
+      "25309": {
+        "pageid": 25309,
+        "ns": 0,
+        "title": "Queen Elizabeth II",
+        "extract": ""
+      }
+    }
+  }
+}

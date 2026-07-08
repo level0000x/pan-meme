@@ -1,0 +1,1093 @@
+{
+  "items": [
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2015070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 44474
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2015080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 43717
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2015090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 53080
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2015100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 49338
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2015110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 39330
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2015120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 34569
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2016010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 45382
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2016020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 39377
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2016030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 39368
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2016040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 39268
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2016050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 35773
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2016060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 30311
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2016070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 30694
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2016080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 29982
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2016090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 26684
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2016100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 168252
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2016110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 115096
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2016120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 72694
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2017010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 89525
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2017020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 59417
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2017030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 68197
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2017040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 59128
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2017050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 53476
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2017060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 68502
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2017070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 77675
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2017080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 68810
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2017090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 57395
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2017100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 63008
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2017110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 62864
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2017120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 83276
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2018010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 104887
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2018020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 58536
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2018030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 56616
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2018040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 53933
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2018050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 47608
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2018060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 45771
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2018070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 48864
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2018080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 52878
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2018090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 48351
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2018100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 49121
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2018110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 53348
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2018120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 109014
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2019010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 51744
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2019020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 50061
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2019030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 49640
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2019040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 44507
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2019050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 40066
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2019060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 41175
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2019070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 42066
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2019080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 42040
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2019090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 42613
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2019100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 49738
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2019110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 51957
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2019120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 49591
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2020010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 63322
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2020020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 48946
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2020030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 45526
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2020040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 57886
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2020050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 57373
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2020060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 46098
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2020070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 58865
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2020080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 77585
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2020090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 43857
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2020100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 39852
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2020110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 44335
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2020120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 48138
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2021010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 43416
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2021020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 38930
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2021030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 44916
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2021040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 48433
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2021050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 40358
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2021060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 45172
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2021070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 38934
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2021080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 40214
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2021090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 37024
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2021100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 35320
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2021110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 32884
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2021120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 36767
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2022010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 40500
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2022020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 39353
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2022030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 35006
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2022040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 51198
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2022050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 39155
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2022060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 32115
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2022070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 35025
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2022080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 37875
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2022090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 32611
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2022100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 80200
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2022110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 93080
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2022120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 35687
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2023010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 38751
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2023020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 46743
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2023030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 48527
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2023040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 37432
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2023050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 35210
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2023060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 34414
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2023070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 50201
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2023080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 51673
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2023090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 35466
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2023100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 37786
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2023110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 33007
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2023120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 36548
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2024010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 41814
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2024020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 38401
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2024030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 52778
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2024040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 64549
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2024050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 37099
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2024060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 29515
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2024070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 30298
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2024080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 29500
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2024090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 33797
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2024100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 33421
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2024110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 54852
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2024120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 32618
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2025010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 107099
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2025020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 33890
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2025030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 35607
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2025040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 34130
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2025050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 33517
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2025060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 33397
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Vine_(service)",
+      "granularity": "monthly",
+      "timestamp": "2025070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 960
+    }
+  ]
+}

@@ -1,0 +1,1093 @@
+{
+  "items": [
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2015070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 10194
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2015080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 10135
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2015090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 9688
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2015100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 9792
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2015110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 9585
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2015120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8409
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2016010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8809
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2016020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8364
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2016030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 9311
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2016040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8706
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2016050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8813
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2016060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 7968
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2016070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8442
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2016080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 7967
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2016090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 7728
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2016100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8566
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2016110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 7996
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2016120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 7817
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2017010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8135
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2017020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 7782
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2017030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 10734
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2017040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 9342
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2017050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 9272
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2017060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8366
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2017070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8830
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2017080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8803
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2017090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8385
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2017100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8207
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2017110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8664
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2017120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 7673
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2018010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 10795
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2018020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 7518
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2018030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 9537
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2018040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8756
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2018050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 7666
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2018060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 6676
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2018070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 7201
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2018080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 7326
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2018090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 6952
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2018100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8276
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2018110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 7829
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2018120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 7813
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2019010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 9165
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2019020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 7497
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2019030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8789
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2019040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8084
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2019050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8128
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2019060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 7963
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2019070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8001
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2019080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8151
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2019090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8164
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2019100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8781
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2019110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8993
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2019120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8287
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2020010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 9307
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2020020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8221
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2020030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 10024
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2020040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 15881
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2020050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 11546
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2020060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 12246
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2020070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 9254
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2020080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 9455
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2020090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 14130
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2020100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 10038
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2020110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8019
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2020120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 10212
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2021010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 14611
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2021020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8974
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2021030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 10262
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2021040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8766
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2021050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8493
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2021060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 7875
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2021070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8864
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2021080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8275
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2021090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8959
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2021100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 9297
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2021110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 9457
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2021120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8044
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2022010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 13843
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2022020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8424
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2022030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8094
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2022040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 7930
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2022050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8319
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2022060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8314
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2022070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8315
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2022080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 9348
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2022090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 7929
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2022100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8717
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2022110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 7529
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2022120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 7838
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2023010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8846
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2023020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 7791
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2023030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8477
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2023040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 7269
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2023050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 7629
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2023060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 7721
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2023070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8059
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2023080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8365
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2023090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 7796
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2023100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8348
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2023110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8842
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2023120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 9472
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2024010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 10287
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2024020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8974
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2024030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 9407
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2024040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8659
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2024050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 9264
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2024060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8534
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2024070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 9892
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2024080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8809
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2024090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8940
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2024100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8634
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2024110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8622
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2024120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 9829
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2025010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 10639
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2025020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 9217
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2025030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 10096
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2025040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 10352
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2025050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 10984
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2025060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 10330
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "FarmVille",
+      "granularity": "monthly",
+      "timestamp": "2025070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 265
+    }
+  ]
+}

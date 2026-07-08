@@ -1,0 +1,1093 @@
+{
+  "items": [
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2015070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 86435
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2015080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 116555
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2015090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 191675
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2015100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 185800
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2015110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 221330
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2015120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 245127
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2016010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 732555
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2016020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 984096
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2016030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 99805
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2016040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 103880
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2016050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 110676
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2016060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 87647
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2016070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 82969
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2016080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 111523
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2016090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 178931
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2016100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 176154
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2016110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 196806
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2016120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 229752
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2017010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 784423
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2017020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 1067826
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2017030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 109456
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2017040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 90631
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2017050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 92496
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2017060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 78552
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2017070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 80961
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2017080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 109444
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2017090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 164052
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2017100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 168883
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2017110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 175562
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2017120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 209295
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2018010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 739971
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2018020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 781879
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2018030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 96740
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2018040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 82781
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2018050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 93747
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2018060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 77371
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2018070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 84835
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2018080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 122984
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2018090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 175679
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2018100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 182891
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2018110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 205342
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2018120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 217030
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2019010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 789106
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2019020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 706885
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2019030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 103478
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2019040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 86877
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2019050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 89575
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2019060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 88988
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2019070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 106742
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2019080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 159102
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2019090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 246185
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2019100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 212645
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2019110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 201149
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2019120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 241907
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2020010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 801005
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2020020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 672427
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2020030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 131816
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2020040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 195854
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2020050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 178429
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2020060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 107558
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2020070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 121846
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2020080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 104886
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2020090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 161473
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2020100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 178854
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2020110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 157800
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2020120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 169053
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2021010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 592363
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2021020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 830843
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2021030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 94170
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2021040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 88048
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2021050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 89920
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2021060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 70168
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2021070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 83777
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2021080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 103813
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2021090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 156465
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2021100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 181612
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2021110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 143798
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2021120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 185630
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2022010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 679292
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2022020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 968970
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2022030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 114068
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2022040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 87125
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2022050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 82281
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2022060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 78739
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2022070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 84415
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2022080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 118870
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2022090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 195221
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2022100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 188302
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2022110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 187604
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2022120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 201109
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2023010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 743047
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2023020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 2687360
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2023030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 127128
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2023040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 91696
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2023050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 106499
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2023060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 105217
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2023070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 132637
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2023080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 158628
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2023090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 256735
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2023100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 218258
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2023110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 219161
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2023120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 304811
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2024010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 1319692
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2024020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 4002018
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2024030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 121846
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2024040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 133102
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2024050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 97823
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2024060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 84197
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2024070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 92465
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2024080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 100430
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2024090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 186512
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2024100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 148401
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2024110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 140882
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2024120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 182598
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2025010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 730194
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2025020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 1155804
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2025030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 105019
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2025040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 85291
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2025050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 84294
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2025060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 94663
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Super_Bowl",
+      "granularity": "monthly",
+      "timestamp": "2025070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 2486
+    }
+  ]
+}

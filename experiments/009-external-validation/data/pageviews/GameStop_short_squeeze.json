@@ -1,0 +1,499 @@
+{
+  "items": [
+    {
+      "project": "en.wikipedia",
+      "article": "GameStop_short_squeeze",
+      "granularity": "monthly",
+      "timestamp": "2021010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 661507
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "GameStop_short_squeeze",
+      "granularity": "monthly",
+      "timestamp": "2021020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 425481
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "GameStop_short_squeeze",
+      "granularity": "monthly",
+      "timestamp": "2021030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 161899
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "GameStop_short_squeeze",
+      "granularity": "monthly",
+      "timestamp": "2021040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 77143
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "GameStop_short_squeeze",
+      "granularity": "monthly",
+      "timestamp": "2021050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 82728
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "GameStop_short_squeeze",
+      "granularity": "monthly",
+      "timestamp": "2021060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 78138
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "GameStop_short_squeeze",
+      "granularity": "monthly",
+      "timestamp": "2021070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 43316
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "GameStop_short_squeeze",
+      "granularity": "monthly",
+      "timestamp": "2021080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 39273
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "GameStop_short_squeeze",
+      "granularity": "monthly",
+      "timestamp": "2021090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 38592
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "GameStop_short_squeeze",
+      "granularity": "monthly",
+      "timestamp": "2021100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 40496
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "GameStop_short_squeeze",
+      "granularity": "monthly",
+      "timestamp": "2021110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 45028
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "GameStop_short_squeeze",
+      "granularity": "monthly",
+      "timestamp": "2021120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 39147
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "GameStop_short_squeeze",
+      "granularity": "monthly",
+      "timestamp": "2022010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 46968
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "GameStop_short_squeeze",
+      "granularity": "monthly",
+      "timestamp": "2022020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 43424
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "GameStop_short_squeeze",
+      "granularity": "monthly",
+      "timestamp": "2022030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 43567
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "GameStop_short_squeeze",
+      "granularity": "monthly",
+      "timestamp": "2022040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 33716
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "GameStop_short_squeeze",
+      "granularity": "monthly",
+      "timestamp": "2022050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 36458
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "GameStop_short_squeeze",
+      "granularity": "monthly",
+      "timestamp": "2022060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 27018
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "GameStop_short_squeeze",
+      "granularity": "monthly",
+      "timestamp": "2022070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 27489
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "GameStop_short_squeeze",
+      "granularity": "monthly",
+      "timestamp": "2022080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 43856
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "GameStop_short_squeeze",
+      "granularity": "monthly",
+      "timestamp": "2022090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 35320
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "GameStop_short_squeeze",
+      "granularity": "monthly",
+      "timestamp": "2022100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 65480
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "GameStop_short_squeeze",
+      "granularity": "monthly",
+      "timestamp": "2022110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 38590
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "GameStop_short_squeeze",
+      "granularity": "monthly",
+      "timestamp": "2022120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 36969
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "GameStop_short_squeeze",
+      "granularity": "monthly",
+      "timestamp": "2023010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 47556
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "GameStop_short_squeeze",
+      "granularity": "monthly",
+      "timestamp": "2023020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 33527
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "GameStop_short_squeeze",
+      "granularity": "monthly",
+      "timestamp": "2023030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 38873
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "GameStop_short_squeeze",
+      "granularity": "monthly",
+      "timestamp": "2023040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 29182
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "GameStop_short_squeeze",
+      "granularity": "monthly",
+      "timestamp": "2023050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 29368
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "GameStop_short_squeeze",
+      "granularity": "monthly",
+      "timestamp": "2023060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 69118
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "GameStop_short_squeeze",
+      "granularity": "monthly",
+      "timestamp": "2023070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 49804
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "GameStop_short_squeeze",
+      "granularity": "monthly",
+      "timestamp": "2023080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 59953
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "GameStop_short_squeeze",
+      "granularity": "monthly",
+      "timestamp": "2023090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 163883
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "GameStop_short_squeeze",
+      "granularity": "monthly",
+      "timestamp": "2023100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 99960
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "GameStop_short_squeeze",
+      "granularity": "monthly",
+      "timestamp": "2023110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 111510
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "GameStop_short_squeeze",
+      "granularity": "monthly",
+      "timestamp": "2023120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 74645
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "GameStop_short_squeeze",
+      "granularity": "monthly",
+      "timestamp": "2024010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 220058
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "GameStop_short_squeeze",
+      "granularity": "monthly",
+      "timestamp": "2024020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 147386
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "GameStop_short_squeeze",
+      "granularity": "monthly",
+      "timestamp": "2024030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 88373
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "GameStop_short_squeeze",
+      "granularity": "monthly",
+      "timestamp": "2024040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 65934
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "GameStop_short_squeeze",
+      "granularity": "monthly",
+      "timestamp": "2024050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 140154
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "GameStop_short_squeeze",
+      "granularity": "monthly",
+      "timestamp": "2024060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 124627
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "GameStop_short_squeeze",
+      "granularity": "monthly",
+      "timestamp": "2024070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 47940
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "GameStop_short_squeeze",
+      "granularity": "monthly",
+      "timestamp": "2024080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 47992
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "GameStop_short_squeeze",
+      "granularity": "monthly",
+      "timestamp": "2024090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 55329
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "GameStop_short_squeeze",
+      "granularity": "monthly",
+      "timestamp": "2024100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 55245
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "GameStop_short_squeeze",
+      "granularity": "monthly",
+      "timestamp": "2024110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 52358
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "GameStop_short_squeeze",
+      "granularity": "monthly",
+      "timestamp": "2024120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 55732
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "GameStop_short_squeeze",
+      "granularity": "monthly",
+      "timestamp": "2025010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 56940
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "GameStop_short_squeeze",
+      "granularity": "monthly",
+      "timestamp": "2025020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 47682
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "GameStop_short_squeeze",
+      "granularity": "monthly",
+      "timestamp": "2025030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 61057
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "GameStop_short_squeeze",
+      "granularity": "monthly",
+      "timestamp": "2025040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 73669
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "GameStop_short_squeeze",
+      "granularity": "monthly",
+      "timestamp": "2025050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 49208
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "GameStop_short_squeeze",
+      "granularity": "monthly",
+      "timestamp": "2025060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 51596
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "GameStop_short_squeeze",
+      "granularity": "monthly",
+      "timestamp": "2025070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 1738
+    }
+  ]
+}

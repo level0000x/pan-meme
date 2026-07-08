@@ -436,4 +436,112 @@ mod tests {
         assert!(all_conv, "强验证失败: γ=2.0 收敛率不达标");
         assert!(all_diverse, "强验证失败: γ=2.0 原型多样性不达标");
     }
+
+    // ── 辅助函数: Pearson r + p ──
+    fn pearson_r(x: &[f64], y: &[f64]) -> f64 {
+        let n = x.len().min(y.len());
+        if n < 3 { return 0.0; }
+        let mx = x[..n].iter().sum::<f64>() / n as f64;
+        let my = y[..n].iter().sum::<f64>() / n as f64;
+        let mut cov = 0.0; let mut sx2 = 0.0; let mut sy2 = 0.0;
+        for i in 0..n { let dx = x[i] - mx; let dy = y[i] - my; cov += dx * dy; sx2 += dx * dx; sy2 += dy * dy; }
+        let denom = (sx2 * sy2).sqrt();
+        if denom < 1e-12 { 0.0 } else { (cov / denom).clamp(-1.0, 1.0) }
+    }
+    fn pearson_p(r: f64, n: usize) -> f64 {
+        if n <= 2 || r.abs() >= 1.0 { return 1.0; }
+        let t = r.abs() * ((n - 2) as f64 / (1.0 - r * r)).sqrt();
+        let x = t;
+        let z = 1.0 / (1.0 + 0.2316419 * x);
+        let a = [0.0498673470, 0.0211410061, 0.0032776263, 0.0000380036, 0.0000488906, 0.0000053830];
+        let mut phi_z = 0.0;
+        for &ai in a.iter().rev() { phi_z = (phi_z + ai) * z; }
+        let phi = 1.0 - phi_z * (-x * x / 2.0).exp() / (2.0 * std::f64::consts::PI).sqrt();
+        (2.0 * (1.0 - phi)).clamp(0.0, 1.0)
+    }
+
+    #[test]
+    fn experiment_009_external_validation() {
+        let data_dir = "../experiments/009-external-validation/data";
+        let extract_dir = format!("{}/extracts", data_dir);
+        let pv_dir = format!("{}/pageviews", data_dir);
+
+        println!("\n╔══════════════════════════════════════════════════════════════╗");
+        println!("║  实验 009: 真实世界历时数据验证 — H₄ 外部预测假设              ║");
+        println!("╚══════════════════════════════════════════════════════════════╝");
+
+        let mut concepts: Vec<String> = Vec::new();
+        if let Ok(entries) = std::fs::read_dir(&extract_dir) {
+            for entry in entries.filter_map(|e| e.ok()) {
+                let fname = entry.file_name().to_string_lossy().to_string();
+                if !fname.ends_with(".txt") || fname.starts_with("._") { continue; }
+                let c = fname.trim_end_matches(".txt").to_string();
+                if std::path::Path::new(&format!("{}/{}.txt", pv_dir, c)).exists() {
+                    concepts.push(c);
+                }
+            }
+        }
+        concepts.sort();
+        println!("\n  加载 {} 个有效概念", concepts.len());
+        if concepts.is_empty() { println!("  ⚠ 无数据"); return; }
+
+        let mut results: Vec<(String, f64, f64, usize)> = Vec::new();
+        for (ci, concept) in concepts.iter().enumerate() {
+            let text = std::fs::read_to_string(format!("{}/{}.txt", extract_dir, concept)).unwrap_or_default();
+            if text.len() < 50 { continue; }
+            let words = crate::io::tokenizer::extract_ngrams(&text);
+            if words.len() < 10 { continue; }
+            let p1 = crate::pipeline::phase1_emergence::run_phase_one(words, 100);
+            if p1.s.vertices.is_empty() { continue; }
+            let p2 = crate::pipeline::phase2_encoding::run_phase_two(&p1);
+            let p3 = crate::pipeline::phase3_decomposition::run_phase_three(&p2, 2.0);
+            if p3.memes.is_empty() { continue; }
+
+            let config = OdeConfig { t_max: 120.0, max_steps: 120000, convergence_threshold: 1e-2, convergence_window: 10, ..OdeConfig::default() };
+            let ode_output = run_phase_five(&p3, &config, None);
+            let ode_rho: Vec<f64> = if let Some(evo) = ode_output.evolutions.iter().max_by_key(|e| e.trajectory.len()) {
+                evo.trajectory.iter().map(|s| s.rho).collect()
+            } else { continue; };
+
+            let pv_str = std::fs::read_to_string(format!("{}/{}.txt", pv_dir, concept)).unwrap_or_default();
+            let real_views: Vec<f64> = pv_str.lines().filter_map(|l| l.trim().parse::<f64>().ok()).collect();
+            let n = ode_rho.len().min(real_views.len());
+            if n < 6 { continue; }
+
+            let r = pearson_r(&ode_rho[..n], &real_views[..n]);
+            let p = pearson_p(r, n);
+            if ci % 10 == 0 { println!("  [{}/{}] {}: r={:.3}", ci + 1, concepts.len(), concept, r); }
+            results.push((concept.clone(), r, p, n));
+        }
+
+        if results.is_empty() { println!("\n  ⚠ 无有效结果"); return; }
+
+        println!("\n╔══════════════════════════════════╤══════════╤════════╤══════╗");
+        println!("║ Concept                          │ Pearson r│ p-value│ n    ║");
+        println!("╠══════════════════════════════════╪══════════╪════════╪══════╣");
+        for (concept, r, p, n) in &results {
+            let sig = if *p < 0.05 { "*" } else { "" };
+            println!("║ {:<32} │ {:>7.3}{} │ {:.4} │ {:<4} ║", concept, r, sig, p, n);
+        }
+        println!("╚══════════════════════════════════╧══════════╧════════╧══════╝");
+
+        let gr = results.iter().map(|(_, r, _, _)| *r).sum::<f64>() / results.len() as f64;
+        let ga = results.iter().map(|(_, r, _, _)| r.abs()).sum::<f64>() / results.len() as f64;
+        let sig05 = results.iter().filter(|(_, _, p, _)| *p < 0.05).count();
+        let pos = results.iter().filter(|(_, r, _, _)| *r > 0.0).count();
+        let neg = results.iter().filter(|(_, r, _, _)| *r < 0.0).count();
+
+        println!("\n╔══════════════════════════════════════════════════════════════════╗");
+        println!("║  H₄ 汇总  n={}                                                  ║", results.len());
+        println!("╠══════════════════════════════════════════════════════════════════╣");
+        println!("║  r̄  = {:>7.4}  |r̄| = {:>7.4}                                      ║", gr, ga);
+        println!("║  p<0.05: {}/{} ({:.0}%)  正相关: {}  负相关: {}                      ║",
+            sig05, results.len(), sig05 as f64 / results.len() as f64 * 100.0, pos, neg);
+        println!("╚══════════════════════════════════════════════════════════════════╝");
+
+        let h4_ok = ga > 0.2 && sig05 as f64 / results.len() as f64 >= 0.40;
+        println!("\n  H₄: |r̄|={:.4} sig={:.0}% → {}", ga, sig05 as f64 / results.len() as f64 * 100.0,
+            if h4_ok { "✓ PASS" } else { "✗ FAIL" });
+        assert!(h4_ok, "H₄ 外部预测假设不成立");
+    }
 }

@@ -1,0 +1,1093 @@
+{
+  "items": [
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2015070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 114700
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2015080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 128781
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2015090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 114708
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2015100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 86728
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2015110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 79122
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2015120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 75286
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2016010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 94040
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2016020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 82209
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2016030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 82064
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2016040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 79509
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2016050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 86320
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2016060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 83990
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2016070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 81596
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2016080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 90427
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2016090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 91249
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2016100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 81838
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2016110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 83138
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2016120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 73196
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2017010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 97317
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2017020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 77139
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2017030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 84139
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2017040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 75028
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2017050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 84357
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2017060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 77935
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2017070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 80646
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2017080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 82400
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2017090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 79581
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2017100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 74220
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2017110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 85004
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2017120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 70408
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2018010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 73318
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2018020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 71336
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2018030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 73988
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2018040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 75142
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2018050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 78138
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2018060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 77995
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2018070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 84395
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2018080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 83100
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2018090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 95005
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2018100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 85973
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2018110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 81882
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2018120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 80446
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2019010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 97592
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2019020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 92067
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2019030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 87481
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2019040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 99508
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2019050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 109554
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2019060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 108362
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2019070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 113241
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2019080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 115868
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2019090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 122053
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2019100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 123949
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2019110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 110288
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2019120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 91902
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2020010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 108107
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2020020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 98089
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2020030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 120076
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2020040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 126211
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2020050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 110726
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2020060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 112199
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2020070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 127410
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2020080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 148683
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2020090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 136260
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2020100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 123437
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2020110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 93289
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2020120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 85316
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2021010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 90146
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2021020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 78834
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2021030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 82612
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2021040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 69488
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2021050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 82824
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2021060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 65656
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2021070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 65432
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2021080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 62543
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2021090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 66095
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2021100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 70154
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2021110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 68853
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2021120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 64126
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2022010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 69541
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2022020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 69541
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2022030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 70696
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2022040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 63410
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2022050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 57466
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2022060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 157105
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2022070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 68783
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2022080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 68999
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2022090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 75725
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2022100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 74169
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2022110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 58553
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2022120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 52842
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2023010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 68469
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2023020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 86267
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2023030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 89396
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2023040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 76433
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2023050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 76287
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2023060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 66499
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2023070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 56242
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2023080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 56485
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2023090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 167520
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2023100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 183344
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2023110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 128226
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2023120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 66494
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2024010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 82685
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2024020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 68137
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2024030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 80321
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2024040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 79635
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2024050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 80609
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2024060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 39524
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2024070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 35832
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2024080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 37546
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2024090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 33685
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2024100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 36731
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2024110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 33855
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2024120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 31210
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2025010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 47953
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2025020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 33938
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2025030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 34249
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2025040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 30892
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2025050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 34239
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2025060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 40257
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Internet_Explorer",
+      "granularity": "monthly",
+      "timestamp": "2025070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 1596
+    }
+  ]
+}

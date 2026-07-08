@@ -1,0 +1,1093 @@
+{
+  "items": [
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2015070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 393
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2015080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 327
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2015090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 339
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2015100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 346
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2015110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 345
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2015120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 317
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2016010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 271
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2016020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 210
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2016030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 287
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2016040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 238
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2016050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 220
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2016060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 172
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2016070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 208
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2016080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 172
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2016090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 249
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2016100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 212
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2016110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 179
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2016120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 168
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2017010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 150
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2017020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 142
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2017030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 212
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2017040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 192
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2017050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 236
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2017060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 200
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2017070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 191
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2017080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 257
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2017090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 237
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2017100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 308
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2017110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 260
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2017120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 272
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2018010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 389
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2018020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 368
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2018030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 481
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2018040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 571
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2018050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 537
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2018060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 532
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2018070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 522
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2018080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 603
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2018090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 597
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2018100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 610
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2018110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 609
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2018120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 632
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2019010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 718
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2019020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 703
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2019030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 710
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2019040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 621
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2019050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 591
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2019060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 556
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2019070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 491
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2019080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 424
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2019090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 380
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2019100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 440
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2019110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 494
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2019120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 556
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2020010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 538
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2020020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 484
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2020030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 448
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2020040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 460
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2020050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 535
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2020060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 472
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2020070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 553
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2020080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 429
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2020090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 310
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2020100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 281
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2020110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 239
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2020120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 304
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2021010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 437
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2021020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 2375
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2021030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 41531
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2021040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 21818
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2021050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 13274
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2021060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 5579
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2021070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 5835
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2021080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 3320
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2021090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 3522
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2021100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 5022
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2021110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 7934
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2021120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 12894
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2022010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 13500
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2022020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 9761
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2022030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 6626
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2022040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 6166
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2022050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 6457
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2022060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 5370
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2022070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 4799
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2022080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 4399
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2022090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 4004
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2022100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 4462
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2022110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 4748
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2022120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 6196
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2023010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 5577
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2023020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 3754
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2023030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 5104
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2023040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 4000
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2023050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 3354
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2023060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 2859
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2023070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 3210
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2023080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 3145
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2023090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 3001
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2023100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 2778
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2023110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 3048
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2023120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 2718
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2024010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 14076
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2024020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 5525
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2024030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 3813
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2024040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 3326
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2024050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 3487
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2024060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 3273
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2024070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 3504
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2024080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 4462
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2024090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 2895
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2024100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 2923
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2024110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 2582
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2024120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 3046
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2025010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 3237
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2025020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 2499
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2025030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 2444
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2025040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 2533
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2025050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 2804
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2025060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 2089
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "NFT",
+      "granularity": "monthly",
+      "timestamp": "2025070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 70
+    }
+  ]
+}

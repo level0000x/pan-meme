@@ -1,0 +1,1093 @@
+{
+  "items": [
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2015070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 15674
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2015080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 20711
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2015090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 16268
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2015100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 12506
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2015110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 12306
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2015120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 27317
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2016010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 23200
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2016020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 36062
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2016030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 52561
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2016040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 23995
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2016050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 29039
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2016060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 23360
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2016070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 34810
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2016080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 25479
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2016090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 30796
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2016100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 56643
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2016110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 121572
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2016120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 39440
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2017010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 84700
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2017020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 48060
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2017030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 31301
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2017040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 24433
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2017050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 31489
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2017060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 23143
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2017070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 29342
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2017080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 30417
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2017090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 19166
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2017100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 20863
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2017110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 20557
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2017120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 25747
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2018010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 27383
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2018020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 17198
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2018030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 20266
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2018040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 21633
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2018050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 18792
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2018060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 19533
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2018070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 19882
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2018080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 16114
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2018090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 15752
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2018100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 18965
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2018110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 19973
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2018120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 19397
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2019010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 31120
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2019020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 18801
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2019030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 17824
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2019040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 15904
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2019050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 15970
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2019060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 17871
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2019070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 16031
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2019080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 18508
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2019090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 28402
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2019100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 30695
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2019110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 20182
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2019120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 24442
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2020010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 23324
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2020020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 24140
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2020030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 24078
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2020040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 20186
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2020050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 18191
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2020060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 22497
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2020070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 20518
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2020080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 38964
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2020090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 22884
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2020100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 36602
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2020110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 54433
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2020120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 18304
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2021010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 113682
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2021020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 35506
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2021030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 31052
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2021040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 17663
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2021050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 10490
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2021060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 9839
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2021070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8172
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2021080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8045
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2021090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 9066
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2021100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8772
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2021110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8209
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2021120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 7934
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2022010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8609
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2022020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 9283
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2022030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 10131
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2022040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 7993
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2022050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 7749
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2022060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8161
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2022070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 10106
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2022080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 10730
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2022090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 9019
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2022100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 9148
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2022110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 12912
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2022120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8058
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2023010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 6954
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2023020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 5831
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2023030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 9257
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2023040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 11765
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2023050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8111
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2023060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 10392
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2023070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8633
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2023080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 20421
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2023090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 10644
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2023100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 9764
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2023110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 10988
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2023120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 12776
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2024010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 17517
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2024020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 15927
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2024030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 16560
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2024040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 33599
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2024050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 54051
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2024060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 56975
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2024070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 108055
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2024080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 61215
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2024090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 47871
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2024100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 49409
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2024110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 84913
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2024120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 48551
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2025010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 111030
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2025020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 88360
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2025030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 27026
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2025040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 23866
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2025050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 12699
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2025060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 10930
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Trump",
+      "granularity": "monthly",
+      "timestamp": "2025070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 258
+    }
+  ]
+}

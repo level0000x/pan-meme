@@ -1,0 +1,1093 @@
+{
+  "items": [
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2015070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 100081
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2015080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 106466
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2015090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 87735
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2015100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 88171
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2015110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 78748
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2015120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 72744
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2016010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 86867
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2016020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 88301
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2016030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 91414
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2016040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 84600
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2016050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 85877
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2016060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 105599
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2016070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 109984
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2016080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 114451
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2016090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 120751
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2016100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 98363
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2016110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 76038
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2016120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 71970
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2017010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 80056
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2017020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 78267
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2017030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 78633
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2017040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 68600
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2017050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 102648
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2017060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 71536
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2017070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 68037
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2017080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 69746
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2017090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 66698
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2017100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 73449
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2017110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 68811
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2017120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 58830
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2018010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 64418
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2018020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 59864
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2018030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 65260
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2018040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 56928
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2018050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 62102
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2018060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 58361
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2018070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 65928
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2018080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 61294
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2018090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 57599
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2018100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 73969
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2018110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 58292
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2018120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 57082
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2019010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 62341
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2019020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 54729
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2019030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 59017
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2019040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 54621
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2019050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 55265
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2019060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 51685
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2019070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 57185
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2019080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 58745
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2019090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 60416
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2019100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 64318
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2019110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 63132
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2019120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 59235
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2020010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 72447
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2020020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 59998
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2020030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 59223
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2020040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 88605
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2020050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 72612
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2020060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 94072
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2020070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 60247
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2020080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 62853
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2020090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 64727
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2020100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 80691
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2020110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 77924
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2020120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 89845
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2021010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 78243
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2021020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 67221
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2021030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 71261
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2021040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 66860
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2021050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 63526
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2021060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 83686
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2021070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 87380
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2021080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 76473
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2021090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 86019
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2021100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 121304
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2021110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 84148
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2021120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 79900
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2022010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 82797
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2022020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 72022
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2022030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 71265
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2022040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 73858
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2022050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 73912
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2022060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 67292
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2022070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 72877
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2022080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 87585
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2022090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 83816
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2022100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 116377
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2022110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 86113
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2022120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 71598
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2023010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 82471
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2023020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 77122
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2023030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 84085
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2023040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 71747
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2023050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 74068
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2023060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 74686
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2023070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 74206
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2023080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 71852
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2023090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 72398
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2023100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 75699
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2023110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 69555
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2023120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 69552
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2024010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 88921
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2024020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 75688
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2024030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 74723
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2024040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 75673
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2024050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 66585
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2024060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 54075
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2024070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 61898
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2024080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 60763
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2024090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 57772
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2024100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 77218
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2024110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 55687
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2024120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 54368
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2025010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 59353
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2025020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 59529
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2025030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 63890
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2025040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 65188
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2025050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 57137
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2025060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 54015
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Windows_XP",
+      "granularity": "monthly",
+      "timestamp": "2025070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 1800
+    }
+  ]
+}

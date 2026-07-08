@@ -1,0 +1,1093 @@
+{
+  "items": [
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2015070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 51192
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2015080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 123941
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2015090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 142632
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2015100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 88581
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2015110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 115284
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2015120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 115339
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2016010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 89561
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2016020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 155458
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2016030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 119567
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2016040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 111147
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2016050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 91995
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2016060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 56181
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2016070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 590331
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2016080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 152717
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2016090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 204081
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2016100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 175580
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2016110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 207517
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2016120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 136720
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2017010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 129765
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2017020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 108552
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2017030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 86730
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2017040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 96619
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2017050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 89399
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2017060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 70865
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2017070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 63102
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2017080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 194930
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2017090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 107992
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2017100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 110852
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2017110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 93644
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2017120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 77409
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2018010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 74018
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2018020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 92042
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2018030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 87856
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2018040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 87669
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2018050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 86627
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2018060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 62436
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2018070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 52527
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2018080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 57886
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2018090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 72841
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2018100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 78420
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2018110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 77418
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2018120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 62622
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2019010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 67478
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2019020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 74147
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2019030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 71977
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2019040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 67709
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2019050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 64938
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2019060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 45006
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2019070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 45603
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2019080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 47273
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2019090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 51305
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2019100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 59711
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2019110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 62495
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2019120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 55266
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2020010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 55992
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2020020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 63629
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2020030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 55349
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2020040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 59544
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2020050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 330244
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2020060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 2794920
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2020070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 1275309
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2020080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 761947
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2020090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 766307
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2020100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 466126
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2020110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 384391
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2020120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 299361
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2021010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 416994
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2021020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 301859
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2021030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 280461
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2021040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 354334
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2021050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 263192
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2021060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 220971
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2021070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 163858
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2021080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 117230
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2021090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 134998
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2021100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 165680
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2021110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 164919
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2021120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 123203
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2022010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 127095
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2022020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 153112
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2022030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 127115
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2022040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 133817
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2022050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 135856
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2022060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 134424
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2022070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 85453
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2022080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 85727
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2022090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 99827
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2022100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 150565
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2022110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 114716
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2022120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 88151
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2023010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 125496
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2023020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 103410
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2023030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 112298
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2023040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 93644
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2023050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 112649
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2023060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 95018
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2023070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 77596
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2023080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 77782
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2023090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 86319
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2023100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 102871
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2023110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 95188
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2023120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 88732
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2024010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 101232
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2024020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 92560
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2024030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 100657
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2024040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 91895
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2024050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 91338
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2024060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 67179
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2024070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 69458
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2024080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 74051
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2024090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 64134
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2024100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 74404
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2024110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 83074
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2024120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 66422
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2025010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 78870
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2025020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 72990
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2025030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 87620
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2025040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 77723
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2025050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 74529
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2025060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 67204
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Black_Lives_Matter",
+      "granularity": "monthly",
+      "timestamp": "2025070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 1564
+    }
+  ]
+}

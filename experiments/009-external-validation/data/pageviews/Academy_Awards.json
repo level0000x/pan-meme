@@ -1,0 +1,1093 @@
+{
+  "items": [
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2015070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 122601
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2015080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 123004
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2015090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 127952
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2015100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 136015
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2015110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 140408
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2015120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 186053
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2016010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 652444
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2016020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 891787
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2016030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 395764
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2016040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 215874
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2016050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 157554
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2016060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 133433
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2016070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 133977
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2016080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 133035
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2016090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 146790
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2016100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 140156
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2016110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 165462
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2016120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 215690
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2017010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 433911
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2017020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 815509
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2017030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 332537
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2017040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 170205
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2017050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 165903
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2017060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 142184
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2017070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 154409
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2017080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 148902
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2017090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 165050
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2017100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 166848
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2017110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 166898
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2017120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 206871
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2018010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 421755
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2018020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 290365
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2018030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 684866
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2018040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 176025
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2018050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 163642
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2018060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 151139
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2018070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 167796
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2018080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 200043
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2018090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 197278
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2018100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 198530
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2018110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 183798
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2018120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 241577
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2019010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 449953
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2019020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 735852
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2019030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 302991
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2019040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 196761
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2019050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 179114
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2019060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 172063
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2019070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 194568
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2019080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 207320
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2019090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 216522
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2019100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 250955
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2019110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 244342
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2019120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 292826
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2020010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 564971
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2020020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 861631
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2020030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 305173
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2020040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 393915
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2020050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 363666
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2020060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 269031
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2020070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 259248
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2020080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 235865
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2020090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 231034
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2020100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 217320
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2020110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 225654
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2020120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 266960
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2021010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 292615
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2021020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 280979
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2021030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 363806
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2021040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 535650
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2021050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 282267
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2021060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 203893
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2021070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 210704
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2021080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 203865
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2021090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 209096
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2021100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 203789
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2021110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 202812
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2021120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 236386
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2022010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 308890
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2022020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 337106
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2022030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 689088
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2022040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 403745
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2022050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 227468
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2022060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 206956
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2022070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 211550
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2022080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 216461
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2022090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 203125
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2022100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 209326
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2022110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 212649
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2022120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 252327
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2023010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 482753
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2023020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 382572
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2023030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 1046241
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2023040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 396047
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2023050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 217735
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2023060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 216858
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2023070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 253495
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2023080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 247525
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2023090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 205674
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2023100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 214897
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2023110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 220954
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2023120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 270103
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2024010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 590804
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2024020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 409613
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2024030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 1020070
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2024040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 247333
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2024050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 216132
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2024060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 191367
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2024070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 204546
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2024080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 187462
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2024090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 221415
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2024100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 210837
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2024110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 235894
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2024120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 276101
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2025010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 489067
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2025020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 434054
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2025030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 857380
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2025040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 272237
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2025050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 265308
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2025060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 251055
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Academy_Awards",
+      "granularity": "monthly",
+      "timestamp": "2025070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 5974
+    }
+  ]
+}

@@ -1,0 +1,292 @@
+{
+  "items": [
+    {
+      "project": "en.wikipedia",
+      "article": "ChatGPT",
+      "granularity": "monthly",
+      "timestamp": "2022120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 1998381
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "ChatGPT",
+      "granularity": "monthly",
+      "timestamp": "2023010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 6240952
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "ChatGPT",
+      "granularity": "monthly",
+      "timestamp": "2023020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 7313204
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "ChatGPT",
+      "granularity": "monthly",
+      "timestamp": "2023030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8110464
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "ChatGPT",
+      "granularity": "monthly",
+      "timestamp": "2023040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 9383427
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "ChatGPT",
+      "granularity": "monthly",
+      "timestamp": "2023050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8631223
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "ChatGPT",
+      "granularity": "monthly",
+      "timestamp": "2023060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 7098398
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "ChatGPT",
+      "granularity": "monthly",
+      "timestamp": "2023070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 3443412
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "ChatGPT",
+      "granularity": "monthly",
+      "timestamp": "2023080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 2126721
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "ChatGPT",
+      "granularity": "monthly",
+      "timestamp": "2023090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 2261738
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "ChatGPT",
+      "granularity": "monthly",
+      "timestamp": "2023100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 2312917
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "ChatGPT",
+      "granularity": "monthly",
+      "timestamp": "2023110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 2450905
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "ChatGPT",
+      "granularity": "monthly",
+      "timestamp": "2023120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 2226794
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "ChatGPT",
+      "granularity": "monthly",
+      "timestamp": "2024010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 2659072
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "ChatGPT",
+      "granularity": "monthly",
+      "timestamp": "2024020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 2581125
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "ChatGPT",
+      "granularity": "monthly",
+      "timestamp": "2024030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 2107518
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "ChatGPT",
+      "granularity": "monthly",
+      "timestamp": "2024040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 1680489
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "ChatGPT",
+      "granularity": "monthly",
+      "timestamp": "2024050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 1762506
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "ChatGPT",
+      "granularity": "monthly",
+      "timestamp": "2024060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 1905425
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "ChatGPT",
+      "granularity": "monthly",
+      "timestamp": "2024070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 958600
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "ChatGPT",
+      "granularity": "monthly",
+      "timestamp": "2024080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 800195
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "ChatGPT",
+      "granularity": "monthly",
+      "timestamp": "2024090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 1246843
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "ChatGPT",
+      "granularity": "monthly",
+      "timestamp": "2024100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 1793985
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "ChatGPT",
+      "granularity": "monthly",
+      "timestamp": "2024110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 2006624
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "ChatGPT",
+      "granularity": "monthly",
+      "timestamp": "2024120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 1879445
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "ChatGPT",
+      "granularity": "monthly",
+      "timestamp": "2025010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 2794392
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "ChatGPT",
+      "granularity": "monthly",
+      "timestamp": "2025020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 2859784
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "ChatGPT",
+      "granularity": "monthly",
+      "timestamp": "2025030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 3162571
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "ChatGPT",
+      "granularity": "monthly",
+      "timestamp": "2025040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 5014889
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "ChatGPT",
+      "granularity": "monthly",
+      "timestamp": "2025050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 2583546
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "ChatGPT",
+      "granularity": "monthly",
+      "timestamp": "2025060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 5734151
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "ChatGPT",
+      "granularity": "monthly",
+      "timestamp": "2025070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 94086
+    }
+  ]
+}

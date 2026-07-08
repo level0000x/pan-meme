@@ -1,0 +1,1093 @@
+{
+  "items": [
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2015070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 198774
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2015080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 174858
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2015090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 156987
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2015100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 151455
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2015110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 149747
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2015120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 131348
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2016010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 185323
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2016020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 185617
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2016030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 182888
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2016040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 232550
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2016050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 233845
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2016060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 316820
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2016070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 431824
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2016080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 2573801
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2016090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 280302
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2016100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 188024
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2016110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 164554
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2016120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 142406
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2017010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 172215
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2017020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 159748
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2017030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 159427
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2017040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 137503
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2017050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 148116
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2017060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 150501
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2017070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 173263
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2017080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 198202
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2017090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 170514
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2017100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 166404
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2017110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 156146
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2017120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 155213
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2018010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 221889
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2018020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 559678
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2018030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 174506
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2018040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 163523
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2018050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 128806
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2018060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 151608
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2018070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 155177
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2018080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 178435
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2018090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 163243
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2018100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 146785
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2018110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 152512
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2018120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 131742
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2019010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 164544
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2019020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 148876
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2019030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 149844
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2019040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 124322
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2019050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 141819
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2019060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 166825
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2019070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 180404
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2019080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 151430
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2019090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 156096
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2019100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 156692
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2019110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 162063
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2019120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 159493
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2020010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 172416
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2020020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 170482
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2020030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 218790
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2020040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 193256
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2020050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 163292
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2020060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 128732
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2020070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 133523
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2020080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 125604
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2020090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 134662
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2020100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 146836
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2020110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 133632
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2020120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 137556
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2021010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 152311
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2021020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 138044
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2021030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 153031
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2021040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 137707
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2021050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 156368
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2021060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 211680
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2021070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 1238788
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2021080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 1116786
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2021090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 177221
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2021100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 137068
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2021110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 123962
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2021120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 119694
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2022010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 144020
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2022020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 395323
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2022030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 126748
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2022040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 100763
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2022050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 107360
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2022060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 98480
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2022070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 176321
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2022080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 156105
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2022090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 136549
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2022100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 135274
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2022110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 176334
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2022120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 159329
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2023010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 143371
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2023020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 127756
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2023030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 143089
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2023040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 117487
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2023050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 147289
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2023060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 150621
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2023070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 168982
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2023080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 183796
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2023090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 191615
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2023100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 250638
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2023110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 176236
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2023120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 165499
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2024010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 258720
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2024020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 270414
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2024030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 291180
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2024040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 210554
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2024050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 179603
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2024060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 242818
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2024070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 1281511
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2024080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 1446886
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2024090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 181907
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2024100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 123303
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2024110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 119864
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2024120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 102651
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2025010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 115501
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2025020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 110969
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2025030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 124478
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2025040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 108051
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2025050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 104140
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2025060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 113489
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Olympic_Games",
+      "granularity": "monthly",
+      "timestamp": "2025070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 2982
+    }
+  ]
+}

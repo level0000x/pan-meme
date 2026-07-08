@@ -1,0 +1,1093 @@
+{
+  "items": [
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2015070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 53997
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2015080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 60752
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2015090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 67839
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2015100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 69193
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2015110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 71201
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2015120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 62310
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2016010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 64674
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2016020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 62473
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2016030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 64970
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2016040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 63256
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2016050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 71479
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2016060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 66898
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2016070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 55936
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2016080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 63311
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2016090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 72442
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2016100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 78174
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2016110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 71304
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2016120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 66916
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2017010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 82525
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2017020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 81512
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2017030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 78460
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2017040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 66045
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2017050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 69563
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2017060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 69482
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2017070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 63150
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2017080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 67159
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2017090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 78955
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2017100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 88413
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2017110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 75039
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2017120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 63179
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2018010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 71302
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2018020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 64967
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2018030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 75466
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2018040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 64411
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2018050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 63706
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2018060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 64076
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2018070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 62441
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2018080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 72817
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2018090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 79005
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2018100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 80971
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2018110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 70745
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2018120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 61375
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2019010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 68721
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2019020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 61392
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2019030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 66941
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2019040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 56763
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2019050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 65332
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2019060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 54025
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2019070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 53234
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2019080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 58143
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2019090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 64990
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2019100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 66449
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2019110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 64696
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2019120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 57690
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2020010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 63997
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2020020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 58927
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2020030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 57241
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2020040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 63938
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2020050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 62930
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2020060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 54432
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2020070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 57557
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2020080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 63110
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2020090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 72264
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2020100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 69917
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2020110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 61378
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2020120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 55346
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2021010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 63905
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2021020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 68184
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2021030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 73113
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2021040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 59269
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2021050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 61649
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2021060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 51166
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2021070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 51337
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2021080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 54711
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2021090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 63784
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2021100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 62334
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2021110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 59880
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2021120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 53341
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2022010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 52907
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2022020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 49795
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2022030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 60446
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2022040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 50218
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2022050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 46388
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2022060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 44103
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2022070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 44993
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2022080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 59611
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2022090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 71443
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2022100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 66426
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2022110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 70308
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2022120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 53157
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2023010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 59368
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2023020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 60843
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2023030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 67207
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2023040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 49447
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2023050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 61867
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2023060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 57294
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2023070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 57709
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2023080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 67624
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2023090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 73631
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2023100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 76013
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2023110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 72976
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2023120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 65128
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2024010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 96416
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2024020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 74164
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2024030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 71807
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2024040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 76836
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2024050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 62440
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2024060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 48287
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2024070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 43913
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2024080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 49988
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2024090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 49011
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2024100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 52116
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2024110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 53563
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2024120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 105572
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2025010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 51232
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2025020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 49885
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2025030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 53769
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2025040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 48657
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2025050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 47756
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2025060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 41815
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Algebra",
+      "granularity": "monthly",
+      "timestamp": "2025070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 1186
+    }
+  ]
+}

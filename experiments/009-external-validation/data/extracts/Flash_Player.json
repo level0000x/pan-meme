@@ -1,0 +1,19 @@
+{
+  "batchcomplete": "",
+  "query": {
+    "normalized": [
+      {
+        "from": "Flash_Player",
+        "to": "Flash Player"
+      }
+    ],
+    "pages": {
+      "406960": {
+        "pageid": 406960,
+        "ns": 0,
+        "title": "Flash Player",
+        "extract": ""
+      }
+    }
+  }
+}

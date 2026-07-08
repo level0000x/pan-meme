@@ -1,0 +1,1093 @@
+{
+  "items": [
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2015070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 274264
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2015080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 288091
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2015090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 280885
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2015100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 273249
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2015110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 297821
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2015120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 387384
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2016010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 294527
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2016020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 294916
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2016030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 269408
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2016040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 260030
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2016050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 482277
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2016060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 328407
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2016070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 350611
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2016080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 307778
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2016090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 289067
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2016100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 289413
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2016110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 419019
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2016120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 365706
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2017010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 498115
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2017020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 381960
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2017030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 587158
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2017040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 438693
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2017050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 1288638
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2017060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 886828
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2017070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 825239
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2017080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 1201415
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2017090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 1033029
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2017100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 1133857
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2017110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 2161074
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2017120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 4934888
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2018010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 2123189
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2018020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 1049435
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2018030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 676694
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2018040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 528884
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2018050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 485658
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2018060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 562434
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2018070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 421384
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2018080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 430667
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2018090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 402886
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2018100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 329685
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2018110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 385368
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2018120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 347446
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2019010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 308417
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2019020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 274325
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2019030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 255157
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2019040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 247486
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2019050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 311653
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2019060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 289084
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2019070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 300455
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2019080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 257802
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2019090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 250032
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2019100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 254369
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2019110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 248807
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2019120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 258017
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2020010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 292231
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2020020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 193975
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2020030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 207912
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2020040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 237390
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2020050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 276894
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2020060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 189023
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2020070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 366391
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2020080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 391950
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2020090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 286494
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2020100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 309491
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2020110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 364820
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2020120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 466861
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2021010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 881973
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2021020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 933565
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2021030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 649134
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2021040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 652458
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2021050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 990438
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2021060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 604425
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2021070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 417208
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2021080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 425156
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2021090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 668505
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2021100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 845726
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2021110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 833006
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2021120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 718252
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2022010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 891375
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2022020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 612528
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2022030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 629028
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2022040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 536500
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2022050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 520987
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2022060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 436606
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2022070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 311979
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2022080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 301276
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2022090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 307515
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2022100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 592145
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2022110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 631754
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2022120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 348527
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2023010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 323616
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2023020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 238114
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2023030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 277512
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2023040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 237095
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2023050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 248231
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2023060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 270602
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2023070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 253734
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2023080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 270272
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2023090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 292356
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2023100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 317506
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2023110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 304526
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2023120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 318289
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2024010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 431760
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2024020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 410696
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2024030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 540148
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2024040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 356102
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2024050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 239289
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2024060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 208123
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2024070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 200357
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2024080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 197659
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2024090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 221306
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2024100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 234307
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2024110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 394151
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2024120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 432985
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2025010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 371856
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2025020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 277060
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2025030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 401404
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2025040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 340524
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2025050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 330236
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2025060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 319477
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Bitcoin",
+      "granularity": "monthly",
+      "timestamp": "2025070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8010
+    }
+  ]
+}

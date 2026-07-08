@@ -1,0 +1,1093 @@
+{
+  "items": [
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2015070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 853490
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2015080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 846328
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2015090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 800276
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2015100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 736505
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2015110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 657281
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2015120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 719577
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2016010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 623515
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2016020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 875317
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2016030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 552923
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2016040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 576207
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2016050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 467429
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2016060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 779389
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2016070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 1139419
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2016080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 480166
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2016090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 499727
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2016100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 428474
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2016110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 454045
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2016120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 507954
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2017010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 446403
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2017020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 432472
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2017030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 419554
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2017040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 382661
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2017050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 465160
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2017060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 420643
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2017070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 361451
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2017080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 1365465
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2017090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 766349
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2017100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 570733
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2017110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 940404
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2017120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 647824
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2018010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 506103
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2018020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 357772
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2018030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 455284
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2018040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 420254
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2018050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 607081
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2018060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 478894
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2018070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 523466
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2018080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 485767
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2018090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 428396
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2018100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 681752
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2018110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 415761
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2018120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 485160
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2019010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 695827
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2019020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 441795
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2019030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 549138
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2019040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 624584
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2019050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 738421
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2019060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 693449
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2019070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 678194
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2019080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 1151891
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2019090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 613416
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2019100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 606630
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2019110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 821210
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2019120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 711999
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2020010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 539300
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2020020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 1003718
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2020030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 471081
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2020040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 516974
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2020050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 554948
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2020060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 393903
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2020070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 871440
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2020080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 671908
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2020090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 502611
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2020100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 437117
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2020110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 549347
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2020120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 1085971
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2021010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 561489
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2021020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 644650
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2021030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 866319
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2021040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 829771
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2021050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 641239
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2021060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 573933
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2021070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 544678
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2021080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 518744
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2021090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 507087
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2021100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 544143
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2021110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 1586887
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2021120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 640727
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2022010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 567430
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2022020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 468097
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2022030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 532982
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2022040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 465894
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2022050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 756353
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2022060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 431661
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2022070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 466699
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2022080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 644818
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2022090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 628437
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2022100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 1431262
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2022110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 1624061
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2022120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 880978
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2023010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 845312
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2023020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 1732472
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2023030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 1275478
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2023040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 1458178
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2023050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 1897048
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2023060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 1804611
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2023070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 2518796
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2023080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 2354306
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2023090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 3367789
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2023100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 3433716
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2023110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 2478363
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2023120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 2279922
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2024010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 2315665
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2024020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 4971375
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2024030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 2107605
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2024040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 1974757
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2024050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 1219043
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2024060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 1387950
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2024070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 1050943
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2024080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 1061340
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2024090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 1139304
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2024100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 836875
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2024110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 962716
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2024120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 1041650
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2025010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 816250
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2025020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 1010769
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2025030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 650432
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2025040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 788563
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2025050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 891542
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2025060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 764283
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Taylor_Swift",
+      "granularity": "monthly",
+      "timestamp": "2025070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 15127
+    }
+  ]
+}

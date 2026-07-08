@@ -1,0 +1,1093 @@
+{
+  "items": [
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2015070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 132783
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2015080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 122947
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2015090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 120956
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2015100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 126115
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2015110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 120376
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2015120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 115165
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2016010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 129511
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2016020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 125750
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2016030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 135562
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2016040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 119214
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2016050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 130761
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2016060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 139952
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2016070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 125545
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2016080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 138691
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2016090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 144201
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2016100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 155182
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2016110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 131285
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2016120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 162061
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2017010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 206465
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2017020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 215427
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2017030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 150402
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2017040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 104059
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2017050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 112283
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2017060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 125353
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2017070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 173416
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2017080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 171804
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2017090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 152716
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2017100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 156635
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2017110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 131654
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2017120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 121265
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2018010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 138706
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2018020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 123500
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2018030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 129598
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2018040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 125789
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2018050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 134869
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2018060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 111052
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2018070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 129675
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2018080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 124768
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2018090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 125752
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2018100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 148458
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2018110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 125869
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2018120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 117734
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2019010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 122507
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2019020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 114179
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2019030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 116617
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2019040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 102132
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2019050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 114710
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2019060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 109692
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2019070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 111442
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2019080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 120527
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2019090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 126624
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2019100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 132504
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2019110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 120286
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2019120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 107709
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2020010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 106472
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2020020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 109636
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2020030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 100295
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2020040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 120448
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2020050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 138735
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2020060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 236570
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2020070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 155997
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2020080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 109859
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2020090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 99929
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2020100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 113726
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2020110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 100133
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2020120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 93989
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2021010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 127156
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2021020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 95528
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2021030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 91187
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2021040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 81552
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2021050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 83350
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2021060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 85992
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2021070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 90663
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2021080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 91846
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2021090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 87374
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2021100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 104145
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2021110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 82479
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2021120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 78160
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2022010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 88023
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2022020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 81252
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2022030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 81232
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2022040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 78130
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2022050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 76585
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2022060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 69631
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2022070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 91537
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2022080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 107998
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2022090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 94621
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2022100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 103736
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2022110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 89544
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2022120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 77076
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2023010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 83306
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2023020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 114295
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2023030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 127017
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2023040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 93692
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2023050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 112204
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2023060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 121842
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2023070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 134290
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2023080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 137768
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2023090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 138561
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2023100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 145085
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2023110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 124838
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2023120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 141843
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2024010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 165943
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2024020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 137067
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2024030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 112231
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2024040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 88359
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2024050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 86760
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2024060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 72551
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2024070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 77053
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2024080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 79531
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2024090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 86575
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2024100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 96856
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2024110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 90121
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2024120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 80681
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2025010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 94713
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2025020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 82576
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2025030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 116508
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2025040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 100123
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2025050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 83941
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2025060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 80267
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Nokia",
+      "granularity": "monthly",
+      "timestamp": "2025070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 2146
+    }
+  ]
+}

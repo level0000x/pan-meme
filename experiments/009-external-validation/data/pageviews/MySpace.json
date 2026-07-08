@@ -1,0 +1,1093 @@
+{
+  "items": [
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2015070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 69200
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2015080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 67585
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2015090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 68202
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2015100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 69137
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2015110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 67213
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2015120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 66786
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2016010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 80040
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2016020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 77895
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2016030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 84583
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2016040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 106127
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2016050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 66509
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2016060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 75644
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2016070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 56758
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2016080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 67460
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2016090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 67581
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2016100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 62696
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2016110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 63305
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2016120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 61029
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2017010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 72620
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2017020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 63580
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2017030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 69147
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2017040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 68357
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2017050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 80689
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2017060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 61494
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2017070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 61609
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2017080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 62680
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2017090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 63922
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2017100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 70248
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2017110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 67019
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2017120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 249246
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2018010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 79586
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2018020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 70367
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2018030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 91858
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2018040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 108497
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2018050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 62750
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2018060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 64827
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2018070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 73790
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2018080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 80206
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2018090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 62848
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2018100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 65884
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2018110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 59293
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2018120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 61728
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2019010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 78795
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2019020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 59816
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2019030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 88681
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2019040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 57401
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2019050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 64487
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2019060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 53190
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2019070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 58396
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2019080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 61458
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2019090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 58392
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2019100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 64280
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2019110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 68066
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2019120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 75243
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2020010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 61650
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2020020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 63934
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2020030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 54215
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2020040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 71688
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2020050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 76010
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2020060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 74579
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2020070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 109290
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2020080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 80028
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2020090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 71583
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2020100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 71259
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2020110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 74436
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2020120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 65067
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2021010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 111832
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2021020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 66951
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2021030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 58384
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2021040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 70312
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2021050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 60695
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2021060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 53356
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2021070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 59153
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2021080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 52819
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2021090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 49936
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2021100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 86664
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2021110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 65231
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2021120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 47715
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2022010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 65883
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2022020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 65595
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2022030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 60721
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2022040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 72094
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2022050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 59104
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2022060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 54572
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2022070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 53658
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2022080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 68811
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2022090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 63691
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2022100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 82214
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2022110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 108285
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2022120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 69660
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2023010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 64643
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2023020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 58592
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2023030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 64414
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2023040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 53472
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2023050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 60810
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2023060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 70558
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2023070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 88905
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2023080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 64959
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2023090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 54050
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2023100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 56272
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2023110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 57198
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2023120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 56153
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2024010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 87146
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2024020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 71819
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2024030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 71182
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2024040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 87972
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2024050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 65708
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2024060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 55505
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2024070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 62179
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2024080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 63648
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2024090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 56826
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2024100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 52762
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2024110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 58126
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2024120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 56652
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2025010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 94465
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2025020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 49712
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2025030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 49978
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2025040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 50314
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2025050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 52392
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2025060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 49843
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Myspace",
+      "granularity": "monthly",
+      "timestamp": "2025070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 1678
+    }
+  ]
+}

@@ -1,0 +1,1093 @@
+{
+  "items": [
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2015070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 60983
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2015080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 65820
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2015090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 73662
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2015100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 75773
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2015110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 76818
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2015120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 64700
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2016010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 68012
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2016020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 66645
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2016030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 70648
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2016040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 66826
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2016050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 64863
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2016060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 64571
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2016070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 69652
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2016080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 67389
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2016090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 97936
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2016100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 80172
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2016110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 60877
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2016120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 54431
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2017010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 59692
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2017020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 56075
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2017030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 56936
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2017040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 48199
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2017050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 47959
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2017060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 45216
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2017070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 50230
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2017080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 52007
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2017090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 52762
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2017100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 56737
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2017110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 51712
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2017120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 45049
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2018010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 50753
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2018020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 49234
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2018030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 66907
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2018040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 86023
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2018050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 66239
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2018060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 60213
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2018070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 58904
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2018080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 56939
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2018090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 56750
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2018100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 55433
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2018110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 53838
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2018120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 54617
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2019010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 56767
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2019020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 51062
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2019030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 58090
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2019040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 52961
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2019050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 54546
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2019060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 54711
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2019070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 51491
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2019080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 57522
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2019090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 62206
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2019100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 61843
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2019110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 62320
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2019120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 54461
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2020010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 58768
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2020020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 62557
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2020030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 45183
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2020040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 57610
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2020050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 53921
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2020060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 55793
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2020070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 120409
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2020080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 99649
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2020090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 47558
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2020100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 55980
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2020110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 48293
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2020120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 53088
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2021010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 82630
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2021020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 53302
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2021030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 50923
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2021040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 46935
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2021050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 45936
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2021060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 49376
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2021070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 49672
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2021080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 49045
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2021090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 54376
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2021100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 48646
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2021110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 57797
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2021120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 44605
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2022010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 120813
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2022020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 49197
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2022030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 51014
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2022040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 40073
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2022050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 38739
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2022060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 38350
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2022070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 47595
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2022080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 61102
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2022090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 65769
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2022100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 70059
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2022110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 151535
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2022120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 72137
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2023010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 91391
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2023020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 73291
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2023030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 117769
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2023040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 86571
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2023050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 175356
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2023060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 284680
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2023070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 193962
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2023080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 142943
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2023090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 127184
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2023100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 180099
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2023110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 207699
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2023120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 184434
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2024010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 202331
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2024020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 210801
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2024030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 206754
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2024040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 202131
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2024050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 137700
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2024060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 94006
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2024070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 97148
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2024080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 91796
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2024090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 90290
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2024100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 88406
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2024110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 71138
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2024120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 78470
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2025010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 79695
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2025020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 69748
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2025030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 91592
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2025040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 85315
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2025050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 89413
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2025060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 93760
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "BlackBerry",
+      "granularity": "monthly",
+      "timestamp": "2025070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 2538
+    }
+  ]
+}

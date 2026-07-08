@@ -1,0 +1,1093 @@
+{
+  "items": [
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2015070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 42597
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2015080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 42364
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2015090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 38294
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2015100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 38131
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2015110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 41559
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2015120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 37531
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2016010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 54275
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2016020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 44363
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2016030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 44391
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2016040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 44996
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2016050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 39986
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2016060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 36053
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2016070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 36770
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2016080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 34326
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2016090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 36694
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2016100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 37321
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2016110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 37955
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2016120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 36719
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2017010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 39726
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2017020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 36153
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2017030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 37862
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2017040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 38156
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2017050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 43281
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2017060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 38984
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2017070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 39879
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2017080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 40323
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2017090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 44546
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2017100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 42953
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2017110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 45326
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2017120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 45991
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2018010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 52874
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2018020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 39790
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2018030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 44322
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2018040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 45099
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2018050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 43446
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2018060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 41131
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2018070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 46992
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2018080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 45231
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2018090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 47531
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2018100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 40333
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2018110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 43978
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2018120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 39784
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2019010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 45411
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2019020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 34319
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2019030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 36120
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2019040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 32803
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2019050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 32278
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2019060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 31842
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2019070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 35370
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2019080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 33365
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2019090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 33375
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2019100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 34180
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2019110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 37193
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2019120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 36405
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2020010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 40466
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2020020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 35335
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2020030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 49365
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2020040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 58598
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2020050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 53054
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2020060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 47725
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2020070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 225128
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2020080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 172361
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2020090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 42880
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2020100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 43052
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2020110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 43938
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2020120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 52025
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2021010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 67052
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2021020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 44953
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2021030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 47093
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2021040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 43685
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2021050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 39347
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2021060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 33627
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2021070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 40429
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2021080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 49774
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2021090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 54494
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2021100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 62610
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2021110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 121817
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2021120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 84631
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2022010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 79915
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2022020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 82814
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2022030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 70003
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2022040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 44229
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2022050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 37497
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2022060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 39455
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2022070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 37193
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2022080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 55195
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2022090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 58406
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2022100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 66091
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2022110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 266006
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2022120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 104794
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2023010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 121413
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2023020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 35875
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2023030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 59828
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2023040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 76496
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2023050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 81490
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2023060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 111768
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2023070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 114572
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2023080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 73341
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2023090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 37374
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2023100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 55106
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2023110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 78787
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2023120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 70696
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2024010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 95014
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2024020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 82107
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2024030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 83007
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2024040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 69135
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2024050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 48466
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2024060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 33454
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2024070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 46573
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2024080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 67393
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2024090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 81208
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2024100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 86680
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2024110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 74077
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2024120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 45567
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2025010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 73698
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2025020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 35425
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2025030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 44203
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2025040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 76338
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2025050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 68133
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2025060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 58265
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Second_Life",
+      "granularity": "monthly",
+      "timestamp": "2025070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 1273
+    }
+  ]
+}

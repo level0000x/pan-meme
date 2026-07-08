@@ -1,0 +1,19 @@
+{
+  "batchcomplete": "",
+  "query": {
+    "normalized": [
+      {
+        "from": "Vine_(service)",
+        "to": "Vine (service)"
+      }
+    ],
+    "pages": {
+      "38319106": {
+        "pageid": 38319106,
+        "ns": 0,
+        "title": "Vine (service)",
+        "extract": "Vine was a short-form video hosting service where users could share up to 6-second-long looping video clips. Founded in June 2012 by Rus Yusupov, Dom Hofmann and Colin Kroll, the company was bought by Twitter, Inc., four months later for $30 million. Vine launched with its iOS app on January 24, 2013, with Android and Windows versions following. \nVideos published on Vine's social network could also be shared on different social networking platforms such as Facebook and Twitter. The Vine app was also used to browse videos, along with a group of videos that were uploaded by theme, and hoping that users could \"trend\" videos. Vine competed with other social media services such as Instagram and Snapchat. By December 2015, Vine had over 200 million active users.\nVine contributed to the rise of influencers and collaborative content creation, with some users cohabiting to increase production and audience reach. As one of the first short-form video platforms, it was relatively new, and it preceded later services such as TikTok, where similar content strategies became more widespread.\nOn October 27, 2016, Twitter announced that it would disable all uploads, but that viewing and download would continue to work.  Twitter shut down Vine on January 17, 2017, and the app was discontinued a few months later. On January 20, 2017, Twitter launched an online archive of every Vine video that had ever been published. The archive was officially discontinued in April 2018. Vine's co-founder Dom Hofmann created a successor not affiliated with Twitter, which launched on January 24, 2020, as Byte; was renamed twice; and was discontinued on May 3, 2023.\nOn November 13, 2025, former Twitter CEO Jack Dorsey announced a successor called diVine, which will include archives of some videos uploaded to Vine, in addition to new videos."
+      }
+    }
+  }
+}

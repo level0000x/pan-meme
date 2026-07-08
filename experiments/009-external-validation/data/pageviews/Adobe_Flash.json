@@ -1,0 +1,1093 @@
+{
+  "items": [
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2015070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 84561
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2015080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 50922
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2015090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 52319
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2015100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 67684
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2015110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 53447
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2015120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 59401
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2016010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 56418
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2016020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 54434
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2016030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 57443
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2016040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 59629
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2016050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 63188
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2016060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 93993
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2016070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 55718
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2016080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 62762
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2016090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 81670
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2016100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 75652
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2016110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 66729
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2016120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 66213
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2017010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 68945
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2017020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 63203
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2017030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 66298
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2017040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 55561
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2017050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 54895
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2017060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 51023
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2017070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 59113
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2017080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 63754
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2017090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 55699
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2017100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 53007
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2017110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 43353
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2017120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 40480
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2018010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 47373
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2018020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 44078
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2018030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 42366
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2018040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 38794
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2018050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 37979
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2018060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 42275
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2018070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 46887
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2018080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 43368
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2018090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 43627
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2018100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 46134
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2018110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 44053
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2018120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 50182
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2019010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 47877
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2019020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 38097
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2019030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 43561
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2019040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 40024
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2019050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 42421
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2019060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 38450
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2019070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 40660
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2019080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 42415
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2019090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 39956
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2019100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 46916
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2019110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 48965
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2019120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 48955
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2020010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 48008
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2020020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 43606
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2020030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 45741
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2020040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 50082
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2020050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 46147
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2020060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 51974
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2020070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 38461
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2020080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 35635
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2020090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 34836
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2020100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 46810
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2020110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 48978
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2020120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 65492
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2021010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 80936
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2021020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 39414
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2021030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 36956
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2021040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 30823
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2021050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 28933
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2021060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 25558
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2021070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 34717
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2021080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 32219
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2021090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 35373
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2021100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 34172
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2021110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 32405
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2021120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 32839
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2022010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 36596
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2022020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 34127
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2022030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 34481
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2022040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 31628
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2022050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 29696
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2022060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 26616
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2022070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 28915
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2022080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 34429
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2022090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 31593
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2022100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 32462
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2022110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 30581
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2022120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 30799
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2023010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 33049
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2023020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 28903
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2023030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 35829
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2023040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 29572
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2023050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 26076
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2023060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 28202
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2023070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 26537
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2023080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 28323
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2023090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 29330
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2023100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 31435
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2023110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 28087
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2023120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 28219
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2024010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 34248
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2024020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 28204
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2024030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 33370
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2024040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 29675
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2024050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 26381
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2024060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 23547
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2024070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 24519
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2024080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 25748
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2024090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 24820
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2024100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 25305
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2024110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 25300
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2024120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 24670
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2025010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 28343
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2025020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 26901
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2025030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 31421
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2025040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 28393
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2025050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 28730
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2025060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 25754
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Adobe_Flash",
+      "granularity": "monthly",
+      "timestamp": "2025070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 1299
+    }
+  ]
+}

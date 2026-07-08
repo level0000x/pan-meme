@@ -1,0 +1,922 @@
+{
+  "items": [
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2017020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 156443
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2017030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 202388
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2017040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 262311
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2017050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 232133
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2017060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 198727
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2017070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 258206
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2017080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 223451
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2017090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 211867
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2017100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 272177
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2017110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 322688
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2017120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 247329
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2018010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 241208
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2018020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 384791
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2018030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 271692
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2018040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 241355
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2018050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 256613
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2018060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 196602
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2018070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 234097
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2018080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 276631
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2018090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 318393
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2018100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 267435
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2018110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 221329
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2018120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 226372
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2019010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 229624
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2019020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 195218
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2019030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 266176
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2019040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 220992
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2019050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 228510
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2019060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 197464
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2019070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 228214
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2019080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 204095
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2019090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 223774
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2019100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 254067
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2019110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 349116
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2019120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 275835
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2020010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 319960
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2020020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 297742
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2020030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 214742
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2020040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 231522
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2020050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 490768
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2020060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 354161
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2020070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 361277
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2020080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 315820
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2020090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 352238
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2020100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 272975
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2020110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 328009
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2020120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 380042
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2021010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 685400
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2021020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 453452
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2021030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 365466
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2021040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 373605
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2021050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 503664
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2021060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 250374
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2021070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 291261
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2021080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 287881
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2021090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 262992
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2021100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 377190
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2021110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 425903
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2021120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 380244
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2022010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 332131
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2022020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 268700
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2022030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 290013
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2022040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 577125
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2022050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 402145
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2022060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 264250
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2022070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 263047
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2022080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 261927
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2022090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 268386
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2022100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 367829
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2022110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 570825
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2022120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 327840
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2023010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 330266
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2023020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 295295
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2023030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 321958
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2023040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 290075
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2023050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 317482
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2023060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 321746
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2023070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 404314
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2023080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 386344
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2023090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 368628
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2023100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 380355
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2023110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 328977
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2023120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 404499
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2024010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 529468
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2024020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 364363
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2024030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 413747
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2024040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 400428
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2024050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 246890
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2024060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 203041
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2024070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 207575
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2024080100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 203905
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2024090100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 204787
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2024100100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 270251
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2024110100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 353457
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2024120100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 315936
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2025010100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 339886
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2025020100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 334835
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2025030100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 544217
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2025040100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 287031
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2025050100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 240721
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2025060100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 248178
+    },
+    {
+      "project": "en.wikipedia",
+      "article": "Tesla,_Inc.",
+      "granularity": "monthly",
+      "timestamp": "2025070100",
+      "access": "all-access",
+      "agent": "all-agents",
+      "views": 8812
+    }
+  ]
+}
