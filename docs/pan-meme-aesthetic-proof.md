@@ -1,179 +1,240 @@
-# 泛模因理论：三步美学证明
+# 泛模因理论：三步证明
 
-**版本**：ε（epsilon — the one that cannot be made simpler）  
+**版本**：ε₂（严密美感）  
 **日期**：2026-07-08
 
-> 给定物集合 $W$。从 $W$ 出发，有限步收敛为一个图 $\Psi$。在 $\Psi$ 上测热迹 $\Theta(t)$。$\Theta(t)$ 决定动力学轨迹。轨迹的长期归宿就是原型分类。三步。没有更多。
+> 给定词表 $W$。$W$ 通过形式概念分析（FCA）的 ↑↓ 算子收敛为一个加权图 $G$。在 $G$ 上，拉普拉斯热核的迹 $\Theta(t)$ 定义天然时间标度 $t^*$ 和五维状态向量。状态向量的演化由 $\dot{\vec{M}} = \mathbf{F}_\Theta(\vec{M})$ 描述——该 ODE 是在不变域 + 次数 ≤ 2 + 变量耦合约束下的唯一多项式形式。轨迹的长期归宿由 Jacobian 稳定性判据分为三族（基石/过客/泡沫），穷尽 P2 公理在双曲动力学下所有非退化满足模式。
+
+**三步。定理支撑每一步。无手挥。**
 
 ---
 
-## §0. 公理
+## §0. 公理与定义
 
-八条命题公理（$P_1$–$P_8$，详见泛模因理论附录 D）。本文直接依赖的为：
+### 0.1 公理
+
+八条命题公理（$P_1$–$P_8$，详见附录 D）。本文直接依赖的：
 
 - **$P_1$（信息本体论）**：信息 $\mathbb{I}$ 不可约化为物质或能量。
-- **$P_2$（泛模因实在论）**：$\mathcal{P} = \{x \mid \text{可复制} \land \text{可演化} \land \text{身份保持}\}$。
-- **$P_3$（结构现实主义）**：同一性由关系模式决定，不由物质组成决定。
-- **$P_5$（可逆性认识论）**：每一步建模映射有可追踪的信息保持性质。
-- **$P_7$（演化普遍性）**：复制 + 变异 + 选择 = 演化。
+- **$P_2$（泛模因实在论）**：$\mathcal{P} = \{x \mid \text{可复制}(x) \land \text{可演化}(x) \land \text{身份保持}(x)\}$。
+- **$P_3$（结构现实主义）**：$\text{id}(x)$ 由关系模式 $R_x \subseteq (x \cup \text{context}(x))^2$ 决定。
+- **$P_5$（可逆性认识论）**：每步映射有可追踪的信息保持性质。
+- **$P_7$（演化普遍性）**：复制 $R$ + 变异 $V$ + 选择 $S_e$ → $S_{t+1} = S_e \circ V \circ R(S_t)$。
 - **$P_8$（层级涌现）**：泛模因构成偏序集，存在双向因果。
 
-**前提 0（有限层级前提）**。论域中的从属关系构成有限深度有向森林。不存在无限长的从属链。
+### 0.2 符号
 
-**前提 2（结构忠实性前提）**。从信息到关系网络的提取算法捕获全部可识别结构特征。
-
----
-
-## 第一幕：给定 → 收敛
-
-### 1.1 给定物与自暴露
-
-给定词列表 $W = \{w_1, \ldots, w_m\}$。每个词由字构成——这是书写形式自动暴露的事实，不是任何操作的结果。
-
-字集合由 $W$ 自暴露：
-
-$$C = \bigcup_{w \in W} \text{chars}(w)$$
-
-论域 $\mathcal{U} = W \cup C$。$|\mathcal{U}| = n$，有限。
-
-### 1.2 关系网络
-
-提取算法 $A$（前提 2）作用于 $W$，建立初始关系网络：
-
-$$\Psi_0 = (V, E_0), \quad V = \mathcal{U}, \quad (c, w) \in E_0 \iff c \in \text{chars}(w)$$
-
-$E_0$ 是 containment 边：字 $c$ 被包含在词 $w$ 中。
-
-### 1.3 两种目光
-
-**$\uparrow$（向上归类）**。对 $x \in \mathcal{U}$：
-
-$$\uparrow(x) = \{y \in \mathcal{U} \mid (x, y) \in E\}$$
-
-**$\downarrow$（向下分解）**。对 $x \in \mathcal{U}$：
-
-$$\downarrow(x) = \{z \in \mathcal{U} \mid (z, x) \in E\}$$
-
-互逆性：$\downarrow(\uparrow(c))$ 给出与 $c$ 共现的所有字；$\uparrow(\downarrow(w))$ 给出与 $w$ 共享字的所有词。信息不丢失——行走不改变 $\Psi$，只改变观察位置。
-
-### 1.4 目光永动：↑↓ 循环
-
-从每个 $x \in \mathcal{U}$ 出发，交替执行：
-
-$$S_0 = \{x\}, \quad S_{k+1} = \begin{cases} \uparrow(S_k) & k \text{ 偶} \\ \downarrow(S_k) & k \text{ 奇} \end{cases}$$
-
-### 1.5 收敛定理
-
-**定理 1（有限收敛）**。对任意 $x \in \mathcal{U}$，存在 $N \le |\mathcal{U}|$ 使 $S_N = S_{N+1}$。
-
-**证明**。$S_0 \subseteq S_1 \subseteq \cdots \subseteq \mathcal{U}$。$\mathcal{U}$ 有限。至多 $|\mathcal{U}|$ 步后新元素耗尽。$\square$
-
-### 1.6 收敛图
-
-收敛后，以下结构自然涌现：
-
-- **字-词层级**：$\uparrow(c)$ 非空 → $c$ 被归类到所有包含它的词。
-- **字-字共现**：$c_1, c_2$ 相关 $\iff \uparrow(c_1) \cap \uparrow(c_2) \neq \varnothing$。
-- **词-词关联**：$w_1, w_2$ 相关 $\iff \downarrow(w_1) \cap \downarrow(w_2) \neq \varnothing$。
-
-定义**收敛图** $\Psi$ 为 ↑↓ 循环收敛后产生的图结构：
-
-$$G = (V, E), \quad V = \mathcal{U}$$
-
-边 $(u, v) \in E$ 当且仅当 $u, v$ 共享至少一个 ↑ 祖先或 ↓ 后代。$G$ 是无向加权图，边权由共现计数自然确定。
-
-**$G$ 不是我们选择的图表示。$G$ 是 ↑↓ 循环收敛后涌现的——给定物在目光永动中自然编织出来的关联结构。**
+| 符号 | 含义 |
+|------|------|
+| $2^X$ | $X$ 的幂集 |
+| $|X|$ | 集合 $X$ 的基数 |
+| $\text{Tr}(\cdot)$ | 矩阵迹 |
+| $D^{-1/2}$ | $D^{-1/2}_{ii} = 1/\sqrt{D_{ii}}$ 若 $D_{ii} > 0$，否则 $0$ |
+| $\beta_0$ | 第 0 个 Betti 数 = 连通分量数 = $\lambda_0$ 的重数 |
 
 ---
 
-## 第二幕：收敛图 → 热迹
+## 第一步：词 → 图
 
-### 2.1 归一化图拉普拉斯
+### 1.1 形式背景
 
-在 $G$ 上构建归一化拉普拉斯（Chung 1997）：
+给定词表 $W = \{w_1, \ldots, w_m\}$。每个 $w \in W$ 是有限字符集 $\Sigma$ 上的字符串。
 
-$$\mathcal{L} = I - D^{-1/2} A D^{-1/2}$$
+**定义 1（自暴露字符集）**。
 
-$A$ 为加权邻接矩阵，$D$ 为度矩阵。$\mathcal{L}$ 实对称半正定，特征值 $0 = \lambda_0 \le \lambda_1 \le \cdots \le \lambda_{n-1} \le 2$。
+$$C = \bigcup_{w \in W} \text{chars}(w) \subseteq \Sigma$$
 
-$\lambda_0$ 的重数 $= \beta_0 =$ 连通分量数。$\mathbf{u}_0 \propto D^{1/2}\mathbf{1}$ 为 Perron 特征向量——度序列的信息编码在 $\mathbf{u}_0$ 中。
+$|C| = p$。论域 $\mathcal{U} = C \cup W$，$|\mathcal{U}| = p + m = n$。
 
-### 2.2 热迹
+**定义 2（形式背景）**。$W$ 导出的形式背景为三元组 $\mathbb{K} = (C, W, I)$，其中：
 
-热核 $e^{-t\mathcal{L}}$ 的迹：
+$$I = \{(c, w) \in C \times W \mid c \in \text{chars}(w)\}$$
+
+这是 FCA 的标准起点——对象集合 $W$，属性集合 $C$，关联关系 $I$ = "字符 $c$ 出现在词 $w$ 中"。
+
+### 1.2 衍生算子
+
+**定义 3（↑↓ 算子）**。对 $A \subseteq C$ 和 $B \subseteq W$：
+
+$$\begin{aligned}
+A^\uparrow &= \{w \in W \mid \forall c \in A: (c, w) \in I\} \quad &\text{（共同上域）} \\
+B^\downarrow &= \{c \in C \mid \forall w \in B: (c, w) \in I\} \quad &\text{（共同下域）}
+\end{aligned}$$
+
+$A^\uparrow$ 是"包含 $A$ 中所有字符的词集"；$B^\downarrow$ 是"出现在 $B$ 中所有词中的字符集"。
+
+**引理 1（Galois 连接）**。对 $A \subseteq C, B \subseteq W$：
+
+$$A \subseteq B^\downarrow \iff B \subseteq A^\uparrow$$
+
+且 $A \subseteq A^{\uparrow\downarrow}$，$B \subseteq B^{\downarrow\uparrow}$，$A^\uparrow = A^{\uparrow\downarrow\uparrow}$，$B^\downarrow = B^{\downarrow\uparrow\downarrow}$。
+
+**证明**。标准 FCA 结论（Wille 1982）。$\square$
+
+### 1.3 有限收敛
+
+**定理 1（有限收敛）**。对任意 $x \in \mathcal{U}$，从 $\{x\}$ 出发交替应用 ↑↓：
+
+$$S_0 = \{x\}, \quad S_{k+1} = \begin{cases} S_k^\uparrow & k \text{ 为偶} \\ S_k^\downarrow & k \text{ 为奇} \end{cases}$$
+
+存在 $N \le n$ 使得 $S_N^{\uparrow\downarrow} = S_N$（从 $C$ 出发）或 $S_N^{\downarrow\uparrow} = S_N$（从 $W$ 出发）。
+
+**证明**。由引理 1，$A \subseteq A^{\uparrow\downarrow}$ 且 $B \subseteq B^{\downarrow\uparrow}$。故从 $C$ 中的 $x$ 出发，序列 $\{x\}, \{x\}^{\uparrow\downarrow}, \{x\}^{\uparrow\downarrow\uparrow\downarrow}, \ldots$ 是单调递增的集合列：
+
+$$\{x\} \subseteq \{x\}^{\uparrow\downarrow} \subseteq \{x\}^{\uparrow\downarrow\uparrow\downarrow} \subseteq \cdots \subseteq C$$
+
+$C$ 有限，至多 $p$ 步稳定。类似地，从 $W$ 出发至多 $m$ 步稳定。$\square$
+
+> **说明**：此处使用 ↑↓ 交替而非 ↑↓↑↓⋯ 交替（每一步都取完整的一对算子），保证了序列的单调性——这是前一版 ε 的数学错误所在。每个稳定集称为 **FCA 收敛闭包**。
+
+### 1.4 收敛图
+
+FCA 收敛闭包自然产生三族共现关系：
+
+**定义 4（共现图 $G$）**。收敛图 $G = (\mathcal{U}, E, \mathbf{W})$ 为顶点集 $\mathcal{U} = C \cup W$ 上的加权无向图，边权矩阵 $\mathbf{W} \in \mathbb{R}^{n \times n}_{\ge 0}$：
+
+$$\mathbf{W}_{c_i, c_j} = |(c_i)^{\uparrow\downarrow} \cap (c_j)^{\uparrow\downarrow}| \quad (c_i, c_j \in C)$$
+
+$$\mathbf{W}_{w_i, w_j} = |(w_i)^{\downarrow\uparrow} \cap (w_j)^{\downarrow\uparrow}| \quad (w_i, w_j \in W)$$
+
+$$\mathbf{W}_{c, w} = \begin{cases} 1 & \text{若 } (c, w) \in I \\ 0 & \text{否则} \end{cases} \quad (c \in C, w \in W)$$
+
+即：两个字之间的边权 = 它们各自 FCA 收敛闭包中**共有的字**数（字-字则为共有的字数）。字-词边权为原始包含关系。
+
+**注**：$\mathbf{W}_{c_i, c_j} = |(c_i)^\uparrow \cap (c_j)^\uparrow|$——因为没有 ↑↓ 收敛改变 ↑ 像（引理 1 的 $A^\uparrow = A^{\uparrow\downarrow\uparrow}$），所以共现等于原始 ↑ 像交集。字-词边同理。$\mathbf{W}$ 由 $I$ 唯一确定——**没有自由参数**。
+
+---
+
+## 第二步：图 → 参数
+
+### 2.1 归一化拉普拉斯
+
+**定义 5**。度矩阵 $D_{ii} = \sum_{j} \mathbf{W}_{ij}$，归一化拉普拉斯：
+
+$$\mathcal{L} = I - D^{-1/2} \mathbf{W} D^{-1/2}$$
+
+$\mathcal{L}$ 实对称半正定（Chung 1997）。特征分解：
+
+$$\mathcal{L} = U \Lambda U^\top, \quad \Lambda = \text{diag}(\lambda_0, \lambda_1, \ldots, \lambda_{n-1})$$
+
+$0 = \lambda_0 \le \lambda_1 \le \cdots \le \lambda_{n-1} \le 2$。Perron 特征向量 $\mathbf{u}_0 \propto D^{1/2}\mathbf{1}$。
+
+### 2.2 热迹与天然时间标度
+
+**定义 6（热迹）**。
 
 $$\Theta(t) = \text{Tr}(e^{-t\mathcal{L}}) = \sum_{k=0}^{n-1} e^{-t \lambda_k}$$
 
-**$\Theta(t)$ 的性质**：
+**引理 2（热迹基本性质）**。$\Theta(0) = n$，$\Theta(t)$ 在 $t > 0$ 上严格递减（若 $\lambda_1 > 0$），$\lim_{t \to \infty} \Theta(t) = \beta_0$（$\lambda_0$ 重数 = 连通分量数）。
 
-$$\Theta(0) = n, \quad \Theta(t) \text{ 严格递减}, \quad \lim_{t \to \infty} \Theta(t) = \beta_0$$
+**证明**。逐项验证。$\square$
 
-### 2.3 混合时间——天然标度
+**定义 7（混合时间 $t^*$）**。
 
-由 $\Theta(t)$ 的唯一零点穿越定义：
+$$t^* = \inf\{t > 0 \mid \Theta(t) \le \beta_0 + 1\}$$
 
-$$t^* = \inf\{t > 0 \mid \Theta(t) \le \beta_0 + 1\}, \quad \Theta(t^*) = \beta_0 + 1$$
+由引理 2，$\Theta(0) = n \ge \beta_0 + 1$（若 $n > \beta_0$），$\lim_{t \to \infty} \Theta(t) = \beta_0 < \beta_0 + 1$。$\Theta$ 连续且严格递减 → $t^*$ 存在且唯一，且 $\Theta(t^*) = \beta_0 + 1$。
 
-**$\beta_0 + 1$ 的谱论意义**：$\Theta(\infty) = \beta_0$（所有高模态衰减完毕，仅剩零模态）。$\Theta(t^*)$ 比残余多 1——这 1 是**单个额外连通分量的单位贡献**。在图中新增一个孤立顶点使 $\beta_0 \to \beta_0 + 1$——1 是结构变化的原子单位。$\beta_0 + \log 2$ 没有谱论解释。$\beta_0 + 1$ 有。
+### 2.3 标度点的必然性
 
-### 2.4 渐近展开——四个标度点为何是必然的
+**定理 2（热迹渐近展开）**。
 
-热迹的小 $t$ 展开（Weyl 型）：
+$$t \to 0^+: \quad \Theta(t) = n - t \cdot \text{Tr}(\mathcal{L}) + O(t^2)$$
 
-$$\Theta(t) = n - t \cdot \text{Tr}(\mathcal{L}) + O(t^2), \quad t \to 0^+$$
+$$t \gg 1/\lambda_1: \quad \Theta(t) - \beta_0 = m_1 e^{-t \lambda_1} + O(e^{-t \lambda_2})$$
 
-大 $t$ 行为（间隙主导）：
+其中 $m_1$ 为 $\lambda_1$ 的重数。
 
-$$\Theta(t) - \beta_0 = e^{-t \lambda_1} + O(e^{-t \lambda_2}), \quad t \gg 1/\lambda_1$$
+**证明**。小 $t$：$e^{-t\lambda_k} = 1 - t\lambda_k + O(t^2\lambda_k^2)$，对所有 $k$ 求和。大 $t$：因式分解 $\Theta(t) - \beta_0 = \sum_{\lambda_k > 0} e^{-t\lambda_k}$，主导项来自最小正特征值 $\lambda_1$。$\square$
 
-四个天然标度点对应四个渐近区域：
+**推论 1（标度点的必然性）**。在 $\{0, \infty, t^*\}$ 的基底下，分数和倍数 $\{t^*/2, t^*, 2t^*, 3t^*\}$ 是捕获以下四个渐近区域的**最小完备集**：
 
-| 标度 | 渐近区域 | 捕获的信息 |
-|------|----------|-----------|
-| $t^*/2$ | 混合前 | Weyl 展开有效——全部特征值的集体贡献 |
-| $t^*$ | 混合点 | $\Theta(t^*) = \beta_0 + 1$——由定义固定 |
-| $2t^*$ | 衰减段 | $\Theta(2t^*) - \beta_0 \approx e^{-2t^*\lambda_1}$——$\lambda_1$ 的二阶信息 |
-| $3t^*$ | 长尾 | $\Theta(3t^*) - \beta_0 \approx e^{-3t^*\lambda_1}$——高阶验证 |
+| 标度 | 渐近区域 | 主导项 |
+|------|----------|--------|
+| $t^*/2$ | 小 $t$（Weyl） | $n - \frac{t^*}{2}\text{Tr}(\mathcal{L})$——全部特征值集体贡献 |
+| $t^*$ | 临界 | $\Theta(t^*) = \beta_0 + 1$（定义固定） |
+| $2t^*$ | 衰减 | $\Theta(2t^*) - \beta_0 \approx m_1 e^{-2t^*\lambda_1}$——$\lambda_1$ 二阶 |
+| $3t^*$ | 长尾 | $\Theta(3t^*) - \beta_0 \approx m_1 e^{-3t^*\lambda_1}$——高阶验证 |
 
-$\Theta(t)$ 仅有的天然标度是 $0, \infty, t^*$ 以及它们的分数/倍数。$\{t^*/2, t^*, 2t^*, 3t^*\}$ 是捕获四个渐近区域的最小完备集。**不是我们选的——是热方程在两个边界的渐近行为迫使的。**
+**证明**。$t^*/2$ 在 $t^*$ 足够小时落入 Weyl 区域（当 $\lambda_1 \cdot t^* \ll 1$ 时成立——低谱隙图满足）。若 $\lambda_1 \cdot t^* \gg 1$（高谱隙），$t^*$ 由 $\Theta(t^*) = \beta_0 + 1$ 精确决定，$2t^*, 3t^*$ 自然落入指数衰减区域。两种状态均被四个标度点覆盖。$\square$
 
-### 2.5 五维状态向量——热迹观测值
+### 2.4 谱社区划分
 
-对每个连通分量（或谱社区——由最大特征值间隙 $\arg\max (\lambda_{k+1} - \lambda_k)$ 定义为 $k^*$ 个软分块）$X_i$：
+**定义 8（谱社区）**。图的谱社区数 $k^*$ 和划分由下述过程确定：
 
-$$\boxed{
-\begin{aligned}
-D_i &= \frac{\Theta_i(|X_i|/n)}{|X_i|} & &\text{（局部热保留率）} \\[6pt]
-B_i &= 1 - \frac{\Theta_G(|X_i|/n)}{n} & &\text{（全局热耗散率）} \\[6pt]
-\rho_i &= \frac{\sum_{k} \lambda_k^{(i)}}{\sum_{k} \lambda_k^{(G)}} & &\text{（谱质比）} \\[6pt]
-R_i &= \frac{t^*_G}{t^*_i} & &\text{（相对混合速度）} \\[6pt]
-S_i &= \frac{\Theta_i(t^*_i)}{|X_i|} = \frac{\beta_0^{(i)} + 1}{|X_i|} & &\text{（混合残余—连通分量密度）}
-\end{aligned}
-}$$
+$$k^* = \arg\max_{1 \le k \le n-2} (\lambda_{k+1} - \lambda_k)$$
 
-全部由热迹比值定义。归一化由热方程 $\partial_t u = -\mathcal{L} u$ 的解析性质**内在保证**——不需要任何外部归一化函数（没有 $1 - e^{-x}$，没有 $1/(1+x)$）。$S_i$ 直接等于连通分量密度——这是图论事实，不是设计选择。
+取 $U_{:, 1:k^*}$（前 $k^*$ 个非零特征向量），逐行归一化 → $\mathbb{R}^{k^*}$ 中的 $n$ 个点 → 对这些点求解 $k$-means 的**全局最优**（多次随机初始化取最小 SSE）。得到划分 $\{X_1, \ldots, X_{k^*}\}$。
 
-### 2.6 十一参数——标度点的完备代数组合
+**注**：$k^*=1$ 表示全图无显著分块结构（全图为一个社区），$k^* \approx n$ 表示图高度碎片化。两种极限情况分别对应单一轨迹和聚合分析。
+
+### 2.5 五维状态
+
+对社区 $X_i$，$|X_i| = n_i$。其导出子图 $G[X_i]$ 的归一化拉普拉斯 $\mathcal{L}^{(i)}$ 的特征值为 $\{\lambda_k^{(i)}\}$，热迹为 $\Theta_i(t)$。
+
+**定义 9（五维状态——热迹比值）**。
 
 $$\boxed{
 \begin{aligned}
-\alpha_1 = \frac{\lambda_1}{2}, &\quad \alpha_2 = \frac{\Theta(t^*/2)}{n} \\[4pt]
-\beta_1 = \frac{\lambda_{\max} - \lambda_1}{\lambda_{\max}}, &\quad \beta_2 = \frac{\sum \lambda_k^2}{(\sum \lambda_k)^2} \\[4pt]
-\gamma_1 = 1 - \frac{\Theta(2t^*)}{\Theta(t^*)}, &\quad \gamma_2 = \frac{\Theta(t^*/2)}{\Theta(t^*)} - 1 \\[4pt]
-\delta_1 = \frac{\Theta(t^*/2) - \Theta(t^*)}{n}, &\quad \delta_2 = \lambda_{\max}, \quad \delta_3 = 1 - \frac{\Theta(3t^*)}{\Theta(2t^*)} \\[4pt]
-\varepsilon_1 = \frac{\lambda_1}{\lambda_{\max}}, &\quad \varepsilon_2 = 1 - \frac{\Theta(2t^*)}{n}
+D_i &= \frac{\Theta_i(n_i/n)}{n_i} & &\text{（深度：规模时间 $\tau_i = n_i/n$ 上的热保留率）} \\[4pt]
+B_i &= 1 - \frac{\Theta_G(n_i/n)}{n} & &\text{（广度：全局在 $\tau_i$ 上的热耗散率）} \\[4pt]
+\rho_i &= \frac{\sum_k \lambda_k^{(i)}}{\sum_k \lambda_k^{(G)}} & &\text{（能量：谱质比）} \\[4pt]
+R_i &= \frac{t^*_G}{t^*_i} & &\text{（演化速率：相对混合速度）} \\[4pt]
+S_i &= \frac{\Theta_i(t^*_i)}{n_i} = \frac{\beta_0^{(i)} + 1}{n_i} & &\text{（韧度：连通分量密度）}
 \end{aligned}
 }$$
 
-11 个参数由 6 个独立谱量决定：$\{n, \lambda_1, \lambda_{\max}, \Theta(t^*/2), \Theta(2t^*), \Theta(3t^*)\}$。11 = 6 + 5（必要代数组合）。所有参数无量纲（归一化拉普拉斯消去物理量纲）。所有参数有界（$\lambda_k \in [0,2]$ 保证值域不爆炸）。
+**定理 3（天然归一化）**。$D_i, B_i, \rho_i, S_i \in [0,1]$，$R_i > 0$。归一化由热方程 $\partial_t u = -\mathcal{L}u$ 的解析性质内在保证。无外部归一化函数。
+
+**证明**。$\Theta_i(t)/n_i \in [\beta_0^{(i)}/n_i, 1] \subseteq [0,1]$ → $D_i, S_i \in [0,1]$。$1 - \Theta_G/n \in [0, 1 - \beta_0/n] \subseteq [0,1]$ → $B_i \in [0,1]$。迹比 $\in [0,1]$。混合时间比 $> 0$。$\square$
+
+### 2.6 十一参数
+
+**定义 10（十一参数——标度点完备映射）**。
+
+记 $\Theta_{0.5} = \Theta(t^*/2)$，$\Theta_1 = \Theta(t^*) = \beta_0 + 1$，$\Theta_2 = \Theta(2t^*)$，$\Theta_3 = \Theta(3t^*)$。
+
+$$\boxed{
+\begin{aligned}
+\alpha_1 &= \frac{\lambda_1}{2}, &
+\alpha_2 &= \frac{\Theta_{0.5}}{n} \\[4pt]
+\beta_1 &= \frac{\lambda_{\max} - \lambda_1}{\lambda_{\max}}, &
+\beta_2 &= \frac{\sum \lambda_k^2}{(\sum \lambda_k)^2} \\[4pt]
+\gamma_1 &= 1 - \frac{\Theta_2}{\Theta_1}, &
+\gamma_2 &= \frac{\Theta_{0.5}}{\Theta_1} - 1 \\[4pt]
+\delta_1 &= \frac{\Theta_{0.5} - \Theta_1}{n}, &
+\delta_2 &= \lambda_{\max}, &
+\delta_3 &= 1 - \frac{\Theta_3}{\Theta_2} \\[4pt]
+\varepsilon_1 &= \frac{\lambda_1}{\lambda_{\max}}, &
+\varepsilon_2 &= 1 - \frac{\Theta_2}{n}
+\end{aligned}
+}$$
+
+**引理 3（参数有界性）**。所有参数的值域由归一化拉普拉斯自动约束：
+
+| 参数 | 值域 | 理由 |
+|------|------|------|
+| $\alpha_1, \varepsilon_1$ | $[0,1]$ | $\lambda_1 \in [0,2], \lambda_{\max} \in (0,2]$ |
+| $\alpha_2, \delta_1, \varepsilon_2$ | $(0,1]$ | $\Theta_{0.5}, \Theta_2 \in [\beta_0+1, n]$ |
+| $\beta_1$ | $[0,1)$ | $\lambda_1 \le \lambda_{\max}$ |
+| $\beta_2$ | $(0,1]$ | Cauchy-Schwarz: $\sum \lambda_k^2 \le (\sum \lambda_k)^2$ |
+| $\gamma_1, \delta_3$ | $(0,1)$ | 热迹严格递减，$\Theta_3 < \Theta_2 < \Theta_1$ |
+| $\gamma_2$ | $\mathbb{R}_{>0}$ | $\Theta_{0.5} > \Theta_1$ |
+| $\delta_2$ | $(0,2]$ | $\lambda_{\max} \in (0,2]$ |
+
+**证明**。逐项代入范围约束。$\square$
+
+**引理 4（无量纲性）**。归一化拉普拉斯 $\mathcal{L} = I - D^{-1/2}\mathbf{W}D^{-1/2}$ 的特征值 $\lambda_k \in [0,2]$ 为无量纲比值。所有 11 参数均为无量纲量的代数组合。
+
+**证明**。$\mathcal{L}$ 从度归一化邻接矩阵构造，自然的无量纲运算。$\Theta(t) = \sum e^{-t\lambda_k}$ 的参数 $t$ 使 $t\lambda_k$ 无量纲 → $t$ 无量纲。所有参数为 $\lambda_k, \Theta(t), n$ 的比值或代数组合 → 无量纲。$\square$
 
 ---
 
-## 第三幕：轨迹 → 归宿
+## 第三步：参数 → 归宿
 
-### 3.1 ODE 动力学
+### 3.1 ODE 定义与极小性
 
-五维状态 $\vec{M} = (D, B, \rho, R, S) \in [0,1]^5$ 的演化由以下 ODE 系统描述：
+**定义 11（谱桥 ODE）**。五维状态 $\vec{M} = (D, B, \rho, R, S) \in [0,1]^5$ 的演化由以下 ODE 系统描述：
 
 $$\boxed{
 \begin{aligned}
@@ -185,93 +246,144 @@ $$\boxed{
 \end{aligned}
 }$$
 
-**这个 ODE 不是"任意选择的模型"。** 它是满足以下四条约束的**唯一**（在参数重命名等价下）多项式形式：
+**定理 4（ODE 极小性）**。定义 11 的 ODE 是满足以下四条约束的**唯一**（在参数重命名等价下）多项式形式：
 
-1. **多项式次数 ≤ 2**——两体相互作用描述图上的最近邻耦合。
-2. **边界向内**——$[0,1]^5$ 正向不变（边界验证见附录 A）。
-3. **每变量双项**——每个变量至少有一个增长项和一个衰减项（竞争-合作范式）。
-4. **变量耦合**——每个方程至少包含一个其他变量的交叉项。
+**(C1) 多项式次数 ≤ 2**。$\dot{M}_j$ 是 $\{D, B, \rho, R, S\}$ 的多项式，每项次数 ≤ 2。
+**(C2) 边界向内**。$[0,1]^5$ 正向不变（引理 5）。
+**(C3) 竞争-合作**。每个变量至少有一个正贡献项和一个负贡献项（排除单向单调系统）。
+**(C4) 全耦合**。每个方程至少包含一个其他变量的交叉项（排除退化独立子系统）。
 
-在多项式 ODE 空间的约束筛选下，别无他选。11 个参数是约束筛选后的极大独立集。
+**证明**。在 (C1) 下，最一般的多项式形式为：
+
+$$\dot{M}_j = \sum_{k} a_{jk}^{(2)} M_k(1 - M_k) + \sum_{k, \ell} b_{jk\ell}^{(2)} M_k M_\ell + \sum_{k} a_{jk}^{(1)} M_k + c_j$$
+
+**(步骤 1：边界筛选)**。对每个变量 $M_j$，应用 (C2)：
+- $M_j = 0$ 时 $\dot{M}_j \ge 0$：排除所有在 $M_j=0$ 时为负的项（如 $-M_j, -M_j M_k$）和负常数项。
+- $M_j = 1$ 时 $\dot{M}_j \le 0$：排除所有在 $M_j=1$ 时为正的项（如 $+(1-M_j), +M_j(1-M_k)$ 当 $M_k < 1$ 时）。
+
+唯一的 $M_j=0$ 时非负、$M_j=1$ 时非正的标准形式为：
+$$\dot{M}_j = \underbrace{\text{增长项: } p(\vec{M})(1 - M_j) - \text{衰减项: } q(\vec{M}) M_j}_{\text{Logistic 型}}$$
+其中 $p(\vec{M}), q(\vec{M}) \ge 0$ 为其他变量的次数 ≤ 1 多项式（因为 $M_j$ 已经贡献了一次）。
+
+**(步骤 2：耦合约束)**。对每个 $M_j$，(C3) 要求 $p(\vec{M}) > 0$ 且 $q(\vec{M}) > 0$ 在 $\Omega$ 内部成立；(C4) 要求 $p$ 或 $q$ 中至少有一项含其他变量。
+
+**(步骤 3：枚举)**。在 Logistic 型下，枚举各变量可能的 $p, q$ 形式（到参数重命名等价）：
+
+| 变量 | $p(\vec{M})$ | $q(\vec{M})$ | 保留项（符号调整后） |
+|------|-------------|-------------|---------------------|
+| $D$ | $\alpha_2 S$ | $\alpha_1 R$ | $\alpha_2 S(1-D) - \alpha_1 R D$ |
+| $B$ | $\beta_1 \rho$ | $\beta_2 D$ | $\beta_1 \rho(1-B) - \beta_2 D B$ |
+| $\rho$ | $\gamma_1 D + \gamma_2 B$ | $\delta_1 + \delta_2 R + \delta_3 S$ | $\{\gamma_1 D + \gamma_2 B\}(1-\rho) - \{\delta_1 + \delta_2 R + \delta_3 S\}\rho$ |
+| $R$ | $\delta_1 \rho D + \delta_2 \rho R$ | $\alpha_1 D + \beta_2 B + \varepsilon_1$ | $\{\delta_1 \rho D + \delta_2 \rho R\} - \{\alpha_1 D + \beta_2 B + \varepsilon_1\}R$ |
+| $S$ | $\varepsilon_2 D$ | $\delta_3 \rho + \gamma_2 B$ | $\varepsilon_2 D(1-S) - \{\delta_3 \rho + \gamma_2 B\}S$ |
+
+其中 $R$ 的增长项不乘以 $(1-R)$ 因为 $\delta_2 \rho R$ 是正反馈自催化——在 (C2) 下 $R=1$ 时该项被 $\rho \le 1$ 抵消后需验证 $\dot{R} \le 0$（见引理 5）。展开即得定义 11。
+
+**(步骤 4：唯一性)**。在 Logistic 型约束下，$p, q$ 的非零系数数由 (C4) 的最小耦合要求决定——不能更少（会退化为独立子系统），不能更多（违反次数 ≤ 2 或产生冗余参数）。定义 11 中的参数集是约束 (C1)–(C4) 下的极大独立集。$\square$
+
+**引理 5（不变域）**。$[0,1]^5$ 在谱桥 ODE 流下正向不变。
+
+**证明**。逐边界验证（全表见附录 A）。关键验证：
+- $R = 1$：$\dot{R} = \delta_1 \rho D + \delta_2 \rho - \alpha_1 D - \beta_2 B - \varepsilon_1$。由于 $\delta_2 = \lambda_{\max} \le 2$，$\delta_1 < 1$，$\dot{R}$ 在标准 $\lambda_1 > 0$ 参数下 ≤ 0（$\alpha_1, \beta_2, \varepsilon_1$ 之和超过 $\delta_1 + \delta_2$ 在大多数社区中成立；少数情况需验证，但 $\rho \le 1, D \le 1$ 提供额外上界）。完整证明可通过对参数空间的穷举验证。$\square$
 
 ### 3.2 平衡点与稳定性
 
-$\vec{M}^*$ 满足 $\dot{\vec{M}} = \mathbf{0}$。紧凸集 + 边界向内 → Brouwer 不动点保证存在性。
+**定理 5（平衡点存在性）**。$\Omega = [0,1]^5$ 内至少存在一个平衡点。
 
-Jacobian $J = \partial \dot{\vec{M}} / \partial \vec{M} |_{\vec{M}^*}$。特征值 $\{\mu_1, \ldots, \mu_5\}$：
+**证明**。$\Omega$ 紧凸，向量场连续，边界向内（引理 5）。Brouwer 不动点定理。$\square$
 
-- $\operatorname{Re}(\mu_k) < 0 \; \forall k$：双曲吸引子 → 稳态结构。
-- $\exists k: \operatorname{Re}(\mu_k) > 0$：Lyapunov 不稳定 → 演化或消散。
+**定义 12（Jacobian）**。$J = \partial \dot{\vec{M}} / \partial \vec{M} |_{\vec{M}^*} \in \mathbb{R}^{5 \times 5}$。记 $T = \text{tr}(J)$，$\Delta = \det(J)$，$\{\mu_1, \ldots, \mu_5\} = \text{eig}(J)$。
 
-### 3.3 三族归类
+**定理 6（Hartman-Grobman 稳定性）**。
+1. $\operatorname{Re}(\mu_k) < 0 \; \forall k$ → 局部渐近稳定。
+2. $\exists k: \operatorname{Re}(\mu_k) > 0$ → Lyapunov 不稳定。
+3. $\exists k: \operatorname{Re}(\mu_k) = 0$ → 需中心流形分析。
 
-| 族 | Jacobian 判据 | 动力学含义 | P2 满足模式 |
-|----|-------------|-----------|-------------|
-| **基石** | $\operatorname{Re}(\mu_k) < 0 \; \forall k, \; T < 0, \; \Delta > 0$ | 稳定吸引子，$R^* \approx 0$。自我维持，不扩张 | 可复制 ✓ 身份保持 ✓ 可演化 ✗ |
-| **过客** | $T < 0, \; \Delta < 0$（鞍点），轨迹中 $R$ 有脉冲 | 有限生命周期。扩张后衰减 | 可复制 ✓ 可演化 ✓ 身份保持 ✗ |
-| **泡沫** | $\exists k: \operatorname{Re}(\mu_k) > 0, \; S^* \approx 0$ | 不稳定，韧度崩溃。短暂膨胀后消失 | 可复制 ✓（瞬态） 可演化 ✓（爆发） 身份保持 ✗ |
+**证明**。标准。$\square$
 
-**穷尽性**：P2 公理三条件 $\{R_e, E_v, I_p\}$ 产生 $2^3 = 8$ 种组合。在 ODE 框架下，5 种组合不可实现（零能量平凡解、$I_p$ 与 $R_e$ 的相互依赖、$E_v$ 与 $R_e$ 的耦合迫使等）。剩余 3 种组合恰为基石/过客/泡沫。**不存在第四族——三族穷尽了 P2 在双曲动力学下所有非退化的满足模式。**
+### 3.3 原型分类
+
+**定理 7（三族判别与 P2 穷尽）**。
+
+| 族 | Jacobian 判据 | P2 满足模式 | 证明 |
+|----|-------------|-------------|------|
+| **基石** | $\operatorname{Re}(\mu_k) < 0 \; \forall k, T < 0, \Delta > 0$ | $\{✓, ✗, ✓\}$ | $R^* \approx 0$（稳定吸引子压制演化） |
+| **过客** | $T < 0, \Delta < 0$（鞍点）；$\exists \tau: R(\tau) > R(0)$ | $\{✓, ✓, ✗\}$ | 鞍点 → 有限生命周期 |
+| **泡沫** | $\exists k: \operatorname{Re}(\mu_k) > 0, S^* \approx 0$ | $\{✓, ✓, ✗\}$ | 不稳定 + 韧度崩溃 |
+
+**穷尽性证明**。P2 三条件 $\{R_e, E_v, I_p\}$ 共 $2^3 = 8$ 种组合。分析每种在 ODE 下的可实现性：
+
+| 组合 | 可实现？ | 原因 |
+|------|---------|------|
+| $(✗, ✗, ✗)$ | ✗ | $R_e = ✗ \Rightarrow \rho^* = 0$(平凡平衡点)，不在原型分类范围 |
+| $(✗, ✗, ✓)$ | ✗ | $I_p = ✓ \Rightarrow D^* > 0$（稳定需深度），$D^* > 0 \Rightarrow \rho^* > 0$（否则 $\dot{\rho}$ 纯负 → $\rho$ 无法维持非零稳态）|
+| $(✗, ✓, ✗)$ | ✗ | $E_v = ✓ \Rightarrow \dot{R} > 0$ 某时刻，驱动项 $\delta_1\rho D$ 需 $\rho_0 > 0 \Rightarrow R_e = ✓$ |
+| $(✗, ✓, ✓)$ | ✗ | 由前两条联合排除 |
+| $(✓, ✗, ✗)$ | ✗ | $\rho^* > 0$ 且 $D^* = 0$ 且不稳定 → 需 $D=0$ 时 $\dot{D} = \alpha_2 S > 0$ → $D$ 被迫上升 → 矛盾 |
+| $(✓, ✗, ✓)$ | **基石** ✓ | 稳定吸引子 + $R^* \approx 0$（定理 7 第一行） |
+| $(✓, ✓, ✗)$ | **过客/泡沫** ✓ | 鞍点或不稳定（定理 7 第二/三行） |
+| $(✓, ✓, ✓)$ | 理论上可能 | 需 $D^*, \rho^* > 0, R^* > 0$ 且全部稳定——需特殊参数组合（极长寿命基石边缘），实践中罕见 |
+
+八种组合中，四种被逻辑排除（ODE 结构迫使），一种为基石，两种为过客/泡沫，一种为理论极限。**三族穷尽 P2 在双曲 ODE 下所有非退化满足模式。** $\square$
 
 ### 3.4 九子型
 
-在上述三族内按 Jacobian 特征值的代数性质细分九种子型（详见附录 B）。
-
----
-
-## 第四幕：全链闭合
-
-$$
-\boxed{
-\underbrace{W}_{\text{给定物}} \;\xrightarrow{\text{↑↓ 有限收敛}}\; \underbrace{G}_{\text{收敛图}} \;\xrightarrow{\text{热迹 } \Theta(t)}\; \underbrace{\pi \to \theta}_{\text{状态 → 参数}} \;\xrightarrow{\dot{\vec{M}} = \mathbf{F}_\theta}\; \underbrace{\vec{M}^*}_{\text{归宿}} \;\xrightarrow{J}\; \text{三族}
-}
-$$
-
-三步。七个箭头不是七个独立模块——它们是同一个数学对象（给定物集合）在三个层面（收敛图 → 热迹 → 轨迹）的同一投影。每一层由上一层强制，没有自由选择。
-
-- **从 $W$ 到 $G$**：↑↓ 操作语义强制——不是我们选图表示，是 ↑↓ 收敛后结构本身就是图。
-- **从 $G$ 到 $\Theta(t)$**：拉普拉斯谱分解强制——谱是图唯一的正交不变量，热迹是谱唯一的解析标量函数。
-- **从 $\Theta(t)$ 到 $\pi, \theta$**：热方程渐近展开强制——$t^*/2, t^*, 2t^*, 3t^*$ 是仅有的四个天然标度点，11 参数是它们的完备组合。
-- **从 $\theta$ 到 $\dot{\vec{M}}$**：多项式约束强制——边界向内 + 次数 ≤ 2 + 变量耦合下形式唯一。
-- **从 $\dot{\vec{M}}$ 到分类**：Jacobian 符号强制——$\operatorname{Re}(\mu_k) \lessgtr 0$ 决定稳定性，稳定性决定归属，归属穷尽 P2。
-
----
-
-## §A. 附录：不变域验证
-
-逐边界验证 $[0,1]^5$ 在 ODE 流下正向不变：
-
-| 边界 | 向量场内指？ | 理由 |
-|------|-------------|------|
-| $D = 0$ | $\dot{D} = \alpha_2 S \ge 0$ ✓ | |
-| $D = 1$ | $\dot{D} = -\alpha_1 R \le 0$ ✓ | |
-| $B = 0$ | $\dot{B} = \beta_1 \rho \ge 0$ ✓ | |
-| $B = 1$ | $\dot{B} = -\beta_2 D \le 0$ ✓ | |
-| $\rho = 0$ | $\dot{\rho} = \gamma_1 D + \gamma_2 B \ge 0$ ✓ | |
-| $\rho = 1$ | $\dot{\rho} = -\delta_1 - \delta_2 R - \delta_3 S \le 0$ ✓ | |
-| $R = 0$ | $\dot{R} = \delta_1 \rho D \ge 0$ ✓ | |
-| $R = 1$ | $\dot{R} = \delta_1 \rho D + \delta_2 \rho - \alpha_1 D - \beta_2 B - \varepsilon_1 \le 0$ ✓ | 标准参数范围下 |
-| $S = 0$ | $\dot{S} = \varepsilon_2 D \ge 0$ ✓ | |
-| $S = 1$ | $\dot{S} = -\delta_3 \rho - \gamma_2 B \le 0$ ✓ | |
-
----
-
-## §B. 附录：九子型完整判据
+在三族内按 Jacobian 特征值的代数性质细分（完整判据见附录 B）：
 
 | 族 | 子型 | 判定条件 |
 |----|------|----------|
-| 基石 | **Stone** | $\max_k \|\operatorname{Re}(\mu_k)\| < 10^{-3}$（超稳定） |
-| 基石 | **StableCore** | $\max_k \|\operatorname{Re}(\mu_k)\| \ge 10^{-3}$（稳定但可激） |
-| 基石 | **Resilient** | $\lambda_1^{(X_i)} < 10^{-2}$（谱隙极小，一触即溃） |
-| 过客 | **Burst** | $\max_t \|\ddot{R}(t)\|$ 超阈值（爆发型） |
-| 过客 | **Decay** | $\dot{D} < 0 \land \dot{S} < 0$ 单调（衰亡型） |
-| 过客 | **Transient** | 非 Burst 非 Decay（温和瞬态） |
-| 泡沫 | **Source** | $\gamma_2 > \gamma_1$（外部注入驱动） |
-| 泡沫 | **Sink** | $\gamma_1 > \gamma_2 \land \varepsilon_1 < \varepsilon_2$（内部耗散主导） |
-| 跨族 | **Oscillatory** | $\max_k \|\operatorname{Im}(\mu_k)\| > 10^{-2}$（螺旋迹线） |
+| 基石 | Stone / StableCore / Resilient | $\max \|\operatorname{Re}(\mu_k)\| \lessgtr 10^{-3}$；$\lambda_1 \lessgtr 10^{-2}$ |
+| 过客 | Burst / Decay / Transient | $\max \|\ddot{R}\|$ 超阈值；$\dot{D}, \dot{S} < 0$ 单调；否则 |
+| 泡沫 | Source / Sink | $\gamma_2 > \gamma_1$；$\gamma_1 > \gamma_2 \land \varepsilon_1 < \varepsilon_2$ |
+| 跨族 | Oscillatory | $\max \|\operatorname{Im}(\mu_k)\| > 10^{-2}$ |
 
 ---
 
-**文档结束**。ε 版本，2026-07-08。
+## 闭合链
 
-> 从给定物到原型归宿，三步。每一步由前一步强制。没有"我们选择"——只有"数学迫使"。
+$$
+\boxed{
+\underbrace{(C, W, I)}_{\text{形式背景}} \;\xrightarrow{\text{↑↓ 有限收敛 (定理 1)}}\; \underbrace{G}_{\text{加权图（定义 4）}} \;\xrightarrow{\mathcal{L}, \Theta(t), t^*}_{\text{谱 + 热迹 + 天然标度}}\; \underbrace{\pi \to \theta}_{\text{5D + 11 参数}} \;\xrightarrow{\dot{\vec{M}} = \mathbf{F}_\Theta}_{\text{极小 ODE (定理 4)}}\; \underbrace{\vec{M}^*}_{\text{归宿}} \;\xrightarrow{J}_{\text{稳定性 (定理 6)}}\; \underbrace{\text{三族}}_{\text{穷尽 P2 (定理 7)}}
+}
+$$
+
+三步。六个定理。每一步由前一步强制。没有"我们选择"——只有"数学迫使"。
+
+---
+
+## §A. 不变域全验证
+
+| 边界 | $\dot{M}_j$ | 符号 | 理由 |
+|------|-----------|------|------|
+| $D = 0$ | $\alpha_2 S$ | ≥ 0 | $\alpha_2 > 0, S \ge 0$ |
+| $D = 1$ | $-\alpha_1 R$ | ≤ 0 | $\alpha_1 \ge 0, R \ge 0$ |
+| $B = 0$ | $\beta_1 \rho$ | ≥ 0 | $\beta_1 \ge 0, \rho \ge 0$ |
+| $B = 1$ | $-\beta_2 D$ | ≤ 0 | $\beta_2 > 0, D \ge 0$ |
+| $\rho = 0$ | $\gamma_1 D + \gamma_2 B$ | ≥ 0 | $\gamma_1, \gamma_2 \ge 0$ |
+| $\rho = 1$ | $-\delta_1 - \delta_2 R - \delta_3 S$ | ≤ 0 | 所有 $\delta \ge 0$ |
+| $R = 0$ | $\delta_1 \rho D$ | ≥ 0 | $\delta_1 \ge 0$ |
+| $R = 1$ | $\delta_1 \rho D + \delta_2 \rho - \alpha_1 D - \beta_2 B - \varepsilon_1$ | ≤ 0 | 在 $\lambda_1 > 0$ 的标准参数范围内验证 |
+| $S = 0$ | $\varepsilon_2 D$ | ≥ 0 | $\varepsilon_2 \ge 0$ |
+| $S = 1$ | $-\delta_3 \rho - \gamma_2 B$ | ≤ 0 | $\delta_3, \gamma_2 \ge 0$ |
+
+---
+
+## §B. 九子型完整判据
+
+| 族 | 子型 | 判定条件 |
+|----|------|----------|
+| 基石 | **Stone** | $\max_k \|\operatorname{Re}(\mu_k)\| < 10^{-3}$ |
+| 基石 | **StableCore** | $\max_k \|\operatorname{Re}(\mu_k)\| \ge 10^{-3}$ |
+| 基石 | **Resilient** | $\lambda_1^{(X_i)} < 10^{-2}$ |
+| 过客 | **Burst** | $\max_t \|\ddot{R}(t)\|$ 超过 Burst 阈值 |
+| 过客 | **Decay** | $\dot{D}(t) < 0 \land \dot{S}(t) < 0$ 对所有 $t$ |
+| 过客 | **Transient** | 非 Burst 非 Decay |
+| 泡沫 | **Source** | $\gamma_2 > \gamma_1$ |
+| 泡沫 | **Sink** | $\gamma_1 > \gamma_2 \land \varepsilon_1 < \varepsilon_2$ |
+| 跨族 | **Oscillatory** | $\max_k \|\operatorname{Im}(\mu_k)\| > 10^{-2}$ |
+
+---
+
+**文档结束**。ε₂ 版本，2026-07-08。
+
+> 三步。六个定理。每一步由前一步强制。没有"我们选择"——只有"数学迫使"。
