@@ -48,7 +48,7 @@
 
 ### 实证验证
 
-全部 9 个实验及最新结果见 [实验索引](experiments/README.md)。核心结论（v4.2）：
+全部 10 个实验及最新结果见 [实验索引](experiments/README.md)。核心结论（v4.2）：
 
 | 指标 | 阈值 | 实际 | 判定 |
 |------|------|------|------|
@@ -234,8 +234,9 @@ python scripts/run_dictionary.py
 ```bash
 cd updown_rs
 cargo check --tests     # 类型检查
-cargo test --lib        # 69 个单元测试
+cargo test --lib        # 70 个单元测试
 cargo test --lib experiment_008_strong_validation -- --nocapture  # 强验证全扫描
+cargo test --lib experiment_009_external_validation -- --nocapture  # 外部验证
 ```
 
 ---
@@ -265,7 +266,7 @@ cargo test --lib experiment_008_strong_validation -- --nocapture  # 强验证全
 | sealing/ode | 9 | 5 种函数族 · RKF45 · 不变集 Ω=[0,1]⁵ · 平衡点 · 原型 |
 | sealing/optimizer | 10 | H 空间搜索 · 5 族遍历 · 结果转 OdeConfig |
 | infra/plugins | 2 | Tokenizer 注册与命名 |
-| pipeline (端到端) | 4 | Phase 1-5 全管线 · 收敛扫描 · 多样性测试 · **实验 008 强验证** |
+| pipeline (端到端) | 5 | Phase 1-5 全管线 · 收敛扫描 · 多样性测试 · 实验 008 强验证 · 实验 009 外部验证 |
 
 ---
 

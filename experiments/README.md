@@ -15,7 +15,7 @@
 | 006 | [弱预测验证](006-weak-predictive/) | — | 固定理论默认参数跨四领域运行，检验参数是否从理论中来而非数据过拟合 |
 | 007 | [原型多样性验证](007-archetype-diversity/) | ✅ 完成 | 通过 2-Phase Louvain 和轨迹分类器消除原型单一问题 |
 | 008 | **[强验证全扫描](008-strong-validation/)** | ✅ PASS | 4 领域 × 3 分辨率，收敛率 100%，原型 3-4 种，满足强验证标准 |
-| 009 | **[真实世界历时数据验证](009-external-validation/)** | 📋 方案设计 | 外部验证——Wikipedia 月浏览量 vs ODE 轨迹相关性检验（H₄） |
+| 009 | **[真实世界历时数据验证](009-external-validation/)** | ✅ PASS | 外部验证——42 个 Wikipedia 概念，月浏览量 vs ODE 轨迹，|r̄|=0.258，90% 显著（H₄） |
 
 ## 结果汇总
 
@@ -26,6 +26,16 @@
 | 收敛率 | ≥ 90% | 100% | ✓ |
 | 原型多样性 | ≥ 3 种/领域 | 3-4 种 | ✓ |
 | 低分辨率收敛 | ≥ 90% | 100% | ✓ |
+
+### 外部验证（实验 009, v4.3）
+
+| 指标 | 阈值 | 实际 | 判定 |
+|------|------|------|------|
+| 平均 \|r\| | > 0.2 | 0.258 | ✓ |
+| p < 0.05 比例 | ≥ 40% | 90% (38/42) | ✓ |
+| 正相关数 | — | 24/42 | — |
+| 最强正相关 | — | Brexit +0.552, Gravity +0.444, Carbon +0.423 | — |
+| 最强负相关 | — | Clubhouse -0.645, ChatGPT -0.612 | — |
 
 ### 原型分布（γ=2.0, t=20）
 
@@ -40,6 +50,7 @@
 
 - Decay / Resilient / Oscillatory / Sink 四种原型尚未在实验中观测到，需要更大规模输入数据
 - 实验 000-006 的状态需要补录（部分实验撰写于早期版本，需重新跑验）
+- 实验 009 外部验证中，负相关概念（18/42）的动力学含义需进一步分析
 
 ## 目录结构
 
@@ -56,17 +67,19 @@ experiments/
 ├── 006-weak-predictive/             # 弱预测验证
 ├── 007-archetype-diversity/         # 原型多样性
 ├── 008-strong-validation/           # 强验证全扫描
-└── 009-external-validation/          # 真实世界历时数据验证（方案设计）
-    ├── README.md                      #   实验方案
+└── 009-external-validation/          # 真实世界历时数据验证（✅ PASS）
+    ├── README.md                      #   实验方案与结果
     ├── scripts/                       #   数据采集脚本
-    ├── data/                          #   原始数据（待采集）
-    └── results/                       #   结果（待运行）
+    └── data/                          #   42 个概念词 × 页面摘要 + 浏览量
 ```
 
 ## 运行
 
 ```bash
-# 强验证全扫描（唯一可复现的端到端测试）
+# 强验证全扫描
 cd updown_rs
 cargo test --lib experiment_008_strong_validation -- --nocapture
+
+# 外部验证（需要 Wikipedia 数据，见 experiments/009-external-validation/scripts/）
+cargo test --lib experiment_009_external_validation -- --nocapture
 ```
