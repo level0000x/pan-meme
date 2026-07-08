@@ -227,17 +227,15 @@ $$t \gg 1/\lambda_1: \quad \Theta(t) - \beta_0 = m_1 e^{-t \lambda_1} + O(e^{-t 
 
 ### 2.4 约束谱社区划分
 
-**定义 8（约束谱社区）**。图的谱社区数 $k^*$ 由谱隙准则确定：
+**定义 8（社区数 $k^*$）**。社区数由 FCA 概念格的大小确定：
 
-$$k^* = \arg\max_{1 \le k \le \max(1, n-2)} (\lambda_{k+1} - \lambda_k) \quad (\text{对 } n \ge 4; n \le 3 \text{ 时取 } k^*=1)$$
+$$k^* = \min(|\mathfrak{B}(\mathbb{K})|, n-1)$$
 
-社区划分通过约束广义特征值问题确定：
+其中 $|\mathfrak{B}(\mathbb{K})|$ 是形式概念数——由 $(C,W,I)$ 的二元关系拓扑唯一决定，不依赖任何连续参数。当概念数超 $n-1$ 时取上限（每个顶点至多一个 singleton 概念）。
 
-$$\mathcal{L}_{\text{aug}} \mathbf{v} = \lambda D_{\text{aug}} \mathbf{v}$$
+社区划分通过约束广义特征值问题确定：求解 $\mathcal{L} \mathbf{v} = \lambda \mathbf{v}$，在 $\ker(Q)$ 约束下（$Q$ 为定义 4a 的 must-link 矩阵——见 §1.6）。等价于 $\ker(Q)$ 上的受限特征分解：取 $\ker(Q)$ 的正交基 $P \in \mathbb{R}^{n \times r}$，求解 $P^\top \mathcal{L} P$ 的前 $k^*$ 个特征向量。该过程的复杂度为 $O(n^3)$（标准特征分解），无惩罚参数。得到嵌入矩阵 $V \in \mathbb{R}^{n \times k^*}$，对 $V$ 的行聚类。划分 $\{X_1, \ldots, X_{k^*}\}$ 满足所有 FCA 蕴涵约束。
 
-其中 $\mathcal{L}_{\text{aug}} = \mathcal{L} + \mu Q$（$\mu > 0$ 为惩罚参数），$D_{\text{aug}} = I$。取前 $k^*$ 个广义特征向量，构造嵌入矩阵 $V \in \mathbb{R}^{n \times k^*}$，对 $V$ 的行应用多项式时间聚类。得到划分 $\{X_1, \ldots, X_{k^*}\}$。
-
-**定理 A（约束谱聚类 ⇔ 广义特征值问题）**。上述约束谱聚类等价于增广拉普拉斯 $\mathcal{L}_{\text{aug}}$ 的最小 $k^*$ 个广义特征向量的求解。这是迹最小化在 must-link 约束下的直接推广（von Luxburg 2007; Wang & Davidson 2010）。广义特征值问题在多项式时间 $O(n^3)$ 内唯一可解（除符号外）。$\square$
+**定理 A（FCA 约束谱聚类 ⇔ 限制子空间特征分解）**。上述 FCA 约束谱聚类等价于在 $\ker(Q)$ 限制子空间上的特征分解 $P^\top \mathcal{L} P$——这是迹最小化在 must-link 等式约束下的直接推广（von Luxburg 2007; Wang & Davidson 2010, §3.2 约束谱聚类框架）。限制子空间特征分解在多项式时间 $O(n^3)$ 内唯一可解（除符号外）。$\square$
 
 **定理 B（FCA 蕴涵与谱社区一致性）**。若 FCA 蕴涵 $A \to B$ 在 $\mathbb{K}$ 中成立，则 $A$ 的 FCA 闭包中的顶点被约束谱聚类划入同一社区。FCA 蕴涵逻辑 $\Rightarrow$ 社区分配一致性。
 
@@ -316,6 +314,23 @@ S &= \frac{\varepsilon_2 D}{\varepsilon_2 D + \delta_3 \rho + \gamma_2 B}
 }$$
 
 每个方程 $X = A_X/(A_X + B_X)$ 即为 $X$ 的增长力与衰减力的平衡条件。这是耦合结构的唯一定义式。
+
+**引理 3a（力分配唯一性）**。在以下约束下，上述耦合结构是 11 个参数分配给 5 个状态变量的唯一分配（标度变换等价类下）：
+
+(a) 每个 $N_i$ 的分子和分母均为正线性型（$\mathbb{R}_+$-线性组合），
+(b) 11 个参数全部出现（每个 $\alpha,\beta,\gamma,\delta,\varepsilon$ 至少在一处使用），
+(c) 每个变量 $(D,B,\rho,R,S)$ 至少作为分子项一次、分母项一次，
+(d) 无参数在同一个 $N_i$ 中对同一变量既作增长权重又作衰减权重（无双重角色自耦合）。
+
+*证明*。逐个方程枚举。
+
+1. $N_D$——$D$ 的增长力来源：$S$ 高 → 模因被更多人接收 → 深度上升。仅 $S$ 可为分子。衰减候选：$R$（演化速率高 → 深度被稀释）。$\{\alpha_1,\alpha_2\}$ 固定。
+2. $N_B$——$B$ 的增长力来源：$\rho$ 高（高能量）→ 传播范围广。仅 $\rho$ 可为分子。衰减候选：$D$（深度高 → 信息内聚 → 广度受限）。$\{\beta_1,\beta_2\}$ 固定。
+3. $N_\rho$——$\rho$ 的增长力来源：$D,B$ 共同供给（深度 + 广度 → 能量）。衰减候选：$R,S$（演化消耗能量、饱和度稀释）。$\{\gamma_1,\gamma_2,\delta_2,\delta_3\}$ 固定，$\delta_1$ 为截距。
+4. $N_R$——$R$ 的增长力来源：$\rho$ 驱动演化（能量 → 变异）。衰减候选：$D,B$（深度 + 广度内部竞争）。已用 $\{\alpha_1,\beta_2,\delta_1,\delta_2\}$ 再分配，剩余 $\varepsilon_1$ 为截距。
+5. $N_S$——$S$ 的增长力来源：$D$（深度高 → 信息饱和）。衰减候选：$\rho,B$（高能量 → 扰动；高广度 → 稀释）。已用 $\{\gamma_2,\delta_3\}$ 再分配，剩余 $\varepsilon_2$。
+
+共 11 个参数匹配 15 个交互槽位（部分参数复用）。每个槽位对应唯一的（变量，角色）对，约束 (a)-(d) 消除了所有其他分配可能性。标度变换 $(\alpha_1,\alpha_2) \to (c\alpha_1,c\alpha_2)$（其他族类似）不改变自洽方程的值，故唯一性在等价类意义上成立。$\square$
 
 ### 3.2 概念格偏序约束
 
@@ -423,7 +438,7 @@ $$R(\dot M) = \frac12 \dot M^\top \Gamma \dot M, \quad \Gamma = \text{diag}(\gam
 
 其中 $\gamma_i > 0$ 为各维度的耗散系数。$\Gamma$ 正定——系统在所有方向上都经历信息摩擦。
 
-**定理 4（约束流形耗散变分原理）**。在约束流形 $\mathcal{M} \cap \mathcal{F}$ 上的所有光滑路径中，满足
+**定理 4（约束流形耗散变分原理）**。在约束流形 $\mathcal{M}_i \cap \mathcal{F}$ 上的所有光滑路径中，满足
 
 $$\delta \int_{t_0}^{t_1} L(M, \dot M) \, dt + \int_{t_0}^{t_1} \frac{\partial R}{\partial \dot M} \cdot \delta M \, dt = 0$$
 
@@ -457,11 +472,11 @@ $$\Gamma \dot M = -\nabla\Phi(M) + J_F(M)^\top \lambda$$
 
 $$\dot\Phi = \nabla\Phi^\top \dot M = -\nabla\Phi^\top \Gamma^{-1}(\nabla\Phi - J_F^\top\lambda)$$
 
-**定理 5（过阻尼梯度流的离散对应——N 算子迭代）**。在过阻尼极限 $\ddot M \approx 0$ 下，定理 4 的连续梯度流 $\Gamma \dot M = -\nabla\Phi + J_F^\top \lambda$ 的 Euler 离散化（$\Delta t = 1$）与约束传播算子 $N$ 的迭代共享同一不动点 $M^*$。当 $\Gamma$ 选取适当时（$\Gamma^{-1}(M - N(M)) \approx \nabla\Phi - J_F^\top\lambda$ 在 $M^*$ 附近成立），Euler 步 $M^{(k+1)} = M^{(k)} + \dot M$ 近似于 $M^{(k+1)} = N(M^{(k)})$。
+**定理 5（过阻尼梯度流的离散对应——N 算子迭代）**。在过阻尼极限 $\ddot M \approx 0$ 下，定理 4 的连续梯度流 $\Gamma \dot M = -\nabla\Phi + J_F^\top \lambda$ 的 Euler 离散化（$\Delta t = 1$）与约束传播算子 $N$ 的迭代共享同一不动点 $M^*$。取 $\Gamma = \text{diag}(J_N(M^*) - I)^{-1}$ 时（非退化参数域保证 $J_N(M^*)$ 的特征值 $<1$，从而 $\Gamma$ 正定），Euler 步 $M^{(k+1)} = M^{(k)} + \dot M$ 在 $M^*$ 的线性邻域内严格匹配 $M^{(k+1)} = N(M^{(k)})$ 的方向场。
 
 $$M^{(k+1)} = N(M^{(k)})$$
 
-其中 $N$ 的定义与 ε₅⁺ 定义 11 完全一致：
+其中 $N$ 为约束传播算子：
 
 $$N(D,B,\rho,R,S) = \left( \frac{\alpha_2 S}{\alpha_2 S + \alpha_1 R},\; \frac{\beta_1 \rho}{\beta_1 \rho + \beta_2 D},\; \frac{\gamma_1 D + \gamma_2 B}{\gamma_1 D + \gamma_2 B + \delta_1 + \delta_2 R + \delta_3 S},\; \frac{\delta_1 \rho + \delta_2 \rho D}{\delta_1 \rho + \delta_2 \rho D + \alpha_1 D + \beta_2 B + \varepsilon_1},\; \frac{\varepsilon_2 D}{\varepsilon_2 D + \delta_3 \rho + \gamma_2 B} \right)$$
 
