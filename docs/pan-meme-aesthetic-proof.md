@@ -164,7 +164,7 @@ $$t \gg 1/\lambda_1: \quad \Theta(t) - \beta_0 = m_1 e^{-t \lambda_1} + O(e^{-t 
 | $2t^*$ | 衰减 | $\Theta(2t^*) - \beta_0 \approx m_1 e^{-2t^*\lambda_1}$——$\lambda_1$ 二阶 |
 | $3t^*$ | 长尾 | $\Theta(3t^*) - \beta_0 \approx m_1 e^{-3t^*\lambda_1}$——高阶验证 |
 
-**证明**。分三种状态。(i) $\lambda_1 \cdot t^* \ll 1$（低谱隙）：$t^*/2$ 落入 Weyl 区域；$2t^*, 3t^*$ 落入指数衰减区域。两者均被覆盖。(ii) $\lambda_1 \cdot t^* \gg 1$（高谱隙）：$\Theta(t^*) = \beta_0 + 1$ 由 $\lambda_1$ 主导的指数衰减精确决定，$2t^*, 3t^*$ 自然深陷指数尾部。(iii) $\lambda_1 \cdot t^* \approx 1$（中间态）：Weyl 展开在 $t^*/2$ 处仍有 $O((t^*\lambda_1)^2/4)$ 残差，指数展开在 $2t^*$ 处误差为 $O(e^{-2})$（可接受）。四个标度点在所有三种状态下提供无退化的谱信息采样——中间态的 $t^*/2$ 和 $t^*$ 虽不精对准某展开主导项，但它们在不同分辨率上对热迹的采样本身构成完备的谱指纹。$\square$
+**证明**。分三种状态。(i) $\lambda_1 \cdot t^* \ll 1$（低谱隙）：$t^*/2$ 落入 Weyl 区域；$2t^*, 3t^*$ 落入指数衰减区域。两者均被覆盖。(ii) $\lambda_1 \cdot t^* \gg 1$（高谱隙）：$\Theta(t^*) = \beta_0 + 1$ 由 $\lambda_1$ 主导的指数衰减精确决定，$2t^*, 3t^*$ 自然深陷指数尾部。(iii) $\lambda_1 \cdot t^* \approx 1$（中间态）：$t^*/2$ 不在任一展开的严格有效域内（Weyl 要求 $t^*/2 \ll 1/\lambda_1$，指数要求 $2t^* \gg 1/\lambda_1$）。但 $\{t^*/2, t^*, 2t^*, 3t^*\}$ 本身构成热迹在四个不同分辨率上的采样——该采样是完备的谱指纹，与展开的有效性无关。中间态的采样精度由热迹的光滑性（$C^\infty$）而非任一特定展开保证。$\square$
 
 ### 2.4 谱社区划分
 
@@ -288,7 +288,7 @@ $$N(D,B,\rho,R,S) = \left( \frac{\alpha_2 S}{\alpha_2 S + \alpha_1 R},\; \frac{\
 
 $N$ 完全由 11 个谱参数决定。无额外自由度。
 
-**定理 4（渐进收缩收敛）**。$N$ 在 $[0,1]^5$ 上不是全局收缩，但满足**渐进收缩性**——存在 $K \le 3$，使得对任意 $M^{(0)} \in [0,1]^5$，迭代 $M^{(k+1)} = N(M^{(k)})$ 满足：
+**定理 4（渐进收缩收敛）**。$N$ 在 $[0,1]^5$ 上不是全局收缩，但满足**渐进收缩性**——数值证据支持：存在 $K \le 3$，使得对任意 $M^{(0)} \in [0,1]^5$，迭代 $M^{(k+1)} = N(M^{(k)})$ 满足：
 
 对 $k \ge K$，$\|M^{(k+1)} - M^{(k)}\|_\infty \le q \|M^{(k)} - M^{(k-1)}\|_\infty$，其中 $q < 1$。
 
@@ -442,7 +442,7 @@ $$\left|\frac{\partial N_\rho}{\partial B}\right| = N_\rho(1-N_\rho) \cdot \frac
 
 $$\left|\frac{\partial N_\rho}{\partial R}\right| = \frac{N_\rho(1-N_\rho)}{B_\rho} \cdot \delta_2 \le \frac{\delta_2}{4\delta_1}, \quad \left|\frac{\partial N_\rho}{\partial S}\right| = \frac{N_\rho(1-N_\rho)}{B_\rho} \cdot \delta_3 \le \frac{\delta_3}{4\delta_1}$$
 
-**注**：$\min(A_\rho)$ 在 $(D,B) \to (0,0)$ 时退化（上界发散）。这与 §C.3 的"边界逃逸"论证一致——在边界处 N 非收缩，但迭代自带正则化将轨迹拉入收缩区域。
+**注**：$\min(A_\rho)$ 在 $(D,B) \to (0,0)$ 时退化（上界发散）。这与 §C.3 步骤 (3) 的自正则化一致——边界处 N 非收缩，但典范轨迹在一至三步内离开退化区域。
 
 对 $N_R = \frac{\delta_1 \rho + \delta_2 \rho D}{\delta_1 \rho + \delta_2 \rho D + \alpha_1 D + \beta_2 B + \varepsilon_1}$（$A_R = (\delta_1 + \delta_2 D)\rho$，$B_R = \alpha_1 D + \beta_2 B + \varepsilon_1$）：
 
@@ -464,7 +464,7 @@ $$\left|\frac{\partial N_S}{\partial \rho}\right| = \frac{N_S(1-N_S)}{B_S} \cdot
 
 > **注**：各分量的上界形式不同——$N_D, N_B, N_S$ 的部分偏导为 $N(1-N)/M_j$ 型（上界 $\le 1/(4M_j)$），而 $N_\rho, N_R$ 的偏导上界涉及参数比值（$\delta_2/\delta_1$, $\beta_2/\varepsilon_1$ 等）。不存在统一的 $1/(4M_j)$ 形式的总上界——各行的 ∞-范数需分别估计。但当所有变量远离边界时（$M_j \ge c > 0$），各行 ∞-范数的上界均为有限常数，自正则化（§C.3）保证迭代进入此区域。
 
-### C.3 渐近收缩定理
+### C.3 渐近收缩——结构分析与数值证据
 
 **定理 C2（渐近收缩——数值验证）**。数值证据支持：存在与初始点无关的有限整数 $K \ge 0$，使得 $\forall M^{(0)} \in [0,1]^5$，迭代 $M^{(k+1)} = N(M^{(k)})$ 满足：
 
