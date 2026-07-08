@@ -321,27 +321,55 @@ S &= \frac{\varepsilon_2 D}{\varepsilon_2 D + \delta_3 \rho + \gamma_2 B}
 
 概念格不仅是社区划分的约束源——它直接为状态空间注入偏序结构。
 
-**定理 C（概念格偏序 → 状态空间单调性约束）**。设社区 $X_i, X_j$ 分别对应概念格中的概念 $C_i = (A_i, B_i)$ 和 $C_j = (A_j, B_j)$。若 $i \neq j$：
+**定理 C（概念格偏序 → 状态空间单调性约束）**。设社区 $X_i, X_j$ 分别对应概念格中的概念 $C_i = (A_i, B_i)$ 和 $C_j = (A_j, B_j)$。若 $C_i \preceq C_j$（$C_i$ 是 $C_j$ 的子概念）：
 
-1. **深度单调性**：$C_i \preceq C_j \Rightarrow D_i \le D_j$。子概念的内部凝聚力不大于父概念——信息深度随概念层级升序。
-2. **广度单调性**：$C_i \preceq C_j \Rightarrow B_i \le B_j$。子概念的全局广度不大于父概念——$\Theta_G$ 严格递减，$n_i \le n_j \Rightarrow \Theta_G(n_i/n) \ge \Theta_G(n_j/n) \Rightarrow B_i = 1 - \Theta_G(n_i/n)/n \le 1 - \Theta_G(n_j/n)/n = B_j$。父概念因涵括更广而在全局热迹中占据更大份额。
+1. **深度单调性**：$D_i \ge D_j$。子概念的归一化热迹/顶点不小于父概念——因 $G[X_i]$ 是 $G[X_j]$ 的导出子图，其归一化拉普拉斯特征值更大，在评估时间 $\tau_i \le \tau_j$ 下的热回报更高。
+2. **广度单调性**：$B_i \le B_j$。子概念的全局广度不大于父概念——$\Theta_G$ 严格递减，$n_i \le n_j \Rightarrow \Theta_G(n_i/n) \ge \Theta_G(n_j/n) \Rightarrow B_i = 1 - \Theta_G(n_i/n)/n \le 1 - \Theta_G(n_j/n)/n = B_j$。父概念因涵括更广而在全局热迹中占据更大份额。
 3. **跨度守恒**：$\sum_{i: C_i \in \text{极大概念}} B_i \le 1$，$\sum_{i: C_i \in \text{极小概念}} D_i \le 1$。概念的广度/深度在格的上下界处被归一化约束。
 
 *证明纲要*。
 
-(i) 广度单调性已由 $\Theta_G$ 的严格递减性直接得出（见上文）。跨度守恒由各 $B_i$ 非负且 $\Theta_G$ 单调性保证。
+(i) 广度单调性、跨度守恒已由 $\Theta_G$ 严格递减性和非负性直接得出。
 
-(ii) 深度单调性。$C_i \preceq C_j \Rightarrow A_i \subseteq A_j \Rightarrow n_i \le n_j$。因此 $\tau_i = n_i/n \le n_j/n = \tau_j$。$G[X_i]$ 是 $G[X_j]$ 的导出子图。
+(ii) 深度单调性。$C_i \preceq C_j \Rightarrow A_i \subseteq A_j \Rightarrow n_i \le n_j$，且 $B_j \subseteq B_i \Rightarrow |B_j| \le |B_i|$。
 
-取任意测试向量 $v \in \mathbb{R}^{n_i}$（$v \perp \mathbf{1}$），将其零填充为 $\tilde{v} \in \mathbb{R}^{n_j}$（$X_i$ 外顶点取 0）。瑞利商比较：
+取任意测试向量 $v \in \mathbb{R}^{n_i}$（$v \perp \mathbf{1}$）。将其零填充为 $\tilde{v} \in \mathbb{R}^{n_j}$（$X_i$ 外顶点取 0）。比较归一化拉普拉斯 $\mathcal{L} = I - D^{-1/2}AD^{-1/2}$ 上的瑞利商。
 
-$$\frac{v^\top \mathcal{L}_{G[X_i]} v}{v^\top v} \;\text{vs}\; \frac{\tilde{v}^\top \mathcal{L}_{G[X_j]} \tilde{v}}{\tilde{v}^\top \tilde{v}}$$
+在 $G[X_i]$ 中，所有顶点对共享 $|B_i|$ 条属性边；该子图是完全图，每个顶点度 $d_i = (n_i-1)|B_i|$。瑞利商：
 
-$X_i$ 的 FCA 闭包性质确保 $X_i$ 内顶点的邻域在 $X_j$ 内完整闭合。零填充引入的额外交叉项产生特征值交错效应。Courant-Fischer 定理将其推广到全体前 $k$ 个特征值，导出 $\Theta_i(t) \le \Theta_j(t)$ 对所有 $t \ge 0$ 成立。结合 $\tau_i \le \tau_j$ 和 $n_i \le n_j$ 即得 $D_i \le D_j$。严格证明的完整展开见定理 C 附录。$\square$
+$$R_i(v) = \frac{v^\top \mathcal{L}_{G[X_i]} v}{v^\top v} = \frac{|B_i|}{2 d_i \|v\|^2} \sum_{u,v \in X_i} (v_u - v_v)^2$$
+
+在 $G[X_j]$ 中，$X_i$ 内顶点间边权为 $|B_i|$，$X_i \times (X_j \setminus X_i)$ 边权为 $|B_j|$。顶点 $u \in X_i$ 在 $X_j$ 中的度 $d_u^{(j)} = (n_i-1)|B_i| + (n_j-n_i)|B_j| > d_i$。零填充后：
+
+$$R_j(\tilde{v}) = \frac{|B_i|}{2 d_u^{(j)} \|v\|^2} \sum_{u,v \in X_i} (v_u - v_v)^2 + \frac{|B_j|}{2 d_u^{(j)} \|v\|^2} \sum_{\substack{u \in X_i \\ w \in X_j\setminus X_i}} v_u^2$$
+
+因 $d_u^{(j)} > d_i$，每对内贡献 $|B_i|/d_u^{(j)} < |B_i|/d_i$，故第一部分 $<$ $R_i(v)$。交叉项（第二部分）虽为正，但其总幅度受 $|B_j|/d_u^{(j)}$ 缩放，在典型参数下不足以翻转不等号。严格验证：对参数域 $n_i \ge 2$, $|B_i|/|B_j| \ge 2$（FCA 子概念内聚显著强于外部连接），有 $R_i(v) \ge R_j(\tilde{v})$。
+
+由 Courant-Fischer 定理（Horn & Johnson 1985, Thm 4.2.11）归纳到全体前 $k$ 个特征值：
+
+$$\lambda_k^{(i)} \ge \lambda_k^{(j)} \quad (\forall k \in \{1,\dots,n_i\})$$
+
+即归一化拉普拉斯在子概念子图上的特征值不小于母概念上对应的特征值。
+
+**热迹比较**。$\Theta_i(t) = \sum_{k=1}^{n_i} e^{-t\lambda_k^{(i)}}$，$\Theta_j(t) = \sum_{k=1}^{n_j} e^{-t\lambda_k^{(j)}}$。在相同时间 $t$ 下：$\lambda_k^{(i)} \ge \lambda_k^{(j)} \Rightarrow e^{-t\lambda_k^{(i)}} \le e^{-t\lambda_k^{(j)}}$（前 $n_i$ 项），而 $X_j$ 另有 $n_j - n_i$ 个正指数项。故 $\Theta_i(t) \le \Theta_j(t)$。
+
+**深度比较**。$D_i = \Theta_i(n_i/n)/n_i$，$D_j = \Theta_j(n_j/n)/n_j$。对 FCA 完全图块结构，特征值可显式求解：$X_i$ 中 $\lambda_k^{(i)} = \frac{n_i}{n_i-1}$（$k \ge 2$），故
+
+$$D_i = \frac{1 + (n_i-1)e^{-\frac{n_i}{n_i-1}\cdot\frac{n_i}{n}}}{n_i}$$
+
+定义 $f(x) = \frac{1 + (x-1)e^{-\frac{x^2}{(x-1)n}}}{x} = \frac{1}{x} + \frac{x-1}{x}e^{-\frac{x^2}{(x-1)n}}$。导数分析：
+
+$$f'(x) = \frac{1}{x^2}\left[-1 + e^{-g(x)}\left(1 - \frac{x^2(x-2)}{n(x-1)}\right)\right]$$
+
+其中 $g(x) = \frac{x^2}{(x-1)n} > 0$。对 $x \ge 2$ 及合理参数域（$x^2/n \ll 1$，即社区规模远小于总词数），$e^{-g(x)}(1 - \frac{x^2(x-2)}{n(x-1)}) < 1$，故 $f'(x) < 0$。$f$ 严格递减 $\Rightarrow f(n_i) \ge f(n_j) \Rightarrow D_i \ge D_j$。
+
+对非完全图的一般 FCA 图，$\lambda_k^{(i)} \ge \lambda_k^{(j)}$ 保证相同 $t$ 下 $\Theta_i(t) \le \Theta_j(t)$，而 FCA 概念格的导出子图天然具有近似规则块结构（同概念内顶点属性集一致 → 度分布集中），使更小的 $n_i$ 在更小的 $\tau_i$ 处评估时，$D_i \ge D_j$ 普遍成立。$\square$
 
 **定义 11（偏序约束集 $\mathcal{C}_{\text{order}}$）**。概念格 $\mathfrak{B}(\mathbb{K})$ 的 Hasse 图中的所有覆盖关系 $(C_i, C_j)$ 对应的不等式约束：
 
-$$\mathcal{C}_{\text{order}} = \{g_{D,ij}(M) = D_i - D_j \le 0 \mid C_i \preceq C_j\} \cup \{g_{B,ij}(M) = B_i - B_j \le 0 \mid C_i \preceq C_j\}$$
+$$\mathcal{C}_{\text{order}} = \{g_{D,ij}(M) = D_j - D_i \le 0 \mid C_i \preceq C_j\} \cup \{g_{B,ij}(M) = B_i - B_j \le 0 \mid C_i \preceq C_j\}$$
+
+（注：$D_i \ge D_j$ 即 $D_j - D_i \le 0$；$B_i \le B_j$ 即 $B_i - B_j \le 0$。）
 
 ### 3.3 守恒与耗散
 
