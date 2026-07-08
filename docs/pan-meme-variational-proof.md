@@ -157,7 +157,7 @@ $$Q_{ij} = \begin{cases}
 0 & \text{否则}
 \end{cases}$$
 
-$Q$ 的构造是确定性的——由 $I$ 唯一决定，无自由参数。$\square$
+$Q$ 的构造是确定性的——由 $I$ 唯一决定，无自由参数。
 
 ### 1.7 概念格的双重角色（枢纽节点）
 
@@ -235,7 +235,7 @@ $$k^* = \min(|\mathfrak{B}(\mathbb{K})|, n-1)$$
 
 其中 $|\mathfrak{B}(\mathbb{K})|$ 是形式概念数——由 $(C,W,I)$ 的二元关系拓扑唯一决定，不依赖任何连续参数。当概念数超 $n-1$ 时取上限（每个顶点至多一个 singleton 概念）。
 
-社区划分通过约束广义特征值问题确定：求解 $\mathcal{L} \mathbf{v} = \lambda \mathbf{v}$，在 $\ker(Q)$ 约束下（$Q$ 为定义 4a 的 must-link 矩阵——见 §1.6）。等价于 $\ker(Q)$ 上的受限特征分解：取 $\ker(Q)$ 的正交基 $P \in \mathbb{R}^{n \times r}$（$r = \dim\ker(Q)$ ——由 FCA 蕴涵决定，$1 \le r \le n$），求解 $P^\top \mathcal{L} P$ 的前 $k^*$ 个特征向量（需 $r = \dim\ker(Q) \ge k^*$——FCA 蕴涵通常使 $r$ 远大于概念数，此条件在非平凡词表上自然满足）。该过程的复杂度为 $O(n^3)$（标准特征分解），无惩罚参数。得到嵌入矩阵 $V \in \mathbb{R}^{n \times k^*}$，对 $V$ 的行聚类。划分 $\{X_1, \ldots, X_{k^*}\}$ 满足所有 FCA 蕴涵约束。
+社区划分通过约束广义特征值问题确定：求解 $\mathcal{L} \mathbf{v} = \lambda \mathbf{v}$，在 $\ker(Q)$ 约束下（$Q$ 为定义 4a 的 must-link 矩阵——见 §1.6）。等价于 $\ker(Q)$ 上的受限特征分解：取 $\ker(Q)$ 的正交基 $P \in \mathbb{R}^{n \times r}$（$r = \dim\ker(Q)$ ——由 FCA 蕴涵决定，$1 \le r \le n$），求解 $P^\top \mathcal{L} P$ 的前 $k^*$ 个特征向量（需 $r = \dim\ker(Q) \ge k^*$——FCA 蕴涵通常使 $r$ 远大于概念数，此条件在非平凡词表上自然满足）。该过程的复杂度为 $O(n^3)$（标准特征分解），无惩罚参数。得到嵌入矩阵 $V \in \mathbb{R}^{n \times k^*}$，对 $V$ 的行执行最大分量分配（argmax on rows）：顶点 $u$ 归入社区 $X_i$ 当且仅当 $i = \arg\max_j |V_{uj}|$。该分配是确定性的——$O(nk^*)$ 时间，无迭代、无随机性、非 NP-hard。划分 $\{X_1, \ldots, X_{k^*}\}$ 满足所有 FCA 蕴涵约束。
 
 **定理 A（FCA 约束谱聚类 ⇔ 限制子空间特征分解）**。上述 FCA 约束谱聚类等价于在 $\ker(Q)$ 限制子空间上的特征分解 $P^\top \mathcal{L} P$——这是迹最小化在 must-link 等式约束下的直接推广（von Luxburg 2007; Wang & Davidson 2010, §3.2 约束谱聚类框架）。限制子空间特征分解在多项式时间 $O(n^3)$ 内唯一可解（除符号外）。$\square$
 
