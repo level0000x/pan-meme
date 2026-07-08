@@ -444,6 +444,11 @@ pub fn classify(trajectory: &[StateSnapshot], _reason: &TerminationReason) -> Ar
         return Archetype::StableCore;
     }
 
+    // Resilient: S 已接近收敛，但 D 还没跟上 (S 领先 D)
+    if s_final > 0.85 && s_min > 0.7 && d_final < 0.85 && d_final > 0.3 {
+        return Archetype::Resilient;
+    }
+
     // 振荡型
     if oscillation_count >= 8 {
         return Archetype::Oscillatory;
@@ -458,10 +463,16 @@ pub fn classify(trajectory: &[StateSnapshot], _reason: &TerminationReason) -> Ar
         return Archetype::Burst;
     }
 
+    // 在振荡和 Burst 检查之后，添加 Source 检查（B 主导的扩张型）
+    // Source: B 显著增长且最终占主导 (B>0.7, D<0.3, R still active)
+    if b_final > 0.7 && d_final < 0.3 && r_final > 0.1 {
+        return Archetype::Source;
+    }
+
     // 从高 R 初值衰减但 D 和 S 还没到收敛态 → 检查衰减方向
     if r_decay > 0.3 && r_init > 0.5 {
-        // D 和 S 在增长 → 收敛中，但还没到 near_converged
-        if d_growth > 0.2 && s_final > s_init + 0.3 {
+        // D 和 S 在增长且接近收敛 → StableCore
+        if d_growth > 0.2 && s_final > s_init + 0.3 && d_final > 0.65 && s_final > 0.7 {
             return Archetype::StableCore;
         }
         // D 在衰减 → Decay
@@ -472,6 +483,11 @@ pub fn classify(trajectory: &[StateSnapshot], _reason: &TerminationReason) -> Ar
         if r_final > 0.05 {
             return Archetype::Transient;
         }
+    }
+
+    // 收敛中兜底: R 已极低但 D 还没到 0.85，S 很高 → 正在收敛
+    if r_final < 0.05 && s_final > 0.85 && d_growth > 0.2 {
+        return Archetype::StableCore;
     }
 
     // Decay: D 和 B 都在衰减

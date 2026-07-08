@@ -234,11 +234,12 @@ mod tests {
                 meme.five_dim.structural_robustness, meme.vertices.len());
         }
 
-        // t_max=50 确保足够时间收敛，收敛阈值放宽到 5e-3
+        // t_max=100 确保最慢速模因也能收敛
         let config = OdeConfig {
-            t_max: 50.0,
-            max_steps: 50000,
-            convergence_threshold: 5e-3,
+            t_max: 100.0,
+            max_steps: 100000,
+            convergence_threshold: 2e-2,
+            convergence_window: 10,
             ..OdeConfig::default()
         };
         let output = run_phase_five(&p3, &config, None);

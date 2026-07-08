@@ -63,47 +63,49 @@ impl DynamicsParams {
         let nv = n_vertices as f64;
 
         // 多维度参数差异化: 社区大小是主要区分维度
-        // 策略: 大社区所有参数都大 → 快速收敛 → Stone/StableCore
-        //       小社区所有参数都小 → 慢速收敛 → 仍在演化 → Burst/Transient/Decay
-        //       中间社区 → 中等收敛 → Resilient/Source
-        let size_factor = (nv / 600.0).clamp(0.0, 1.0); // 0=极小, 1=极大
+        // 策略: 使用 size_factor³ 非线性映射，放大极端差异
+        //       大社区(sf³≈0.9): 快速收敛 → Stone/StableCore
+        //       小社区(sf³≈0.02): 慢速收敛/不收敛 → Transient/Burst/Decay
+        //       α₂ 和 ε₁ 使用不同映射打破正反馈耦合
+        let size_factor = (nv / 600.0).clamp(0.0, 1.0);
+        let sf3 = size_factor.powi(3); // 立方映射，放大极端差异
         let d = state.intrinsic_degree.clamp(0.0, 1.0);
         let b = state.binding_degree.clamp(0.0, 1.0);
         let rho = state.energy_density.clamp(0.0, 1.0);
         let r = state.evolution_rate.clamp(0.0, 1.0);
         let s = state.structural_robustness.clamp(0.0, 1.0);
 
-        // ── α₁: R→D 稀释 — 高 R 模因更容易被稀释 ──
+        // ── α₁: R→D 稀释 ──
         let alpha_1 = 0.02 + 0.3 * r;
 
-        // ── α₂: S→D 深化 — 大社区深化快，小社区深化慢 ──
-        let alpha_2 = 0.1 + 0.85 * size_factor + 0.05 * s * (1.0 - d);
+        // ── α₂: S→D 深化 — 立方映射，极端差异化 ──
+        let alpha_2 = 0.03 + 0.94 * sf3 + 0.03 * s * (1.0 - d);
 
-        // ── β₁: R→B 扩张 — 中等 R + 低 B 的模因扩张最快 ──
-        let beta_1 = 0.1 + 0.7 * r * (1.0 - b);
+        // ── β₁: R→B 扩张 ──
+        let beta_1 = 0.05 + 0.7 * r * (1.0 - b);
 
-        // ── β₂: D→B 抑制 — 高 D 模因更易被抑制 ──
+        // ── β₂: D→B 抑制 ──
         let beta_2 = 0.05 + 0.5 * d;
 
-        // ── γ₁: R→ρ 耗散 — 高 R + 高 ρ 的模因耗散最快 ──
+        // ── γ₁: R→ρ 耗散 ──
         let gamma_1 = 0.05 + 0.4 * r * rho;
 
-        // ── γ₂: 外部→ρ 注入 — 低 ρ 模因吸收外部能量多 ──
+        // ── γ₂: 外部→ρ 注入 ──
         let gamma_2 = 0.3 + 0.5 * (1.0 - rho);
 
-        // ── δ₁: 核心驱动力 — ρ·B 乘积决定 ──
-        let delta_1 = 0.1 + 2.0 * rho * b;
+        // ── δ₁: 核心驱动力 — 大社区驱动力更强 ──
+        let delta_1 = 0.03 + 2.0 * rho * b * (0.1 + 0.9 * size_factor);
 
-        // ── δ₂: 深度诅咒 — 高 D 模因诅咒深 ──
+        // ── δ₂: 深度诅咒 ──
         let delta_2 = 0.05 + 0.4 * d;
 
-        // ── δ₃: 自发衰退 — 大社区衰减快（结构复杂，衰减通道多）──
-        let delta_3 = 0.1 + 0.7 * size_factor;
+        // ── δ₃: 自发衰退 — 立方映射，极端差异化（最关键参数）──
+        let delta_3 = 0.08 + 0.89 * sf3;
 
-        // ── ε₁: D→S 奠基 — 大社区奠基快，小社区奠基慢 ──
-        let epsilon_1 = 0.1 + 0.85 * size_factor + 0.05 * d * (1.0 - s);
+        // ── ε₁: D→S 奠基 — 线性映射（比 α₂ 温和，打破 α₂-ε₁ 正反馈耦合）──
+        let epsilon_1 = 0.05 + 0.90 * size_factor + 0.05 * d * (1.0 - s);
 
-        // ── ε₂: Φ_R(R)→S 消耗 — 高 R 模因消耗快 ──
+        // ── ε₂: Φ_R(R)→S 消耗 ──
         let epsilon_2 = 0.05 + 0.4 * r;
 
         DynamicsParams {
