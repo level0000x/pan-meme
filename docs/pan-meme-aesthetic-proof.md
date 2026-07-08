@@ -52,9 +52,9 @@ $$I = \{(c, w) \in C \times W \mid c \in \text{chars}(w)\}$$
 
 这是 FCA 的标准起点——对象集合 $W$，属性集合 $C$，关联关系 $I$ = "字符 $c$ 出现在词 $w$ 中"。
 
-### 1.2 衍生算子
+### 1.2 ↑ 和 ↓ 算子
 
-**定义 3（↑↓ 算子）**。对 $A \subseteq C$ 和 $B \subseteq W$：
+**定义 3（↑ 和 ↓ 算子）**。对 $A \subseteq C$ 和 $B \subseteq W$：
 
 $$\begin{aligned}
 A^\uparrow &= \{w \in W \mid \forall c \in A: (c, w) \in I\} \quad &\text{（共同上域）} \\
@@ -170,11 +170,11 @@ $$t \gg 1/\lambda_1: \quad \Theta(t) - \beta_0 = m_1 e^{-t \lambda_1} + O(e^{-t 
 
 **定义 8（谱社区）**。图的谱社区数 $k^*$ 和划分由下述过程确定：
 
-$$k^* = \arg\max_{1 \le k \le \max(1, n-2)} (\lambda_{k+1} - \lambda_k)$$
+$$k^* = \arg\max_{1 \le k \le \max(1, n-2)} (\lambda_{k+1} - \lambda_k) \quad (\text{对 } n \ge 4; n \le 3 \text{ 时取 } k^*=1)$$
 
 取 $U_{:, 1:k^*}$（前 $k^*$ 个非零特征向量），逐行归一化 → $\mathbb{R}^{k^*}$ 中的 $n$ 个点 → 对这些点求解 $k$-means 的**全局最优**（多次随机初始化取最小 SSE）。得到划分 $\{X_1, \ldots, X_{k^*}\}$。
 
-**注**：$k^*=1$ 表示全图无显著分块结构（全图为一个社区），$k^* \approx n$ 表示图高度碎片化。退化情形：(a) 若 $n \le 3$（argmax 定义域退化，无足够特征值计算间隙），固定 $k^* = 1$，全图为一个社区。(b) 若最大谱隙不唯一（等间隔特征值），取最小的 $k$。
+**注**：$k^*=1$ 表示全图无显著分块结构（全图为一个社区），$k^* \approx n$ 表示图高度碎片化。若最大谱隙不唯一（等间隔特征值），取最小的 $k$。
 
 ### 2.5 五维状态
 
