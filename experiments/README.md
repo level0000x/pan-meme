@@ -15,6 +15,7 @@
 | 006 | [弱预测验证](006-weak-predictive/) | — | 固定理论默认参数跨四领域运行，检验参数是否从理论中来而非数据过拟合 |
 | 007 | [原型多样性验证](007-archetype-diversity/) | ✅ 完成 | 通过 2-Phase Louvain 和轨迹分类器消除原型单一问题 |
 | 008 | **[强验证全扫描](008-strong-validation/)** | ✅ PASS | 4 领域 × 3 分辨率，收敛率 100%，原型 3-4 种，满足强验证标准 |
+| 009 | **[真实世界历时数据验证](009-external-validation/)** | 📋 方案设计 | 外部验证——Wikipedia 月浏览量 vs ODE 轨迹相关性检验（H₄） |
 
 ## 结果汇总
 
@@ -54,7 +55,12 @@ experiments/
 ├── 005-ablation/                    # 消融实验
 ├── 006-weak-predictive/             # 弱预测验证
 ├── 007-archetype-diversity/         # 原型多样性
-└── 008-strong-validation/           # 强验证全扫描
+├── 008-strong-validation/           # 强验证全扫描
+└── 009-external-validation/          # 真实世界历时数据验证（方案设计）
+    ├── README.md                      #   实验方案
+    ├── scripts/                       #   数据采集脚本
+    ├── data/                          #   原始数据（待采集）
+    └── results/                       #   结果（待运行）
 ```
 
 ## 运行
