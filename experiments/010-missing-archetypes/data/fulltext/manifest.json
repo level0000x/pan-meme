@@ -1,0 +1,54 @@
+{
+  "n_concepts": 40,
+  "total_chars": 1871956,
+  "archetypes": {
+    "Decay": {
+      "Adobe_Flash": 50787,
+      "MySpace": 0,
+      "Internet_Explorer": 34571,
+      "BlackBerry": 51509,
+      "Nokia": 54134,
+      "Kodak": 64166,
+      "Blockbuster_LLC": 0,
+      "Yahoo!": 0,
+      "AOL": 49003,
+      "Xerox": 32556
+    },
+    "Oscillatory": {
+      "Season": 32615,
+      "Monsoon": 22131,
+      "Business_cycle": 42018,
+      "Solar_cycle": 35762,
+      "Tide": 0,
+      "El_Niño": 0,
+      "Circadian_rhythm": 44322,
+      "Menstrual_cycle": 24287,
+      "Cicada": 30691,
+      "Ice_age": 42396
+    },
+    "Resilient": {
+      "Evolution": 69693,
+      "Democracy": 82158,
+      "Rome": 83525,
+      "Christianity": 100832,
+      "Buddhism": 93635,
+      "Jazz": 99256,
+      "Earth": 58364,
+      "Human": 62415,
+      "Philosophy": 43049,
+      "Mathematics": 56598
+    },
+    "Sink": {
+      "Black_hole": 75982,
+      "Library_of_Alexandria": 50027,
+      "Internet_Archive": 49491,
+      "Vatican_Secret_Archives": 0,
+      "United_Nations": 61108,
+      "CIA": 0,
+      "Database": 58703,
+      "Internet": 53736,
+      "Wikipedia": 91614,
+      "Google": 70822
+    }
+  }
+}

@@ -15,7 +15,8 @@
 | 006 | [弱预测验证](006-weak-predictive/) | — | 固定理论默认参数跨四领域运行，检验参数是否从理论中来而非数据过拟合 |
 | 007 | [原型多样性验证](007-archetype-diversity/) | ✅ 完成 | 通过 2-Phase Louvain 和轨迹分类器消除原型单一问题 |
 | 008 | **[强验证全扫描](008-strong-validation/)** | ✅ PASS | 4 领域 × 3 分辨率，收敛率 100%，原型 3-4 种，满足强验证标准 |
-| 009 | **[真实世界历时数据验证](009-external-validation/)** | ✅ PASS | 外部验证——42 个 Wikipedia 概念，月浏览量 vs ODE 轨迹，|r̄|=0.258，90% 显著（H₄） |
+| 009 | **[真实世界历时数据验证](009-external-validation/)** | ✅ PASS | 外部验证——42 个 Wikipedia 概念，月浏览量 vs ODE 轨迹，\|r̄\|=0.258，90% 显著（H₄） |
+| 010 | **[缺失原型补全](010-missing-archetypes/)** | ✅ 完成 | 33 篇 Wikipedia 全文，187 万字，H₅ 证伪——数据规模不是限制因素 |
 
 ## 结果汇总
 
@@ -51,6 +52,7 @@
 - Decay / Resilient / Oscillatory / Sink 四种原型尚未在实验中观测到，需要更大规模输入数据
 - 实验 000-006 的状态需要补录（部分实验撰写于早期版本，需重新跑验）
 - 实验 009 外部验证中，负相关概念（18/42）的动力学含义需进一步分析
+- 实验 010 确认缺失原型需 v4.4 动力学重构（非数据问题），见 010 报告中的详细修复方案
 
 ## 目录结构
 
@@ -67,10 +69,13 @@ experiments/
 ├── 006-weak-predictive/             # 弱预测验证
 ├── 007-archetype-diversity/         # 原型多样性
 ├── 008-strong-validation/           # 强验证全扫描
-└── 009-external-validation/          # 真实世界历时数据验证（✅ PASS）
+├── 009-external-validation/          # 真实世界历时数据验证（✅ PASS）
     ├── README.md                      #   实验方案与结果
     ├── scripts/                       #   数据采集脚本
     └── data/                          #   42 个概念词 × 页面摘要 + 浏览量
+└── 010-missing-archetypes/          # 缺失原型补全（✅ 完成）
+    ├── README.md                      #   实验方案与结果（H₅ 证伪分析）
+    └── data/fulltext/                 #   33 篇 Wikipedia 全文（187 万字）
 ```
 
 ## 运行
@@ -82,4 +87,7 @@ cargo test --lib experiment_008_strong_validation -- --nocapture
 
 # 外部验证（需要 Wikipedia 数据，见 experiments/009-external-validation/scripts/）
 cargo test --lib experiment_009_external_validation -- --nocapture
+
+# 缺失原型补全（33 篇 Wikipedia 全文，预计 ~13 分钟）
+cargo test --lib experiment_010_missing_archetypes -- --nocapture
 ```

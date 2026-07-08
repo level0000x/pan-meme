@@ -544,4 +544,133 @@ mod tests {
             if h4_ok { "✓ PASS" } else { "✗ FAIL" });
         assert!(h4_ok, "H₄ 外部预测假设不成立");
     }
+
+    #[test]
+    fn experiment_010_missing_archetypes() {
+        // 实验 010: 缺失原型补全 — 使用 Wikipedia 全文数据
+        // 目标: 观测 Decay, Oscillatory, Resilient, Sink 四种原型
+        let data_dir = "../experiments/010-missing-archetypes/data/fulltext";
+
+        println!("\n╔══════════════════════════════════════════════════════════════╗");
+        println!("║  实验 010: 缺失原型补全 — Wikipedia 全文 (γ=2.0, t=25)        ║");
+        println!("╚══════════════════════════════════════════════════════════════╝");
+
+        #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
+        enum Target { Decay, Oscillatory, Resilient, Sink }
+
+        // 按目标原型分组的文件列表
+        let targets: &[(Target, &[&str])] = &[
+            (Target::Decay, &[
+                "Adobe_Flash", "Internet_Explorer", "BlackBerry",
+                "Nokia", "Kodak", "AOL", "Xerox",
+            ]),
+            (Target::Oscillatory, &[
+                "Season", "Monsoon", "Business_cycle", "Solar_cycle",
+                "Circadian_rhythm", "Menstrual_cycle", "Cicada", "Ice_age",
+            ]),
+            (Target::Resilient, &[
+                "Evolution", "Democracy", "Rome", "Christianity",
+                "Buddhism", "Jazz", "Earth", "Human", "Philosophy", "Mathematics",
+            ]),
+            (Target::Sink, &[
+                "Black_hole", "Library_of_Alexandria", "Internet_Archive",
+                "United_Nations", "Database", "Internet", "Wikipedia", "Google",
+            ]),
+        ];
+
+        // 汇总: (目标原型, 概念名, 观测到的原型, 社区数)
+        let mut all_results: Vec<(Target, String, Vec<String>, usize)> = Vec::new();
+        let mut total_processed = 0usize;
+
+        for &(target, filenames) in targets {
+            println!("\n  ── {:?} ({}) ──", target, filenames.len());
+            for &fname in filenames {
+                let path = format!("{}/{}.txt", data_dir, fname);
+                let text = match std::fs::read_to_string(&path) {
+                    Ok(t) if t.len() > 500 => t,
+                    _ => { println!("    ✗ {} (无文件或太短)", fname); continue; }
+                };
+                let words = crate::io::tokenizer::extract_ngrams(&text);
+                if words.len() < 20 { println!("    ✗ {} (词元<20)", fname); continue; }
+                let p1 = crate::pipeline::phase1_emergence::run_phase_one(words, 100);
+                if p1.s.vertices.is_empty() { println!("    ✗ {} (空图)", fname); continue; }
+                let p2 = crate::pipeline::phase2_encoding::run_phase_two(&p1);
+                let p3 = crate::pipeline::phase3_decomposition::run_phase_three(&p2, 2.0);
+                if p3.memes.is_empty() { println!("    ✗ {} (无社区)", fname); continue; }
+
+                // 多样性: t=25
+                let config_div = OdeConfig {
+                    t_max: 25.0, max_steps: 25000,
+                    convergence_threshold: 5e-3, ..OdeConfig::default()
+                };
+                let out_div = run_phase_five(&p3, &config_div, None);
+
+                let mut archs: Vec<String> = Vec::new();
+                let mut arch_count = std::collections::HashMap::new();
+                for evo in &out_div.evolutions {
+                    let a = format!("{:?}", evo.archetype);
+                    *arch_count.entry(a.clone()).or_insert(0) += 1;
+                    archs.push(a);
+                }
+
+                total_processed += 1;
+                let unique: Vec<String> = arch_count.keys().cloned().collect();
+                println!("    {} ({}字, {}社区): {:?}",
+                    fname, text.len(), p3.memes.len(), arch_count);
+                all_results.push((target, fname.to_string(), unique, p3.memes.len()));
+            }
+        }
+
+        // 汇总表
+        println!("\n╔══════════════════════════════════════════════════════════════════╗");
+        println!("║  汇总: 原型分布                                                 ║");
+        println!("╠══════════════════════════╤═══════════╤══════════════════════════╣");
+
+        let mut global_archs = std::collections::HashMap::new();
+        for (_target, _, archs, _) in &all_results {
+            for a in archs {
+                *global_archs.entry(a.clone()).or_insert(0) += 1;
+            }
+        }
+        let mut sorted: Vec<_> = global_archs.iter().collect();
+        sorted.sort_by_key(|(_, c)| -**c);
+        for (arch, count) in &sorted {
+            println!("║ {:<24} │ {:>9} │                          ║", arch, count);
+        }
+        println!("╚══════════════════════════╧═══════════╧══════════════════════════╝");
+
+        // 按目标分组统计
+        let mut target_archs: std::collections::HashMap<Target, std::collections::HashMap<String, usize>> = std::collections::HashMap::new();
+        for (target, _, archs, _) in &all_results {
+            let entry = target_archs.entry(*target).or_default();
+            for a in archs {
+                *entry.entry(a.clone()).or_insert(0) += 1;
+            }
+        }
+
+        // 目标列表: 期望至少在部分条目中出现
+        let desired = [("Decay", Target::Decay), ("Oscillatory", Target::Oscillatory),
+                       ("Resilient", Target::Resilient), ("Sink", Target::Sink)];
+
+        println!("\n╔══════════════════════════════════════════════════════════════════╗");
+        println!("║  判定: 缺失原型是否出现？                                        ║");
+        println!("╠══════════════════════════════════════════════════════════════════╣");
+        let mut found_count = 0;
+        for (name, target) in &desired {
+            let ta = target_archs.get(target);
+            let appears = ta.map(|m| m.contains_key(*name)).unwrap_or(false);
+            let count = ta.and_then(|m| m.get(*name)).copied().unwrap_or(0);
+            if appears { found_count += 1; }
+            println!("║  {:>12} 目标: {:?} → {} (观测 {} 次)",
+                name, target, if appears { "✓ 出现" } else { "✗ 未出现" }, count);
+        }
+        println!("╚══════════════════════════════════════════════════════════════════╝");
+
+        println!("\n  处理 {} 个概念，{} 个社区", total_processed,
+            all_results.iter().map(|(_, _, _, n)| n).sum::<usize>());
+        println!("  缺失原型出现: {}/4", found_count);
+
+        // 不强断言（各种原型可能需要更精确的数据构造），但报告结果
+        assert!(total_processed >= 20, "至少应处理 20 个概念");
+    }
 }

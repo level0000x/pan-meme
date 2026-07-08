@@ -1,0 +1,329 @@
+The Internet Archive is an American non-profit library founded in 1996 by Brewster Kahle that runs a digital library website, archive.org. It provides free access to collections of digitized media including websites, software applications, music, audiovisual, and print materials. The Archive also advocates a free and open Internet. Its mission is committing to provide "universal access to all knowledge".
+The Internet Archive allows the public to upload and download digital material to its data cluster, but the bulk of its data is collected automatically by its web crawlers, which work to preserve as much of the public web as possible. The Wayback Machine, its web archive, contains more than 1 trillion web captures. The Archive also oversees numerous book digitization projects, collectively one of the world's largest book digitization efforts. The archive is used frequently by journalists and Wikipedia editors.
+
+
+== History ==
+
+Brewster Kahle founded the Archive in May 1996, around the same time that he began the for-profit web crawling company Alexa Internet. The first and oldest page ever archived was a December 1996 edition of USA Today. By October of that year, the Internet Archive had begun to archive and preserve the World Wide Web in large amounts. The archived content became more easily available to the general public in 2001, through the Wayback Machine.
+In late 1999, the Archive expanded its collections beyond the web archive, beginning with the Prelinger Archives. Now, the Internet Archive includes texts, audio, moving images, and software. It hosts a number of other projects: the NASA Images Archive, the contract crawling service Archive-It, and the wiki-editable library catalog and book information site Open Library. Soon after that, the Archive began working to provide specialized services relating to the information access needs of the print-disabled; publicly accessible books were made available in a protected Digital Accessible Information System (DAISY) format.
+In 2004, the Internet Archive Europe was founded in the Netherlands.
+In August 2012, the Archive began adding BitTorrent to its file download options.
+In November 2016, Kahle announced that the Internet Archive was building the Internet Archive of Canada, a copy of the Archive to be based somewhere in Canada. The announcement received widespread coverage due to the implication that the decision to build a backup archive in a foreign country was because of the upcoming presidency of Donald Trump. Beginning in 2017, OCLC and the Internet Archive have collaborated to make the Archive's records of digitized books available in WorldCat.
+Since 2018, the Internet Archive visual arts residency has helped to connect digital history with the arts and create something for future generations to appreciate online or off. Previous artists in residence include Taravat Talepasand and Jenny Odell.
+The Internet Archive acquires most materials from donations, such as hundreds of thousands of 78 rpm discs from Boston Public Library in 2017, a donation of 250,000 books from Trent University in 2018, and the entire collection of Marygrove College's library after it closed in 2020. All material is then digitized and retained in digital storage, while a digital copy is returned to the original holder and the Internet Archive's copy, if not in the public domain, is lent to patrons worldwide one at a time under the controlled digital lending (CDL) theory of the first-sale doctrine.
+On June 1, 2020, four large publishing houses – Hachette Book Group, Penguin Random House, HarperCollins, and John Wiley – filed a lawsuit against the Internet Archive before the United States District Court for the Southern District of New York, claiming that the Internet Archive's practice of controlled digital lending constituted copyright infringement. On March 25, 2023, the court found in favor of the publishers. The negotiated judgment of August 11, 2023, barred the Internet Archive from digitally lending books for which electronic copies are on sale.
+Also on August 11, 2023, the music industry giants Universal Music Group, Sony Music and Concord (together with their respective labels Capitol Records, Arista Records and CMGI Recorded Music Assets) sued the Internet Archive before the same United States District Court for the Southern District of New York over the Internet Archive's Great 78 Project for $621 million in damages from alleged copyright infringement. The lawsuit was settled in September 2025.
+In September 2024, Google and the Internet Archive announced a collaboration where links to the Wayback Machine would be included in the 'more about this page' menu in Google Search. This collaboration effectively replaced Google's own Google Cache service that it had retired earlier that year. On July 24, 2025, Internet Archive was designated as a Federal Depository Library by the U.S. Senate, allowing it to store public access government records. It opened a new headquarters for its European branch on 19 September 2025.
+On October 22, 2025, Internet Archive held an event in San Francisco to celebrate the first trillion web pages archived in Wayback Machine, a number that was described as a civilization-scale milestone.
+
+
+=== 2024 cyberattacks ===
+During the week of May 27, 2024, the Internet Archive suffered a series of distributed denial of service (DDoS) attacks that made its services unavailable intermittently, sometimes for hours at a time, over a period of several days. The attack was claimed on May 28 by a hacker group called SN_BLACKMETA, with possible links to Anonymous Sudan. The incident drew a comparison with the 2023 British Library cyberattack, which affected the UK Web Archive.
+
+Beginning October 9, 2024, the Internet Archive's team, including archivist Jason Scott and security researcher Scott Helme, confirmed DDoS attacks, site defacement, and a data breach. The purported hacktivist group SN_BLACKMETA again claimed responsibility. A pop-up on the defaced site claimed that there was a "catastrophic" security breach, stating "Have you ever felt like the Internet Archive runs on sticks and is constantly on the verge of suffering a catastrophic security breach? It just happened. See 31 million of you on HIBP!" It was reported that about 31 million user accounts were affected, and compromised in a file called "ia_users.sql", dated September 28, 2024. The attackers stole users' email addresses and Bcrypt-hashed passwords.
+On October 11, Kahle said that the data is safe, and will bring the service back to normal "in days, not weeks". On October 13, the Wayback Machine was restored in a read-only format, while archiving web pages was temporarily disabled. On October 15, 2024, the website was still mostly offline for "prioritizing keeping data safe at the expense of service availability".
+On October 20, threat actors stole unrotated API tokens and breached Internet Archive on its Zendesk email support platform; they also claimed responsibility for the other breaches yet stated that SN_BLACKMETA was behind just the DDoS attacks. Having been told that threat actors (behind other breaches than SN_BLACKMETA's DDoS attacks) leaked some stolen data to others in the data-trafficking community, Bleeping Computer posited that said threat actors breached the "well-known and extremely popular" Internet Archive not to extort money but to "gain cyber street cred", thus "increasing their reputation".
+On October 21, Internet Archive went back online in a read-only manner. On October 22, all Internet Archive services temporarily went offline again. By October 25, service was fully restored.
+
+
+== Operations ==
+
+The Archive is a 501(c)(3) nonprofit operating in the United States. In 2019, it had an annual budget of $37 million, derived from revenue from its Web crawling services, various partnerships, grants, donations, and the Kahle-Austin Foundation. The Internet Archive also manages periodic funding campaigns. For instance, a December 2019 campaign had a goal of reaching $6 million in donations. It uses Ubuntu as its choice of operating system for the website servers.
+
+The Archive is headquartered in San Francisco, California. From 1996 to 2009, its headquarters were in the Presidio of San Francisco, a former U.S. military base. Since 2009, its headquarters have been at 300 Funston Avenue in San Francisco, a former Christian Science Church. At one time, most of its staff worked in its book-scanning centers; as of 2019, scanning is performed by 100 paid operators worldwide. The Archive also has data centers in three Californian cities: San Francisco, Redwood City, and Richmond. To reduce the risk of data loss, the Archive creates copies of parts of its collection at more distant locations, including the Bibliotheca Alexandrina in Egypt and a facility in Amsterdam.
+As of 2025, it is reported that Internet Archive operates six data centers, mainly in California, with smaller ones in other U.S. states, Canada and Europe. They have controlled access and fire protection systems, and are monitored for security. All Internet Archive data centers adhere to ISO/IEC 27001 standard, and some of them meet additional certifications.
+Also in 2025, it was reported that copies of the archive are kept in locations around the world, as a protection against possible disasters. For example, a copy hosted in Vancouver stored more than 145 petabytes of data as of 2024. In 2016, all redundancy was provided by RAID-like paired storage, with the 2 copies usually stored at different data centers, while backups were not a regular practice at the time.
+Since 2016, Internet Archive started to work to create a decentralized prototype of the digital library. From 2020, content from Internet Archive started to be stored in Filecoin. By October 2023, one petabyte of data had been uploaded to the Filecoin network. The Archive is a member of the International Internet Preservation Consortium and was officially designated as a library by the state of California in 2007.
+
+
+== Web archiving ==
+
+
+=== Wayback Machine ===
+
+The Wayback Machine is a service that allows archives of the World Wide Web to be searched and accessed. It can be used to see what previous versions of web sites used to look like or to visit web sites that no longer even exist. The Wayback Machine was created as a joint effort between Alexa Internet (owned by Amazon.com) and the Internet Archive. Hundreds of billions of web sites and their associated data (images, source code, documents, etc.) are saved in a database. As of September 5, 2024, the Internet Archive held over 866 billion web pages, more than 42.5 million print materials, 13 million videos, 3 million TV news reports, 1.2 million software programs, 14 million audio files, 5 million images, and 272,660 concerts in its Wayback Machine. In October 2025, the Internet Archive announced that the Wayback Machine had archived one trillion webpages, equivalent to more than 100,000 terabytes of data.
+
+
+=== Archive-It ===
+Created in late 2005, Archive-It is a web archiving subscription service that allows individuals and institutions to build and preserve collections of digital content and create digital archives. Archive-It allows the user to customize their capture or exclusion of web content they want to preserve for cultural heritage reasons. Through a web application, Archive-It partners can harvest, catalog, manage, browse, search, and view their archived collections.
+In terms of accessibility, the archived websites are full text searchable within seven days of capture. Content collected through Archive-It is captured and stored as a WARC file. A primary and back-up copy is stored at the Internet Archive data centers. A copy of the WARC file can be given to subscribing partner institutions for geo-redundant preservation and storage purposes to their best practice standards. Periodically, the data captured through Archive-It is indexed into the Internet Archive's general archive.
+In 2018, the Freedom of the Press Foundation said it would back up Gawker's archives using Archive-it one page at a time. As of 2021, Archive-it was partnering with more than 800 institutions, such as universities, archives, libraries and museums. In 2022, it was used to back up Ukrainian websites. It also had been used to archive some Twitter streams but had difficulty archiving Facebook. The Archive claimed more than 1200 partners in 2024.
+
+
+=== Internet Archive Scholar ===
+
+In September 2020, Internet Archive announced a new initiative to archive and preserve open access academic journals, called Internet Archive Scholar. As of February 2024, it contained over 35 million research articles with full text access. The materials available come from three different forms: content identified by the Wayback Machine, by digitized print material and sources such as uploads from users and collections from partnerships. As of 2024, Katina Magazine found the tool to be slower, slightly less recent and less comprehensive than Google Scholar but provided more context per result (making it easier to read for the reviewer), provided filters for datasets and makes its bibliographic database public. Also, due to its nonprofit mission, the archive should remain free, open and transparent into the future helping to preserve materials that sometimes get lost over time. The review described IA Scholar as user-friendly though users may need to re-learn how to perform some search techniques that work differently on Elasticsearch.
+
+
+=== General Index ===
+In 2021, the Internet Archive announced the initial version of the General Index, a publicly available index to a collection of 107 million academic journal articles.
+
+
+== Items and collections ==
+The Archive stores files inside so-called items, which are similar to directories in that they can contain multiple files, but can have additional metadata such as a description and tags which make them more searchable.
+Some file types can be previewed directly on the site, where as others have to be downloaded in order to be opened. If multiple multimedia files exist in an item, the website generates a playlist for video or audio files, or a slide show for pictures. If an item contains at least one video or picture, the Archive generates a preview thumbnail that can be seen on collection pages and in searches. Items can contain mixed data such as music files with an album cover picture, in which case the picture is used as thumbnail. Staff members of the Internet Archive organize items by placing them into so-called collections, which are pages listing multiple items.
+
+
+== Book collections ==
+
+
+=== Text collection ===
+
+The scanning performed by the Internet Archive is financially supported by libraries and foundations. As of November 2008, when there were approximately 1 million texts, the entire collection was greater than 500 terabytes, which included raw camera images, cropped and skewed images, PDFs, and raw OCR data.
+As of July 2013, the Internet Archive was operating 33 scanning centers in five countries, digitizing about 1,000 books a day for a total of more than 2 million books, in a total collection of 4.4 million books – including material digitized by others and fed into the Internet Archive; at that time, users were performing more than 15 million downloads per month.
+The material digitized by others includes more than 300,000 books that were contributed to the collection, between about 2006 and 2008, by Microsoft through its Live Search Books project, which also included financial support and scanning equipment directly donated to the Internet Archive. On May 23, 2008, Microsoft announced it would be ending its Live Book Search project and would no longer be scanning books, donating its remaining scanning equipment to its former partners.
+Around October 2007, Archive users began uploading public domain books from Google Book Search. As of November 2013, there were more than 900,000 Google-digitized books in the Archive's collection; the books are identical to the copies found on Google, except without the Google watermarks, and are available for unrestricted use and download. Brewster Kahle revealed in 2013 that this archival effort was coordinated by Aaron Swartz, who, with a "bunch of friends", downloaded the public domain books from Google slowly enough and from enough computers to stay within Google's restrictions. They did this to ensure public access to the public domain. The Archive ensured the items were attributed and linked back to Google, which never complained, while libraries "grumbled". According to Kahle, this is an example of Swartz's "genius" to work on what could give the most to the public good for millions of people.
+As of 2009, the Text Collection contained more than 1,700,000 items. The largest grouping was the American libraries collection, which included more than 1,100,000 texts, with the next largest, the Canadian libraries collection, having roughly 200,000. By 2025, the American collection had grown to 3,900,000 items, and the Canadian libraries collection to 900,000. At that time, the total content exceeded 47,000,000 texts.
+In addition to books, the Archive offers free and anonymous public access to more than four million court opinions, legal briefs, or exhibits uploaded from the United States Federal Courts' PACER electronic document system via the RECAP web browser plugin. These documents had been kept behind a federal court paywall. On the Archive, they had been accessed by more than six million people by 2013.
+The Archive's BookReader web app, built into its website, has features such as single-page, two-page, and thumbnail modes; fullscreen mode; page zooming of high-resolution images; and flip page animation.
+In October 2024, the Internet Archive agreed to accept the paper copies of 400,000 uncatalogued dissertations from the Leiden University Library, from the period 1851–2004, that the library wanted to dispose of. The university had received them from foreign universities as part of a dissertation exchange program that had begun with its foundation in 1575, continuing for nearly 430 years. The Archive plans to digitise them and make them accessible online. The original full collection included theses by Niels Bohr, Marie Curie, Émile Durkheim, Albert Einstein, Otto Hahn, Carl Jung, J. Robert Oppenheimer, Max Planck, Luigi Pirandello, Gustav Stresemann and Max Weber.
+
+
+=== Open Library ===
+
+The Open Library is another project of the Internet Archive. The project seeks to include a web page for every book ever published: it holds 25 million catalog records of editions. It also seeks to be a web-accessible public library: it contains the full texts of approximately 1,600,000 public domain books (out of the more than five million from the main texts collection), as well as in-print and in-copyright books, many of which are fully readable, downloadable and full-text searchable; it offers a two-week loan of e-books in its controlled digital lending program for over 647,784 books not in the public domain, in partnership with over 1,000 library partners from six countries after a free registration on the web site. Open Library is a free and open-source software project, with its source code freely available on GitHub.
+The Open Library faces objections from some authors and the Society of Authors, who hold that the project is distributing books without authorization and is thus in violation of copyright laws, and four major publishers initiated a copyright infringement lawsuit against the Internet Archive in June 2020 to stop the Open Library project.
+
+
+=== Digitizing sponsors for books ===
+Many large institutional sponsors have helped the Internet Archive provide millions of scanned publications (text items). Some sponsors that have digitized large quantities of texts include the University of Toronto's Robarts Library, University of Alberta Libraries, University of Ottawa, Library of Congress, Boston Library Consortium member libraries, Boston Public Library, Princeton Theological Seminary Library, and many others.
+In 2017, the MIT Press authorized the Internet Archive to digitize and lend books from the press's backlist, with financial support from the Arcadia Fund. A year later, the Internet Archive received further funding from the Arcadia Fund to invite some other university presses to partner with the Internet Archive to digitize books, a project called "Unlocking University Press Books".
+The Library of Congress created numerous Handle System identifiers that pointed to free digitized books in the Internet Archive. The Internet Archive and Open Library are listed on the Library of Congress website as a source of e-books.
+
+
+=== Other text collections ===
+
+
+==== Children's Library ====
+Children's Library is a collection of digitized books from the University of California Libraries, the University of Florida's "Literature for Children" Collection, National Yiddish Book Center, New York Public Library, International Children's Digital Library and some other libraries. This collection contains many free historical ebooks for children.
+
+
+== Media collections ==
+
+In addition to web archives, the Internet Archive maintains extensive collections of digital media that are attested by the uploader to be in the public domain in the United States or licensed under a license that allows redistribution, such as Creative Commons licenses. Media are organized into collections by media type (moving images, audio, text, etc.), and into sub-collections by various criteria. Each of the main collections includes a "Community" sub-collection (formerly named "Open Source") where general contributions by the public are stored.
+
+
+=== Audio ===
+
+
+==== Audio Archive ====
+The Audio Archive includes music, audiobooks, news broadcasts, old time radio shows, podcasts, and a wide variety of other audio files. As of January 2023, there are more than 15,000,000 free digital recordings in the collection. The subcollections include audio books and poetry, podcasts, non-English audio, and many others. The sound collections are curated by B. George, director of the ARChive of Contemporary Music.
+
+
+==== Digital Library of Amateur Radio and Communications ====
+A project to preserve recordings of amateur radio transmissions, with funding from the Amateur Radio Digital Communications foundation.
+
+
+==== Live Music Archive ====
+
+The Live Music Archive sub-collection includes more than 170,000 concert recordings from independent musicians, as well as more established artists and musical ensembles with permissive rules about recording their concerts, such as the Grateful Dead, and more recently, The Smashing Pumpkins. Also, Jordan Zevon has allowed the Internet Archive to host a definitive collection of his father Warren Zevon's concert recordings. The Zevon collection ranges from 1976 to 2001 and contains 126 concerts including 1,137 songs.
+
+
+==== The Great 78 Project ====
+
+The Great 78 Project aims to digitize 78 rpm singles and phonograph cylinders from the period between 1880 and 1960, donated by various collectors and institutions. It has been developed in collaboration with the Archive of Contemporary Music and George Blood Audio, responsible for the audio digitization. As of 2017, it had 200,000 recordings available online. As of September 2025, it said it had digitized 400,000 recordings.
+
+
+==== Netlabels ====
+
+The Archive has a collection of freely distributable music that is streamed and available for download via its Netlabels service. The music in this collection generally has Creative Commons-license catalogs of virtual record labels.
+
+
+=== Images ===
+This collection contains more than 3.5 million items. Cover Art Archive, Metropolitan Museum of Art – Gallery Images, NASA Images, Occupy Wall Street Flickr Archive, and USGS Maps are some sub-collections of Image collection.
+
+
+==== Cover Art Archive ====
+
+The Cover Art Archive is a joint project between the Internet Archive and MusicBrainz, whose goal is to make cover art images on the Internet. As of April 2021, this collection contains more than 1,400,000 items.
+
+
+==== Metropolitan Museum of Art images ====
+The images of this collection are from the Metropolitan Museum of Art. This collection contains more than 140,000 items.
+
+
+==== NASA Images ====
+The NASA Images archive was created through a Space Act Agreement between the Internet Archive and NASA to bring public access to NASA's image, video, and audio collections in a single, searchable resource. The Internet Archive NASA Images team worked closely with all of the NASA centers to keep adding to the ever-growing collection. The nasaimages.org site launched in July 2008 and had more than 100,000 items online at the end of its hosting in 2012.
+
+
+==== Occupy Wall Street Flickr archive ====
+This collection contains Creative Commons-licensed photographs from Flickr related to the Occupy Wall Street movement. This collection contains more than 15,000 items.
+
+
+==== USGS Maps ====
+This collection contains more than 59,000 items from Libre Map Project.
+
+
+=== Video ===
+
+
+==== Machinima Archive ====
+One of the sub-collections of the Internet Archive's Video Archive is the Machinima Archive. This small section hosts many Machinima videos. Machinima is a digital artform in which computer games, game engines, or software engines are used in a sandbox-like mode to create motion pictures, recreate plays, or even publish presentations or keynotes. The archive collects a range of Machinima films from internet publishers such as Rooster Teeth and Machinima.com as well as independent producers. The sub-collection is a collaborative effort among the Internet Archive, the How They Got Game research project at Stanford University, the Academy of Machinima Arts and Sciences, and Machinima.com.
+
+
+==== Moving image collection ====
+
+The Internet Archive holds a collection of approximately 3,863 feature films. Additionally, the Internet Archive's Moving Image collection includes: newsreels, classic cartoons, pro- and anti-war propaganda, The Video Cellar Collection, Skip Elsheimer's "A.V. Geeks" collection, early television, and ephemeral material from Prelinger Archives, such as advertising, educational, and industrial films, as well as amateur and home movie collections.
+Subcategories of this collection include:
+
+IA's FedFlix collection, Joint Venture NTIS-1832 between the National Technical Information Service and Public.Resource.Org that features "the best movies of the United States Government, from training films to history, from our national parks to the U.S. Fire Academy and the Postal Inspectors"
+IA's Independent News collection, which includes sub-collections such as the Internet Archive's World At War competition from 2001, in which contestants created short films demonstrating "why access to history matters". Among their most-downloaded video files are eyewitness recordings of the devastating 2004 Indian Ocean earthquake.
+IA's September 11 Television Archive, which contains archival footage from the world's major television networks of the terrorist attacks of September 11, 2001, as they unfolded on live television.
+
+
+=== Microfilm ===
+This collection contains approximately 160,000 microfilmed items from a variety of libraries including the University of Chicago Libraries, University of Illinois at Urbana-Champaign, University of Alberta, Allen County Public Library, and National Technical Information Service.
+
+
+=== TV News Search & Borrow ===
+
+In September 2012, the Internet Archive launched the TV News Search & Borrow service for searching U.S. national news programs. The service is built on closed captioning transcripts and allows users to search and stream 30-second video clips. Upon launch, the service contained "350,000 news programs collected over 3 years from national U.S. networks and stations in San Francisco and Washington D.C." According to Kahle, the service was inspired by the Vanderbilt Television News Archive, a similar library of televised network news programs. In contrast to Vanderbilt, which limits access to streaming video to individuals associated with subscribing colleges and universities, the TV News Search & Borrow allows open access to its streaming video clips. In 2013, the Archive received an additional donation of "approximately 40,000 well-organized tapes" from the estate of a Philadelphia woman, Marion Stokes. Stokes "had recorded more than 35 years of TV news in Philadelphia and Boston with her VHS and Betamax machines".
+
+
+=== Open Educational Resources ===
+
+Open Educational Resources is a digital collection containing courses, video lectures, and supplemental materials from universities in the United States and China. The contributors of this collection are ArsDigita, Hewlett Foundation, MIT, Monterey Institute, and Naropa University.
+
+
+=== Miscellaneous collections ===
+Brooklyn Museum collection contains approximately 3,000 items from Brooklyn Museum. In December 2020, the film research library of Lillian Michelson was donated to the archive.
+
+
+== Other services and endeavors ==
+
+
+=== Physical media ===
+
+Voicing a strong reaction to the idea of books simply being thrown away, and inspired by the Svalbard Global Seed Vault, Kahle now envisions collecting one copy of every book ever published. "We're not going to get there, but that's our goal", he said. Alongside the books, Kahle plans to store the Internet Archive's old servers, which were replaced in 2010.
+
+
+=== Vault ===
+Vault is a digital repository and preservation service provided by Internet Archive to institutions that need to preserve digital collections. Data stored in Vault is kept in at least 2 different Internet Archive datacenters, with at least 2 copies in each of them. Access control, fire protection and monitoring systems are used to protect all content stored in Vault.
+
+
+=== Chapters ===
+Internet Archive works along with several mission-aligned organizations that operate independently from Internet Archive, but work together with the intended goal of building a distributed, resilient digital library for the world. In addition to San Francisco-based Internet Archive, those organizations are, as of 2026: 
+
+Internet Archive Canada, based in Vancouver
+Internet Archive Europe, based in Amsterdam
+Internet Archive Switzerland, based in St. Gallen
+
+
+=== Software ===
+The Internet Archive has "the largest collection of historical software online in the world", spanning 50 years of computer history in terabytes of computer magazines and journals, books, shareware discs, FTP sites, video games, etc. The Internet Archive has created an archive of what it describes as "vintage software", as a way to preserve them. The project advocated an exemption from the United States Digital Millennium Copyright Act to permit them to bypass copy protection, which the United States Copyright Office approved in 2003 for a period of three years. The Archive does not offer the software for download, as the exemption is solely "for the purpose of preservation or archival reproduction of published digital works by a library or archive". The Library of Congress renewed the exemption in 2006, and in 2009 indefinitely extended it pending further rulemakings. The Library reiterated the exemption as a "Final Rule" with no expiration date in 2010. In 2013, the Internet Archive began to provide select video games browser-playable via MESS, for instance the Atari 2600 game E.T. the Extra-Terrestrial. Since December 23, 2014, the Internet Archive presents, via a browser-based DOSBox emulation, thousands of DOS/PC games for "scholarship and research purposes only". In November 2020, the Archive introduced a new emulator for Adobe Flash called Ruffle, and began archiving Flash animations and games ahead of the December 31, 2020, end-of-life for the Flash plugin across all computer systems.
+
+
+=== Table Top Scribe System ===
+A combined hardware software system has been developed that performs a safe method of digitizing content.
+
+
+=== Credit Union ===
+From 2012 to November 2015, the Internet Archive operated the Internet Archive Federal Credit Union, a federal credit union based in New Brunswick, New Jersey, with the goal of providing access to low- and middle-income people. Throughout its short existence, the IAFCU experienced significant conflicts with the National Credit Union Administration, which severely limited the IAFCU's loan portfolio and concerns over serving Bitcoin firms. At the time of its dissolution, it consisted of 395 members and was worth $2.5 million.
+
+
+=== Decentralization ===
+Since 2019, the Internet Archive organizes an event called Decentralized Web Camp (DWeb Camp). It is an annual camp that brings together a diverse global community of contributors in a natural setting. The camp aims to tackle real-world challenges facing the web and co-create decentralized technologies for a better internet. It aims to foster collaboration, learning, and fun while promoting principles of trust, human agency, mutual respect, and ecological awareness.
+
+
+=== Wayforward Machine ===
+
+On September 30, 2021, as a part of its 25th anniversary celebration, Internet Archive launched the "Wayforward Machine", a satirical, fictional website covered with pop-ups asking for personal information. The site was intended to depict a fictional dystopian timeline of real-world events leading to such a future, such as the repeal of Section 230 of the United States Code in 2022 and the introduction of advertising implants in 2041.
+
+
+=== Ceramic archivists collection ===
+
+The Great Room of the Internet Archive features a collection of more than 100 ceramic figures representing employees of the Internet Archive, with the 100th statue immortalizing Aaron Swartz. This collection, inspired by the statues of the Xian warriors in China, was commissioned by Brewster Kahle, sculpted by Nuala Creed, and as of 2014, is ongoing.
+
+
+=== Artists in residence ===
+The Internet Archive visual arts residency, organized by Amir Saber Esfahani, is designed to connect emerging and mid-career artists with the Archive's millions of collections and to show what is possible when open access to information intersects with the arts. During this one-year residency, selected artists develop a body of work that responds to and utilizes the Archive's collections in their own practice.
+
+2024–2025 Residency Artist Swilk
+2021–2022 Residency Artist Casey Gray
+2019 Residency Artists: Caleb Duarte, Whitney Lynn, and Jeffrey Alan Scudder
+2018 Residency Artists: Mieke Marple, Chris Sollars, and Taravat Talepasand
+2017 Residency Artists: Laura Kim, Jeremiah Jenkins, and Jenny Odell
+
+
+== Controversies, legal disputes, and activism ==
+
+
+=== Opposition to national security letters, bills and settlements ===
+
+On May 8, 2008, it was revealed that the Internet Archive had successfully challenged an FBI national security letter asking for logs on an undisclosed user.
+On November 28, 2016, it was revealed that a second FBI national security letter asking for logs on another undisclosed user was successfully challenged.
+The Internet Archive blacked out its website for 12 hours on January 18, 2012, in protest of the Stop Online Piracy Act and the PROTECT IP Act bills, two pieces of legislation in the United States Congress that they argued would "negatively affect the ecosystem of web publishing that led to the emergence of the Internet Archive". This occurred in conjunction with the English Wikipedia blackout, as well as numerous other protests across the Internet.
+The Internet Archive is a member of the Open Book Alliance, which has been among the most outspoken critics of the Google Book Settlement. The Archive advocates an alternative digital library project.
+
+
+=== Hosting of disputed media ===
+On October 9, 2016, the Internet Archive was temporarily blocked in Turkey after it was used (amongst other file hosting services) by hackers to host 17 GB of leaked government emails.
+Because the Internet Archive only lightly moderates uploads, it includes resources that may be valued by extremists and the site may be used by them to evade block listing. In February 2018, the Counter Extremism Project said that the Archive hosted terrorist videos, including the beheading of Alan Henning, and had declined to respond to requests about the videos. In May 2018, a report published by the cyber-security firm Flashpoint stated that the Islamic State was using the Internet Archive to share its propaganda. Chris Butler, from the Internet Archive, responded that they regularly spoke to the US and EU governments about sharing information on terrorism. In April 2019, Europol, acting on a referral from French police, asked the Internet Archive to remove 550 sites of "terrorist propaganda". The Archive rejected the request, saying that the reports were wrong about the content they pointed to, or were too broad for the organization to comply with. On July 14, 2021, the Internet Archive held a joint "Referral Action Day" with Europol to target terrorist videos.
+A 2021 article said that jihadists regularly used the Internet Archive for "dead drops" of terrorist videos. In January 2022, a former UCLA lecturer's 800-page manifesto, containing racist ideas and threats against UCLA staff, was uploaded to the Internet Archive. The manifesto was removed by the Internet Archive after a week, amidst discussion about whether such documents should be preserved by archivists or not. A 2022 paper by Gabriel Weimann found "an alarming volume of terrorist, extremist, and racist material on the Internet Archive". A 2023 paper reported that Neo-Nazis collect links to online, publicly available resources to be shared with new recruits. As the Internet Archive hosts uploaded texts that are not allowed on other websites, Nazi and neo-Nazi books in the Archive (e.g., The Turner Diaries) frequently appear on these lists. These lists also feature older, public domain material created when white supremacist views were more mainstream.
+
+
+=== 2020 National Emergency Library ===
+In the midst of the COVID-19 pandemic which closed many schools, universities, and libraries, the Archive announced on March 24, 2020, that it was creating the National Emergency Library by removing the lending restrictions it had in place for 1.4 million digitized books in its Open Library but otherwise limiting users to the number of books they could check out and enforcing their return; normally, the site would only allow one digital lending for each physical copy of the book they had, by use of an encrypted file that would become unusable after the lending period was completed. This Library would remain as such until at least June 30, 2020, or until the US national emergency was over, whichever came later. At launch, the Internet Archive allowed authors and rightholders to submit opt-out requests for their works to be omitted from the National Emergency Library.
+The Internet Archive said the National Emergency Library addressed an "unprecedented global and immediate need for access to reading and research material" due to the closures of physical libraries worldwide. They justified the move in a number of ways. Legally, they said they were promoting access to those inaccessible resources, which they claimed was an exercise in fair use principles. The Archive continued implementing their controlled digital lending policy that predated the National Emergency Library, meaning they still encrypted the lent copies and it was no easier for users to create new copies of the books than before. An ultimate determination of whether or not the National Emergency Library constituted fair use could only be made by a court. Morally, they also pointed out that the Internet Archive was a registered library like any other, that they either paid for the books themselves or received them as donations, and that lending through libraries predated copyright restrictions.
+The Archive had already been criticized by authors and publishers for its prior lending approach, and upon announcement of the National Emergency Library, authors, publishers, and groups representing both took further issue with The Archive and its Open Library project, equating the move to copyright infringement and digital piracy, and using the COVID-19 pandemic as a reason to push the boundaries of copyright. After the works of some of these authors were ridiculed in responses, the Internet Archive's Jason Scott requested that supporters of the National Emergency Library not denigrate anyone's books: "I realize there's strong debate and disagreement here, but books are life-giving and life-changing and these writers made them."
+
+
+=== Access blocking in Indonesia ===
+On 27 May 2025, the Ministry of Communication and Digital Affairs of Indonesia (abbreviated as Komdigi) blocked access to the Internet Archive in Indonesia. Alexander Sabar, the Director General of the Supervision of Digital Space, stated that the reason was the presence of pornography and online gambling on the site. He denied a rumor that there was motive to rewrite or hide history. He also acknowledged the importance of the Internet Archive, and claimed that the blocking was temporary and would be rescinded if they removed the offending content, and that they only blocked it after the Internet Archive did not respond to their requests. On May 30, 2025, Indonesia lifted the block on the Internet Archive after they removed the offending content.
+
+
+=== Access blocking in Iraq ===
+In November 2024, the Internet Archive was blocked in Iraq. The Ministry of Communications of Iraq has not publicly addressed the restriction.
+
+
+== Copyright issues ==
+In November 2005, free downloads of Grateful Dead concerts were removed from the site, following what seemed to be disagreements between some of the former band members. John Perry Barlow identified Bob Weir, Mickey Hart, and Bill Kreutzmann as the instigators of the change, according to an article in The New York Times. Phil Lesh supported keeping the concerts free. A November 30 forum post from Brewster Kahle summarized what appeared to be the compromise reached among the band members. Audience recordings could be downloaded or streamed, but soundboard recordings were to be available for streaming only. Concerts have since been re-added.
+In February 2016, Internet Archive users had begun archiving digital copies of Nintendo Power, Nintendo's official magazine for their games and products, which ran from 1988 to 2012. The first 140 issues had been collected, before Nintendo had the archive removed on August 8, 2016. In response to the take-down, Nintendo told gaming website Polygon, "[Nintendo] must protect our own characters, trademarks and other content. The unapproved use of Nintendo's intellectual property can weaken our ability to protect and preserve it, or to possibly use it for new projects".
+In August 2017, the Department of Telecommunications of the Government of India blocked the Internet Archive along with other file-sharing websites, in accordance with two court orders issued by the Madras High Court, citing piracy concerns after copies of two Bollywood films were allegedly shared via the service. The HTTP version of the Archive was blocked but it remained accessible using the HTTPS protocol.
+In 2023, the Internet Archive became a popular site for Indians to watch the first episode of India: The Modi Question, a BBC documentary released on January 17 and banned in India by January 20. The video was reported to have been removed by the Archive on January 23. The Internet Archive then stated, on January 27, that they had removed the video in response to a BBC request under the Digital Millennium Copyright Act.
+By 2026, The New York Times and The Guardian are among the outlets concerned about scraping of the Internet Archive of their content as a way to get around the defenses against scraping from their own websites. Some news organizations are restricting the Internet Archive's crawlers.
+
+
+=== Book publishers' lawsuit ===
+
+The operation of the National Emergency Library was part of a lawsuit filed against the Internet Archive by four major book publishers—Hachette, HarperCollins, John Wiley & Sons, and Penguin Random House—in June 2020, challenging the copyright validity of the controlled digital lending program. In response, the Internet Archive closed the National Emergency Library on June 16, 2020, rather than the planned June 30, 2020, due to the lawsuit. The plaintiffs, supported by the Copyright Alliance, claimed in their lawsuit that the Internet Archive's actions constituted a "willful mass copyright infringement".
+Judge Koeltl ruled on March 24, 2023, against Internet Archive in the case, saying the National Emergency Library concept was not fair use, so the Archive infringed copyrights by lending out the publisher's books without the waitlist restriction. An agreement was then reached for the Internet Archive to pay an undisclosed amount to the publishers. The Internet Archive appealed the ruling. On September 4, 2024, the United States Court of Appeals for the Second Circuit upheld the district court's ruling, calling the Internet Archive's argument that they were shielded by fair use doctrine "unpersuasive". Nevertheless, the ruling also benefited Internet Archive because the restrictions did not apply to out of print books; and for in-print books, it only applies if the book has an electronic version available for sale. The archive could continue offering short passages of books, for example linking to a page number from a Wikipedia citation. The ruling reduced the number of books available to researchers and Wikipedians. Over 500,000 books were taken down as a result.
+
+
+=== Music publishers' lawsuit ===
+
+In August 2023, the music industry corporations Universal Music Group (UMG), Sony Music and Concord sued the Internet Archive over its Great 78 Project, asserting the project was engaged in copyright infringement. The Great 78 Project stores digitized versions of pre-1972 songs and albums from 78 rpm phonograph records, for "the preservation, research and discovery of 78rpm records". The project had started in 2016, when pre-1972 recordings had not been protected by copyright; in 2018, the U.S. Congress passed the Music Modernization Act (MMA) which enabled legal remedies for unauthorized use of pre-1972 recordings until 2067, thus effectively covering them with copyright.
+UMG and Sony had been the two largest companies in this sector for more than a decade, with respective market shares of 31.8% and 22.1% in 2023. Concord was a rapidly expanding music business closely partnered with UMG since its transformation into Concord Music Group in 2004 and backed since at least 2000 by J.P. Morgan. It was the first music company to perform an asset-backed securitization, led by Apollo Global Management, in December 2022. Its assets consisted of over 1 million copyrights to music older than 18 months. According to its CEO Bob Valentine, Concord derived about 85% of its revenue "from catalog, rather than newly developed, music". As Valentine stated in his first interview, "The phenomenon of artists' IP has never been more liquid; it is now a real and proven asset class. Investment bankers are focused on it, financiers are financing it, and then there's entities like us, that know how to buy rights, but also know how to manage them and have the relationships to do so." The share of catalog music in total album equivalent consumption in the United States rose from 62.8% to 72.6% between 2019 and 2023.
+The publishers sought statutory damages for nearly 4,142 songs named in the suit, with a maximum possible fine of $621 million. The Internet Archive argued that the primitive sound quality of the original recordings falls within the doctrine of "fair use" to digitize for preservation, that the number of downloads is so small it has almost no impact on the publishers' revenue, and over 95% of the collection is not readily available anywhere else. The plaintiffs said in response, "if ever there were a theory of fair use invented for litigation, this is it." According to a legal source at Mayer Brown, the music publishers' case could be challenged as unconstitutional, since the granting of copyright to pre-1972 works in the MMA only benefitted record companies without having a systemic effect.
+Both parties submitted requests to drop the case on September 15, 2025, after reaching undisclosed settlement terms. The case was officially dropped as requested in October 2025.
+
+
+== See also ==
+
+
+=== Similar projects ===
+
+
+=== Other ===
+
+
+== Notes ==
+
+
+== References ==
+
+
+== Further reading ==
+
+"Internet Archive relishes its ‘phenomenal, fabulous success story’"  (October 26, 2025) San Francisco Examiner
+Kahle, Brewster (November 1996). "Archiving the Internet". Scientific America. Archived from the original on October 11, 1997.
+Kahle, Brewster (November 6, 2013). "Scanning Center Fire – Please Help Rebuild". Internet Archive Blogs.
+Lepore, Jill (January 26, 2015). "The Cobweb". The New Yorker.
+Ringmar, Erik (April 10, 2008). "Liberate and Disseminate". Times Higher Education Supplement.
+
+
+== External links ==
+
+Official website 
+Internet Archive Scholar
+"Internet Archive". Internal Revenue Service filings. ProPublica Nonprofit Explorer.

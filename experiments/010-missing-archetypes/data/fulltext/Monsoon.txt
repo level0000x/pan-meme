@@ -1,0 +1,116 @@
+A monsoon () is traditionally a seasonal reversing wind accompanied by corresponding changes in precipitation, but now used to describe seasonal changes in atmospheric circulation and precipitation associated with annual latitudinal oscillation of the Intertropical Convergence Zone, specifically between its limits to the north and south of the equator. 
+Usually, the term monsoon is used to refer to the rainy phase of a seasonally changing pattern, although technically there is a dry phase. The term is also used to describe locally heavy but short-term rains.
+The major monsoon systems of the world consist of the West African, South Asian–Australian, North American, and South American monsoons.
+The term was first used in English in British India and neighbouring countries, referring to big seasonal winds blowing from the Bay of Bengal and Arabian Sea in the southwest that brought heavy rainfall to the area.
+
+
+== Etymology ==
+
+The etymology of the word monsoon is not wholly certain. The English monsoon came from Portuguese monção, ultimately from Arabic موسم (mawsim, "season"), "but partly via early modern Dutch monson".
+
+
+== History ==
+
+
+=== Asian monsoon ===
+Strengthening of the Asian monsoon has been linked to the uplift of the Tibetan Plateau after the collision of the Indian subcontinent and Asia around 50 million years ago. Because of studies of records from the Arabian Sea and that of the wind-blown dust in the Loess Plateau of China, many geologists believe the monsoon first became strong around 8 million years ago. More recently, studies of plant fossils in China and new long-duration sediment records from the South China Sea led to a timing of the monsoon beginning 15–20 million years ago and linked to early Tibetan uplift. Testing of this hypothesis awaits deep ocean sampling by the Integrated Ocean Drilling Program. The monsoon has varied significantly in strength since this time, largely linked to global climate change, especially the cycle of the Pleistocene ice ages. A study of Asian monsoonal climate cycles from 123,200 to 121,210 years BP, during the Eemian interglacial, suggests that they had an average duration of around 64 years, with the minimum duration being around 50 years and the maximum approximately 80 years, similar to today.
+A study of marine plankton suggested that the South Asian Monsoon (SAM) strengthened around 5 million years ago. Then, during ice periods, the sea level fell and the Indonesian Seaway closed. When this happened, cold waters in the Pacific were impeded from flowing into the Indian Ocean. It is believed that the resulting increase in sea surface temperatures in the Indian Ocean increased the intensity of monsoons. In 2018, a study of the SAM's variability over the past million years found that precipitation resulting from the monsoon was significantly reduced during glacial periods compared to interglacial periods like the present day. The Indian Summer Monsoon (ISM) underwent several intensifications during the warming following the Last Glacial Maximum, specifically during the time intervals corresponding to 16,100–14,600 BP, 13,600–13,000 BP, and 12,400–10,400 BP as indicated by vegetation changes in the Tibetan Plateau displaying increases in humidity brought by an intensifying ISM. Though the ISM was relatively weak for much of the Late Holocene, significant glacial accumulation in the Himalayas still occurred due to cold temperatures brought by westerlies from the west.
+During the Middle Miocene, the July ITCZ, the zone of rainfall maximum, migrated northwards, increasing precipitation over southern China during the East Asian Summer Monsoon (EASM) while making Indochina drier. During the Late Miocene Global Cooling (LMCG), from 7.9 to 5.8 million years ago, the East Asian Winter Monsoon (EAWM) became stronger as the subarctic front shifted southwards. An abrupt intensification of the EAWM occurred 5.5 million years ago. The EAWM was still significantly weaker relative to today between 4.3 and 3.8 million years ago but abruptly became more intense around 3.8 million years ago as crustal stretching widened the Tsushima Strait and enabled greater inflow of the warm Tsushima Current into the Sea of Japan. Circa 3.0 million years ago, the EAWM became more stable, having previously been more variable and inconsistent, in addition to being enhanced further amidst a period of global cooling and sea level fall. The EASM was weaker during cold intervals of glacial periods such as the Last Glacial Maximum (LGM) and stronger during interglacials and warm intervals of glacial periods. Another EAWM intensification event occurred 2.6 million years ago, followed by yet another one around 1.0 million years ago. During Dansgaard–Oeschger events, the EASM grew in strength, but it has been suggested to have decreased in strength during Heinrich events. The EASM expanded its influence deeper into the interior of Asia as sea levels rose following the LGM; it also underwent a period of intensification during the Middle Holocene, around 6,000 years ago, due to orbital forcing made more intense by the fact that the Sahara at the time was much more vegetated and emitted less dust. This Middle Holocene interval of maximum EASM was associated with an expansion of temperate deciduous forest steppe and temperate mixed forest steppe in northern China. By around 5,000 to 4,500 BP, the East Asian monsoon's strength began to wane, weakening from that point until the present day. A particularly notable weakening took place ~3,000 BP. The location of the EASM shifted multiple times over the course of the Holocene: first, it moved southward between 12,000 and 8,000 BP, followed by an expansion to the north between approximately 8,000 and 4,000 BP, and most recently retreated southward once more between 4,000 and 0 BP.
+
+
+=== Australian monsoon ===
+The January ITCZ migrated further south to its present location during the Middle Miocene, strengthening the summer monsoon of Australia that had previously been weaker.
+Five episodes during the Quaternary at 2.22 Ma (PL-1), 1.83 Ma (PL-2), 0.68 Ma (PL-3), 0.45 Ma (PL-4) and 0.04 Ma (PL-5) were identified which showed a weakening of the Leeuwin Current (LC). The weakening of the LC would have an effect on the sea surface temperature (SST) field in the Indian Ocean, as the Indonesian Throughflow generally warms the Indian Ocean. Thus these five intervals could probably be those of considerable lowering of SST in the Indian Ocean and would have influenced Indian monsoon intensity. During the weak LC, there is the possibility of reduced intensity of the Indian winter monsoon and strong summer monsoon, because of change in the Indian Ocean dipole due to reduction in net heat input to the Indian Ocean through the Indonesian Throughflow. Thus a better understanding of the possible links between El Niño, Western Pacific Warm Pool, Indonesian Throughflow, wind pattern off western Australia, and ice volume expansion and contraction can be obtained by studying the behaviour of the LC during Quaternary at close stratigraphic intervals.
+
+
+=== South American monsoon ===
+The South American summer monsoon (SASM) is known to have become weakened during Dansgaard–Oeschger events. The SASM has been suggested to have been enhanced during Heinrich events.
+
+
+== Process ==
+
+Monsoons were once considered as a large-scale sea breeze caused by higher temperature over land than in the ocean. This is no longer considered the cause. 
+The monsoon is now considered a planetary-scale phenomenon involving the annual migration of the Intertropical Convergence Zone between its northern and southern limits. The limits of the ITCZ vary according to the land–sea heating contrast and it is thought that the northern extent of the monsoon in South Asia is influenced by the high Tibetan Plateau. These temperature imbalances happen because oceans and land absorb heat in different ways. Over oceans, the air temperature remains relatively stable for two reasons: water has a relatively high heat capacity (3.9 to 4.2 J g−1 K−1), and because both conduction and convection will equilibrate a hot or cold surface with deeper water (up to 50 metres). In contrast, dirt, sand, and rocks have lower heat capacities (0.19 to 0.35 J g−1 K−1), and they can only transmit heat into the earth by conduction and not by convection. Therefore, bodies of water stay at a more even temperature, while land temperatures are more variable.
+During warmer months, sunlight heats the surfaces of both land and oceans, but land temperatures rise more quickly. As the land's surface becomes warmer, the air above it expands and an area of low pressure develops. Meanwhile, the ocean remains at a lower temperature than the land, and the air above it retains a higher pressure. This difference in pressure causes sea breezes to blow from the ocean to the land, bringing moist air inland. This moist air rises to a higher altitude over land and then it flows back toward the ocean, completing the cycle. However, when the air rises, and while it is still over the land, the air cools. This decreases the air's ability to hold water, and precipitation over the land, causing summer monsoons to rain over land.
+In the colder months, the cycle is reversed, and the land cools faster than the oceans, the air over the land having higher pressure than air over the ocean. This causes the air over the land to flow to the ocean. When humid air rises over the ocean, it cools, causing precipitation over the oceans. The cool air then flows towards the land to complete the cycle.
+Most summer monsoons have a dominant westerly component and a strong tendency to ascend and produce copious amounts of rain (because of the condensation of water vapor in the rising air). The intensity and duration, however, are not uniform from year to year. Winter monsoons, by contrast, have a dominant easterly component and a strong tendency to diverge, subside and cause drought.
+Similar rainfall is caused when moist ocean air is lifted upwards by mountains, surface heating, convergence at the surface, divergence aloft, or from storm-produced outflows at the surface. However the lifting occurs, the air cools due to expansion in lower pressure, producing condensation.
+
+
+== Global monsoon ==
+
+
+=== Summary table ===
+
+
+=== Africa (West African and Southeast African) ===
+
+The monsoon of western Sub-Saharan Africa is the result of the seasonal shifts of the Intertropical Convergence Zone and the great seasonal temperature and humidity differences between the Sahara and the equatorial Atlantic Ocean. The ITCZ migrates northward from the equatorial Atlantic in February, reaches western Africa on or near June 22, then moves back to the south by October. The dry, northeasterly trade winds, and their more extreme form, the harmattan, are interrupted by the northern shift in the ITCZ and resultant southerly, rain-bearing winds during the summer. The semiarid Sahel and Sudan depend upon this pattern for most of their precipitation.
+
+
+=== North America ===
+
+The North American monsoon (NAM) occurs from late June or early July into September, originating over Mexico and spreading into the southwest United States by mid-July. It affects Mexico along the Sierra Madre Occidental as well as Arizona, New Mexico, Nevada, Utah, Colorado, West Texas and California. It pushes as far west as the Peninsular Ranges and Transverse Ranges of Southern California, but rarely reaches the coastal strip (a wall of desert thunderstorms only a half-hour's drive away is a common summer sight from the sunny skies along the coast during the monsoon). The North American monsoon is known to many as the Summer, Southwest, Mexican or Arizona monsoon. It is also sometimes called the Desert monsoon as a large part of the affected area are the Mojave and Sonoran deserts. However, it is controversial whether the North and South American weather patterns with incomplete wind reversal should be counted as true monsoons.
+
+
+=== Asia ===
+The Asian monsoons may be classified into a few sub-systems, such as the Indian Subcontinental Monsoon which affects the Indian subcontinent and surrounding regions including Nepal, and the East Asian Monsoon which affects southern China, Taiwan, Korea and parts of Japan.
+
+
+==== South Asian monsoon ====
+
+
+===== Southwest monsoon =====
+
+The southwestern summer monsoons occur from June to September. The Thar Desert and adjoining areas of the northern and central Indian subcontinent heat up considerably during the hot summers. This causes a low pressure area over the northern and central Indian subcontinent. To fill this void, the moisture-laden winds from the Indian Ocean rush into the subcontinent. These winds, rich in moisture, are drawn towards the Himalayas. The Himalayas act like a high wall, blocking the winds from passing into Central Asia, and forcing them to rise. As the clouds rise, their temperature drops, and precipitation occurs. Some areas of the subcontinent receive up to 10,000 mm (390 in) of rain annually.
+The southwest monsoon is generally expected to begin between the end of May and beginning of June and fade away between the end of September and start of October. The moisture-laden winds on reaching the southernmost point of the Indian Peninsula, due to its topography, become divided into two parts: the Arabian Sea Branch and the Bay of Bengal Branch.
+
+The Arabian Sea Branch of the Southwest Monsoon first hits the Western Ghats of the coastal state of Kerala, India, thus making this area the first state in India to receive rain from the Southwest Monsoon. This branch of the monsoon moves northwards along the Western Ghats (Konkan and Goa) with precipitation on coastal areas, west of the Western Ghats. The eastern areas of the Western Ghats do not receive much rain from this monsoon as the wind does not cross the Western Ghats.
+The Bay of Bengal Branch of Southwest Monsoon flows over the Bay of Bengal heading towards north-east India and Bengal, picking up more moisture from the Bay of Bengal. The winds arrive at the Eastern Himalayas with large amounts of rain. Mawsynram, situated on the southern slopes of the Khasi Hills in Meghalaya, India, is one of the wettest places on Earth. After the arrival at the Eastern Himalayas, the winds turns towards the west, travelling over the Indo-Gangetic Plain at a rate of roughly 1–2 weeks per state, pouring rain all along its way. June 1 is regarded as the date of onset of the monsoon in India, as indicated by the arrival of the monsoon in the southernmost state of Kerala.
+The monsoon accounts for nearly 80% of the rainfall in India. Indian agriculture (which accounts for 25% of the GDP and employs 70% of the population) is heavily dependent on the rains, for growing crops especially like cotton, rice, oilseeds and coarse grains. A delay of a few days in the arrival of the monsoon can badly affect the economy, as evidenced in the numerous droughts in India in the 1990s.
+The monsoon is widely welcomed and appreciated by city-dwellers as well, for it provides relief from the climax of summer heat in June. However, the roads take a battering every year. Often houses and streets are waterlogged and slums are flooded despite drainage systems. A lack of city infrastructure coupled with changing climate patterns causes severe economic loss including damage to property and loss of lives, as evidenced in the 2005 flooding in Mumbai that brought the city to a standstill. Bangladesh and certain regions of India like Assam and West Bengal, also frequently experience heavy floods during this season. Recently, areas in India that used to receive scanty rainfall throughout the year, like the Thar Desert, have surprisingly ended up receiving floods due to the prolonged monsoon season.
+The influence of the Southwest Monsoon is felt as far north as in China's Xinjiang. It is estimated that about 70% of all precipitation in the central part of the Tian Shan Mountains falls during the three summer months, when the region is under the monsoon influence; about 70% of that is directly of "cyclonic" (i.e., monsoon-driven) origin (as opposed to "local convection"). The effects also extend westwards to the Mediterranean, where however the impact of the monsoon is to induce drought via the Rodwell-Hoskins mechanism.
+
+
+===== Northeast monsoon =====
+
+Around September, with the sun retreating south, the northern landmass of the Indian subcontinent begins to cool off rapidly, and air pressure begins to build over northern India. The Indian Ocean and its surrounding atmosphere still hold their heat, causing cold wind to sweep down from the Himalayas and Indo-Gangetic Plain towards the vast spans of the Indian Ocean south of the Deccan peninsula. This is known as the Northeast Monsoon or Retreating Monsoon.
+While travelling towards the Indian Ocean, the cold dry wind picks up some moisture from the Bay of Bengal and pours it over peninsular India and parts of Sri Lanka. Cities like Chennai, which get less rain from the Southwest Monsoon, receive rain from this Monsoon. About 50% to 60% of the rain received by the state of Tamil Nadu is from the Northeast Monsoon. In Southern Asia, the northeastern monsoons take place from October to December when the surface high-pressure system is strongest. The jet stream in this region splits into the southern subtropical jet and the polar jet. The subtropical flow directs northeasterly winds to blow across southern Asia, creating dry air streams which produce clear skies over India. Meanwhile, a low pressure system known as a monsoon trough develops over South-East Asia and Australasia and winds are directed toward Australia. In the Philippines, northeast monsoon is called Amihan.
+
+
+==== East Asian monsoon ====
+
+The East Asian monsoon affects large parts of Indochina, the Philippines, China, Taiwan, Korea, Japan, and Siberia. It is characterised by a warm, rainy summer monsoon and a cold, dry winter monsoon. The rain occurs in a concentrated belt that stretches east–west except in East China where it is tilted east-northeast over Korea and Japan. The seasonal rain is known as Meiyu in China, Jangma in Korea, and Bai-u in Japan, with the latter two resembling frontal rain.
+The onset of the summer monsoon is marked by a period of premonsoonal rain over South China and Taiwan in early May. From May through August, the summer monsoon shifts through a series of dry and rainy phases as the rain belt moves northward, beginning over Indochina and the South China Sea (May), to the Yangtze River Basin and Japan (June) and finally to northern China and Korea (July). When the monsoon ends in August, the rain belt moves back to southern China.
+
+
+=== Australia ===
+
+The rainy season occurs from September to February and it is a major source of energy for the Hadley circulation during boreal winter. It is associated with the development of the Siberian High and the movement of the heating maxima from the Northern Hemisphere to the Southern Hemisphere. North-easterly winds flow down Southeast Asia, are turned north-westerly/westerly by Borneo topography towards Australia. This forms a cyclonic circulation vortex over Borneo, which together with descending cold surges of winter air from higher latitudes, cause significant weather phenomena in the region. Examples are the formation of a rare low-latitude tropical storm in 2001, Tropical Storm Vamei, and the devastating flood of Jakarta in 2007.
+The onset of the monsoon over Australia tends to follow the heating maxima down Vietnam and the Malay Peninsula (September), to Sumatra, Borneo and the Philippines (October), to Java, Sulawesi (November), Irian Jaya and northern Australia (December, January). However, the monsoon is not a simple response to heating but a more complex interaction of topography, wind and sea, as demonstrated by its abrupt rather than gradual withdrawal from the region. The Australian monsoon (the "Wet") occurs in the southern summer when the monsoon trough develops over Northern Australia. Over three-quarters of annual rainfall in Northern Australia falls during this time.
+
+
+=== Europe ===
+
+The European Monsoon (more commonly known as the return of the westerlies) is the result of a resurgence of westerly winds from the Atlantic, where they become loaded with wind and rain. These westerly winds are a common phenomenon during the European winter, but they ease as spring approaches in late March and through April and May. The winds pick up again in June, which is why this phenomenon is also referred to as "the return of the westerlies".
+The rain usually arrives in two waves, at the beginning of June, and again in mid- to late June. The European monsoon is not a monsoon in the traditional sense in that it doesn't meet all the requirements to be classified as such. Instead, the return of the westerlies is more regarded as a conveyor belt that delivers a series of low-pressure centres to Western Europe where they create unsettled weather. These storms generally feature significantly lower-than-average temperatures, fierce rain or hail, thunder, and strong winds.
+The return of the westerlies affects Europe's Northern Atlantic coastline, more precisely Ireland, Great Britain, the Benelux countries, western Germany, northern France and parts of Scandinavia.
+
+
+== See also ==
+Monsoon (photographs) – New Zealand photographer (1927–1988)Pages displaying short descriptions of redirect targets
+Tropical monsoon climate
+North American monsoon
+
+
+== References ==
+
+
+== Further reading ==
+Chang, C.-P.; Wang, Zhuo; Hendon, Harry (2006). "The Asian Winter Monsoon". In Wang, Bin (ed.). The Asian Monsoon. Berlin: Springer. pp. 89–127. ISBN 978-3-540-37722-1.
+International Committee of the Third International Workshop on Monsoons (2–6 November 2004). Chang, C.-P.; Wang, Bin; Lau, Ngar-Cheung Gabriel (eds.). The Global Monsoon System: Research and Forecast (PDF) (Report). Archived from the original (PDF) on 8 April 2008.
+
+
+== External links ==
+
+"Arizona Monsoon Basics Page". Pepper Ridge North Valley's.
