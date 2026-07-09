@@ -1,14 +1,14 @@
 {
   "concept_name": "COVID-19",
   "n_words": 214,
-  "n_bigrams": 40,
+  "n_bigrams": 200,
   "n_concepts": 4,
   "n_hasse_edges": 3,
   "d_min": 0.0,
   "d_max": 2.0,
   "d_values": [
     0.0,
-    0.1111111111111111,
+    0.5,
     2.0,
     Infinity
   ],
@@ -19,14 +19,14 @@
     },
     {
       "|A|": 1,
-      "|B|": 9
+      "|B|": 2
     },
     {
       "|A|": 2,
       "|B|": 1
     },
     {
-      "|A|": 40,
+      "|A|": 200,
       "|B|": 0
     }
   ],

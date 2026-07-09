@@ -1,16 +1,15 @@
 {
   "concept_name": "Evolution",
   "n_words": 188,
-  "n_bigrams": 40,
-  "n_concepts": 5,
-  "n_hasse_edges": 4,
+  "n_bigrams": 200,
+  "n_concepts": 4,
+  "n_hasse_edges": 3,
   "d_min": 0.0,
-  "d_max": 5.0,
+  "d_max": 3.0,
   "d_values": [
     0.0,
-    0.1,
-    1.0,
-    5.0,
+    0.5,
+    3.0,
     Infinity
   ],
   "concept_sizes": [
@@ -20,18 +19,14 @@
     },
     {
       "|A|": 1,
-      "|B|": 10
-    },
-    {
-      "|A|": 2,
       "|B|": 2
     },
     {
-      "|A|": 5,
+      "|A|": 3,
       "|B|": 1
     },
     {
-      "|A|": 40,
+      "|A|": 200,
       "|B|": 0
     }
   ],
@@ -47,15 +42,11 @@
     [
       3,
       2
-    ],
-    [
-      4,
-      3
     ]
   ],
   "verification": {
-    "total_edges": 4,
-    "passes": 4,
+    "total_edges": 3,
+    "passes": 3,
     "violations": 0,
     "pass_rate": 1.0,
     "violation_details": []

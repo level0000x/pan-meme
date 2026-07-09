@@ -32,7 +32,7 @@ def tokenize_english(text: str) -> List[str]:
 
 
 def word_to_bigrams(word: str) -> List[str]:
-    return [word[i:i+2] for i in range(len(word) - 1)]
+    return [f"{word[i:i+2]}_{i}" for i in range(len(word) - 1)]
 
 
 def build_formal_context(
@@ -268,7 +268,7 @@ def main():
             continue
 
         unique_words, bigrams, bg_to_words, wd_to_bigrams = build_formal_context(
-            words, min_word_freq=1, max_bigrams=40
+            words, min_word_freq=1, max_bigrams=200
         )
 
         if len(bigrams) < 5 or len(unique_words) < 10:

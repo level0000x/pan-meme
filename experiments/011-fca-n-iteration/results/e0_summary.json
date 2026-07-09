@@ -2,13 +2,13 @@
   {
     "concept": "Academy_Awards",
     "n_words": 74,
-    "n_bigrams": 40,
-    "n_concepts": 5,
-    "n_hasse_edges": 4,
+    "n_bigrams": 200,
+    "n_concepts": 4,
+    "n_hasse_edges": 3,
     "d_min": 0.0,
-    "d_max": 5.0,
+    "d_max": 2.0,
     "verification": {
-      "passes": 4,
+      "passes": 3,
       "violations": 0,
       "pass_rate": 1.0
     }
@@ -16,13 +16,13 @@
   {
     "concept": "Algebra",
     "n_words": 125,
-    "n_bigrams": 40,
-    "n_concepts": 5,
-    "n_hasse_edges": 4,
+    "n_bigrams": 200,
+    "n_concepts": 3,
+    "n_hasse_edges": 2,
     "d_min": 0.0,
-    "d_max": 5.0,
+    "d_max": 4.0,
     "verification": {
-      "passes": 4,
+      "passes": 2,
       "violations": 0,
       "pass_rate": 1.0
     }
@@ -30,13 +30,13 @@
   {
     "concept": "Barbie_(film)",
     "n_words": 159,
-    "n_bigrams": 40,
-    "n_concepts": 6,
-    "n_hasse_edges": 5,
+    "n_bigrams": 200,
+    "n_concepts": 4,
+    "n_hasse_edges": 3,
     "d_min": 0.0,
-    "d_max": 7.0,
+    "d_max": 2.0,
     "verification": {
-      "passes": 5,
+      "passes": 3,
       "violations": 0,
       "pass_rate": 1.0
     }
@@ -44,13 +44,13 @@
   {
     "concept": "Bitcoin",
     "n_words": 100,
-    "n_bigrams": 40,
-    "n_concepts": 5,
-    "n_hasse_edges": 4,
+    "n_bigrams": 200,
+    "n_concepts": 3,
+    "n_hasse_edges": 2,
     "d_min": 0.0,
-    "d_max": 3.0,
+    "d_max": 4.0,
     "verification": {
-      "passes": 4,
+      "passes": 2,
       "violations": 0,
       "pass_rate": 1.0
     }
@@ -58,11 +58,11 @@
   {
     "concept": "Black_Lives_Matter",
     "n_words": 153,
-    "n_bigrams": 40,
+    "n_bigrams": 200,
     "n_concepts": 4,
     "n_hasse_edges": 3,
     "d_min": 0.0,
-    "d_max": 2.5,
+    "d_max": 3.0,
     "verification": {
       "passes": 3,
       "violations": 0,
@@ -72,35 +72,7 @@
   {
     "concept": "BlackBerry",
     "n_words": 203,
-    "n_bigrams": 40,
-    "n_concepts": 6,
-    "n_hasse_edges": 5,
-    "d_min": 0.0,
-    "d_max": 5.0,
-    "verification": {
-      "passes": 5,
-      "violations": 0,
-      "pass_rate": 1.0
-    }
-  },
-  {
-    "concept": "Brexit",
-    "n_words": 219,
-    "n_bigrams": 40,
-    "n_concepts": 5,
-    "n_hasse_edges": 4,
-    "d_min": 0.0,
-    "d_max": 7.0,
-    "verification": {
-      "passes": 4,
-      "violations": 0,
-      "pass_rate": 1.0
-    }
-  },
-  {
-    "concept": "Calculus",
-    "n_words": 73,
-    "n_bigrams": 40,
+    "n_bigrams": 200,
     "n_concepts": 4,
     "n_hasse_edges": 3,
     "d_min": 0.0,
@@ -112,23 +84,9 @@
     }
   },
   {
-    "concept": "Carbon",
-    "n_words": 160,
-    "n_bigrams": 40,
-    "n_concepts": 5,
-    "n_hasse_edges": 4,
-    "d_min": 0.0,
-    "d_max": 5.0,
-    "verification": {
-      "passes": 4,
-      "violations": 0,
-      "pass_rate": 1.0
-    }
-  },
-  {
-    "concept": "ChatGPT",
-    "n_words": 98,
-    "n_bigrams": 40,
+    "concept": "Brexit",
+    "n_words": 219,
+    "n_bigrams": 200,
     "n_concepts": 4,
     "n_hasse_edges": 3,
     "d_min": 0.0,
@@ -140,13 +98,55 @@
     }
   },
   {
-    "concept": "Christmas",
-    "n_words": 198,
-    "n_bigrams": 40,
+    "concept": "Calculus",
+    "n_words": 73,
+    "n_bigrams": 200,
+    "n_concepts": 3,
+    "n_hasse_edges": 2,
+    "d_min": 0.0,
+    "d_max": 6.0,
+    "verification": {
+      "passes": 2,
+      "violations": 0,
+      "pass_rate": 1.0
+    }
+  },
+  {
+    "concept": "Carbon",
+    "n_words": 160,
+    "n_bigrams": 200,
     "n_concepts": 4,
     "n_hasse_edges": 3,
     "d_min": 0.0,
-    "d_max": 2.0,
+    "d_max": 7.0,
+    "verification": {
+      "passes": 3,
+      "violations": 0,
+      "pass_rate": 1.0
+    }
+  },
+  {
+    "concept": "ChatGPT",
+    "n_words": 98,
+    "n_bigrams": 200,
+    "n_concepts": 3,
+    "n_hasse_edges": 2,
+    "d_min": 0.0,
+    "d_max": 3.0,
+    "verification": {
+      "passes": 2,
+      "violations": 0,
+      "pass_rate": 1.0
+    }
+  },
+  {
+    "concept": "Christmas",
+    "n_words": 198,
+    "n_bigrams": 200,
+    "n_concepts": 4,
+    "n_hasse_edges": 3,
+    "d_min": 0.0,
+    "d_max": 4.0,
     "verification": {
       "passes": 3,
       "violations": 0,
@@ -156,13 +156,13 @@
   {
     "concept": "Clubhouse_(app)",
     "n_words": 77,
-    "n_bigrams": 40,
-    "n_concepts": 5,
-    "n_hasse_edges": 4,
+    "n_bigrams": 200,
+    "n_concepts": 3,
+    "n_hasse_edges": 2,
     "d_min": 0.0,
-    "d_max": 7.0,
+    "d_max": 3.0,
     "verification": {
-      "passes": 4,
+      "passes": 2,
       "violations": 0,
       "pass_rate": 1.0
     }
@@ -170,7 +170,7 @@
   {
     "concept": "COVID-19",
     "n_words": 214,
-    "n_bigrams": 40,
+    "n_bigrams": 200,
     "n_concepts": 4,
     "n_hasse_edges": 3,
     "d_min": 0.0,
@@ -184,13 +184,13 @@
   {
     "concept": "Democracy",
     "n_words": 192,
-    "n_bigrams": 40,
-    "n_concepts": 5,
-    "n_hasse_edges": 4,
+    "n_bigrams": 200,
+    "n_concepts": 4,
+    "n_hasse_edges": 3,
     "d_min": 0.0,
-    "d_max": 4.0,
+    "d_max": 6.0,
     "verification": {
-      "passes": 4,
+      "passes": 3,
       "violations": 0,
       "pass_rate": 1.0
     }
@@ -198,13 +198,13 @@
   {
     "concept": "DNA",
     "n_words": 161,
-    "n_bigrams": 40,
-    "n_concepts": 5,
-    "n_hasse_edges": 4,
+    "n_bigrams": 200,
+    "n_concepts": 4,
+    "n_hasse_edges": 3,
     "d_min": 0.0,
-    "d_max": 7.0,
+    "d_max": 3.0,
     "verification": {
-      "passes": 4,
+      "passes": 3,
       "violations": 0,
       "pass_rate": 1.0
     }
@@ -212,13 +212,13 @@
   {
     "concept": "Elon_Musk",
     "n_words": 200,
-    "n_bigrams": 40,
-    "n_concepts": 5,
-    "n_hasse_edges": 4,
+    "n_bigrams": 200,
+    "n_concepts": 4,
+    "n_hasse_edges": 3,
     "d_min": 0.0,
-    "d_max": 5.0,
+    "d_max": 4.0,
     "verification": {
-      "passes": 4,
+      "passes": 3,
       "violations": 0,
       "pass_rate": 1.0
     }
@@ -226,13 +226,13 @@
   {
     "concept": "Evolution",
     "n_words": 188,
-    "n_bigrams": 40,
-    "n_concepts": 5,
-    "n_hasse_edges": 4,
+    "n_bigrams": 200,
+    "n_concepts": 4,
+    "n_hasse_edges": 3,
     "d_min": 0.0,
-    "d_max": 5.0,
+    "d_max": 3.0,
     "verification": {
-      "passes": 4,
+      "passes": 3,
       "violations": 0,
       "pass_rate": 1.0
     }
@@ -240,13 +240,13 @@
   {
     "concept": "FarmVille",
     "n_words": 102,
-    "n_bigrams": 40,
-    "n_concepts": 5,
-    "n_hasse_edges": 4,
+    "n_bigrams": 200,
+    "n_concepts": 3,
+    "n_hasse_edges": 2,
     "d_min": 0.0,
-    "d_max": 4.0,
+    "d_max": 6.0,
     "verification": {
-      "passes": 4,
+      "passes": 2,
       "violations": 0,
       "pass_rate": 1.0
     }
@@ -254,13 +254,13 @@
   {
     "concept": "FIFA_World_Cup",
     "n_words": 96,
-    "n_bigrams": 40,
-    "n_concepts": 4,
-    "n_hasse_edges": 3,
+    "n_bigrams": 200,
+    "n_concepts": 3,
+    "n_hasse_edges": 2,
     "d_min": 0.0,
-    "d_max": 2.0,
+    "d_max": 3.0,
     "verification": {
-      "passes": 3,
+      "passes": 2,
       "violations": 0,
       "pass_rate": 1.0
     }
@@ -268,13 +268,13 @@
   {
     "concept": "GameStop_short_squeeze",
     "n_words": 139,
-    "n_bigrams": 40,
-    "n_concepts": 5,
-    "n_hasse_edges": 4,
+    "n_bigrams": 200,
+    "n_concepts": 3,
+    "n_hasse_edges": 2,
     "d_min": 0.0,
-    "d_max": 5.0,
+    "d_max": 4.0,
     "verification": {
-      "passes": 4,
+      "passes": 2,
       "violations": 0,
       "pass_rate": 1.0
     }
@@ -282,13 +282,13 @@
   {
     "concept": "Google%2B",
     "n_words": 68,
-    "n_bigrams": 40,
-    "n_concepts": 4,
-    "n_hasse_edges": 3,
+    "n_bigrams": 200,
+    "n_concepts": 3,
+    "n_hasse_edges": 2,
     "d_min": 0.0,
     "d_max": 3.0,
     "verification": {
-      "passes": 3,
+      "passes": 2,
       "violations": 0,
       "pass_rate": 1.0
     }
@@ -296,13 +296,13 @@
   {
     "concept": "Grammy_Awards",
     "n_words": 91,
-    "n_bigrams": 40,
-    "n_concepts": 5,
-    "n_hasse_edges": 4,
+    "n_bigrams": 200,
+    "n_concepts": 3,
+    "n_hasse_edges": 2,
     "d_min": 0.0,
     "d_max": 3.0,
     "verification": {
-      "passes": 4,
+      "passes": 2,
       "violations": 0,
       "pass_rate": 1.0
     }
@@ -310,13 +310,13 @@
   {
     "concept": "Gravity",
     "n_words": 141,
-    "n_bigrams": 40,
-    "n_concepts": 5,
-    "n_hasse_edges": 4,
+    "n_bigrams": 200,
+    "n_concepts": 4,
+    "n_hasse_edges": 3,
     "d_min": 0.0,
-    "d_max": 3.0,
+    "d_max": 4.0,
     "verification": {
-      "passes": 4,
+      "passes": 3,
       "violations": 0,
       "pass_rate": 1.0
     }
@@ -324,13 +324,13 @@
   {
     "concept": "Halloween",
     "n_words": 133,
-    "n_bigrams": 40,
-    "n_concepts": 5,
-    "n_hasse_edges": 4,
+    "n_bigrams": 200,
+    "n_concepts": 4,
+    "n_hasse_edges": 3,
     "d_min": 0.0,
     "d_max": 5.0,
     "verification": {
-      "passes": 4,
+      "passes": 3,
       "violations": 0,
       "pass_rate": 1.0
     }
@@ -338,11 +338,11 @@
   {
     "concept": "Internet_Explorer",
     "n_words": 157,
-    "n_bigrams": 40,
+    "n_bigrams": 200,
     "n_concepts": 4,
     "n_hasse_edges": 3,
     "d_min": 0.0,
-    "d_max": 3.0,
+    "d_max": 4.0,
     "verification": {
       "passes": 3,
       "violations": 0,
@@ -352,13 +352,13 @@
   {
     "concept": "LimeWire",
     "n_words": 107,
-    "n_bigrams": 40,
-    "n_concepts": 6,
-    "n_hasse_edges": 5,
+    "n_bigrams": 200,
+    "n_concepts": 3,
+    "n_hasse_edges": 2,
     "d_min": 0.0,
-    "d_max": 6.0,
+    "d_max": 4.0,
     "verification": {
-      "passes": 5,
+      "passes": 2,
       "violations": 0,
       "pass_rate": 1.0
     }
@@ -366,11 +366,11 @@
   {
     "concept": "MySpace",
     "n_words": 110,
-    "n_bigrams": 40,
+    "n_bigrams": 200,
     "n_concepts": 4,
     "n_hasse_edges": 3,
     "d_min": 0.0,
-    "d_max": 2.0,
+    "d_max": 4.0,
     "verification": {
       "passes": 3,
       "violations": 0,
@@ -380,7 +380,7 @@
   {
     "concept": "Nokia",
     "n_words": 160,
-    "n_bigrams": 40,
+    "n_bigrams": 200,
     "n_concepts": 4,
     "n_hasse_edges": 3,
     "d_min": 0.0,
@@ -394,13 +394,13 @@
   {
     "concept": "Olympic_Games",
     "n_words": 227,
-    "n_bigrams": 40,
-    "n_concepts": 5,
-    "n_hasse_edges": 4,
+    "n_bigrams": 200,
+    "n_concepts": 4,
+    "n_hasse_edges": 3,
     "d_min": 0.0,
-    "d_max": 4.0,
+    "d_max": 2.0,
     "verification": {
-      "passes": 4,
+      "passes": 3,
       "violations": 0,
       "pass_rate": 1.0
     }
@@ -408,11 +408,11 @@
   {
     "concept": "Oppenheimer_(film)",
     "n_words": 185,
-    "n_bigrams": 40,
+    "n_bigrams": 200,
     "n_concepts": 4,
     "n_hasse_edges": 3,
     "d_min": 0.0,
-    "d_max": 2.0,
+    "d_max": 3.0,
     "verification": {
       "passes": 3,
       "violations": 0,
@@ -422,13 +422,13 @@
   {
     "concept": "Oxygen",
     "n_words": 211,
-    "n_bigrams": 40,
-    "n_concepts": 6,
-    "n_hasse_edges": 5,
+    "n_bigrams": 200,
+    "n_concepts": 4,
+    "n_hasse_edges": 3,
     "d_min": 0.0,
-    "d_max": 8.0,
+    "d_max": 2.0,
     "verification": {
-      "passes": 5,
+      "passes": 3,
       "violations": 0,
       "pass_rate": 1.0
     }
@@ -436,11 +436,11 @@
   {
     "concept": "Periodic_table",
     "n_words": 148,
-    "n_bigrams": 40,
+    "n_bigrams": 200,
     "n_concepts": 4,
     "n_hasse_edges": 3,
     "d_min": 0.0,
-    "d_max": 2.0,
+    "d_max": 4.0,
     "verification": {
       "passes": 3,
       "violations": 0,
@@ -450,49 +450,7 @@
   {
     "concept": "Philosophy",
     "n_words": 150,
-    "n_bigrams": 40,
-    "n_concepts": 5,
-    "n_hasse_edges": 4,
-    "d_min": 0.0,
-    "d_max": 5.0,
-    "verification": {
-      "passes": 4,
-      "violations": 0,
-      "pass_rate": 1.0
-    }
-  },
-  {
-    "concept": "Photosynthesis",
-    "n_words": 242,
-    "n_bigrams": 40,
-    "n_concepts": 5,
-    "n_hasse_edges": 4,
-    "d_min": 0.0,
-    "d_max": 5.0,
-    "verification": {
-      "passes": 4,
-      "violations": 0,
-      "pass_rate": 1.0
-    }
-  },
-  {
-    "concept": "Second_Life",
-    "n_words": 105,
-    "n_bigrams": 40,
-    "n_concepts": 4,
-    "n_hasse_edges": 3,
-    "d_min": 0.0,
-    "d_max": 3.0,
-    "verification": {
-      "passes": 3,
-      "violations": 0,
-      "pass_rate": 1.0
-    }
-  },
-  {
-    "concept": "Super_Bowl",
-    "n_words": 155,
-    "n_bigrams": 40,
+    "n_bigrams": 200,
     "n_concepts": 4,
     "n_hasse_edges": 3,
     "d_min": 0.0,
@@ -504,15 +462,57 @@
     }
   },
   {
+    "concept": "Photosynthesis",
+    "n_words": 242,
+    "n_bigrams": 200,
+    "n_concepts": 4,
+    "n_hasse_edges": 3,
+    "d_min": 0.0,
+    "d_max": 8.0,
+    "verification": {
+      "passes": 3,
+      "violations": 0,
+      "pass_rate": 1.0
+    }
+  },
+  {
+    "concept": "Second_Life",
+    "n_words": 105,
+    "n_bigrams": 200,
+    "n_concepts": 3,
+    "n_hasse_edges": 2,
+    "d_min": 0.0,
+    "d_max": 5.0,
+    "verification": {
+      "passes": 2,
+      "violations": 0,
+      "pass_rate": 1.0
+    }
+  },
+  {
+    "concept": "Super_Bowl",
+    "n_words": 155,
+    "n_bigrams": 200,
+    "n_concepts": 4,
+    "n_hasse_edges": 3,
+    "d_min": 0.0,
+    "d_max": 3.0,
+    "verification": {
+      "passes": 3,
+      "violations": 0,
+      "pass_rate": 1.0
+    }
+  },
+  {
     "concept": "Taylor_Swift",
     "n_words": 162,
-    "n_bigrams": 40,
-    "n_concepts": 5,
-    "n_hasse_edges": 4,
+    "n_bigrams": 200,
+    "n_concepts": 4,
+    "n_hasse_edges": 3,
     "d_min": 0.0,
-    "d_max": 4.0,
+    "d_max": 3.0,
     "verification": {
-      "passes": 4,
+      "passes": 3,
       "violations": 0,
       "pass_rate": 1.0
     }
@@ -520,13 +520,13 @@
   {
     "concept": "Tesla,_Inc.",
     "n_words": 143,
-    "n_bigrams": 40,
-    "n_concepts": 5,
-    "n_hasse_edges": 4,
+    "n_bigrams": 200,
+    "n_concepts": 4,
+    "n_hasse_edges": 3,
     "d_min": 0.0,
-    "d_max": 5.0,
+    "d_max": 6.0,
     "verification": {
-      "passes": 4,
+      "passes": 3,
       "violations": 0,
       "pass_rate": 1.0
     }
@@ -534,13 +534,13 @@
   {
     "concept": "Thanksgiving",
     "n_words": 44,
-    "n_bigrams": 40,
-    "n_concepts": 5,
-    "n_hasse_edges": 4,
+    "n_bigrams": 200,
+    "n_concepts": 3,
+    "n_hasse_edges": 2,
     "d_min": 0.0,
     "d_max": 4.0,
     "verification": {
-      "passes": 4,
+      "passes": 2,
       "violations": 0,
       "pass_rate": 1.0
     }
@@ -548,13 +548,13 @@
   {
     "concept": "Ukraine",
     "n_words": 226,
-    "n_bigrams": 40,
-    "n_concepts": 6,
-    "n_hasse_edges": 5,
+    "n_bigrams": 200,
+    "n_concepts": 4,
+    "n_hasse_edges": 3,
     "d_min": 0.0,
-    "d_max": 5.0,
+    "d_max": 4.0,
     "verification": {
-      "passes": 5,
+      "passes": 3,
       "violations": 0,
       "pass_rate": 1.0
     }
@@ -562,13 +562,13 @@
   {
     "concept": "Vine_(service)",
     "n_words": 108,
-    "n_bigrams": 40,
-    "n_concepts": 5,
-    "n_hasse_edges": 4,
+    "n_bigrams": 200,
+    "n_concepts": 3,
+    "n_hasse_edges": 2,
     "d_min": 0.0,
-    "d_max": 3.0,
+    "d_max": 4.0,
     "verification": {
-      "passes": 4,
+      "passes": 2,
       "violations": 0,
       "pass_rate": 1.0
     }
@@ -576,13 +576,13 @@
   {
     "concept": "Windows_XP",
     "n_words": 100,
-    "n_bigrams": 40,
-    "n_concepts": 5,
-    "n_hasse_edges": 4,
+    "n_bigrams": 200,
+    "n_concepts": 3,
+    "n_hasse_edges": 2,
     "d_min": 0.0,
-    "d_max": 9.0,
+    "d_max": 1.0,
     "verification": {
-      "passes": 4,
+      "passes": 2,
       "violations": 0,
       "pass_rate": 1.0
     }

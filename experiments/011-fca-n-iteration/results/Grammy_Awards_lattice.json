@@ -1,15 +1,13 @@
 {
   "concept_name": "Grammy_Awards",
   "n_words": 91,
-  "n_bigrams": 40,
-  "n_concepts": 5,
-  "n_hasse_edges": 4,
+  "n_bigrams": 200,
+  "n_concepts": 3,
+  "n_hasse_edges": 2,
   "d_min": 0.0,
   "d_max": 3.0,
   "d_values": [
     0.0,
-    0.25,
-    1.0,
     3.0,
     Infinity
   ],
@@ -19,19 +17,11 @@
       "|B|": 91
     },
     {
-      "|A|": 1,
-      "|B|": 4
-    },
-    {
-      "|A|": 2,
-      "|B|": 2
-    },
-    {
       "|A|": 3,
       "|B|": 1
     },
     {
-      "|A|": 40,
+      "|A|": 200,
       "|B|": 0
     }
   ],
@@ -43,19 +33,11 @@
     [
       2,
       1
-    ],
-    [
-      3,
-      2
-    ],
-    [
-      4,
-      3
     ]
   ],
   "verification": {
-    "total_edges": 4,
-    "passes": 4,
+    "total_edges": 2,
+    "passes": 2,
     "violations": 0,
     "pass_rate": 1.0,
     "violation_details": []
