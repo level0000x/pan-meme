@@ -1,0 +1,63 @@
+{
+  "concept_name": "Vine_(service)",
+  "n_words": 108,
+  "n_bigrams": 40,
+  "n_concepts": 5,
+  "n_hasse_edges": 4,
+  "d_min": 0.0,
+  "d_max": 3.0,
+  "d_values": [
+    0.0,
+    0.2,
+    0.6666666666666666,
+    3.0,
+    Infinity
+  ],
+  "concept_sizes": [
+    {
+      "|A|": 0,
+      "|B|": 108
+    },
+    {
+      "|A|": 1,
+      "|B|": 5
+    },
+    {
+      "|A|": 2,
+      "|B|": 3
+    },
+    {
+      "|A|": 3,
+      "|B|": 1
+    },
+    {
+      "|A|": 40,
+      "|B|": 0
+    }
+  ],
+  "edges": [
+    [
+      1,
+      0
+    ],
+    [
+      2,
+      1
+    ],
+    [
+      3,
+      2
+    ],
+    [
+      4,
+      3
+    ]
+  ],
+  "verification": {
+    "total_edges": 4,
+    "passes": 4,
+    "violations": 0,
+    "pass_rate": 1.0,
+    "violation_details": []
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "v1": {
+    "label": "v1_uniform",
+    "total": 242,
+    "passes": 141,
+    "violations": 101,
+    "pass_rate": 0.5826446280991735
+  },
+  "v4": {
+    "label": "v4_fca_closure",
+    "total": 242,
+    "passes": 116,
+    "violations": 126,
+    "pass_rate": 0.4793388429752066
+  },
+  "improvement": -0.10330578512396688
+}

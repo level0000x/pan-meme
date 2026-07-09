@@ -1,0 +1,16 @@
+{
+  "concept_name": "Darwin",
+  "n_words": 22,
+  "n_chars": 18,
+  "n_concepts": 6,
+  "n_hasse_edges": 5,
+  "d_min": 0.0,
+  "d_max": 6.0,
+  "verification": {
+    "total_edges": 5,
+    "passes": 5,
+    "violations": 0,
+    "pass_rate": 1.0,
+    "violation_details": []
+  }
+}

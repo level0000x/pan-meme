@@ -1,0 +1,1579 @@
+{
+  "v1_uniform": {
+    "converged_rate": 1.0,
+    "e3": {
+      "label": "v1_uniform",
+      "total": 159,
+      "passes": 73,
+      "violations": 86,
+      "pass_rate": 0.4591194968553459,
+      "details": [
+        {
+          "concept": "Academy_Awards",
+          "parent_idx": 1,
+          "child_idx": 0,
+          "tau_inv_parent": 0.8841884764278117,
+          "tau_inv_child": 1.0086424502114109,
+          "passes": false,
+          "D_star_parent": 0.3664342448316758,
+          "D_star_child": 0.4510894648754704
+        },
+        {
+          "concept": "Academy_Awards",
+          "parent_idx": 2,
+          "child_idx": 1,
+          "tau_inv_parent": 1.0992134550314336,
+          "tau_inv_child": 0.8841884764278117,
+          "passes": true,
+          "D_star_parent": 0.3243035002682867,
+          "D_star_child": 0.3664342448316758
+        },
+        {
+          "concept": "Academy_Awards",
+          "parent_idx": 3,
+          "child_idx": 2,
+          "tau_inv_parent": 1.1264797733539582,
+          "tau_inv_child": 1.0992134550314336,
+          "passes": true,
+          "D_star_parent": 0.31614397719601656,
+          "D_star_child": 0.3243035002682867
+        },
+        {
+          "concept": "Academy_Awards",
+          "parent_idx": 4,
+          "child_idx": 3,
+          "tau_inv_parent": 1.065201570769592,
+          "tau_inv_child": 1.1264797733539582,
+          "passes": false,
+          "D_star_parent": 0.3146612075459824,
+          "D_star_child": 0.31614397719601656
+        },
+        {
+          "concept": "Algebra",
+          "parent_idx": 1,
+          "child_idx": 0,
+          "tau_inv_parent": 1.008881349260101,
+          "tau_inv_child": 1.0107927676203103,
+          "passes": false,
+          "D_star_parent": 0.36643424634871863,
+          "D_star_child": 0.4510894651811076
+        },
+        {
+          "concept": "Algebra",
+          "parent_idx": 2,
+          "child_idx": 1,
+          "tau_inv_parent": 1.0591449309182157,
+          "tau_inv_child": 1.008881349260101,
+          "passes": true,
+          "D_star_parent": 0.32430350004930036,
+          "D_star_child": 0.36643424634871863
+        },
+        {
+          "concept": "Algebra",
+          "parent_idx": 3,
+          "child_idx": 2,
+          "tau_inv_parent": 1.1280031128116694,
+          "tau_inv_child": 1.0591449309182157,
+          "passes": true,
+          "D_star_parent": 0.3161439771065982,
+          "D_star_child": 0.32430350004930036
+        },
+        {
+          "concept": "Algebra",
+          "parent_idx": 4,
+          "child_idx": 3,
+          "tau_inv_parent": 1.065201570737927,
+          "tau_inv_child": 1.1280031128116694,
+          "passes": false,
+          "D_star_parent": 0.31466120753048354,
+          "D_star_child": 0.3161439771065982
+        },
+        {
+          "concept": "Barbie_(film)",
+          "parent_idx": 1,
+          "child_idx": 0,
+          "tau_inv_parent": 0.9981411053322355,
+          "tau_inv_child": 1.0105652243061178,
+          "passes": false,
+          "D_star_parent": 0.3664342463664904,
+          "D_star_child": 0.4510894651434031
+        },
+        {
+          "concept": "Barbie_(film)",
+          "parent_idx": 2,
+          "child_idx": 1,
+          "tau_inv_parent": 0.9250964436807848,
+          "tau_inv_child": 0.9981411053322355,
+          "passes": false,
+          "D_star_parent": 0.32430350009828024,
+          "D_star_child": 0.3664342463664904
+        },
+        {
+          "concept": "Barbie_(film)",
+          "parent_idx": 3,
+          "child_idx": 2,
+          "tau_inv_parent": 1.081637792124653,
+          "tau_inv_child": 0.9250964436807848,
+          "passes": true,
+          "D_star_parent": 0.3161439766665393,
+          "D_star_child": 0.32430350009828024
+        },
+        {
+          "concept": "Barbie_(film)",
+          "parent_idx": 4,
+          "child_idx": 3,
+          "tau_inv_parent": 1.1183340694874002,
+          "tau_inv_child": 1.081637792124653,
+          "passes": true,
+          "D_star_parent": 0.3146612075813976,
+          "D_star_child": 0.3161439766665393
+        },
+        {
+          "concept": "Barbie_(film)",
+          "parent_idx": 5,
+          "child_idx": 4,
+          "tau_inv_parent": 1.0640813667132305,
+          "tau_inv_child": 1.1183340694874002,
+          "passes": false,
+          "D_star_parent": 0.3143678094152083,
+          "D_star_child": 0.3146612075813976
+        },
+        {
+          "concept": "Bitcoin",
+          "parent_idx": 1,
+          "child_idx": 0,
+          "tau_inv_parent": 0.9141822942940052,
+          "tau_inv_child": 1.0118867205316726,
+          "passes": false,
+          "D_star_parent": 0.3664342451370648,
+          "D_star_child": 0.45108946539971173
+        },
+        {
+          "concept": "Bitcoin",
+          "parent_idx": 2,
+          "child_idx": 1,
+          "tau_inv_parent": 1.2913654322816728,
+          "tau_inv_child": 0.9141822942940052,
+          "passes": true,
+          "D_star_parent": 0.3243035001973904,
+          "D_star_child": 0.3664342451370648
+        },
+        {
+          "concept": "Bitcoin",
+          "parent_idx": 3,
+          "child_idx": 2,
+          "tau_inv_parent": 1.09708721696761,
+          "tau_inv_child": 1.2913654322816728,
+          "passes": false,
+          "D_star_parent": 0.31614397730278865,
+          "D_star_child": 0.3243035001973904
+        },
+        {
+          "concept": "Bitcoin",
+          "parent_idx": 4,
+          "child_idx": 3,
+          "tau_inv_parent": 1.0648625845184059,
+          "tau_inv_child": 1.09708721696761,
+          "passes": false,
+          "D_star_parent": 0.3146612075549573,
+          "D_star_child": 0.31614397730278865
+        },
+        {
+          "concept": "Black_Lives_Matter",
+          "parent_idx": 1,
+          "child_idx": 0,
+          "tau_inv_parent": 0.8872712412156719,
+          "tau_inv_child": 1.0126407169760865,
+          "passes": false,
+          "D_star_parent": 0.3664342450645745,
+          "D_star_child": 0.45108946565347946
+        },
+        {
+          "concept": "Black_Lives_Matter",
+          "parent_idx": 2,
+          "child_idx": 1,
+          "tau_inv_parent": 1.1427264723682362,
+          "tau_inv_child": 0.8872712412156719,
+          "passes": true,
+          "D_star_parent": 0.3243035004866472,
+          "D_star_child": 0.3664342450645745
+        },
+        {
+          "concept": "Black_Lives_Matter",
+          "parent_idx": 3,
+          "child_idx": 2,
+          "tau_inv_parent": 1.0710818285374017,
+          "tau_inv_child": 1.1427264723682362,
+          "passes": false,
+          "D_star_parent": 0.3161439771411879,
+          "D_star_child": 0.3243035004866472
+        },
+        {
+          "concept": "BlackBerry",
+          "parent_idx": 1,
+          "child_idx": 0,
+          "tau_inv_parent": 0.9971759843536648,
+          "tau_inv_child": 1.0109400303932141,
+          "passes": false,
+          "D_star_parent": 0.36643424638379846,
+          "D_star_child": 0.4510894652065517
+        },
+        {
+          "concept": "BlackBerry",
+          "parent_idx": 2,
+          "child_idx": 1,
+          "tau_inv_parent": 1.0650462127726061,
+          "tau_inv_child": 0.9971759843536648,
+          "passes": true,
+          "D_star_parent": 0.32430350004069575,
+          "D_star_child": 0.36643424638379846
+        },
+        {
+          "concept": "BlackBerry",
+          "parent_idx": 3,
+          "child_idx": 2,
+          "tau_inv_parent": 1.2273790388774357,
+          "tau_inv_child": 1.0650462127726061,
+          "passes": true,
+          "D_star_parent": 0.31614397669563654,
+          "D_star_child": 0.32430350004069575
+        },
+        {
+          "concept": "BlackBerry",
+          "parent_idx": 4,
+          "child_idx": 3,
+          "tau_inv_parent": 1.0969443296329409,
+          "tau_inv_child": 1.2273790388774357,
+          "passes": false,
+          "D_star_parent": 0.31466120766848293,
+          "D_star_child": 0.31614397669563654
+        },
+        {
+          "concept": "BlackBerry",
+          "parent_idx": 5,
+          "child_idx": 4,
+          "tau_inv_parent": 1.0638153023850905,
+          "tau_inv_child": 1.0969443296329409,
+          "passes": false,
+          "D_star_parent": 0.31436780942267045,
+          "D_star_child": 0.31466120766848293
+        },
+        {
+          "concept": "Brexit",
+          "parent_idx": 1,
+          "child_idx": 0,
+          "tau_inv_parent": 1.0026557332989428,
+          "tau_inv_child": 1.012617456826569,
+          "passes": false,
+          "D_star_parent": 0.3664342464776222,
+          "D_star_child": 0.4510894656410448
+        },
+        {
+          "concept": "Brexit",
+          "parent_idx": 2,
+          "child_idx": 1,
+          "tau_inv_parent": 0.992405441267176,
+          "tau_inv_child": 1.0026557332989428,
+          "passes": false,
+          "D_star_parent": 0.32430349995622343,
+          "D_star_child": 0.3664342464776222
+        },
+        {
+          "concept": "Brexit",
+          "parent_idx": 3,
+          "child_idx": 2,
+          "tau_inv_parent": 1.1024292464067935,
+          "tau_inv_child": 0.992405441267176,
+          "passes": true,
+          "D_star_parent": 0.31614397719499227,
+          "D_star_child": 0.32430349995622343
+        },
+        {
+          "concept": "Brexit",
+          "parent_idx": 4,
+          "child_idx": 3,
+          "tau_inv_parent": 1.0650303376096069,
+          "tau_inv_child": 1.1024292464067935,
+          "passes": false,
+          "D_star_parent": 0.31466120754217786,
+          "D_star_child": 0.31614397719499227
+        },
+        {
+          "concept": "Calculus",
+          "parent_idx": 1,
+          "child_idx": 0,
+          "tau_inv_parent": 0.9503711636622215,
+          "tau_inv_child": 1.0120195059018147,
+          "passes": false,
+          "D_star_parent": 0.3664342453136032,
+          "D_star_child": 0.45108946543333145
+        }
+      ]
+    }
+  },
+  "v3_spectral": {
+    "converged_rate": 1.0,
+    "e3": {
+      "label": "v3_spectral",
+      "total": 159,
+      "passes": 69,
+      "violations": 90,
+      "pass_rate": 0.4339622641509434,
+      "details": [
+        {
+          "concept": "Academy_Awards",
+          "parent_idx": 1,
+          "child_idx": 0,
+          "tau_inv_parent": 1.13720785481149,
+          "tau_inv_child": 0.6399415655577112,
+          "passes": true,
+          "D_star_parent": 0.36809455304002403,
+          "D_star_child": 0.5030766770941597
+        },
+        {
+          "concept": "Academy_Awards",
+          "parent_idx": 2,
+          "child_idx": 1,
+          "tau_inv_parent": 1.177466621573362,
+          "tau_inv_child": 1.13720785481149,
+          "passes": true,
+          "D_star_parent": 0.32384552518824267,
+          "D_star_child": 0.36809455304002403
+        },
+        {
+          "concept": "Academy_Awards",
+          "parent_idx": 3,
+          "child_idx": 2,
+          "tau_inv_parent": 1.1264797733539582,
+          "tau_inv_child": 1.177466621573362,
+          "passes": false,
+          "D_star_parent": 0.31614397719601656,
+          "D_star_child": 0.32384552518824267
+        },
+        {
+          "concept": "Academy_Awards",
+          "parent_idx": 4,
+          "child_idx": 3,
+          "tau_inv_parent": 1.065201570769592,
+          "tau_inv_child": 1.1264797733539582,
+          "passes": false,
+          "D_star_parent": 0.3146612075459824,
+          "D_star_child": 0.31614397719601656
+        },
+        {
+          "concept": "Algebra",
+          "parent_idx": 1,
+          "child_idx": 0,
+          "tau_inv_parent": 1.4634759817555822,
+          "tau_inv_child": 1.0576118357542705,
+          "passes": true,
+          "D_star_parent": 0.3200334262544511,
+          "D_star_child": 0.5399867836851524
+        },
+        {
+          "concept": "Algebra",
+          "parent_idx": 2,
+          "child_idx": 1,
+          "tau_inv_parent": 1.327005359574921,
+          "tau_inv_child": 1.4634759817555822,
+          "passes": false,
+          "D_star_parent": 0.31125945443724673,
+          "D_star_child": 0.3200334262544511
+        },
+        {
+          "concept": "Algebra",
+          "parent_idx": 3,
+          "child_idx": 2,
+          "tau_inv_parent": 1.1280031128116694,
+          "tau_inv_child": 1.327005359574921,
+          "passes": false,
+          "D_star_parent": 0.3161439771065982,
+          "D_star_child": 0.31125945443724673
+        },
+        {
+          "concept": "Algebra",
+          "parent_idx": 4,
+          "child_idx": 3,
+          "tau_inv_parent": 1.065201570737927,
+          "tau_inv_child": 1.1280031128116694,
+          "passes": false,
+          "D_star_parent": 0.31466120753048354,
+          "D_star_child": 0.3161439771065982
+        },
+        {
+          "concept": "Barbie_(film)",
+          "parent_idx": 1,
+          "child_idx": 0,
+          "tau_inv_parent": 1.332925708809898,
+          "tau_inv_child": 1.099171130772509,
+          "passes": true,
+          "D_star_parent": 0.3238788905700019,
+          "D_star_child": 0.5410808305577989
+        },
+        {
+          "concept": "Barbie_(film)",
+          "parent_idx": 2,
+          "child_idx": 1,
+          "tau_inv_parent": 1.4762953835727148,
+          "tau_inv_child": 1.332925708809898,
+          "passes": true,
+          "D_star_parent": 0.29157462493699093,
+          "D_star_child": 0.3238788905700019
+        },
+        {
+          "concept": "Barbie_(film)",
+          "parent_idx": 3,
+          "child_idx": 2,
+          "tau_inv_parent": 1.0687752504201906,
+          "tau_inv_child": 1.4762953835727148,
+          "passes": false,
+          "D_star_parent": 0.3140371755232154,
+          "D_star_child": 0.29157462493699093
+        },
+        {
+          "concept": "Barbie_(film)",
+          "parent_idx": 4,
+          "child_idx": 3,
+          "tau_inv_parent": 1.1183340694874002,
+          "tau_inv_child": 1.0687752504201906,
+          "passes": true,
+          "D_star_parent": 0.3146612075813976,
+          "D_star_child": 0.3140371755232154
+        },
+        {
+          "concept": "Barbie_(film)",
+          "parent_idx": 5,
+          "child_idx": 4,
+          "tau_inv_parent": 1.0640813667132305,
+          "tau_inv_child": 1.1183340694874002,
+          "passes": false,
+          "D_star_parent": 0.3143678094152083,
+          "D_star_child": 0.3146612075813976
+        },
+        {
+          "concept": "Bitcoin",
+          "parent_idx": 1,
+          "child_idx": 0,
+          "tau_inv_parent": 1.5788494666212811,
+          "tau_inv_child": 0.9058203627872193,
+          "passes": true,
+          "D_star_parent": 0.3435803253015804,
+          "D_star_child": 0.5340451108468725
+        },
+        {
+          "concept": "Bitcoin",
+          "parent_idx": 2,
+          "child_idx": 1,
+          "tau_inv_parent": 1.156366189778689,
+          "tau_inv_child": 1.5788494666212811,
+          "passes": false,
+          "D_star_parent": 0.32384552509681286,
+          "D_star_child": 0.3435803253015804
+        },
+        {
+          "concept": "Bitcoin",
+          "parent_idx": 3,
+          "child_idx": 2,
+          "tau_inv_parent": 1.09708721696761,
+          "tau_inv_child": 1.156366189778689,
+          "passes": false,
+          "D_star_parent": 0.31614397730278865,
+          "D_star_child": 0.32384552509681286
+        },
+        {
+          "concept": "Bitcoin",
+          "parent_idx": 4,
+          "child_idx": 3,
+          "tau_inv_parent": 1.0648625845184059,
+          "tau_inv_child": 1.09708721696761,
+          "passes": false,
+          "D_star_parent": 0.3146612075549573,
+          "D_star_child": 0.31614397730278865
+        },
+        {
+          "concept": "Black_Lives_Matter",
+          "parent_idx": 1,
+          "child_idx": 0,
+          "tau_inv_parent": 1.377551868002588,
+          "tau_inv_child": 1.1194616155546886,
+          "passes": true,
+          "D_star_parent": 0.27292448930463087,
+          "D_star_child": 0.5469981575511712
+        },
+        {
+          "concept": "Black_Lives_Matter",
+          "parent_idx": 2,
+          "child_idx": 1,
+          "tau_inv_parent": 1.3502022284529813,
+          "tau_inv_child": 1.377551868002588,
+          "passes": false,
+          "D_star_parent": 0.3238455245715738,
+          "D_star_child": 0.27292448930463087
+        },
+        {
+          "concept": "Black_Lives_Matter",
+          "parent_idx": 3,
+          "child_idx": 2,
+          "tau_inv_parent": 1.0710818285374017,
+          "tau_inv_child": 1.3502022284529813,
+          "passes": false,
+          "D_star_parent": 0.3161439771411879,
+          "D_star_child": 0.3238455245715738
+        },
+        {
+          "concept": "BlackBerry",
+          "parent_idx": 1,
+          "child_idx": 0,
+          "tau_inv_parent": 1.1793940434252328,
+          "tau_inv_child": 1.14972781848481,
+          "passes": true,
+          "D_star_parent": 0.3693030216754686,
+          "D_star_child": 0.5503643738112556
+        },
+        {
+          "concept": "BlackBerry",
+          "parent_idx": 2,
+          "child_idx": 1,
+          "tau_inv_parent": 1.2141111654359618,
+          "tau_inv_child": 1.1793940434252328,
+          "passes": true,
+          "D_star_parent": 0.3306375362567397,
+          "D_star_child": 0.3693030216754686
+        },
+        {
+          "concept": "BlackBerry",
+          "parent_idx": 3,
+          "child_idx": 2,
+          "tau_inv_parent": 1.1805539359447648,
+          "tau_inv_child": 1.2141111654359618,
+          "passes": false,
+          "D_star_parent": 0.31403717542321724,
+          "D_star_child": 0.3306375362567397
+        },
+        {
+          "concept": "BlackBerry",
+          "parent_idx": 4,
+          "child_idx": 3,
+          "tau_inv_parent": 1.0969443296329409,
+          "tau_inv_child": 1.1805539359447648,
+          "passes": false,
+          "D_star_parent": 0.31466120766848293,
+          "D_star_child": 0.31403717542321724
+        },
+        {
+          "concept": "BlackBerry",
+          "parent_idx": 5,
+          "child_idx": 4,
+          "tau_inv_parent": 1.0638153023850905,
+          "tau_inv_child": 1.0969443296329409,
+          "passes": false,
+          "D_star_parent": 0.31436780942267045,
+          "D_star_child": 0.31466120766848293
+        },
+        {
+          "concept": "Brexit",
+          "parent_idx": 1,
+          "child_idx": 0,
+          "tau_inv_parent": 1.1806758663815762,
+          "tau_inv_child": 1.1494683003999653,
+          "passes": true,
+          "D_star_parent": 0.36265337718252555,
+          "D_star_child": 0.5522376263314023
+        },
+        {
+          "concept": "Brexit",
+          "parent_idx": 2,
+          "child_idx": 1,
+          "tau_inv_parent": 1.0320336002053343,
+          "tau_inv_child": 1.1806758663815762,
+          "passes": false,
+          "D_star_parent": 0.3238455249805706,
+          "D_star_child": 0.36265337718252555
+        },
+        {
+          "concept": "Brexit",
+          "parent_idx": 3,
+          "child_idx": 2,
+          "tau_inv_parent": 1.1024292464067935,
+          "tau_inv_child": 1.0320336002053343,
+          "passes": true,
+          "D_star_parent": 0.31614397719499227,
+          "D_star_child": 0.3238455249805706
+        },
+        {
+          "concept": "Brexit",
+          "parent_idx": 4,
+          "child_idx": 3,
+          "tau_inv_parent": 1.0650303376096069,
+          "tau_inv_child": 1.1024292464067935,
+          "passes": false,
+          "D_star_parent": 0.31466120754217786,
+          "D_star_child": 0.31614397719499227
+        },
+        {
+          "concept": "Calculus",
+          "parent_idx": 1,
+          "child_idx": 0,
+          "tau_inv_parent": 1.4322781022118825,
+          "tau_inv_child": 0.7268486554527389,
+          "passes": true,
+          "D_star_parent": 0.4011908599973564,
+          "D_star_child": 0.5188951068382306
+        }
+      ]
+    }
+  },
+  "improvement": -0.02515723270440251,
+  "param_snapshots": [
+    {
+      "concept": "Academy_Awards",
+      "concept_idx": 0,
+      "n_a": 0,
+      "n_b": 74,
+      "params": {
+        "alpha1": 0.5069709244247813,
+        "beta1": 0.6057153470879623,
+        "gamma1": 0.5100752066193049,
+        "delta1": 0.5069709244247813,
+        "zeta1": 0.5100752066193049,
+        "eta1": 0.5747110704690517,
+        "theta1": 3.0,
+        "kappa1": 0.6057153470879623,
+        "kappa2": 0.5,
+        "lambda1": 0.7222511992165397,
+        "mu1": 0.5751838328004072
+      }
+    },
+    {
+      "concept": "Academy_Awards",
+      "concept_idx": 1,
+      "n_a": 1,
+      "n_b": 4,
+      "params": {
+        "alpha1": 1.2752898942829236,
+        "beta1": 1.5854058519960936,
+        "gamma1": 0.8924130317151224,
+        "delta1": 1.2752898942829236,
+        "zeta1": 0.8924130317151224,
+        "eta1": 0.5,
+        "theta1": 3.0,
+        "kappa1": 1.5854058519960936,
+        "kappa2": 0.913487943617559,
+        "lambda1": 1.7001376198511244,
+        "mu1": 0.8876449471414617
+      }
+    },
+    {
+      "concept": "Academy_Awards",
+      "concept_idx": 2,
+      "n_a": 2,
+      "n_b": 2,
+      "params": {
+        "alpha1": 2.7500000000000004,
+        "beta1": 3.0,
+        "gamma1": 1.3169417382415922,
+        "delta1": 2.7500000000000004,
+        "zeta1": 1.3169417382415922,
+        "eta1": 0.5,
+        "theta1": 2.3838834764831844,
+        "kappa1": 3.0,
+        "kappa2": 1.3863636363636365,
+        "lambda1": 1.8125,
+        "mu1": 0.8750000000000001
+      }
+    },
+    {
+      "concept": "Academy_Awards",
+      "concept_idx": 3,
+      "n_a": 5,
+      "n_b": 1,
+      "params": {
+        "alpha1": 1.0,
+        "beta1": 1.0,
+        "gamma1": 1.0,
+        "delta1": 1.0,
+        "zeta1": 1.0,
+        "eta1": 1.0,
+        "theta1": 1.0,
+        "kappa1": 1.0,
+        "kappa2": 1.0,
+        "lambda1": 1.0,
+        "mu1": 1.0
+      }
+    },
+    {
+      "concept": "Academy_Awards",
+      "concept_idx": 4,
+      "n_a": 40,
+      "n_b": 0,
+      "params": {
+        "alpha1": 1.0,
+        "beta1": 1.0,
+        "gamma1": 1.0,
+        "delta1": 1.0,
+        "zeta1": 1.0,
+        "eta1": 1.0,
+        "theta1": 1.0,
+        "kappa1": 1.0,
+        "kappa2": 1.0,
+        "lambda1": 1.0,
+        "mu1": 1.0
+      }
+    },
+    {
+      "concept": "Algebra",
+      "concept_idx": 0,
+      "n_a": 0,
+      "n_b": 125,
+      "params": {
+        "alpha1": 0.502679608602167,
+        "beta1": 0.5404043342113626,
+        "gamma1": 0.5040509695999024,
+        "delta1": 0.502679608602167,
+        "zeta1": 0.5040509695999024,
+        "eta1": 0.521647073996194,
+        "theta1": 2.9999999999999996,
+        "kappa1": 0.5404043342113626,
+        "kappa2": 0.5,
+        "lambda1": 0.7446171030620248,
+        "mu1": 0.5319481740479434
+      }
+    },
+    {
+      "concept": "Algebra",
+      "concept_idx": 1,
+      "n_a": 1,
+      "n_b": 6,
+      "params": {
+        "alpha1": 0.7152465399446897,
+        "beta1": 1.1202085453860233,
+        "gamma1": 0.5791983287988884,
+        "delta1": 0.7152465399446897,
+        "zeta1": 0.5791983287988884,
+        "eta1": 0.5,
+        "theta1": 3.0,
+        "kappa1": 1.1202085453860233,
+        "kappa2": 0.5203177031295972,
+        "lambda1": 1.3649088280110444,
+        "mu1": 0.6808412650000072
+      }
+    },
+    {
+      "concept": "Algebra",
+      "concept_idx": 2,
+      "n_a": 2,
+      "n_b": 3,
+      "params": {
+        "alpha1": 1.736281463547606,
+        "beta1": 2.1483752847301414,
+        "gamma1": 1.058604119211643,
+        "delta1": 1.736281463547606,
+        "zeta1": 1.058604119211643,
+        "eta1": 0.5,
+        "theta1": 3.0,
+        "kappa1": 2.1483752847301414,
+        "kappa2": 1.0769313496555495,
+        "lambda1": 1.8518037598344084,
+        "mu1": 0.9120938211825355
+      }
+    },
+    {
+      "concept": "Algebra",
+      "concept_idx": 3,
+      "n_a": 5,
+      "n_b": 1,
+      "params": {
+        "alpha1": 1.0,
+        "beta1": 1.0,
+        "gamma1": 1.0,
+        "delta1": 1.0,
+        "zeta1": 1.0,
+        "eta1": 1.0,
+        "theta1": 1.0,
+        "kappa1": 1.0,
+        "kappa2": 1.0,
+        "lambda1": 1.0,
+        "mu1": 1.0
+      }
+    },
+    {
+      "concept": "Algebra",
+      "concept_idx": 4,
+      "n_a": 40,
+      "n_b": 0,
+      "params": {
+        "alpha1": 1.0,
+        "beta1": 1.0,
+        "gamma1": 1.0,
+        "delta1": 1.0,
+        "zeta1": 1.0,
+        "eta1": 1.0,
+        "theta1": 1.0,
+        "kappa1": 1.0,
+        "kappa2": 1.0,
+        "lambda1": 1.0,
+        "mu1": 1.0
+      }
+    },
+    {
+      "concept": "Barbie_(film)",
+      "concept_idx": 0,
+      "n_a": 0,
+      "n_b": 159,
+      "params": {
+        "alpha1": 0.5020851271563794,
+        "beta1": 0.539328301424702,
+        "gamma1": 0.5032911915456122,
+        "delta1": 0.5020851271563794,
+        "zeta1": 0.5032911915456122,
+        "eta1": 0.5247324113300462,
+        "theta1": 2.9999999999999996,
+        "kappa1": 0.539328301424702,
+        "kappa2": 0.5,
+        "lambda1": 0.6778854537682998,
+        "mu1": 0.5316432649288427
+      }
+    },
+    {
+      "concept": "Barbie_(film)",
+      "concept_idx": 1,
+      "n_a": 1,
+      "n_b": 7,
+      "params": {
+        "alpha1": 0.6571802998602582,
+        "beta1": 1.014699932952877,
+        "gamma1": 0.5531918534249137,
+        "delta1": 0.6571802998602582,
+        "zeta1": 0.5531918534249137,
+        "eta1": 0.5029101287550183,
+        "theta1": 3.0,
+        "kappa1": 1.014699932952877,
+        "kappa2": 0.5,
+        "lambda1": 1.313257586983289,
+        "mu1": 0.6616717381542301
+      }
+    },
+    {
+      "concept": "Barbie_(film)",
+      "concept_idx": 2,
+      "n_a": 2,
+      "n_b": 3,
+      "params": {
+        "alpha1": 1.5990404272068435,
+        "beta1": 2.1918020159504703,
+        "gamma1": 0.9381589408375823,
+        "delta1": 1.5990404272068435,
+        "zeta1": 0.9381589408375823,
+        "eta1": 0.5,
+        "theta1": 3.0,
+        "kappa1": 2.1918020159504703,
+        "kappa2": 0.8887859533982194,
+        "lambda1": 1.767930345606578,
+        "mu1": 0.790875215844055
+      }
+    },
+    {
+      "concept": "Barbie_(film)",
+      "concept_idx": 3,
+      "n_a": 3,
+      "n_b": 2,
+      "params": {
+        "alpha1": 2.75,
+        "beta1": 3.0,
+        "gamma1": 1.316941738241592,
+        "delta1": 2.75,
+        "zeta1": 1.316941738241592,
+        "eta1": 0.5,
+        "theta1": 2.383883476483184,
+        "kappa1": 3.0,
+        "kappa2": 1.3863636363636362,
+        "lambda1": 1.8125,
+        "mu1": 0.8749999999999998
+      }
+    },
+    {
+      "concept": "Barbie_(film)",
+      "concept_idx": 4,
+      "n_a": 7,
+      "n_b": 1,
+      "params": {
+        "alpha1": 1.0,
+        "beta1": 1.0,
+        "gamma1": 1.0,
+        "delta1": 1.0,
+        "zeta1": 1.0,
+        "eta1": 1.0,
+        "theta1": 1.0,
+        "kappa1": 1.0,
+        "kappa2": 1.0,
+        "lambda1": 1.0,
+        "mu1": 1.0
+      }
+    },
+    {
+      "concept": "Barbie_(film)",
+      "concept_idx": 5,
+      "n_a": 40,
+      "n_b": 0,
+      "params": {
+        "alpha1": 1.0,
+        "beta1": 1.0,
+        "gamma1": 1.0,
+        "delta1": 1.0,
+        "zeta1": 1.0,
+        "eta1": 1.0,
+        "theta1": 1.0,
+        "kappa1": 1.0,
+        "kappa2": 1.0,
+        "lambda1": 1.0,
+        "mu1": 1.0
+      }
+    },
+    {
+      "concept": "Bitcoin",
+      "concept_idx": 0,
+      "n_a": 0,
+      "n_b": 100,
+      "params": {
+        "alpha1": 0.5047622509454749,
+        "beta1": 0.5510784388372599,
+        "gamma1": 0.5061414862559194,
+        "delta1": 0.5047622509454749,
+        "zeta1": 0.5061414862559194,
+        "eta1": 0.5272671841098853,
+        "theta1": 3.0,
+        "kappa1": 0.5510784388372599,
+        "kappa2": 0.5,
+        "lambda1": 0.7956689215782582,
+        "mu1": 0.5364919307724748
+      }
+    },
+    {
+      "concept": "Bitcoin",
+      "concept_idx": 1,
+      "n_a": 1,
+      "n_b": 4,
+      "params": {
+        "alpha1": 1.1247196757835618,
+        "beta1": 1.559248603209772,
+        "gamma1": 0.7991033044303424,
+        "delta1": 1.1247196757835618,
+        "zeta1": 0.7991033044303424,
+        "eta1": 0.5,
+        "theta1": 3.0,
+        "kappa1": 1.559248603209772,
+        "kappa2": 0.7716368080469713,
+        "lambda1": 1.6044404369878151,
+        "mu1": 0.8123598378917809
+      }
+    },
+    {
+      "concept": "Bitcoin",
+      "concept_idx": 2,
+      "n_a": 2,
+      "n_b": 2,
+      "params": {
+        "alpha1": 2.7500000000000004,
+        "beta1": 3.0,
+        "gamma1": 1.3169417382415922,
+        "delta1": 2.7500000000000004,
+        "zeta1": 1.3169417382415922,
+        "eta1": 0.5,
+        "theta1": 2.3838834764831844,
+        "kappa1": 3.0,
+        "kappa2": 1.3863636363636365,
+        "lambda1": 1.8125,
+        "mu1": 0.8750000000000001
+      }
+    },
+    {
+      "concept": "Bitcoin",
+      "concept_idx": 3,
+      "n_a": 3,
+      "n_b": 1,
+      "params": {
+        "alpha1": 1.0,
+        "beta1": 1.0,
+        "gamma1": 1.0,
+        "delta1": 1.0,
+        "zeta1": 1.0,
+        "eta1": 1.0,
+        "theta1": 1.0,
+        "kappa1": 1.0,
+        "kappa2": 1.0,
+        "lambda1": 1.0,
+        "mu1": 1.0
+      }
+    },
+    {
+      "concept": "Bitcoin",
+      "concept_idx": 4,
+      "n_a": 40,
+      "n_b": 0,
+      "params": {
+        "alpha1": 1.0,
+        "beta1": 1.0,
+        "gamma1": 1.0,
+        "delta1": 1.0,
+        "zeta1": 1.0,
+        "eta1": 1.0,
+        "theta1": 1.0,
+        "kappa1": 1.0,
+        "kappa2": 1.0,
+        "lambda1": 1.0,
+        "mu1": 1.0
+      }
+    },
+    {
+      "concept": "Black_Lives_Matter",
+      "concept_idx": 0,
+      "n_a": 0,
+      "n_b": 153,
+      "params": {
+        "alpha1": 0.501930494281188,
+        "beta1": 0.5282660341560997,
+        "gamma1": 0.5027413637480888,
+        "delta1": 0.501930494281188,
+        "zeta1": 0.5027413637480888,
+        "eta1": 0.5126475704897643,
+        "theta1": 3.0,
+        "kappa1": 0.5282660341560997,
+        "kappa2": 0.5,
+        "lambda1": 0.7683598988657545,
+        "mu1": 0.5228400631712843
+      }
+    },
+    {
+      "concept": "Black_Lives_Matter",
+      "concept_idx": 1,
+      "n_a": 1,
+      "n_b": 7,
+      "params": {
+        "alpha1": 0.638847374956062,
+        "beta1": 1.2128667692071362,
+        "gamma1": 0.6191187857896081,
+        "delta1": 0.638847374956062,
+        "zeta1": 0.6191187857896081,
+        "eta1": 0.7963246443389502,
+        "theta1": 3.0,
+        "kappa1": 1.2128667692071362,
+        "kappa2": 0.5,
+        "lambda1": 1.27039809353574,
+        "mu1": 0.7883404038703103
+      }
+    },
+    {
+      "concept": "Black_Lives_Matter",
+      "concept_idx": 2,
+      "n_a": 5,
+      "n_b": 2,
+      "params": {
+        "alpha1": 2.75,
+        "beta1": 3.0,
+        "gamma1": 1.316941738241592,
+        "delta1": 2.75,
+        "zeta1": 1.316941738241592,
+        "eta1": 0.5,
+        "theta1": 2.383883476483184,
+        "kappa1": 3.0,
+        "kappa2": 1.3863636363636362,
+        "lambda1": 1.8124999999999998,
+        "mu1": 0.8749999999999998
+      }
+    },
+    {
+      "concept": "Black_Lives_Matter",
+      "concept_idx": 3,
+      "n_a": 40,
+      "n_b": 0,
+      "params": {
+        "alpha1": 1.0,
+        "beta1": 1.0,
+        "gamma1": 1.0,
+        "delta1": 1.0,
+        "zeta1": 1.0,
+        "eta1": 1.0,
+        "theta1": 1.0,
+        "kappa1": 1.0,
+        "kappa2": 1.0,
+        "lambda1": 1.0,
+        "mu1": 1.0
+      }
+    },
+    {
+      "concept": "BlackBerry",
+      "concept_idx": 0,
+      "n_a": 0,
+      "n_b": 203,
+      "params": {
+        "alpha1": 0.5010504512001918,
+        "beta1": 0.5231701308016188,
+        "gamma1": 0.5018625052985846,
+        "delta1": 0.5010504512001918,
+        "zeta1": 0.5018625052985846,
+        "eta1": 0.5116151675995094,
+        "theta1": 3.0,
+        "kappa1": 0.5231701308016188,
+        "kappa2": 0.5,
+        "lambda1": 0.7096721070984665,
+        "mu1": 0.5199579951468255
+      }
+    },
+    {
+      "concept": "BlackBerry",
+      "concept_idx": 1,
+      "n_a": 1,
+      "n_b": 10,
+      "params": {
+        "alpha1": 0.6546847942329823,
+        "beta1": 0.8321613836014571,
+        "gamma1": 0.5902710695683727,
+        "delta1": 0.6546847942329823,
+        "zeta1": 0.5902710695683727,
+        "eta1": 0.5,
+        "theta1": 3.0,
+        "kappa1": 0.8321613836014571,
+        "kappa2": 0.5847485957414088,
+        "lambda1": 1.3017879618399313,
+        "mu1": 0.6846242644901794
+      }
+    },
+    {
+      "concept": "BlackBerry",
+      "concept_idx": 2,
+      "n_a": 2,
+      "n_b": 3,
+      "params": {
+        "alpha1": 1.876110885435488,
+        "beta1": 2.105462699674736,
+        "gamma1": 1.1804321238405016,
+        "delta1": 1.876110885435488,
+        "zeta1": 1.1804321238405016,
+        "eta1": 0.5,
+        "theta1": 3.0,
+        "kappa1": 2.105462699674736,
+        "kappa2": 1.274062373057462,
+        "lambda1": 1.9392787774872409,
+        "mu1": 1.0351542332249122
+      }
+    },
+    {
+      "concept": "BlackBerry",
+      "concept_idx": 3,
+      "n_a": 3,
+      "n_b": 2,
+      "params": {
+        "alpha1": 2.75,
+        "beta1": 3.0,
+        "gamma1": 1.316941738241592,
+        "delta1": 2.75,
+        "zeta1": 1.316941738241592,
+        "eta1": 0.5,
+        "theta1": 2.383883476483184,
+        "kappa1": 3.0,
+        "kappa2": 1.3863636363636362,
+        "lambda1": 1.8125,
+        "mu1": 0.8749999999999998
+      }
+    },
+    {
+      "concept": "BlackBerry",
+      "concept_idx": 4,
+      "n_a": 5,
+      "n_b": 1,
+      "params": {
+        "alpha1": 1.0,
+        "beta1": 1.0,
+        "gamma1": 1.0,
+        "delta1": 1.0,
+        "zeta1": 1.0,
+        "eta1": 1.0,
+        "theta1": 1.0,
+        "kappa1": 1.0,
+        "kappa2": 1.0,
+        "lambda1": 1.0,
+        "mu1": 1.0
+      }
+    },
+    {
+      "concept": "BlackBerry",
+      "concept_idx": 5,
+      "n_a": 40,
+      "n_b": 0,
+      "params": {
+        "alpha1": 1.0,
+        "beta1": 1.0,
+        "gamma1": 1.0,
+        "delta1": 1.0,
+        "zeta1": 1.0,
+        "eta1": 1.0,
+        "theta1": 1.0,
+        "kappa1": 1.0,
+        "kappa2": 1.0,
+        "lambda1": 1.0,
+        "mu1": 1.0
+      }
+    },
+    {
+      "concept": "Brexit",
+      "concept_idx": 0,
+      "n_a": 0,
+      "n_b": 219,
+      "params": {
+        "alpha1": 0.500955886288824,
+        "beta1": 0.5198000821748499,
+        "gamma1": 0.5016173018658483,
+        "delta1": 0.500955886288824,
+        "zeta1": 0.5016173018658483,
+        "eta1": 0.5090010266595156,
+        "theta1": 3.0,
+        "kappa1": 0.5198000821748499,
+        "kappa2": 0.5,
+        "lambda1": 0.7290415476728092,
+        "mu1": 0.5170528120584998
+      }
+    },
+    {
+      "concept": "Brexit",
+      "concept_idx": 1,
+      "n_a": 1,
+      "n_b": 10,
+      "params": {
+        "alpha1": 0.6412403569647466,
+        "beta1": 0.8396903724494886,
+        "gamma1": 0.5713949860637321,
+        "delta1": 0.6412403569647466,
+        "zeta1": 0.5713949860637321,
+        "eta1": 0.5,
+        "theta1": 3.0,
+        "kappa1": 0.8396903724494886,
+        "kappa2": 0.5550673777837607,
+        "lambda1": 1.3057082205145063,
+        "mu1": 0.6630119613149869
+      }
+    },
+    {
+      "concept": "Brexit",
+      "concept_idx": 2,
+      "n_a": 2,
+      "n_b": 2,
+      "params": {
+        "alpha1": 2.7500000000000004,
+        "beta1": 3.0,
+        "gamma1": 1.3169417382415922,
+        "delta1": 2.7500000000000004,
+        "zeta1": 1.3169417382415922,
+        "eta1": 0.5,
+        "theta1": 2.3838834764831844,
+        "kappa1": 3.0,
+        "kappa2": 1.3863636363636365,
+        "lambda1": 1.8125,
+        "mu1": 0.8750000000000001
+      }
+    },
+    {
+      "concept": "Brexit",
+      "concept_idx": 3,
+      "n_a": 4,
+      "n_b": 1,
+      "params": {
+        "alpha1": 1.0,
+        "beta1": 1.0,
+        "gamma1": 1.0,
+        "delta1": 1.0,
+        "zeta1": 1.0,
+        "eta1": 1.0,
+        "theta1": 1.0,
+        "kappa1": 1.0,
+        "kappa2": 1.0,
+        "lambda1": 1.0,
+        "mu1": 1.0
+      }
+    },
+    {
+      "concept": "Brexit",
+      "concept_idx": 4,
+      "n_a": 40,
+      "n_b": 0,
+      "params": {
+        "alpha1": 1.0,
+        "beta1": 1.0,
+        "gamma1": 1.0,
+        "delta1": 1.0,
+        "zeta1": 1.0,
+        "eta1": 1.0,
+        "theta1": 1.0,
+        "kappa1": 1.0,
+        "kappa2": 1.0,
+        "lambda1": 1.0,
+        "mu1": 1.0
+      }
+    },
+    {
+      "concept": "Calculus",
+      "concept_idx": 0,
+      "n_a": 0,
+      "n_b": 73,
+      "params": {
+        "alpha1": 0.5060100741864718,
+        "beta1": 0.5774632376907137,
+        "gamma1": 0.5086912832065268,
+        "delta1": 0.5060100741864718,
+        "zeta1": 0.5086912832065268,
+        "eta1": 0.545542936755304,
+        "theta1": 3.0,
+        "kappa1": 0.5774632376907137,
+        "kappa2": 0.5,
+        "lambda1": 0.772214378491292,
+        "mu1": 0.5568502424648362
+      }
+    },
+    {
+      "concept": "Calculus",
+      "concept_idx": 1,
+      "n_a": 1,
+      "n_b": 4,
+      "params": {
+        "alpha1": 1.5040204290489139,
+        "beta1": 1.6155782544987933,
+        "gamma1": 1.0413316309125904,
+        "delta1": 1.5040204290489139,
+        "zeta1": 1.0413316309125904,
+        "eta1": 0.5,
+        "theta1": 3.0,
+        "kappa1": 1.6155782544987933,
+        "kappa2": 1.1490637117083884,
+        "lambda1": 1.8526386335797864,
+        "mu1": 1.0159549427056915
+      }
+    },
+    {
+      "concept": "Calculus",
+      "concept_idx": 2,
+      "n_a": 2,
+      "n_b": 1,
+      "params": {
+        "alpha1": 1.0,
+        "beta1": 1.0,
+        "gamma1": 1.0,
+        "delta1": 1.0,
+        "zeta1": 1.0,
+        "eta1": 1.0,
+        "theta1": 1.0,
+        "kappa1": 1.0,
+        "kappa2": 1.0,
+        "lambda1": 1.0,
+        "mu1": 1.0
+      }
+    },
+    {
+      "concept": "Calculus",
+      "concept_idx": 3,
+      "n_a": 40,
+      "n_b": 0,
+      "params": {
+        "alpha1": 1.0,
+        "beta1": 1.0,
+        "gamma1": 1.0,
+        "delta1": 1.0,
+        "zeta1": 1.0,
+        "eta1": 1.0,
+        "theta1": 1.0,
+        "kappa1": 1.0,
+        "kappa2": 1.0,
+        "lambda1": 1.0,
+        "mu1": 1.0
+      }
+    },
+    {
+      "concept": "Carbon",
+      "concept_idx": 0,
+      "n_a": 0,
+      "n_b": 160,
+      "params": {
+        "alpha1": 0.5020764621349361,
+        "beta1": 0.5357357906253964,
+        "gamma1": 0.5032440945204437,
+        "delta1": 0.5020764621349361,
+        "zeta1": 0.5032440945204437,
+        "eta1": 0.521200555680844,
+        "theta1": 3.0,
+        "kappa1": 0.5357357906253964,
+        "kappa2": 0.5,
+        "lambda1": 0.6976215717649068,
+        "mu1": 0.5285926678305641
+      }
+    },
+    {
+      "concept": "Carbon",
+      "concept_idx": 1,
+      "n_a": 1,
+      "n_b": 7,
+      "params": {
+        "alpha1": 0.7903550752889412,
+        "beta1": 1.0094817621808212,
+        "gamma1": 0.6693199826641029,
+        "delta1": 0.7903550752889412,
+        "zeta1": 0.6693199826641029,
+        "eta1": 0.5,
+        "theta1": 3.0,
+        "kappa1": 1.0094817621808212,
+        "kappa2": 0.6727823609395213,
+        "lambda1": 1.4232984724648992,
+        "mu1": 0.7612744883208904
+      }
+    },
+    {
+      "concept": "Carbon",
+      "concept_idx": 2,
+      "n_a": 2,
+      "n_b": 4,
+      "params": {
+        "alpha1": 1.4108060174689685,
+        "beta1": 1.5764071115542353,
+        "gamma1": 1.0007991794360498,
+        "delta1": 1.4108060174689685,
+        "zeta1": 1.0007991794360498,
+        "eta1": 0.5,
+        "theta1": 3.0,
+        "kappa1": 1.5764071115542353,
+        "kappa2": 1.0878838840026983,
+        "lambda1": 1.7921280489952682,
+        "mu1": 0.986453213875472
+      }
+    },
+    {
+      "concept": "Carbon",
+      "concept_idx": 3,
+      "n_a": 5,
+      "n_b": 1,
+      "params": {
+        "alpha1": 1.0,
+        "beta1": 1.0,
+        "gamma1": 1.0,
+        "delta1": 1.0,
+        "zeta1": 1.0,
+        "eta1": 1.0,
+        "theta1": 1.0,
+        "kappa1": 1.0,
+        "kappa2": 1.0,
+        "lambda1": 1.0,
+        "mu1": 1.0
+      }
+    },
+    {
+      "concept": "Carbon",
+      "concept_idx": 4,
+      "n_a": 40,
+      "n_b": 0,
+      "params": {
+        "alpha1": 1.0,
+        "beta1": 1.0,
+        "gamma1": 1.0,
+        "delta1": 1.0,
+        "zeta1": 1.0,
+        "eta1": 1.0,
+        "theta1": 1.0,
+        "kappa1": 1.0,
+        "kappa2": 1.0,
+        "lambda1": 1.0,
+        "mu1": 1.0
+      }
+    },
+    {
+      "concept": "ChatGPT",
+      "concept_idx": 0,
+      "n_a": 0,
+      "n_b": 98,
+      "params": {
+        "alpha1": 0.5040255965496906,
+        "beta1": 0.5501829913667152,
+        "gamma1": 0.5055876089122454,
+        "delta1": 0.5040255965496906,
+        "zeta1": 0.5055876089122454,
+        "eta1": 0.5260294120685716,
+        "theta1": 3.0,
+        "kappa1": 0.5501829913667152,
+        "kappa2": 0.5,
+        "lambda1": 0.7840693278613285,
+        "mu1": 0.5378666132479017
+      }
+    },
+    {
+      "concept": "ChatGPT",
+      "concept_idx": 1,
+      "n_a": 1,
+      "n_b": 5,
+      "params": {
+        "alpha1": 1.1952878752339942,
+        "beta1": 1.2946147145531364,
+        "gamma1": 0.9205385285446863,
+        "delta1": 1.1952878752339942,
+        "zeta1": 0.9205385285446863,
+        "eta1": 0.5,
+        "theta1": 3.0,
+        "kappa1": 1.2946147145531364,
+        "kappa2": 1.0187068275555193,
+        "lambda1": 1.7082818161135793,
+        "mu1": 0.9569034608680533
+      }
+    },
+    {
+      "concept": "ChatGPT",
+      "concept_idx": 2,
+      "n_a": 3,
+      "n_b": 1,
+      "params": {
+        "alpha1": 1.0,
+        "beta1": 1.0,
+        "gamma1": 1.0,
+        "delta1": 1.0,
+        "zeta1": 1.0,
+        "eta1": 1.0,
+        "theta1": 1.0,
+        "kappa1": 1.0,
+        "kappa2": 1.0,
+        "lambda1": 1.0,
+        "mu1": 1.0
+      }
+    },
+    {
+      "concept": "ChatGPT",
+      "concept_idx": 3,
+      "n_a": 40,
+      "n_b": 0,
+      "params": {
+        "alpha1": 1.0,
+        "beta1": 1.0,
+        "gamma1": 1.0,
+        "delta1": 1.0,
+        "zeta1": 1.0,
+        "eta1": 1.0,
+        "theta1": 1.0,
+        "kappa1": 1.0,
+        "kappa2": 1.0,
+        "lambda1": 1.0,
+        "mu1": 1.0
+      }
+    },
+    {
+      "concept": "Christmas",
+      "concept_idx": 0,
+      "n_a": 0,
+      "n_b": 198,
+      "params": {
+        "alpha1": 0.5012210963138561,
+        "beta1": 0.526669650574765,
+        "gamma1": 0.5021167612097374,
+        "delta1": 0.5012210963138561,
+        "zeta1": 0.5021167612097374,
+        "eta1": 0.514885705121457,
+        "theta1": 3.0,
+        "kappa1": 0.526669650574765,
+        "kappa2": 0.5,
+        "lambda1": 0.6848876123073061,
+        "mu1": 0.522642923073071
+      }
+    }
+  ]
+}
