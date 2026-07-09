@@ -95,7 +95,7 @@ $$A \subseteq B^\downarrow \iff B \subseteq A^\uparrow$$
 
 ### 1.3 概念格提取
 
-FCA 的核心结构不仅是图的生成，更是概念格的构建。概念格是新物理学的几何母体。
+FCA 的核心结构不仅是图的生成，更是概念格的构建。概念格是"新物理学"（隐喻，见 §5.3）的几何母体。
 
 **定义 3a（形式概念）**。二元组 $(A, B)$ 满足 $A \subseteq C, B \subseteq W, A^\uparrow = B, B^\downarrow = A$ 称为 $\mathbb{K}$ 的形式概念。所有形式概念的集合记为 $\mathfrak{B}(\mathbb{K})$。
 
@@ -108,14 +108,14 @@ $\mathfrak{B}(\mathbb{K})$ 在 $\preceq$ 下构成完备格（Wille 1982）。$|
 ### 1.4 有限收敛
 
 **定理 1（有限收敛）**。对任意 $x \in \mathcal{U}$，定义其闭合算子：
-- 若 $x \in C$：令 $\Phi(A) = A^{\uparrow\downarrow}$（$A \subseteq C$）。
+- 若 $x \in C$：令 $\Gamma(A) = A^{\uparrow\downarrow}$（$A \subseteq C$）。
 - 若 $x \in W$：令 $\Psi(B) = B^{\downarrow\uparrow}$（$B \subseteq W$）。
 
-则从 $S_0 = \{x\}$ 出发，$S_{k+1} = \Phi(S_k)$（$x \in C$）或 $S_{k+1} = \Psi(S_k)$（$x \in W$），存在 $N \le p$（$x \in C$）或 $N \le m$（$x \in W$）使得 $S_{N+1} = S_N$。
+则从 $S_0 = \{x\}$ 出发，$S_{k+1} = \Gamma(S_k)$（$x \in C$）或 $S_{k+1} = \Psi(S_k)$（$x \in W$），存在 $N \le p$（$x \in C$）或 $N \le m$（$x \in W$）使得 $S_{N+1} = S_N$。
 
 **证明**。分情况。
 
-*情形 1（$x \in C$）*。由引理 1，$\Phi(A) = A^{\uparrow\downarrow} \supseteq A$。故序列 $\{x\}, \{x\}^{\uparrow\downarrow}, \{x\}^{\uparrow\downarrow\uparrow\downarrow}, \ldots$ 是单调递增的集合列：
+*情形 1（$x \in C$）*。由引理 1，$\Gamma(A) = A^{\uparrow\downarrow} \supseteq A$。故序列 $\{x\}, \{x\}^{\uparrow\downarrow}, \{x\}^{\uparrow\downarrow\uparrow\downarrow}, \ldots$ 是单调递增的集合列：
 
 $$\{x\} \subseteq \{x\}^{\uparrow\downarrow} \subseteq \{x\}^{\uparrow\downarrow\uparrow\downarrow} \subseteq \cdots \subseteq C$$
 
@@ -232,11 +232,11 @@ $$t \gg 1/\lambda_1: \quad \Theta(t) - \beta_0 = m_1 e^{-t \lambda_1} + O(e^{-t 
 
 ### 2.4 约束谱社区划分
 
-**定义 8（社区数 $k^*$）**。社区数由 FCA 概念格的大小确定：
+**定义 8（社区数 $k^*$）**。社区数由 FCA 概念数确定：
 
 $$k^* = \min(|\mathfrak{B}(\mathbb{K})|, n-1)$$
 
-其中 $|\mathfrak{B}(\mathbb{K})|$ 是形式概念数——由 $(C,W,I)$ 的二元关系拓扑唯一决定，不依赖任何连续参数。当概念数超 $n-1$ 时取上限（每个顶点至多一个 singleton 概念）。
+其中 $|\mathfrak{B}(\mathbb{K})|$ 是形式概念数——由 $(C,W,I)$ 的二元关系拓扑唯一决定，不依赖任何连续参数。为何概念数直接对应社区数？每个形式概念 $(A,B)$ 定义了一个"候选社区核心"——$A$ 是一组共享字符，$B$ 是这些字符覆盖的全部词——符合 $P_3$ 的关系模式定义。这些核心在谱聚类中被相互分离（不同核心受 must-link 约束保护），因此聚类数被自然地设为概念数。当概念数超 $n-1$ 时取上限（防止平凡单点社区）。
 
 社区划分通过约束广义特征值问题确定：求解 $\mathcal{L} \mathbf{v} = \lambda \mathbf{v}$，在 $\ker(Q)$ 约束下（$Q$ 为定义 4a 的 must-link 矩阵——见 §1.6）。等价于 $\ker(Q)$ 上的受限特征分解：取 $\ker(Q)$ 的正交基 $P \in \mathbb{R}^{n \times r}$（$r = \dim\ker(Q)$ ——由 FCA 蕴涵决定，$1 \le r \le n$），求解 $P^\top \mathcal{L} P$ 的前 $k^*$ 个特征向量（需 $r = \dim\ker(Q) \ge k^*$——FCA 蕴涵通常使 $r$ 远大于概念数，此条件在非平凡词表上自然满足）。该过程的复杂度为 $O(n^3)$（标准特征分解），无惩罚参数。得到嵌入矩阵 $V \in \mathbb{R}^{n \times k^*}$，对 $V$ 的行执行最大分量分配（argmax on rows）：顶点 $u$ 归入社区 $X_i$ 当且仅当 $i = \arg\max_j |V_{uj}|$。该分配是确定性的——$O(nk^*)$ 时间，无迭代、无随机性、非 NP-hard。划分 $\{X_1, \ldots, X_{k^*}\}$ 满足所有 FCA 蕴涵约束。
 
@@ -501,7 +501,7 @@ $$\ddot M + \Gamma \dot M = -\nabla\Phi(M)$$
 
 $$\Gamma \dot M = -\nabla\Phi(M)$$
 
-状态以 $\Gamma$ 的逆时间常数沿 $\nabla\Phi$ 的负方向流动。
+状态以 $\Gamma$ 的逆时间常数沿 $\nabla\Phi$ 的负方向流动。**注**：$\nabla\Phi = (1-S, 0, 0, 0, -D)^\top$ 仅在 $D,S$ 分量上非零——纯梯度下降只驱动 $D,S$ 维度的演化，$B,\rho,R$ 三维需通过 $\Gamma$ 的非对角耦合（或 N 迭代的直接映射）才能流动。这再次表明梯度流是概念框架而非完整动力学——N 迭代通过跨维度的收缩耦合驱动全部五个维度向 $M^*$ 收敛。
 
 **不动点的吸引性**。该梯度流的不动点满足 $\nabla\Phi(M) = \mathbf{0} \iff M = (0, *, *, *, 1)$ 或 $M = (1, *, *, *, 0)$——即 $D=0,S=1$ 或 $D=1,S=0$。然而在 N 算子的耦合动力学中，这些点均非可达（定理 D）。**N 迭代的不动点 $M^* = N(M^*)$ 不是梯度流 $\Gamma \dot M = -\nabla\Phi$ 的不动点**——它是自洽动力学 $M^{(k+1)} = N(M^{(k)})$ 的指数吸引子。梯度流 $\Gamma \dot M = -\nabla\Phi$ 是概念框架（拉格朗日力学提供了变分语言和能量分析），而实际轨迹由 N 迭代确定——两套动力学在定性上共享"向稳态弛豫"的行为，但在不动点处不重合。$\square$
 
@@ -517,7 +517,7 @@ $$V(N(M)) = \|N(M) - M^*\|_2^2 \le \rho^2 \|M - M^*\|_2^2 = \rho^2 V(M)$$
 
 **$\Phi$ 的物理角色**。$\Phi$ 不充当 Lyapunov 函数（$M^*$ 是鞍点——详见 §3.3 的定量分析）。但 $\Phi$ 具有明确物理含义：它指数弛豫至稳态值 $\Phi(M^*)$（定理 D，速率 $\rho^k$）。$\Phi$ 的弛豫速率和稳态值构成信息作用量谱（§4）的两个可观测输出。$\square$
 
-**定理 5（离散梯度型动力学——N 算子的局部稳定性）**。在不动点 $M^*$ 的邻域内，约束传播算子 $N$ 定义了一个离散的梯度型动力学系统：
+**定理 5（离散压缩动力学——N 算子的局部稳定性）**。在不动点 $M^*$ 的邻域内，约束传播算子 $N$ 是压缩映射：
 
 $$M^{(k+1)} = N(M^{(k)}), \quad M^* = N(M^*)$$
 
