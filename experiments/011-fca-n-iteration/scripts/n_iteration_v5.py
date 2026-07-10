@@ -205,7 +205,7 @@ def evaluate_hasse(
         "passes": passes,
         "violations": total - passes,
         "pass_rate": float(passes / total) if total > 0 else 0.0,
-        "details": hr[:40],
+        "details": hr,
     }
 
 
