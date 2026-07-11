@@ -57,7 +57,13 @@ class TsvBridge:
     - 边权 < 0.3 → 跳过（弱关系不摄入）
     """
 
-    def __init__(self, output_dir: str = '../sighted-wiki/data/wiki_tsv/records'):
+    def __init__(self, output_dir: str = None):
+        if output_dir is None:
+            output_dir = os.environ.get(
+                'SIGHTED_WIKI_DATA',
+                os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+                             'sighted-wiki', 'data', 'wiki_tsv', 'records')
+            )
         self.output_dir = output_dir
         self._record_counter = 0
         self._seen = set()  # (entity, predicate, target) 去重

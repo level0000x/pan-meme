@@ -513,7 +513,7 @@ pub fn verify_theorem_11_1(tau_inv: &[f64], edges: &[(usize, usize)]) -> (usize,
     for &(general, specific) in edges {
         let t_gen = tau_inv[general];
         let t_spec = tau_inv[specific];
-        if t_spec.is_finite() && t_gen.is_finite() && t_spec >= t_gen { passes += 1; }
+        if t_gen.is_finite() && t_spec.is_finite() && t_gen >= t_spec { passes += 1; }
         else { fails += 1; }
     }
     (passes, fails)

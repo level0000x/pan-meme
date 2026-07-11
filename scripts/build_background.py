@@ -23,9 +23,13 @@ import collections
 from typing import Dict, List, Set, Optional, Tuple
 
 # 路径
-_DICT_DIR = r'C:\Users\xingg\.trae-cn\work\6a473a3139d4294bc0926246\chinese-dict'
-_WORD_JSON = os.path.join(_DICT_DIR, 'word', 'word.json')
 _PM_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# 从环境变量获取词典目录，未设置则回退到项目根目录
+_DICT_DIR = os.environ.get('CHINESE_DICT_DIR', _PM_DIR)
+_WORD_JSON = os.path.join(_DICT_DIR, 'word', 'word.json')
+if not os.path.exists(_WORD_JSON):
+    print(f"[WARN] 词典文件不存在: {_WORD_JSON}")
+    print(f"      请设置环境变量 CHINESE_DICT_DIR 或确保 {_DICT_DIR}/word/word.json 存在")
 _OUTPUT_DIR = os.path.join(_PM_DIR, 'data')
 
 

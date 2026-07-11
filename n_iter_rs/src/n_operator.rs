@@ -27,6 +27,18 @@ impl DynamicsParams {
             kappa2: 1.0, lambda1: 1.0, mu1: 1.0, eps: 0.01,
         }
     }
+
+    pub fn with_beta1(&self, beta1: f64) -> Self {
+        Self { beta1, ..*self }
+    }
+
+    pub fn with_delta1(&self, delta1: f64) -> Self {
+        Self { delta1, ..*self }
+    }
+
+    pub fn with_kappa1(&self, kappa1: f64) -> Self {
+        Self { kappa1, ..*self }
+    }
 }
 
 pub fn n_operator(m: &State5, b_up: f64, rho_up: f64, p: &DynamicsParams) -> State5 {
@@ -104,6 +116,7 @@ pub struct IterResult {
     pub tau_inv: f64,
     pub n_iters: usize,
     pub trajectory: Vec<[f64; 5]>,
+    pub jacobian: [f64; 25],
 }
 
 pub fn run_iteration(
@@ -126,6 +139,8 @@ pub fn run_iteration(
             let eigs = j.complex_eigenvalues();
             let rho_val = eigs.iter().map(|c| c.modulus()).fold(0.0_f64, f64::max);
             let tau = -f64::ln(rho_val.max(1e-10));
+            let mut j_arr = [0.0_f64; 25];
+            for r in 0..5 { for c in 0..5 { j_arr[r * 5 + c] = j[(r, c)]; } }
             return IterResult {
                 converged: true,
                 m_star: m,
@@ -133,6 +148,7 @@ pub fn run_iteration(
                 tau_inv: tau,
                 n_iters: k + 1,
                 trajectory,
+                jacobian: j_arr,
             };
         }
         m = m_next;
@@ -142,6 +158,8 @@ pub fn run_iteration(
     let eigs = j.complex_eigenvalues();
     let rho_val = eigs.iter().map(|c| c.modulus()).fold(0.0_f64, f64::max);
     let tau = -f64::ln(rho_val.max(1e-10));
+    let mut j_arr = [0.0_f64; 25];
+    for r in 0..5 { for c in 0..5 { j_arr[r * 5 + c] = j[(r, c)]; } }
     IterResult {
         converged: false,
         m_star: m,
@@ -149,6 +167,7 @@ pub fn run_iteration(
         tau_inv: tau,
         n_iters: max_iter,
         trajectory,
+        jacobian: j_arr,
     }
 }
 

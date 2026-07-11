@@ -30,8 +30,13 @@ _PM_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if _PM_DIR not in sys.path:
     sys.path.insert(0, _PM_DIR)
 
-_TSV_DIR = os.path.join(os.path.dirname(_PM_DIR), 'sighted-wiki', 'data', 'wiki_tsv', 'records')
-_SIGHTED_DATA = os.path.join(os.path.dirname(_PM_DIR), 'sighted-wiki', 'data')
+# 跨项目路径：通过环境变量或默认相对路径定位 sighted-wiki
+_SIGHTED_WIKI = os.environ.get(
+    'SIGHTED_WIKI_DIR',
+    os.path.join(os.path.dirname(_PM_DIR), 'sighted-wiki')
+)
+_TSV_DIR = os.path.join(_SIGHTED_WIKI, 'data', 'wiki_tsv', 'records')
+_SIGHTED_DATA = os.path.join(_SIGHTED_WIKI, 'data')
 _BG_TREE = os.path.join(_PM_DIR, 'data', 'background_tree.json')
 
 

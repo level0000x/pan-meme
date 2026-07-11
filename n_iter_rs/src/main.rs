@@ -92,6 +92,465 @@ fn main() {
             &output_dir,
         );
     }
+
+    run_param_scan(&all_articles, max_attrs, max_concepts, time_limit, &output_dir);
+    run_lattice_richness_scan(&by_cat, max_concepts, time_limit, &output_dir);
+    run_isolation_experiment(&all_articles, max_attrs, max_concepts, time_limit, &output_dir);
+    run_delta1_scan(&all_articles, max_attrs, max_concepts, time_limit, &output_dir);
+}
+
+fn run_param_scan(all_articles: &[(String, String, String)], max_attrs: usize, max_concepts: usize, time_limit: f64, output_dir: &PathBuf) {
+    let art_texts: Vec<String> = all_articles.iter().map(|(_, t, _)| t.clone()).collect();
+    let n_articles = art_texts.len();
+
+    println!();
+    println!("{}", "=".repeat(64));
+    println!("  PARAMETER SCAN: β₁ variation on ALL {} articles", n_articles);
+    println!("{}", "=".repeat(64));
+
+    let lattice = fca::build_article_lattice(&art_texts, max_attrs, 2, max_concepts, time_limit);
+    let n = lattice.concepts.len();
+    if n < 3 {
+        println!("  Too few concepts ({}), cannot scan.", n);
+        return;
+    }
+    println!("  Lattice: {} concepts, {} edges", n, lattice.edges.len());
+
+    let tsv_path = output_dir.join("param_scan_beta1.tsv");
+    let mut tsv_lines: Vec<String> = vec![];
+    tsv_lines.push("beta1\ttau_inv_root\ttau_inv_leaf\trho_J_root\trho_J_leaf\tDstar_root\tDstar_leaf\tpass\tfail\trate".to_string());
+
+    let base_params = DynamicsParams::uniform();
+    let beta1_values: Vec<f64> = vec![
+        0.01, 0.02, 0.05, 0.10, 0.20, 0.50,
+        0.75, 1.00, 1.50, 2.00, 3.00, 5.00, 10.0,
+    ];
+
+    println!();
+    println!("  {:>8}  {:>8}  {:>8}  {:>8}  {:>8}  {:>8}  {:>8}  {:>6}  {:>3}",
+        "beta1", "τ⁻¹_0", "τ⁻¹_n", "ρ0", "ρn", "D*_0", "D*_n", "pass", "%");
+
+    for &beta1 in &beta1_values {
+        let params = base_params.with_beta1(beta1);
+        let (tau_inv, rho_j, dstar, heights, edges) = run_pipeline(&lattice, &art_texts, &params);
+
+        let root_idx = heights.iter().position(|&h| h == 0).unwrap_or(0);
+        let leaf_idx = heights.iter().enumerate()
+            .max_by_key(|(_, &h)| h).map(|(i, _)| i).unwrap_or(n - 1);
+
+        let tau_root = tau_inv[root_idx];
+        let tau_leaf = tau_inv[leaf_idx];
+        let rho_root = rho_j[root_idx];
+        let rho_leaf = rho_j[leaf_idx];
+        let d_root = dstar[root_idx];
+        let d_leaf = dstar[leaf_idx];
+
+        let _d_mono = fca::verify_theorem_11_3(&lattice.concepts, &dstar, &edges);
+        let t_mono = fca::verify_theorem_11_1(&tau_inv, &edges);
+        let total = t_mono.0 + t_mono.1;
+        let rate = if total > 0 { 100.0 * t_mono.0 as f64 / total as f64 } else { 0.0 };
+
+        println!("  {:>8.3}  {:>8.4}  {:>8.4}  {:>8.4}  {:>8.4}  {:>8.4}  {:>8.4}  {:>3}/{:>3}  {:>5.1}%",
+            beta1, tau_root, tau_leaf, rho_root, rho_leaf, d_root, d_leaf,
+            t_mono.0, total, rate);
+
+        tsv_lines.push(format!("{:.4}\t{:.6}\t{:.6}\t{:.6}\t{:.6}\t{:.6}\t{:.6}\t{}\t{}\t{:.4}",
+            beta1, tau_root, tau_leaf, rho_root, rho_leaf, d_root, d_leaf,
+            t_mono.0, t_mono.1, rate));
+    }
+
+    let tsv_content = tsv_lines.join("\n");
+    if let Err(e) = fs::write(&tsv_path, &tsv_content) {
+        println!("  WARN: could not write TSV: {}", e);
+    } else {
+        println!("\n  TSV: {}", tsv_path.display());
+    }
+}
+
+fn run_lattice_richness_scan(by_cat: &HashMap<String, Vec<(String, String)>>, max_concepts: usize, time_limit: f64, _output_dir: &PathBuf) {
+    println!();
+    println!("{}", "=".repeat(64));
+    println!("  FCA LATTICE RICHNESS SCAN (Technology, 14 articles)");
+    println!("{}", "=".repeat(64));
+
+    let tech_texts: Vec<&str> = by_cat.get("Technology")
+        .map(|a| a.iter().map(|(_, t)| t.as_str()).collect())
+        .unwrap_or_default();
+    if tech_texts.len() < 3 {
+        println!("  Not enough Technology articles");
+        return;
+    }
+    let art_texts: Vec<String> = tech_texts.iter().map(|t| t.to_string()).collect();
+    let merged: String = tech_texts.join(" ");
+
+    #[derive(Clone)]
+    struct Conf { label: &'static str, is_merged: bool, chars: bool, attrs: usize, min_a: usize }
+    let configs = vec![
+        Conf { label: "word-FCA  merged     attr=5000  min=2",  is_merged: true,  chars: false, attrs: 5000,  min_a: 2 },
+        Conf { label: "word-FCA  article    attr=5000  min=2",  is_merged: false, chars: false, attrs: 5000,  min_a: 2 },
+        Conf { label: "word-FCA  article    attr=5000  min=1",  is_merged: false, chars: false, attrs: 5000,  min_a: 1 },
+        Conf { label: "word-FCA  article    attr=200   min=2",  is_merged: false, chars: false, attrs: 200,   min_a: 2 },
+        Conf { label: "word-FCA  article    attr=200   min=1",  is_merged: false, chars: false, attrs: 200,   min_a: 1 },
+        Conf { label: "word-FCA  article    attr=20000 min=2",  is_merged: false, chars: false, attrs: 20000, min_a: 2 },
+        Conf { label: "word-FCA  article    attr=20000 min=1",  is_merged: false, chars: false, attrs: 20000, min_a: 1 },
+        Conf { label: "char-FCA  article    attr=5000  min=2",  is_merged: false, chars: true,  attrs: 5000,  min_a: 2 },
+        Conf { label: "char-FCA  article    attr=5000  min=1",  is_merged: false, chars: true,  attrs: 5000,  min_a: 1 },
+        Conf { label: "char-FCA  article    attr=50000 min=2",  is_merged: false, chars: true,  attrs: 50000, min_a: 2 },
+        Conf { label: "char-FCA  article    attr=50000 min=1",  is_merged: false, chars: true,  attrs: 50000, min_a: 1 },
+        Conf { label: "word-FCA  merged     attr=1000  min=2",  is_merged: true,  chars: false, attrs: 1000,  min_a: 2 },
+        Conf { label: "word-FCA  merged     attr=200   min=2",  is_merged: true,  chars: false, attrs: 200,   min_a: 2 },
+    ];
+
+    println!();
+    println!("  {:>40}  {:>5}  {:>5}  {:>4}", "config", "conc", "edge", "hmax");
+
+    let mut best_conf = None;
+    let mut best_n = 0;
+
+    for c in &configs {
+        let lat = if c.chars {
+            if c.is_merged { fca::build_lattice_chars(&merged, c.attrs, 3, max_concepts, time_limit) }
+            else { fca::build_article_lattice_chars(&art_texts, c.attrs, c.min_a, max_concepts, time_limit) }
+        } else {
+            if c.is_merged { fca::build_lattice(&merged, c.attrs, max_concepts, time_limit) }
+            else { fca::build_article_lattice(&art_texts, c.attrs, c.min_a, max_concepts, time_limit) }
+        };
+        let n = lat.concepts.len();
+        let hm = fca::hasse_heights(n, &lat.edges).iter().cloned().max().unwrap_or(0);
+        println!("  {:>40}  {:>5}  {:>5}  {:>4}", c.label, n, lat.edges.len(), hm);
+        if n > best_n { best_n = n; best_conf = Some(c.clone()); }
+    }
+
+    if let Some(best) = best_conf {
+        println!();
+        println!("  BEST: {} → {} concepts", best.label, best_n);
+        if best_n > 4 {
+            let lat = if best.chars {
+                if best.is_merged { fca::build_lattice_chars(&merged, best.attrs, 3, max_concepts, time_limit) }
+                else { fca::build_article_lattice_chars(&art_texts, best.attrs, best.min_a, max_concepts, time_limit) }
+            } else {
+                if best.is_merged { fca::build_lattice(&merged, best.attrs, max_concepts, time_limit) }
+                else { fca::build_article_lattice(&art_texts, best.attrs, best.min_a, max_concepts, time_limit) }
+            };
+            let params = DynamicsParams::uniform();
+            let (tau_inv, rho_j, dstar, heights, edges) = run_pipeline(&lat, &art_texts, &params);
+            let t_mono = fca::verify_theorem_11_1(&tau_inv, &edges);
+            let d_mono = fca::verify_theorem_11_3(&lat.concepts, &dstar, &edges);
+            let total = t_mono.0 + t_mono.1;
+            println!("  N-iter on BEST ({} concepts, {} edges):", best_n, edges.len());
+            println!("    Theorem 11.1 (τ⁻¹): {}/{} = {:.1}%",
+                t_mono.0, total, if total > 0 { 100.0 * t_mono.0 as f64 / total as f64 } else { 0.0 });
+            println!("    Theorem 11.3 (D*):  {}/{} = {:.1}%",
+                d_mono.0, d_mono.0 + d_mono.1,
+                if d_mono.0 + d_mono.1 > 0 { 100.0 * d_mono.0 as f64 / (d_mono.0 + d_mono.1) as f64 } else { 0.0 });
+            println!("    τ⁻¹ range: [{:.4}, {:.4}]  ρ(J) range: [{:.4}, {:.4}]",
+                tau_inv.iter().cloned().fold(f64::INFINITY, f64::min),
+                tau_inv.iter().cloned().fold(0.0_f64, f64::max),
+                rho_j.iter().cloned().fold(f64::INFINITY, f64::min),
+                rho_j.iter().cloned().fold(0.0_f64, f64::max));
+            println!("    By height:");
+            let mut by_h: std::collections::BTreeMap<usize, Vec<usize>> = std::collections::BTreeMap::new();
+            for (ci, &h) in heights.iter().enumerate() { by_h.entry(h).or_default().push(ci); }
+            for (h, cis) in &by_h {
+                let taus: Vec<f64> = cis.iter().map(|&ci| tau_inv[ci]).collect();
+                println!("      h={}: τ⁻¹∈[{:.4},{:.4}] ({} concepts)", h,
+                    taus.iter().cloned().fold(f64::INFINITY, f64::min),
+                    taus.iter().cloned().fold(0.0_f64, f64::max),
+                    cis.len());
+            }
+        }
+    }
+}
+
+fn run_isolation_experiment(all_articles: &[(String, String, String)], max_attrs: usize, max_concepts: usize, time_limit: f64, output_dir: &PathBuf) {
+    let art_texts: Vec<String> = all_articles.iter().map(|(_, t, _)| t.clone()).collect();
+
+    println!();
+    println!("{}", "=".repeat(64));
+    println!("  ISOLATION EXPERIMENT: b_up=0 vs b_up>0 on ALL 45 articles");
+    println!("{}", "=".repeat(64));
+
+    let lattice = fca::build_article_lattice(&art_texts, max_attrs, 2, max_concepts, time_limit);
+    let n = lattice.concepts.len();
+    if n < 3 { return; }
+    println!("  Lattice: {} concepts, {} edges", n, lattice.edges.len());
+
+    let heights = fca::hasse_heights(n, &lattice.edges);
+    let mut feeders: Vec<Vec<usize>> = vec![vec![]; n];
+    for &(p, c) in &lattice.edges { feeders[p].push(c); }
+
+    let total_extent: usize = lattice.concept_sizes.iter().map(|(_, b)| *b).sum();
+    let total_intent: usize = lattice.concept_sizes.iter().map(|(a, _)| *a).sum();
+    let valid_d: Vec<f64> = lattice.d_values.iter()
+        .filter(|&&d| d.is_finite() && d < 1e6).copied().collect();
+    let max_d_valid = valid_d.iter().cloned().fold(1.0_f64, f64::max);
+
+    let base_params = DynamicsParams::uniform();
+
+    let mut isolated_results: Vec<Option<n_operator::IterResult>> = vec![None; n];
+    let mut partial_results: Vec<Option<n_operator::IterResult>> = vec![None; n];
+    let mut full_results: Vec<Option<n_operator::IterResult>> = vec![None; n];
+
+    let mut sorted: Vec<usize> = (0..n).collect();
+    sorted.sort_by_key(|&i| std::cmp::Reverse(heights[i]));
+
+    for &ci in &sorted {
+        let csize = &lattice.concept_sizes[ci];
+        let raw_d = lattice.d_values[ci];
+        let d_init = if raw_d.is_finite() && raw_d < 1e6 {
+            (raw_d / max_d_valid).min(1.0)
+        } else { 0.8 };
+        let b_init = (1.0 - csize.1 as f64 / total_extent.max(1) as f64).clamp(0.0, 1.0);
+        let rho_init = (csize.0 as f64 / total_intent.max(1) as f64).clamp(0.0, 1.0);
+        let m0 = five_dim::make_state(d_init, b_init, rho_init, 0.5, 0.5);
+
+        let (b_up, rho_up) = get_upstream(ci, &feeders, &full_results);
+        let iso = n_operator::run_iteration(&m0, 0.0, 0.0, &base_params, 500, 1e-12);
+        let part = n_operator::run_iteration(&m0, b_up, 0.0, &base_params, 500, 1e-12);
+        let full = n_operator::run_iteration(&m0, b_up, rho_up, &base_params, 500, 1e-12);
+        isolated_results[ci] = Some(iso);
+        partial_results[ci] = Some(part);
+        full_results[ci] = Some(full);
+    }
+
+    println!();
+    println!("  {:>4} {:>3} {:>10} {:>10} {:>10}  {:>10} {:>10} {:>10}",
+        "C#", "h", "τ⁻¹(iso)", "τ⁻¹(+B↑)", "τ⁻¹(full)", "ρ(iso)", "ρ(+B↑)", "ρ(full)");
+
+    let mut by_h: std::collections::BTreeMap<usize, Vec<usize>> = std::collections::BTreeMap::new();
+    for (ci, &h) in heights.iter().enumerate() { by_h.entry(h).or_default().push(ci); }
+
+    for (h, cis) in &by_h {
+        for &ci in cis {
+            let ti = |r: &Option<n_operator::IterResult>| r.as_ref().map(|x| x.tau_inv).unwrap_or(0.0);
+            let rj = |r: &Option<n_operator::IterResult>| r.as_ref().map(|x| x.rho_spectral).unwrap_or(0.0);
+            println!("  {:>4} {:>3} {:>10.4} {:>10.4} {:>10.4}  {:>10.4} {:>10.4} {:>10.4}",
+                ci, h,
+                ti(&isolated_results[ci]), ti(&partial_results[ci]), ti(&full_results[ci]),
+                rj(&isolated_results[ci]), rj(&partial_results[ci]), rj(&full_results[ci]));
+        }
+    }
+
+    println!();
+    println!("  Effect of B↑ injection (τ⁻¹ change):");
+    for (h, cis) in &by_h {
+        for &ci in cis {
+            let ti = |r: &Option<n_operator::IterResult>| r.as_ref().map(|x| x.tau_inv).unwrap_or(0.0);
+            let rj = |r: &Option<n_operator::IterResult>| r.as_ref().map(|x| x.rho_spectral).unwrap_or(0.0);
+            let delta_tau = ti(&full_results[ci]) - ti(&isolated_results[ci]);
+            let delta_rho = rj(&full_results[ci]) - rj(&isolated_results[ci]);
+            let (b_up, _) = get_upstream(ci, &feeders, &full_results);
+            println!("    C{:<3} h={} B↑={:.4}  Δτ⁻¹={:+.4}  Δρ={:+.4}", ci, h, b_up, delta_tau, delta_rho);
+        }
+    }
+
+    let tsv_path = output_dir.join("isolation_experiment.tsv");
+    let mut lines = vec!["ci\theight\tB_up\ttau_iso\ttau_partial\ttau_full\trho_iso\trho_partial\trho_full\tDstar_iso\tDstar_full".to_string()];
+    for ci in 0..n {
+        let (b_up, _) = get_upstream(ci, &feeders, &full_results);
+        let ti = |r: &Option<n_operator::IterResult>| r.as_ref().map(|x| x.tau_inv).unwrap_or(0.0);
+        let rj = |r: &Option<n_operator::IterResult>| r.as_ref().map(|x| x.rho_spectral).unwrap_or(0.0);
+        let ds = |r: &Option<n_operator::IterResult>| r.as_ref().map(|x| x.m_star[0]).unwrap_or(0.0);
+        lines.push(format!("{}\t{}\t{:.6}\t{:.6}\t{:.6}\t{:.6}\t{:.6}\t{:.6}\t{:.6}\t{:.6}\t{:.6}",
+            ci, heights[ci], b_up,
+            ti(&isolated_results[ci]), ti(&partial_results[ci]), ti(&full_results[ci]),
+            rj(&isolated_results[ci]), rj(&partial_results[ci]), rj(&full_results[ci]),
+            ds(&isolated_results[ci]), ds(&full_results[ci])));
+    }
+    let _ = fs::write(&tsv_path, lines.join("\n"));
+    println!("\n  TSV: {}", tsv_path.display());
+}
+
+fn run_delta1_scan(all_articles: &[(String, String, String)], max_attrs: usize, max_concepts: usize, time_limit: f64, output_dir: &PathBuf) {
+    let art_texts: Vec<String> = all_articles.iter().map(|(_, t, _)| t.clone()).collect();
+    let n_articles = art_texts.len();
+
+    println!();
+    println!("{}", "=".repeat(64));
+    println!("  δ₁ PARAMETER SCAN + JACOBIAN HEATMAP on ALL {} articles", n_articles);
+    println!("{}", "=".repeat(64));
+
+    let lattice = fca::build_article_lattice(&art_texts, max_attrs, 2, max_concepts, time_limit);
+    let n = lattice.concepts.len();
+    if n < 3 { return; }
+    println!("  Lattice: {} concepts, {} edges", n, lattice.edges.len());
+
+    let base_params = DynamicsParams::uniform();
+    let delta1_values: Vec<f64> = vec![
+        0.01, 0.05, 0.10, 0.20, 0.50,
+        0.75, 1.00, 2.00, 5.00, 10.0, 20.0, 50.0, 100.0,
+    ];
+
+    println!();
+    println!("  {:>8}  {:>8}  {:>8}  {:>8}  {:>8}  {:>8}  {:>8}  {:>6}  {:>3}",
+        "delta1", "τ⁻¹_0", "τ⁻¹_n", "ρ0", "ρn", "D*_0", "D*_n", "pass", "%");
+
+    let mut all_results: Vec<(f64, Vec<f64>, Vec<f64>, Vec<f64>)> = Vec::new();
+
+    for &delta1 in &delta1_values {
+        let params = base_params.with_delta1(delta1);
+        let (tau_inv, rho_j, dstar, heights, edges) = run_pipeline(&lattice, &art_texts, &params);
+
+        let root_idx = heights.iter().position(|&h| h == 0).unwrap_or(0);
+        let leaf_idx = heights.iter().enumerate()
+            .max_by_key(|(_, &h)| h).map(|(i, _)| i).unwrap_or(n - 1);
+
+        let tau_root = tau_inv[root_idx];
+        let tau_leaf = tau_inv[leaf_idx];
+        let rho_root = rho_j[root_idx];
+        let rho_leaf = rho_j[leaf_idx];
+        let d_root = dstar[root_idx];
+        let d_leaf = dstar[leaf_idx];
+
+        let t_mono = fca::verify_theorem_11_1(&tau_inv, &edges);
+        let total = t_mono.0 + t_mono.1;
+        let rate = if total > 0 { 100.0 * t_mono.0 as f64 / total as f64 } else { 0.0 };
+
+        println!("  {:>8.3}  {:>8.4}  {:>8.4}  {:>8.4}  {:>8.4}  {:>8.4}  {:>8.4}  {:>3}/{:>3}  {:>5.1}%",
+            delta1, tau_root, tau_leaf, rho_root, rho_leaf, d_root, d_leaf,
+            t_mono.0, total, rate);
+
+        all_results.push((delta1, tau_inv.clone(), rho_j.clone(), dstar.clone()));
+    }
+
+    let tsv_path = output_dir.join("param_scan_delta1.tsv");
+    let mut lines = vec!["delta1\ttau_inv_root\ttau_inv_leaf\trho_J_root\trho_J_leaf\tDstar_root\tDstar_leaf\tpass\tfail\trate".to_string()];
+    for (delta1, tau_inv, rho_j, dstar) in &all_results {
+        let root_idx = 0;
+        let leaf_idx = n - 1;
+        let t_mono = fca::verify_theorem_11_1(tau_inv, &lattice.edges);
+        let total = t_mono.0 + t_mono.1;
+        let rate = if total > 0 { 100.0 * t_mono.0 as f64 / total as f64 } else { 0.0 };
+        lines.push(format!("{:.4}\t{:.6}\t{:.6}\t{:.6}\t{:.6}\t{:.6}\t{:.6}\t{}\t{}\t{:.4}",
+            delta1, tau_inv[root_idx], tau_inv[leaf_idx],
+            rho_j[root_idx], rho_j[leaf_idx],
+            dstar[root_idx], dstar[leaf_idx],
+            t_mono.0, t_mono.1, rate));
+    }
+    let _ = fs::write(&tsv_path, lines.join("\n"));
+    println!("\n  TSV: {}", tsv_path.display());
+
+    println!();
+    println!("{}", "=".repeat(64));
+    println!("  JACOBIAN HEATMAP at M* (δ₁=1.0, ALL 45 articles, 4-concept lattice)");
+    println!("{}", "=".repeat(64));
+
+    let heights = fca::hasse_heights(n, &lattice.edges);
+    let mut feeders: Vec<Vec<usize>> = vec![vec![]; n];
+    for &(p, c) in &lattice.edges { feeders[p].push(c); }
+
+    let total_extent: usize = lattice.concept_sizes.iter().map(|(_, b)| *b).sum();
+    let total_intent: usize = lattice.concept_sizes.iter().map(|(a, _)| *a).sum();
+    let valid_d: Vec<f64> = lattice.d_values.iter()
+        .filter(|&&d| d.is_finite() && d < 1e6).copied().collect();
+    let max_d_valid = valid_d.iter().cloned().fold(1.0_f64, f64::max);
+
+    let mut sorted: Vec<usize> = (0..n).collect();
+    sorted.sort_by_key(|&i| std::cmp::Reverse(heights[i]));
+    let mut results: Vec<Option<n_operator::IterResult>> = vec![None; n];
+
+    for &ci in &sorted {
+        let csize = &lattice.concept_sizes[ci];
+        let raw_d = lattice.d_values[ci];
+        let d_init = if raw_d.is_finite() && raw_d < 1e6 {
+            (raw_d / max_d_valid).min(1.0)
+        } else { 0.8 };
+        let b_init = (1.0 - csize.1 as f64 / total_extent.max(1) as f64).clamp(0.0, 1.0);
+        let rho_init = (csize.0 as f64 / total_intent.max(1) as f64).clamp(0.0, 1.0);
+        let m0 = five_dim::make_state(d_init, b_init, rho_init, 0.5, 0.5);
+        let (b_up, rho_up) = get_upstream(ci, &feeders, &results);
+        let result = n_operator::run_iteration(&m0, b_up, rho_up, &DynamicsParams::uniform(), 500, 1e-12);
+        results[ci] = Some(result);
+    }
+
+    let labels = ["D", "B", "ρ", "R", "S"];
+    let mut by_h: std::collections::BTreeMap<usize, Vec<usize>> = std::collections::BTreeMap::new();
+    for (ci, &h) in heights.iter().enumerate() { by_h.entry(h).or_default().push(ci); }
+
+    for (h, cis) in &by_h {
+        for &ci in cis {
+            if let Some(ref r) = results[ci] {
+                let (b_up, _) = get_upstream(ci, &feeders, &results);
+                println!();
+                println!("  C{} (h={}, B↑={:.4}, τ⁻¹={:.4}, ρ={:.4}):", ci, h, b_up, r.tau_inv, r.rho_spectral);
+                println!("      {:>6} {:>8} {:>8} {:>8} {:>8} {:>8}", "∂/∂", "D", "B", "ρ", "R", "S");
+                for row in 0..5 {
+                    let prefix = format!("      N_{}", labels[row]);
+                    let mut vals = String::new();
+                    for col in 0..5 {
+                        let v = r.jacobian[row * 5 + col];
+                        if v.abs() < 1e-8 {
+                            vals.push_str(&format!("  {:>6}", "0"));
+                        } else {
+                            vals.push_str(&format!("  {:>+6.3}", v));
+                        }
+                    }
+                    println!("{} {}", prefix, vals);
+                }
+
+                let mut max_off = 0.0_f64;
+                let mut max_pair = (0usize, 0usize);
+                for row in 0..5 {
+                    for col in 0..5 {
+                        if row != col {
+                            let v = r.jacobian[row * 5 + col];
+                            if v.abs() > max_off.abs() {
+                                max_off = v;
+                                max_pair = (row, col);
+                            }
+                        }
+                    }
+                }
+                let max_total = r.jacobian.iter().map(|&v| v.abs()).fold(0.0_f64, f64::max);
+                println!("      dominant: ∂N_{}/∂{}={:+.4}  max|J_ij|={:.4}",
+                    labels[max_pair.0], labels[max_pair.1], max_off, max_total);
+            }
+        }
+    }
+}
+
+fn run_pipeline(lattice: &fca::FcaLattice, art_texts: &[String], params: &DynamicsParams)
+    -> (Vec<f64>, Vec<f64>, Vec<f64>, Vec<usize>, Vec<(usize, usize)>)
+{
+    let n = lattice.concepts.len();
+    let heights = fca::hasse_heights(n, &lattice.edges);
+    let mut feeders: Vec<Vec<usize>> = vec![vec![]; n];
+    for &(p, c) in &lattice.edges { feeders[p].push(c); }
+
+    let total_extent: usize = lattice.concept_sizes.iter().map(|(_, b)| *b).sum();
+    let total_intent: usize = lattice.concept_sizes.iter().map(|(a, _)| *a).sum();
+    let valid_d: Vec<f64> = lattice.d_values.iter()
+        .filter(|&&d| d.is_finite() && d < 1e6).copied().collect();
+    let max_d_valid = valid_d.iter().cloned().fold(1.0_f64, f64::max);
+
+    let mut sorted: Vec<usize> = (0..n).collect();
+    sorted.sort_by_key(|&i| std::cmp::Reverse(heights[i]));
+    let mut results: Vec<Option<n_operator::IterResult>> = vec![None; n];
+
+    let _ = art_texts;
+
+    for &ci in &sorted {
+        let csize = &lattice.concept_sizes[ci];
+        let raw_d = lattice.d_values[ci];
+        let d_init = if raw_d.is_finite() && raw_d < 1e6 {
+            (raw_d / max_d_valid).min(1.0)
+        } else {
+            0.8
+        };
+        let b_init = (1.0 - csize.1 as f64 / total_extent.max(1) as f64).clamp(0.0, 1.0);
+        let rho_init = (csize.0 as f64 / total_intent.max(1) as f64).clamp(0.0, 1.0);
+
+        let (b_up, rho_up) = get_upstream(ci, &feeders, &results);
+        let m0 = five_dim::make_state(d_init, b_init, rho_init, 0.5, 0.5);
+        let result = n_operator::run_iteration(&m0, b_up, rho_up, params, 500, 1e-12);
+        results[ci] = Some(result);
+    }
+
+    let tau_inv: Vec<f64> = results.iter().filter_map(|r| r.as_ref()).map(|r| r.tau_inv).collect();
+    let rho_j: Vec<f64> = results.iter().filter_map(|r| r.as_ref()).map(|r| r.rho_spectral).collect();
+    let dstar: Vec<f64> = results.iter().filter_map(|r| r.as_ref()).map(|r| r.m_star[0]).collect();
+
+    (tau_inv, rho_j, dstar, heights, lattice.edges.clone())
 }
 
 fn run_experiment(label: &str, _merged_text: &str, art_texts: &[String], max_attrs: usize, max_concepts: usize, time_limit: f64, _output_dir: &PathBuf) {
