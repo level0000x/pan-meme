@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::env;
 use std::fs;
 use std::path::PathBuf;
 
@@ -6,6 +7,9 @@ use n_iter_rs::experiments;
 use n_iter_rs::io;
 
 fn main() {
+    let args: Vec<String> = env::args().collect();
+    let quick_mode = args.iter().any(|a| a == "--quick" || a == "-q");
+
     let base_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .parent().unwrap().to_path_buf();
     let extract_dir = base_dir
@@ -19,6 +23,17 @@ fn main() {
         .join("output");
 
     let _ = fs::create_dir_all(&output_dir);
+
+    let max_concepts: usize = 5000;
+    let time_limit: f64 = 1800.0;
+
+    if quick_mode {
+        println!("{}", "=".repeat(64));
+        println!("  QUICK MODE: synthetic lattice experiments only");
+        println!("{}", "=".repeat(64));
+        run_synthetic_suite(max_concepts, time_limit, &output_dir);
+        return;
+    }
 
     let entries = fs::read_dir(&extract_dir).expect("Failed to read extracts");
     let json_files: Vec<PathBuf> = entries
@@ -52,8 +67,6 @@ fn main() {
     }
 
     let max_attrs: usize = 5000;
-    let max_concepts: usize = 5000;
-    let time_limit: f64 = 1800.0;
 
     {
         let mut merged = String::new();
@@ -101,8 +114,18 @@ fn main() {
     experiments::run_e2_carrier_independence(&all_articles, max_attrs, max_concepts, time_limit, &output_dir);
     experiments::run_degradation_scan(&all_articles, max_attrs, max_concepts, time_limit, &output_dir);
     experiments::run_theorem_verification(&all_articles, max_attrs, max_concepts, time_limit, &output_dir);
+
+    run_synthetic_suite(max_concepts, time_limit, &output_dir);
+}
+
+fn run_synthetic_suite(max_concepts: usize, time_limit: f64, output_dir: &PathBuf) {
     experiments::run_synthetic_scan(max_concepts, time_limit, &output_dir);
     experiments::run_stress_tests(&output_dir);
     experiments::run_chain_diagnostics(&output_dir);
     experiments::run_th617_verification();
+    experiments::run_ode_verification();
+    experiments::run_ode_stability_analysis();
+    experiments::run_ode_exact_lyapunov();
+    experiments::run_convergence_rate_analysis();
+    experiments::run_sensitivity_analysis();
 }

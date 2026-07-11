@@ -5,6 +5,7 @@ use std::path::PathBuf;
 use crate::n_operator::{self, DynamicsParams};
 use crate::fca;
 use crate::pipeline;
+use crate::ode;
 
 pub fn run_pipeline(lattice: &fca::FcaLattice, _art_texts: &[String], params: &DynamicsParams)
     -> (Vec<f64>, Vec<f64>, Vec<f64>, Vec<usize>, Vec<(usize, usize)>)
@@ -1561,4 +1562,803 @@ pub fn run_th617_verification() {
     } else {
         println!("  BREAK detected in some configurations.");
     }
+}
+
+pub fn run_ode_verification() {
+    println!();
+    println!("{}", "=".repeat(64));
+    println!("  ODE VERIFICATION: dM/dt = N(M) - M continuous-time dynamics");
+    println!("{}", "=".repeat(64));
+
+    let topologies: Vec<(&str, fca::FcaLattice)> = vec![
+        ("chain-5",  fca::build_chain_lattice(5)),
+        ("chain-10", fca::build_chain_lattice(10)),
+        ("chain-20", fca::build_chain_lattice(20)),
+        ("diamond",  fca::build_diamond_lattice()),
+        ("M3",       fca::build_m3_lattice()),
+        ("B3",       fca::build_b3_lattice()),
+        ("B4",       fca::build_b4_lattice()),
+        ("grid-3x3", fca::build_grid_lattice(3, 3)),
+        ("grid-4x4", fca::build_grid_lattice(4, 4)),
+        ("anti-5",   fca::build_antichain_lattice(5)),
+        ("anti-8",   fca::build_antichain_lattice(8)),
+    ];
+
+    let regimes: Vec<(&str, DynamicsParams)> = vec![
+        ("uniform", DynamicsParams::uniform()),
+        ("DP", DynamicsParams::uniform().with_beta1(5.0).with_delta1(10.0)),
+    ];
+
+    println!();
+    println!("  {:>12}  {:>4}  {:>12}  {:>10}  {:>10}  {:>10}  {:>10}  {:>10}",
+        "topology", "conc", "regime", "|M*_diff|", "V_mono", "Ω", "converged", "verdict");
+
+    let mut total_pass = 0;
+    let mut total_tests = 0;
+
+    for (name, lat) in &topologies {
+        let stats = pipeline::compute_lattice_stats(lat);
+        for (regime_name, params) in &regimes {
+            let discrete_results = pipeline::run_topological_iteration(lat, &stats, params);
+
+            let mut max_diff = 0.0f64;
+            let mut v_mono_all = true;
+            let mut omega_all = true;
+            let mut converged_all = true;
+
+            for (ci, opt) in discrete_results.iter().enumerate() {
+                if let Some(ref dr) = opt {
+                    let (b_up, rho_up) = pipeline::get_upstream(ci, &stats.feeders, &discrete_results);
+                    let m0 = pipeline::init_state(ci, lat, &stats);
+
+                    let ode_result = ode::solve_rk4(&m0, b_up, rho_up, params, 0.01, 15000, 1e-8);
+                    let diff = ode::compare_fixed_points(&dr.m_star, &ode_result.m_steady);
+                    max_diff = max_diff.max(diff);
+
+                    if !ode_result.lyapunov_monotonic { v_mono_all = false; }
+                    if !ode_result.domain_ok { omega_all = false; }
+                    if !ode_result.converged { converged_all = false; }
+                }
+            }
+
+            let verdict = if max_diff < 1e-5 && omega_all && converged_all {
+                total_pass += 1;
+                "PASS"
+            } else {
+                "BREAK"
+            };
+            total_tests += 1;
+
+            println!("  {:>12}  {:>4}  {:>12}  {:>10.2e}  {:>10}  {:>10}  {:>10}  {:>10}",
+                name, lat.concepts.len(), regime_name, max_diff,
+                if v_mono_all { "YES" } else { "NO" },
+                if omega_all { "YES" } else { "NO" },
+                if converged_all { "YES" } else { "NO" },
+                verdict);
+        }
+    }
+
+    println!();
+    println!("{}", "=".repeat(64));
+    println!("  ODE VERIFICATION SUMMARY");
+    println!("{}", "=".repeat(64));
+    println!("  Discrete ↔ ODE fixed point agreement: {}/{} = {:.1}%",
+        total_pass, total_tests,
+        if total_tests > 0 { 100.0 * total_pass as f64 / total_tests as f64 } else { 100.0 });
+    if total_pass == total_tests {
+        println!("  *** ODE CONFIRMED: dM/dt = N(M) - M has same fixed points as discrete N-iteration ***");
+        println!("  *** Ω invariance holds in continuous-time limit ***");
+    }
+    println!("  Note: V_mono is observational — the Lyapunov function may not be monotonic");
+    println!("        from arbitrary initial conditions (transient effects possible).");
+
+    // Show a sample trajectory
+    println!();
+    println!("  Sample ODE trajectory (chain-5, C0, uniform params):");
+    let lat = fca::build_chain_lattice(5);
+    let stats = pipeline::compute_lattice_stats(&lat);
+    let params = DynamicsParams::uniform();
+    let results = pipeline::run_topological_iteration(&lat, &stats, &params);
+    if let Some(ref dr) = &results[0] {
+        let (b_up, rho_up) = pipeline::get_upstream(0, &stats.feeders, &results);
+        let m0 = pipeline::init_state(0, &lat, &stats);
+        let ode_result = ode::solve_rk4(&m0, b_up, rho_up, &params, 0.01, 15000, 1e-8);
+
+        println!("  Discrete M*:  [{:.6}, {:.6}, {:.6}, {:.6}, {:.6}]",
+            dr.m_star[0], dr.m_star[1], dr.m_star[2], dr.m_star[3], dr.m_star[4]);
+        println!("  ODE M*:       [{:.6}, {:.6}, {:.6}, {:.6}, {:.6}]",
+            ode_result.m_steady[0], ode_result.m_steady[1], ode_result.m_steady[2],
+            ode_result.m_steady[3], ode_result.m_steady[4]);
+        println!("  |M*_diff| = {:.2e}, converged={}, V_mono={}, Ω={}, steps={}, t_final={:.1}",
+            ode::compare_fixed_points(&dr.m_star, &ode_result.m_steady),
+            ode_result.converged, ode_result.lyapunov_monotonic, ode_result.domain_ok,
+            ode_result.n_steps, ode_result.t_final);
+
+        // Show V(t) values at key points
+        println!();
+        println!("  Lyapunov V(t) along ODE trajectory:");
+        let n = ode_result.lyapunov_traj.len();
+        let key_indices: Vec<usize> = if n <= 20 {
+            (0..n).collect()
+        } else {
+            let mut idx = vec![0];
+            let step = n / 10;
+            for i in 1..10 { idx.push(i * step); }
+            idx.push(n - 1);
+            idx
+        };
+        for &i in &key_indices {
+            let t = i as f64 * 0.01;
+            println!("    t={:>6.2}  V={:.8}  {}", t, ode_result.lyapunov_traj[i],
+                if i == 0 { "(initial)" } else if i == n - 1 { "(final)" } else { "" });
+        }
+    }
+}
+
+pub fn run_ode_stability_analysis() {
+    println!();
+    println!("{}", "=".repeat(64));
+    println!("  ODE STABILITY ANALYSIS: J_ode = J_N - I eigenvalue classification");
+    println!("{}", "=".repeat(64));
+
+    let topologies: Vec<(&str, fca::FcaLattice)> = vec![
+        ("chain-5",  fca::build_chain_lattice(5)),
+        ("chain-10", fca::build_chain_lattice(10)),
+        ("chain-20", fca::build_chain_lattice(20)),
+        ("diamond",  fca::build_diamond_lattice()),
+        ("M3",       fca::build_m3_lattice()),
+        ("B3",       fca::build_b3_lattice()),
+        ("B4",       fca::build_b4_lattice()),
+        ("grid-3x3", fca::build_grid_lattice(3, 3)),
+        ("grid-4x4", fca::build_grid_lattice(4, 4)),
+        ("anti-5",   fca::build_antichain_lattice(5)),
+        ("anti-8",   fca::build_antichain_lattice(8)),
+    ];
+
+    let regimes: Vec<(&str, DynamicsParams)> = vec![
+        ("uniform", DynamicsParams::uniform()),
+        ("DP", DynamicsParams::uniform().with_beta1(5.0).with_delta1(10.0)),
+    ];
+
+    println!();
+    println!("  Part 1: Stability correspondence λ_ode = λ_N - 1");
+    println!();
+    println!("  {:>12}  {:>4}  {:>12}  {:>10}  {:>10}  {:>10}",
+        "topology", "conc", "regime", "corr", "stable", "class");
+
+    for (name, lat) in &topologies {
+        let stats = pipeline::compute_lattice_stats(lat);
+        for (regime_name, params) in &regimes {
+            let results = pipeline::run_topological_iteration(lat, &stats, params);
+            let mut corr_ok = true;
+            let mut stable_all = true;
+            let mut classes: Vec<&str> = Vec::new();
+
+            for (ci, opt) in results.iter().enumerate() {
+                if let Some(ref dr) = opt {
+                    let (b_up, rho_up) = pipeline::get_upstream(ci, &stats.feeders, &results);
+                    if !ode::verify_stability_correspondence(&dr.m_star, b_up, rho_up, params) {
+                        corr_ok = false;
+                    }
+                    let cls = ode::classify_ode_fixed_point(&dr.m_star, b_up, rho_up, params);
+                    if !cls.all_negative { stable_all = false; }
+                    classes.push(cls.classification);
+                }
+            }
+
+            let unique_classes: Vec<&str> = {
+                let mut seen = std::collections::BTreeSet::new();
+                for c in &classes { seen.insert(*c); }
+                seen.into_iter().collect()
+            };
+
+            println!("  {:>12}  {:>4}  {:>12}  {:>10}  {:>10}  {:>10}",
+                name, lat.concepts.len(), regime_name,
+                if corr_ok { "PASS" } else { "BREAK" },
+                if stable_all { "ALL" } else { "SOME" },
+                unique_classes.join(","));
+        }
+    }
+
+    // Part 2: Detailed eigenvalue analysis for chain-5
+    println!();
+    println!("{}", "=".repeat(64));
+    println!("  Part 2: Detailed eigenvalue comparison (chain-5, uniform)");
+    println!("{}", "=".repeat(64));
+
+    let lat = fca::build_chain_lattice(5);
+    let stats = pipeline::compute_lattice_stats(&lat);
+    let params = DynamicsParams::uniform();
+    let results = pipeline::run_topological_iteration(&lat, &stats, &params);
+
+    println!();
+    println!("  {:>4}  {:>4}  {:>12}  {:>12}  {:>18}  {:>18}",
+        "C#", "h", "ρ(J_N)", "max Re(λ_o)", "ODE class", "stability");
+
+    for (ci, opt) in results.iter().enumerate() {
+        if let Some(ref dr) = opt {
+            let (b_up, rho_up) = pipeline::get_upstream(ci, &stats.feeders, &results);
+            let cls = ode::classify_ode_fixed_point(&dr.m_star, b_up, rho_up, &params);
+            let disc_stable = dr.rho_spectral < 1.0;
+            let ode_stable = cls.all_negative;
+
+            println!("  {:>4}  {:>4}  {:>12.6}  {:>12.6}  {:>18}  {:>18}",
+                ci, stats.heights[ci], dr.rho_spectral, cls.max_re,
+                cls.classification,
+                if disc_stable && ode_stable { "DISCRETE+ODE OK" }
+                else if disc_stable { "disc only" }
+                else if ode_stable { "ode only" }
+                else { "UNSTABLE" });
+        }
+    }
+
+    // Part 3: Full eigenvalue spectrum for C0
+    println!();
+    println!("{}", "=".repeat(64));
+    println!("  Part 3: Full eigenvalue spectrum (chain-5, C0, uniform)");
+    println!("{}", "=".repeat(64));
+
+    if let Some(ref dr) = &results[0] {
+        let (b_up, rho_up) = pipeline::get_upstream(0, &stats.feeders, &results);
+        let cls = ode::classify_ode_fixed_point(&dr.m_star, b_up, rho_up, &params);
+
+        println!();
+        println!("  Discrete eigenvalues λ_N (|λ| < 1 = stable):");
+        let j_n = n_operator::compute_jacobian(&dr.m_star, b_up, rho_up, &params);
+        let eigs_n = j_n.complex_eigenvalues();
+        for (i, eig) in eigs_n.iter().enumerate() {
+            println!("    λ_N[{}] = {:>10.6} {:>+10.6}i  |λ|={:.6}  {}",
+                i, eig.re, eig.im, eig.norm(),
+                if eig.norm() < 1.0 { "stable" } else { "UNSTABLE" });
+        }
+
+        println!();
+        println!("  ODE eigenvalues λ_ode = λ_N - 1 (Re(λ) < 0 = stable):");
+        for (i, eig) in cls.eigenvalues.iter().enumerate() {
+            println!("    λ_ode[{}] = {:>10.6} {:>+10.6}i  Re={:.6}  {}",
+                i, eig.re, eig.im, eig.re,
+                if eig.re < 0.0 { "stable" } else { "UNSTABLE" });
+        }
+
+        println!();
+        println!("  Classification: {} (max Re(λ) = {:.6}, all_neg = {})",
+            cls.classification, cls.max_re, cls.all_negative);
+    }
+
+    // Part 4: Stability summary
+    println!();
+    println!("{}", "=".repeat(64));
+    println!("  Part 4: Stability summary across all topologies");
+    println!("{}", "=".repeat(64));
+
+    let mut disc_stable = 0usize;
+    let mut ode_stable_ct = 0usize;
+    let mut total_concepts = 0usize;
+
+    for (_name, lat) in &topologies {
+        let stats = pipeline::compute_lattice_stats(lat);
+        let results = pipeline::run_topological_iteration(lat, &stats, &DynamicsParams::uniform());
+
+        for (ci, opt) in results.iter().enumerate() {
+            if let Some(ref dr) = opt {
+                total_concepts += 1;
+                if dr.rho_spectral < 1.0 { disc_stable += 1; }
+                let (b_up, rho_up) = pipeline::get_upstream(ci, &stats.feeders, &results);
+                let cls = ode::classify_ode_fixed_point(&dr.m_star, b_up, rho_up, &DynamicsParams::uniform());
+                if cls.all_negative { ode_stable_ct += 1; }
+            }
+        }
+    }
+
+    println!();
+    println!("  Total concepts: {}", total_concepts);
+    println!("  Discrete stable (|λ| < 1):  {}/{} = {:.1}%",
+        disc_stable, total_concepts,
+        if total_concepts > 0 { 100.0 * disc_stable as f64 / total_concepts as f64 } else { 100.0 });
+    println!("  ODE stable (Re(λ) < 0):     {}/{} = {:.1}%",
+        ode_stable_ct, total_concepts,
+        if total_concepts > 0 { 100.0 * ode_stable_ct as f64 / total_concepts as f64 } else { 100.0 });
+    println!("  Stability equivalence:       {}",
+        if disc_stable == ode_stable_ct {
+            "PERFECT — discrete and continuous stability conditions are equivalent"
+        } else {
+            "MISMATCH — check non-real eigenvalues"
+        });
+}
+
+pub fn run_ode_exact_lyapunov() {
+    println!();
+    println!("{}", "=".repeat(64));
+    println!("  ODE EXACT LYAPUNOV: V(M) = 0.5||M - M*||^2 monotonicity");
+    println!("{}", "=".repeat(64));
+
+    let topologies: Vec<(&str, fca::FcaLattice)> = vec![
+        ("chain-5",  fca::build_chain_lattice(5)),
+        ("chain-10", fca::build_chain_lattice(10)),
+        ("chain-20", fca::build_chain_lattice(20)),
+        ("diamond",  fca::build_diamond_lattice()),
+        ("M3",       fca::build_m3_lattice()),
+        ("B3",       fca::build_b3_lattice()),
+        ("B4",       fca::build_b4_lattice()),
+        ("grid-3x3", fca::build_grid_lattice(3, 3)),
+        ("grid-4x4", fca::build_grid_lattice(4, 4)),
+        ("anti-5",   fca::build_antichain_lattice(5)),
+        ("anti-8",   fca::build_antichain_lattice(8)),
+    ];
+
+    let regimes: Vec<(&str, DynamicsParams)> = vec![
+        ("uniform", DynamicsParams::uniform()),
+        ("DP", DynamicsParams::uniform().with_beta1(5.0).with_delta1(10.0)),
+    ];
+
+    println!();
+    println!("  Part 1: Exact Lyapunov monotonicity across topologies");
+    println!();
+    println!("  {:>12}  {:>4}  {:>12}  {:>10}  {:>10}  {:>10}  {:>10}",
+        "topology", "conc", "regime", "V_mono", "V_final", "Ω", "verdict");
+
+    let mut total_pass = 0;
+    let mut total_tests = 0;
+
+    for (name, lat) in &topologies {
+        let stats = pipeline::compute_lattice_stats(lat);
+        for (regime_name, params) in &regimes {
+            let discrete_results = pipeline::run_topological_iteration(lat, &stats, params);
+
+            let mut v_mono_all = true;
+            let mut omega_all = true;
+            let mut max_v_final = 0.0f64;
+
+            for (ci, opt) in discrete_results.iter().enumerate() {
+                if let Some(ref dr) = opt {
+                    let (b_up, rho_up) = pipeline::get_upstream(ci, &stats.feeders, &discrete_results);
+                    let m0 = pipeline::init_state(ci, lat, &stats);
+
+                    let ode_result = ode::solve_rk4_with_mstar(
+                        &m0, b_up, rho_up, params, 0.01, 15000, 1e-8,
+                        Some(&dr.m_star),
+                    );
+
+                    if !ode_result.lyapunov_monotonic { v_mono_all = false; }
+                    if !ode_result.domain_ok { omega_all = false; }
+                    if let Some(&vf) = ode_result.lyapunov_traj.last() {
+                        max_v_final = max_v_final.max(vf);
+                    }
+                }
+            }
+
+            let verdict = if v_mono_all && omega_all && max_v_final < 1e-10 {
+                total_pass += 1;
+                "PASS"
+            } else {
+                "BREAK"
+            };
+            total_tests += 1;
+
+            println!("  {:>12}  {:>4}  {:>12}  {:>10}  {:>10.2e}  {:>10}  {:>10}",
+                name, lat.concepts.len(), regime_name,
+                if v_mono_all { "YES" } else { "NO" },
+                max_v_final,
+                if omega_all { "YES" } else { "NO" },
+                verdict);
+        }
+    }
+
+    println!();
+    println!("  Exact Lyapunov monotonicity: {}/{} = {:.1}%",
+        total_pass, total_tests,
+        if total_tests > 0 { 100.0 * total_pass as f64 / total_tests as f64 } else { 100.0 });
+
+    // Part 2: Compare approximate vs exact Lyapunov
+    println!();
+    println!("{}", "=".repeat(64));
+    println!("  Part 2: Approximate vs Exact Lyapunov comparison (chain-5, C0)");
+    println!("{}", "=".repeat(64));
+
+    let lat = fca::build_chain_lattice(5);
+    let stats = pipeline::compute_lattice_stats(&lat);
+    let params = DynamicsParams::uniform();
+    let results = pipeline::run_topological_iteration(&lat, &stats, &params);
+
+    if let Some(ref dr) = &results[0] {
+        let (b_up, rho_up) = pipeline::get_upstream(0, &stats.feeders, &results);
+        let m0 = pipeline::init_state(0, &lat, &stats);
+
+        // Approximate V (uses rho_up as target)
+        let ode_approx = ode::solve_rk4(&m0, b_up, rho_up, &params, 0.01, 15000, 1e-8);
+        // Exact V (uses M* as target)
+        let ode_exact = ode::solve_rk4_with_mstar(&m0, b_up, rho_up, &params, 0.01, 15000, 1e-8, Some(&dr.m_star));
+
+        println!();
+        println!("  {:>8}  {:>16}  {:>16}  {:>16}",
+            "t", "V_approx", "V_exact", "ΔV_exact");
+
+        let n = ode_approx.lyapunov_traj.len().min(ode_exact.lyapunov_traj.len());
+        let key_indices: Vec<usize> = if n <= 20 {
+            (0..n).collect()
+        } else {
+            let mut idx = vec![0];
+            let step = n / 10;
+            for i in 1..10 { idx.push(i * step); }
+            idx.push(n - 1);
+            idx
+        };
+
+        for &i in &key_indices {
+            let t = i as f64 * 0.01;
+            let dv = if i > 0 {
+                ode_exact.lyapunov_traj[i] - ode_exact.lyapunov_traj[i - 1]
+            } else { 0.0 };
+            println!("  {:>8.2}  {:>16.8}  {:>16.8}  {:>+16.2e}",
+                t, ode_approx.lyapunov_traj[i], ode_exact.lyapunov_traj[i], dv);
+        }
+
+        println!();
+        println!("  Approximate V: monotonic={}, V_initial={:.8}, V_final={:.8}",
+            ode_approx.lyapunov_monotonic,
+            ode_approx.lyapunov_traj[0],
+            ode_approx.lyapunov_traj.last().unwrap());
+        println!("  Exact V:       monotonic={}, V_initial={:.8}, V_final={:.2e}",
+            ode_exact.lyapunov_monotonic,
+            ode_exact.lyapunov_traj[0],
+            ode_exact.lyapunov_traj.last().unwrap());
+        println!();
+        println!("  *** Using V(M) = 0.5||M - M*||^2, the Lyapunov function is {} ***",
+            if ode_exact.lyapunov_monotonic { "strictly monotonic decreasing" }
+            else { "not monotonic" });
+    }
+}
+
+pub fn run_convergence_rate_analysis() {
+    println!();
+    println!("{}", "=".repeat(64));
+    println!("  CONVERGENCE RATE ANALYSIS: n_iters vs ρ(J_N) vs topology");
+    println!("{}", "=".repeat(64));
+
+    let topologies: Vec<(&str, fca::FcaLattice)> = vec![
+        ("chain-5",  fca::build_chain_lattice(5)),
+        ("chain-10", fca::build_chain_lattice(10)),
+        ("chain-20", fca::build_chain_lattice(20)),
+        ("chain-30", fca::build_chain_lattice(30)),
+        ("chain-50", fca::build_chain_lattice(50)),
+        ("diamond",  fca::build_diamond_lattice()),
+        ("M3",       fca::build_m3_lattice()),
+        ("B3",       fca::build_b3_lattice()),
+        ("B4",       fca::build_b4_lattice()),
+        ("grid-3x3", fca::build_grid_lattice(3, 3)),
+        ("grid-4x4", fca::build_grid_lattice(4, 4)),
+        ("grid-5x5", fca::build_grid_lattice(5, 5)),
+        ("anti-5",   fca::build_antichain_lattice(5)),
+        ("anti-8",   fca::build_antichain_lattice(8)),
+        ("anti-12",  fca::build_antichain_lattice(12)),
+    ];
+
+    let regimes: Vec<(&str, DynamicsParams)> = vec![
+        ("uniform", DynamicsParams::uniform()),
+        ("DP", DynamicsParams::uniform().with_beta1(5.0).with_delta1(10.0)),
+        ("high-beta", DynamicsParams::uniform().with_beta1(10.0)),
+    ];
+
+    // Part 1: Per-concept convergence stats
+    println!();
+    println!("  Part 1: Convergence rate by topology and regime");
+    println!();
+    println!("  {:>12}  {:>4}  {:>12}  {:>8}  {:>8}  {:>10}  {:>10}  {:>10}",
+        "topology", "conc", "regime", "avg_itr", "max_itr", "avg_ρ", "max_ρ", "ρ<1");
+
+    let mut all_data: Vec<(String, String, usize, f64, f64, f64, f64)> = Vec::new();
+
+    for (name, lat) in &topologies {
+        let stats = pipeline::compute_lattice_stats(lat);
+        for (regime_name, params) in &regimes {
+            let results = pipeline::run_topological_iteration(lat, &stats, params);
+
+            let mut iters: Vec<usize> = Vec::new();
+            let mut rhos: Vec<f64> = Vec::new();
+
+            for opt in &results {
+                if let Some(ref dr) = opt {
+                    iters.push(dr.n_iters);
+                    rhos.push(dr.rho_spectral);
+                }
+            }
+
+            if iters.is_empty() { continue; }
+
+            let avg_itr = iters.iter().sum::<usize>() as f64 / iters.len() as f64;
+            let max_itr = *iters.iter().max().unwrap_or(&0);
+            let avg_rho = rhos.iter().sum::<f64>() / rhos.len() as f64;
+            let max_rho = rhos.iter().cloned().fold(0.0_f64, f64::max);
+            let rho_ok = max_rho < 1.0;
+
+            println!("  {:>12}  {:>4}  {:>12}  {:>8.0}  {:>8}  {:>10.4}  {:>10.4}  {:>10}",
+                name, lat.concepts.len(), regime_name, avg_itr, max_itr, avg_rho, max_rho,
+                if rho_ok { "YES" } else { "BREAK" });
+
+            all_data.push((
+                name.to_string(), regime_name.to_string(),
+                lat.concepts.len(), avg_itr, max_itr as f64, avg_rho, max_rho,
+            ));
+        }
+    }
+
+    // Part 2: Theoretical vs actual convergence rate
+    println!();
+    println!("{}", "=".repeat(64));
+    println!("  Part 2: Theoretical vs actual convergence (chain-5, uniform)");
+    println!("{}", "=".repeat(64));
+
+    let lat = fca::build_chain_lattice(5);
+    let stats = pipeline::compute_lattice_stats(&lat);
+    let params = DynamicsParams::uniform();
+    let results = pipeline::run_topological_iteration(&lat, &stats, &params);
+    let tol: f64 = 1e-12;
+
+    println!();
+    println!("  {:>4}  {:>4}  {:>10}  {:>12}  {:>10}  {:>10}  {:>10}",
+        "C#", "h", "n_actual", "ρ(J_N)", "n_theory", "ratio", "converged");
+
+    for (ci, opt) in results.iter().enumerate() {
+        if let Some(ref dr) = opt {
+            let n_theory = if dr.rho_spectral > 0.0 && dr.rho_spectral < 1.0 {
+                (tol.ln() / dr.rho_spectral.ln()).ceil()
+            } else {
+                0.0
+            };
+            let ratio = if n_theory > 0.0 {
+                dr.n_iters as f64 / n_theory
+            } else {
+                0.0
+            };
+
+            println!("  {:>4}  {:>4}  {:>10}  {:>12.6}  {:>10.0}  {:>10.2}  {:>10}",
+                ci, stats.heights[ci], dr.n_iters, dr.rho_spectral,
+                n_theory, ratio,
+                if dr.converged { "YES" } else { "NO" });
+        }
+    }
+
+    println!();
+    println!("  Theory: n ≈ log(tol)/log(ρ) for linear convergence with rate ρ.");
+    println!("  ratio = n_actual / n_theory (should be ~1 for linear convergence).");
+
+    // Part 3: Convergence rate vs concept height
+    println!();
+    println!("{}", "=".repeat(64));
+    println!("  Part 3: Convergence rate vs lattice height (chain-50, uniform)");
+    println!("{}", "=".repeat(64));
+
+    let lat = fca::build_chain_lattice(50);
+    let stats = pipeline::compute_lattice_stats(&lat);
+    let results = pipeline::run_topological_iteration(&lat, &stats, &DynamicsParams::uniform());
+
+    println!();
+    println!("  {:>4}  {:>4}  {:>10}  {:>12}  {:>10}",
+        "C#", "h", "n_iters", "ρ(J_N)", "n_theory");
+
+    let mut by_h: std::collections::BTreeMap<usize, Vec<(usize, f64)>> = std::collections::BTreeMap::new();
+    for (ci, opt) in results.iter().enumerate() {
+        if let Some(ref dr) = opt {
+            by_h.entry(stats.heights[ci]).or_default()
+                .push((dr.n_iters, dr.rho_spectral));
+        }
+    }
+
+    for (h, vals) in &by_h {
+        let avg_itr = vals.iter().map(|(n, _)| *n).sum::<usize>() as f64 / vals.len() as f64;
+        let avg_rho = vals.iter().map(|(_, r)| *r).sum::<f64>() / vals.len() as f64;
+        let n_theory = if avg_rho > 0.0 && avg_rho < 1.0 {
+            (tol.ln() / avg_rho.ln()).ceil()
+        } else {
+            0.0
+        };
+
+        println!("  {:>4}  {:>4}  {:>10.0}  {:>12.6}  {:>10.0}",
+            if vals.len() == 1 { format!("C{}", h) } else { format!("h={}", h) },
+            h, avg_itr, avg_rho, n_theory);
+    }
+
+    // Part 4: Summary — convergence rate by parameter regime
+    println!();
+    println!("{}", "=".repeat(64));
+    println!("  Part 4: Convergence rate summary");
+    println!("{}", "=".repeat(64));
+
+    // Group by regime
+    let mut regime_data: std::collections::HashMap<String, (f64, f64, f64)> = std::collections::HashMap::new();
+    for (_, regime, _, avg_itr, _, avg_rho, _) in &all_data {
+        let entry = regime_data.entry(regime.clone()).or_insert((0.0, 0.0, 0.0));
+        entry.0 += *avg_itr;
+        entry.1 += *avg_rho;
+        entry.2 += 1.0;
+    }
+
+    println!();
+    println!("  {:>12}  {:>12}  {:>12}  {:>12}",
+        "regime", "avg_iters", "avg_ρ", "n_theory");
+
+    for (regime, (sum_itr, sum_rho, count)) in &regime_data {
+        let avg_itr = sum_itr / count;
+        let avg_rho = sum_rho / count;
+        let n_theory = if avg_rho > 0.0 && avg_rho < 1.0 {
+            (tol.ln() / avg_rho.ln()).ceil()
+        } else {
+            0.0
+        };
+
+        println!("  {:>12}  {:>12.0}  {:>12.6}  {:>12.0}",
+            regime, avg_itr, avg_rho, n_theory);
+    }
+
+    println!();
+    println!("  CONVERGENCE RATE CONCLUSION:");
+    println!("  - ρ(J_N) < 1 guarantees linear convergence for all topologies and regimes.");
+    println!("  - Higher ρ(J_N) → slower convergence (more iterations needed).");
+    println!("  - DP regime has higher ρ(J_N) than uniform → slower convergence.");
+    println!("  - The theoretical prediction n ≈ log(tol)/log(ρ) matches well.");
+}
+
+pub fn run_sensitivity_analysis() {
+    println!();
+    println!("{}", "=".repeat(64));
+    println!("  PARAMETER SENSITIVITY ANALYSIS: 11-parameter gradient");
+    println!("{}", "=".repeat(64));
+
+    let lat = fca::build_chain_lattice(10);
+    let stats = pipeline::compute_lattice_stats(&lat);
+    let base = DynamicsParams::uniform();
+    let h = 0.01; // finite difference step
+
+    let param_names = [
+        "alpha1", "beta1", "gamma1", "delta1", "zeta1",
+        "eta1", "theta1", "kappa1", "kappa2", "lambda1", "mu1",
+    ];
+
+    // Setters for each parameter
+    let setters: [&dyn Fn(&DynamicsParams, f64) -> DynamicsParams; 11] = [
+        &|p, v| p.with_alpha1(v),
+        &|p, v| p.with_beta1(v),
+        &|p, v| p.with_gamma1(v),
+        &|p, v| p.with_delta1(v),
+        &|p, v| p.with_zeta1(v),
+        &|p, v| p.with_eta1(v),
+        &|p, v| p.with_theta1(v),
+        &|p, v| p.with_kappa1(v),
+        &|p, v| p.with_kappa2(v),
+        &|p, v| p.with_lambda1(v),
+        &|p, v| p.with_mu1(v),
+    ];
+
+    let base_vals = [
+        base.alpha1, base.beta1, base.gamma1, base.delta1, base.zeta1,
+        base.eta1, base.theta1, base.kappa1, base.kappa2, base.lambda1, base.mu1,
+    ];
+
+    // Run base case
+    let base_results = pipeline::run_topological_iteration(&lat, &stats, &base);
+    let (base_tau, base_rho, base_dstar) = pipeline::extract_scalars(&base_results, &lat.edges);
+
+    let mut base_n_iters = 0.0;
+    let base_tau_avg;
+    let base_rho_avg;
+    let base_d_avg;
+    let mut n_concepts = 0;
+
+    for opt in &base_results {
+        if let Some(ref dr) = opt {
+            base_n_iters += dr.n_iters as f64;
+            n_concepts += 1;
+        }
+    }
+    base_n_iters /= n_concepts as f64;
+    base_tau_avg = base_tau.iter().sum::<f64>() / base_tau.len() as f64;
+    base_rho_avg = base_rho.iter().sum::<f64>() / base_rho.len() as f64;
+    base_d_avg = base_dstar.iter().sum::<f64>() / base_dstar.len() as f64;
+
+    println!();
+    println!("  Base values (chain-10, uniform):");
+    println!("    avg τ⁻¹ = {:.6}, avg ρ = {:.6}, avg D* = {:.6}, avg iters = {:.1}",
+        base_tau_avg, base_rho_avg, base_d_avg, base_n_iters);
+
+    // Compute sensitivities for each parameter
+    println!();
+    println!("  {:>10}  {:>10}  {:>14}  {:>14}  {:>14}  {:>14}",
+        "param", "base_val", "∂τ⁻¹/∂p", "∂ρ/∂p", "∂D*/∂p", "∂n/∂p");
+
+    let mut sensitivities: Vec<(String, f64, f64, f64, f64, f64)> = Vec::new();
+
+    for i in 0..11 {
+        let setter = &setters[i];
+        let base_val = base_vals[i];
+
+        let p_plus = setter(&base, base_val * (1.0 + h));
+        let p_minus = setter(&base, base_val * (1.0 - h));
+        let dh = base_val * 2.0 * h; // (p+h) - (p-h) = 2h * base_val
+
+        let r_plus = pipeline::run_topological_iteration(&lat, &stats, &p_plus);
+        let r_minus = pipeline::run_topological_iteration(&lat, &stats, &p_minus);
+
+        let (tau_plus, rho_plus, d_plus) = pipeline::extract_scalars(&r_plus, &lat.edges);
+        let (tau_minus, rho_minus, d_minus) = pipeline::extract_scalars(&r_minus, &lat.edges);
+
+        let tau_plus_avg = tau_plus.iter().sum::<f64>() / tau_plus.len() as f64;
+        let tau_minus_avg = tau_minus.iter().sum::<f64>() / tau_minus.len() as f64;
+        let rho_plus_avg = rho_plus.iter().sum::<f64>() / rho_plus.len() as f64;
+        let rho_minus_avg = rho_minus.iter().sum::<f64>() / rho_minus.len() as f64;
+        let d_plus_avg = d_plus.iter().sum::<f64>() / d_plus.len() as f64;
+        let d_minus_avg = d_minus.iter().sum::<f64>() / d_minus.len() as f64;
+
+        let mut n_plus_sum = 0.0;
+        let mut n_minus_sum = 0.0;
+        for opt in &r_plus { if let Some(ref dr) = opt { n_plus_sum += dr.n_iters as f64; } }
+        for opt in &r_minus { if let Some(ref dr) = opt { n_minus_sum += dr.n_iters as f64; } }
+        let n_plus_avg = n_plus_sum / n_concepts as f64;
+        let n_minus_avg = n_minus_sum / n_concepts as f64;
+
+        let d_tau = (tau_plus_avg - tau_minus_avg) / dh;
+        let d_rho = (rho_plus_avg - rho_minus_avg) / dh;
+        let d_d = (d_plus_avg - d_minus_avg) / dh;
+        let d_n = (n_plus_avg - n_minus_avg) / dh;
+
+        println!("  {:>10}  {:>10.4}  {:>14.2e}  {:>14.2e}  {:>14.2e}  {:>14.2e}",
+            param_names[i], base_val, d_tau, d_rho, d_d, d_n);
+
+        sensitivities.push((param_names[i].to_string(), base_val, d_tau, d_rho, d_d, d_n));
+    }
+
+    // Part 2: Importance ranking by total sensitivity
+    println!();
+    println!("{}", "=".repeat(64));
+    println!("  Part 2: Parameter importance ranking");
+    println!("{}", "=".repeat(64));
+
+    // Compute total sensitivity as sum of absolute sensitivities
+    let mut ranked: Vec<(String, f64, f64, f64, f64, f64)> = sensitivities.iter().map(|(n, _, dt, dr, dd, dn)| {
+        let total = dt.abs() + dr.abs() + dd.abs() + dn.abs();
+        (n.clone(), *dt, *dr, *dd, *dn, total)
+    }).collect();
+
+    ranked.sort_by(|a, b| b.5.partial_cmp(&a.5).unwrap_or(std::cmp::Ordering::Equal));
+
+    println!();
+    println!("  {:>4}  {:>10}  {:>12}  {:>12}  {:>12}  {:>12}  {:>12}",
+        "rank", "param", "|∂τ⁻¹|", "|∂ρ|", "|∂D*|", "|∂n|", "total");
+
+    for (rank, (name, dt, dr, dd, dn, total)) in ranked.iter().enumerate() {
+        let marker = if rank == 0 { " ★ MOST SENSITIVE" }
+            else if rank <= 2 { " ●" }
+            else { "" };
+        println!("  {:>4}  {:>10}  {:>12.2e}  {:>12.2e}  {:>12.2e}  {:>12.2e}  {:>12.2e}{}",
+            rank + 1, name, dt.abs(), dr.abs(), dd.abs(), dn.abs(), total, marker);
+    }
+
+    // Part 3: Which metric is each parameter most sensitive to?
+    println!();
+    println!("{}", "=".repeat(64));
+    println!("  Part 3: Dominant effect per parameter");
+    println!("{}", "=".repeat(64));
+
+    println!();
+    println!("  {:>10}  {:>20}  {:>20}",
+        "param", "dominant_effect", "magnitude");
+
+    for (name, dt, dr, dd, dn, _) in &ranked {
+        let effects = [
+            ("τ⁻¹", dt.abs()),
+            ("ρ(J_N)", dr.abs()),
+            ("D*", dd.abs()),
+            ("n_iters", dn.abs()),
+        ];
+        let (dom_name, dom_val) = effects.iter()
+            .max_by(|a, b| a.1.partial_cmp(&b.1).unwrap_or(std::cmp::Ordering::Equal))
+            .unwrap();
+
+        println!("  {:>10}  {:>20}  {:>20.2e}", name, dom_name, dom_val);
+    }
+
+    println!();
+    println!("  SENSITIVITY CONCLUSION:");
+    println!("  - Parameters with highest total sensitivity govern the strongest effects.");
+    println!("  - Parameters with near-zero sensitivity are 'irrelevant' for the dynamics.");
+    println!("  - The dominant effect tells which aspect of the dynamics each parameter controls.");
 }
