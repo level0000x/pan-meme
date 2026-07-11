@@ -492,15 +492,15 @@ pub fn hasse_heights(n: usize, edges: &[(usize, usize)]) -> Vec<usize> {
 pub fn verify_theorem_11_3(_concepts: &[FormalConcept], d_values: &[f64], edges: &[(usize, usize)]) -> (usize, usize) {
     let mut passes = 0;
     let mut fails = 0;
-    for &(p, c) in edges {
-        let dp = d_values[p];
-        let dc = d_values[c];
-        let pass = if dp.is_infinite() {
+    for &(general, specific) in edges {
+        let d_gen = d_values[general];
+        let d_spec = d_values[specific];
+        let pass = if d_spec.is_infinite() {
             true
-        } else if dc.is_infinite() {
+        } else if d_gen.is_infinite() {
             false
         } else {
-            dp >= dc
+            d_spec >= d_gen
         };
         if pass { passes += 1; } else { fails += 1; }
     }
@@ -510,10 +510,10 @@ pub fn verify_theorem_11_3(_concepts: &[FormalConcept], d_values: &[f64], edges:
 pub fn verify_theorem_11_1(tau_inv: &[f64], edges: &[(usize, usize)]) -> (usize, usize) {
     let mut passes = 0;
     let mut fails = 0;
-    for &(p, c) in edges {
-        let tp = tau_inv[p];
-        let tc = tau_inv[c];
-        if tp.is_finite() && tc.is_finite() && tp >= tc { passes += 1; }
+    for &(general, specific) in edges {
+        let t_gen = tau_inv[general];
+        let t_spec = tau_inv[specific];
+        if t_spec.is_finite() && t_gen.is_finite() && t_spec >= t_gen { passes += 1; }
         else { fails += 1; }
     }
     (passes, fails)

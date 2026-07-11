@@ -155,7 +155,8 @@ fn run_experiment(label: &str, _merged_text: &str, art_texts: &[String], max_att
     let all_tau: Vec<f64> = results.iter().filter_map(|r| r.as_ref()).map(|r| r.tau_inv).collect();
     let all_rho: Vec<f64> = results.iter().filter_map(|r| r.as_ref()).map(|r| r.rho_spectral).collect();
 
-    let d_mono = fca::verify_theorem_11_3(&lattice.concepts, &d_vals, &lattice.edges);
+    let fca_d_mono = fca::verify_theorem_11_3(&lattice.concepts, &lattice.d_values, &lattice.edges);
+    let d_star_mono = fca::verify_theorem_11_3(&lattice.concepts, &d_vals, &lattice.edges);
     let t_mono = fca::verify_theorem_11_1(&all_tau, &lattice.edges);
 
     let mut max_traj_dev = 0.0_f64;
@@ -187,9 +188,12 @@ fn run_experiment(label: &str, _merged_text: &str, art_texts: &[String], max_att
         all_rho.iter().cloned().fold(0.0_f64, f64::max));
 
     println!();
-    println!("  Theorem 11.3  (D   monotonicity)    {}/{} = {:.1}%",
-        d_mono.0, d_mono.0 + d_mono.1,
-        pct(d_mono.0, d_mono.0 + d_mono.1));
+    println!("  Theorem 11.3  (FCA D₀=|A|/|B|)      {}/{} = {:.1}%",
+        fca_d_mono.0, fca_d_mono.0 + fca_d_mono.1,
+        pct(fca_d_mono.0, fca_d_mono.0 + fca_d_mono.1));
+    println!("  Empirical      (N-iter D*)          {}/{} = {:.1}%",
+        d_star_mono.0, d_star_mono.0 + d_star_mono.1,
+        pct(d_star_mono.0, d_star_mono.0 + d_star_mono.1));
     println!("  Theorem 11.1  (τ⁻¹ monotonicity)    {}/{} = {:.1}%",
         t_mono.0, t_mono.0 + t_mono.1,
         pct(t_mono.0, t_mono.0 + t_mono.1));
@@ -213,7 +217,7 @@ fn run_experiment(label: &str, _merged_text: &str, art_texts: &[String], max_att
         println!("    h={}: τ⁻¹∈[{:.4},{:.4}] avg={:.4}  n={}", h, min_v, max_v, avg_v, vals.len());
     }
 
-    println!("\n  M* (per concept):");
+    println!("\n  M* (per concept)  D₀=|A|/|B| (FCA) vs D* (N-iter):");
     let mut by_h: Vec<(usize, Vec<usize>)> = Vec::new();
     for h in &hs { by_h.push((*h, vec![])); }
     for (ci, opt_r) in results.iter().enumerate() {
@@ -227,21 +231,59 @@ fn run_experiment(label: &str, _merged_text: &str, art_texts: &[String], max_att
         for &ci in cis {
             if let Some(ref r) = results[ci] {
                 let m = &r.m_star;
-                println!("    C{:<3} h={} D*={:.4} B*={:.4} ρ*={:.4} R*={:.4} S*={:.4} τ⁻¹={:.4} ρ_J={:.4}",
-                    ci, h, m[0], m[1], m[2], m[3], m[4], r.tau_inv, r.rho_spectral);
+                let d0 = lattice.d_values[ci];
+                let (b_up, _rho_up) = get_upstream(ci, &feeders, &results);
+                let d0_str = if d0.is_finite() && d0 < 1e6 {
+                    format!("{:.4}→{:.4}", d0 / max_d_valid.min(1.0).max(0.01), m[0])
+                } else {
+                    format!("∞→{:.4}", m[0])
+                };
+                println!("    C{:<3} h={} D={} B*={:.4} ρ*={:.4} R*={:.4} S*={:.4} B↑={:.4} τ⁻¹={:.4} ρ_J={:.4}",
+                    ci, h, d0_str, m[1], m[2], m[3], m[4], b_up, r.tau_inv, r.rho_spectral);
+            }
+        }
+    }
+
+    println!("\n  N_D formula at M*: D* ≈ (R+ε)/(R+B+B_up+ε)  (self-sufficiency ratio)");
+    for (h, cis) in &by_h {
+        for &ci in cis {
+            if let Some(ref r) = results[ci] {
+                let m = &r.m_star;
+                let (b_up, _rho_up) = get_upstream(ci, &feeders, &results);
+                let ratio = (m[3] + 0.01) / (m[3] + m[1] + b_up + 0.01);
+                println!("    C{:<3} h={} R*={:.4} B*+B↑={:.4} ratio={:.4} vs D*={:.4}",
+                    ci, h, m[3], m[1] + b_up, ratio, m[0]);
             }
         }
     }
 
     t_mono_verdict(t_mono.0, t_mono.0 + t_mono.1);
 
-    println!("  D* = |A|/|B|:     mean={:.4}  std={:.4}  range=({:.4}, {:.4})",
+    println!("  FCA D₀=|A|/|B|:  mean={:.4}  std={:.4}  range=({:.4}, {:.4})",
+        mean(&lattice.d_values.iter().filter(|&&d| d.is_finite() && d < 1e6).copied().collect::<Vec<_>>()),
+        std_dev(&lattice.d_values.iter().filter(|&&d| d.is_finite() && d < 1e6).copied().collect::<Vec<_>>()),
+        lattice.d_values.iter().filter(|&&d| d.is_finite() && d < 1e6).fold(f64::INFINITY, |a, &b| a.min(b)),
+        lattice.d_values.iter().filter(|&&d| d.is_finite() && d < 1e6).fold(0.0_f64, |a, &b| a.max(b)));
+    println!("  N-iter D*:        mean={:.4}  std={:.4}  range=({:.4}, {:.4})",
         mean(&d_vals), d_std,
         d_vals.iter().cloned().fold(f64::INFINITY, f64::min),
         d_vals.iter().cloned().fold(0.0_f64, f64::max));
     println!("  B* values:        mean={:.4}  std={:.4}",
         mean(&results.iter().filter_map(|r| r.as_ref()).map(|r| r.m_star[1]).collect::<Vec<_>>()),
         std_dev(&results.iter().filter_map(|r| r.as_ref()).map(|r| r.m_star[1]).collect::<Vec<_>>()));
+
+    let d0_to_dstar: Vec<f64> = results.iter().enumerate().filter_map(|(ci, r)| {
+        let d0 = lattice.d_values[ci];
+        if d0.is_finite() && d0 < 1e6 {
+            r.as_ref().map(|rr| rr.m_star[0] / (d0 / max_d_valid).max(0.01))
+        } else { None }
+    }).collect();
+    if !d0_to_dstar.is_empty() {
+        println!("  D*/D₀ ratio:      mean={:.4}  std={:.4}  range=({:.4}, {:.4})",
+            mean(&d0_to_dstar), std_dev(&d0_to_dstar),
+            d0_to_dstar.iter().cloned().fold(f64::INFINITY, f64::min),
+            d0_to_dstar.iter().cloned().fold(0.0_f64, f64::max));
+    }
 }
 
 fn get_upstream(ci: usize, feeders: &[Vec<usize>], results: &[Option<n_operator::IterResult>]) -> (f64, f64) {
