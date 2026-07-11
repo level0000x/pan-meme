@@ -1,0 +1,844 @@
+{
+  "C_strong": [
+    {
+      "label": "3条交叉2-循环",
+      "n_cycles": 3,
+      "violations": 15,
+      "shift": 0.0,
+      "dir_flips": 0,
+      "c_triggered": false
+    },
+    {
+      "label": "5条交叉2-循环",
+      "n_cycles": 5,
+      "violations": 17,
+      "shift": 0.0,
+      "dir_flips": 0,
+      "c_triggered": false
+    },
+    {
+      "label": "1条3-循环",
+      "n_cycles": 3,
+      "violations": 13,
+      "shift": 1.2532197501968767e-12,
+      "dir_flips": 0,
+      "c_triggered": false
+    }
+  ],
+  "D_strong": [
+    {
+      "k": 75,
+      "e": 75,
+      "violations": 33,
+      "rate": 0.44,
+      "d_triggered": false
+    },
+    {
+      "k": 125,
+      "e": 125,
+      "violations": 58,
+      "rate": 0.464,
+      "d_triggered": false
+    }
+  ],
+  "param_sensitivity": {
+    "all": [
+      {
+        "param": "a1",
+        "multiplier": 0.01,
+        "value": 0.01,
+        "violations": 1,
+        "tau_diff": 0.21772301462863303,
+        "basin_same": false,
+        "base_rate": 0.04
+      },
+      {
+        "param": "a1",
+        "multiplier": 0.1,
+        "value": 0.1,
+        "violations": 2,
+        "tau_diff": 0.18824212184299055,
+        "basin_same": false,
+        "base_rate": 0.08
+      },
+      {
+        "param": "a1",
+        "multiplier": 10.0,
+        "value": 10.0,
+        "violations": 2,
+        "tau_diff": 0.0845711558405064,
+        "basin_same": false,
+        "base_rate": 0.08
+      },
+      {
+        "param": "a1",
+        "multiplier": 100.0,
+        "value": 100.0,
+        "violations": 2,
+        "tau_diff": 0.09306388795320447,
+        "basin_same": false,
+        "base_rate": 0.08
+      },
+      {
+        "param": "b1",
+        "multiplier": 0.01,
+        "value": 0.01,
+        "violations": 2,
+        "tau_diff": 0.09309317843278425,
+        "basin_same": false,
+        "base_rate": 0.08
+      },
+      {
+        "param": "b1",
+        "multiplier": 0.1,
+        "value": 0.1,
+        "violations": 2,
+        "tau_diff": 0.08483784756594892,
+        "basin_same": false,
+        "base_rate": 0.08
+      },
+      {
+        "param": "b1",
+        "multiplier": 10.0,
+        "value": 10.0,
+        "violations": 2,
+        "tau_diff": 0.19645355708146178,
+        "basin_same": false,
+        "base_rate": 0.08
+      },
+      {
+        "param": "b1",
+        "multiplier": 100.0,
+        "value": 100.0,
+        "violations": 1,
+        "tau_diff": 0.20996220408178518,
+        "basin_same": false,
+        "base_rate": 0.04
+      },
+      {
+        "param": "g1",
+        "multiplier": 0.01,
+        "value": 0.01,
+        "violations": 18,
+        "tau_diff": 0.06148094402148224,
+        "basin_same": false,
+        "base_rate": 0.72
+      },
+      {
+        "param": "g1",
+        "multiplier": 0.1,
+        "value": 0.1,
+        "violations": 19,
+        "tau_diff": 0.05049684220086709,
+        "basin_same": false,
+        "base_rate": 0.76
+      },
+      {
+        "param": "g1",
+        "multiplier": 10.0,
+        "value": 10.0,
+        "violations": 2,
+        "tau_diff": 0.018560080843598448,
+        "basin_same": false,
+        "base_rate": 0.08
+      },
+      {
+        "param": "g1",
+        "multiplier": 100.0,
+        "value": 100.0,
+        "violations": 2,
+        "tau_diff": 0.02328005130354921,
+        "basin_same": false,
+        "base_rate": 0.08
+      },
+      {
+        "param": "d1",
+        "multiplier": 0.01,
+        "value": 0.01,
+        "violations": 2,
+        "tau_diff": 0.023293936577083896,
+        "basin_same": false,
+        "base_rate": 0.08
+      },
+      {
+        "param": "d1",
+        "multiplier": 0.1,
+        "value": 0.1,
+        "violations": 2,
+        "tau_diff": 0.01867527376208672,
+        "basin_same": false,
+        "base_rate": 0.08
+      },
+      {
+        "param": "d1",
+        "multiplier": 10.0,
+        "value": 10.0,
+        "violations": 19,
+        "tau_diff": 0.053953988196808134,
+        "basin_same": false,
+        "base_rate": 0.76
+      },
+      {
+        "param": "d1",
+        "multiplier": 100.0,
+        "value": 100.0,
+        "violations": 18,
+        "tau_diff": 0.06548598640422015,
+        "basin_same": false,
+        "base_rate": 0.72
+      },
+      {
+        "param": "z1",
+        "multiplier": 0.01,
+        "value": 0.01,
+        "violations": 2,
+        "tau_diff": 0.23395093536688288,
+        "basin_same": false,
+        "base_rate": 0.08
+      },
+      {
+        "param": "z1",
+        "multiplier": 0.1,
+        "value": 0.1,
+        "violations": 8,
+        "tau_diff": 0.15270238441219236,
+        "basin_same": false,
+        "base_rate": 0.32
+      },
+      {
+        "param": "z1",
+        "multiplier": 10.0,
+        "value": 10.0,
+        "violations": 2,
+        "tau_diff": 0.07335415005353524,
+        "basin_same": false,
+        "base_rate": 0.08
+      },
+      {
+        "param": "z1",
+        "multiplier": 100.0,
+        "value": 100.0,
+        "violations": 2,
+        "tau_diff": 0.08532553568475221,
+        "basin_same": false,
+        "base_rate": 0.08
+      },
+      {
+        "param": "e1",
+        "multiplier": 0.01,
+        "value": 0.01,
+        "violations": 2,
+        "tau_diff": 0.08535296898879469,
+        "basin_same": false,
+        "base_rate": 0.08
+      },
+      {
+        "param": "e1",
+        "multiplier": 0.1,
+        "value": 0.1,
+        "violations": 2,
+        "tau_diff": 0.07357689133918405,
+        "basin_same": false,
+        "base_rate": 0.08
+      },
+      {
+        "param": "e1",
+        "multiplier": 10.0,
+        "value": 10.0,
+        "violations": 4,
+        "tau_diff": 0.1707377149586921,
+        "basin_same": false,
+        "base_rate": 0.16
+      },
+      {
+        "param": "e1",
+        "multiplier": 100.0,
+        "value": 100.0,
+        "violations": 2,
+        "tau_diff": 0.3204061930145598,
+        "basin_same": false,
+        "base_rate": 0.08
+      },
+      {
+        "param": "t1",
+        "multiplier": 0.01,
+        "value": 0.01,
+        "violations": 18,
+        "tau_diff": 0.05013629883890519,
+        "basin_same": false,
+        "base_rate": 0.72
+      },
+      {
+        "param": "t1",
+        "multiplier": 0.1,
+        "value": 0.1,
+        "violations": 12,
+        "tau_diff": 0.048392912568022306,
+        "basin_same": false,
+        "base_rate": 0.48
+      },
+      {
+        "param": "t1",
+        "multiplier": 10.0,
+        "value": 10.0,
+        "violations": 19,
+        "tau_diff": 0.0644847358117191,
+        "basin_same": false,
+        "base_rate": 0.76
+      },
+      {
+        "param": "t1",
+        "multiplier": 100.0,
+        "value": 100.0,
+        "violations": 23,
+        "tau_diff": 0.08390767509413216,
+        "basin_same": false,
+        "base_rate": 0.92
+      },
+      {
+        "param": "k1",
+        "multiplier": 0.01,
+        "value": 0.01,
+        "violations": 19,
+        "tau_diff": 0.022599312879333977,
+        "basin_same": false,
+        "base_rate": 0.76
+      },
+      {
+        "param": "k1",
+        "multiplier": 0.1,
+        "value": 0.1,
+        "violations": 19,
+        "tau_diff": 0.019429309351706503,
+        "basin_same": false,
+        "base_rate": 0.76
+      },
+      {
+        "param": "k1",
+        "multiplier": 10.0,
+        "value": 10.0,
+        "violations": 12,
+        "tau_diff": 0.03677314807987414,
+        "basin_same": false,
+        "base_rate": 0.48
+      },
+      {
+        "param": "k1",
+        "multiplier": 100.0,
+        "value": 100.0,
+        "violations": 12,
+        "tau_diff": 0.05403858851871429,
+        "basin_same": false,
+        "base_rate": 0.48
+      },
+      {
+        "param": "k2",
+        "multiplier": 0.01,
+        "value": 0.01,
+        "violations": 15,
+        "tau_diff": 0.022691342311810137,
+        "basin_same": false,
+        "base_rate": 0.6
+      },
+      {
+        "param": "k2",
+        "multiplier": 0.1,
+        "value": 0.1,
+        "violations": 15,
+        "tau_diff": 0.020177698840083802,
+        "basin_same": false,
+        "base_rate": 0.6
+      },
+      {
+        "param": "k2",
+        "multiplier": 10.0,
+        "value": 10.0,
+        "violations": 12,
+        "tau_diff": 0.046845328620121085,
+        "basin_same": false,
+        "base_rate": 0.48
+      },
+      {
+        "param": "k2",
+        "multiplier": 100.0,
+        "value": 100.0,
+        "violations": 18,
+        "tau_diff": 0.04719845048284921,
+        "basin_same": false,
+        "base_rate": 0.72
+      },
+      {
+        "param": "l1",
+        "multiplier": 0.01,
+        "value": 0.01,
+        "violations": 13,
+        "tau_diff": 0.07147939136803355,
+        "basin_same": false,
+        "base_rate": 0.52
+      },
+      {
+        "param": "l1",
+        "multiplier": 0.1,
+        "value": 0.1,
+        "violations": 12,
+        "tau_diff": 0.0606464602288424,
+        "basin_same": false,
+        "base_rate": 0.48
+      },
+      {
+        "param": "l1",
+        "multiplier": 10.0,
+        "value": 10.0,
+        "violations": 12,
+        "tau_diff": 0.047866407694546476,
+        "basin_same": false,
+        "base_rate": 0.48
+      },
+      {
+        "param": "l1",
+        "multiplier": 100.0,
+        "value": 100.0,
+        "violations": 13,
+        "tau_diff": 0.06133588819711561,
+        "basin_same": false,
+        "base_rate": 0.52
+      },
+      {
+        "param": "m1",
+        "multiplier": 0.01,
+        "value": 0.01,
+        "violations": 13,
+        "tau_diff": 0.06139675417338081,
+        "basin_same": false,
+        "base_rate": 0.52
+      },
+      {
+        "param": "m1",
+        "multiplier": 0.1,
+        "value": 0.1,
+        "violations": 12,
+        "tau_diff": 0.04827148386026642,
+        "basin_same": false,
+        "base_rate": 0.48
+      },
+      {
+        "param": "m1",
+        "multiplier": 10.0,
+        "value": 10.0,
+        "violations": 12,
+        "tau_diff": 0.06278301592025398,
+        "basin_same": false,
+        "base_rate": 0.48
+      },
+      {
+        "param": "m1",
+        "multiplier": 100.0,
+        "value": 100.0,
+        "violations": 13,
+        "tau_diff": 0.07391413451230866,
+        "basin_same": false,
+        "base_rate": 0.52
+      }
+    ],
+    "fragile": [
+      {
+        "param": "e1",
+        "multiplier": 100.0,
+        "value": 100.0,
+        "violations": 2,
+        "tau_diff": 0.3204061930145598,
+        "basin_same": false,
+        "base_rate": 0.08
+      },
+      {
+        "param": "z1",
+        "multiplier": 0.01,
+        "value": 0.01,
+        "violations": 2,
+        "tau_diff": 0.23395093536688288,
+        "basin_same": false,
+        "base_rate": 0.08
+      },
+      {
+        "param": "a1",
+        "multiplier": 0.01,
+        "value": 0.01,
+        "violations": 1,
+        "tau_diff": 0.21772301462863303,
+        "basin_same": false,
+        "base_rate": 0.04
+      },
+      {
+        "param": "b1",
+        "multiplier": 100.0,
+        "value": 100.0,
+        "violations": 1,
+        "tau_diff": 0.20996220408178518,
+        "basin_same": false,
+        "base_rate": 0.04
+      },
+      {
+        "param": "b1",
+        "multiplier": 10.0,
+        "value": 10.0,
+        "violations": 2,
+        "tau_diff": 0.19645355708146178,
+        "basin_same": false,
+        "base_rate": 0.08
+      },
+      {
+        "param": "a1",
+        "multiplier": 0.1,
+        "value": 0.1,
+        "violations": 2,
+        "tau_diff": 0.18824212184299055,
+        "basin_same": false,
+        "base_rate": 0.08
+      },
+      {
+        "param": "e1",
+        "multiplier": 10.0,
+        "value": 10.0,
+        "violations": 4,
+        "tau_diff": 0.1707377149586921,
+        "basin_same": false,
+        "base_rate": 0.16
+      },
+      {
+        "param": "z1",
+        "multiplier": 0.1,
+        "value": 0.1,
+        "violations": 8,
+        "tau_diff": 0.15270238441219236,
+        "basin_same": false,
+        "base_rate": 0.32
+      },
+      {
+        "param": "b1",
+        "multiplier": 0.01,
+        "value": 0.01,
+        "violations": 2,
+        "tau_diff": 0.09309317843278425,
+        "basin_same": false,
+        "base_rate": 0.08
+      },
+      {
+        "param": "a1",
+        "multiplier": 100.0,
+        "value": 100.0,
+        "violations": 2,
+        "tau_diff": 0.09306388795320447,
+        "basin_same": false,
+        "base_rate": 0.08
+      },
+      {
+        "param": "e1",
+        "multiplier": 0.01,
+        "value": 0.01,
+        "violations": 2,
+        "tau_diff": 0.08535296898879469,
+        "basin_same": false,
+        "base_rate": 0.08
+      },
+      {
+        "param": "z1",
+        "multiplier": 100.0,
+        "value": 100.0,
+        "violations": 2,
+        "tau_diff": 0.08532553568475221,
+        "basin_same": false,
+        "base_rate": 0.08
+      },
+      {
+        "param": "b1",
+        "multiplier": 0.1,
+        "value": 0.1,
+        "violations": 2,
+        "tau_diff": 0.08483784756594892,
+        "basin_same": false,
+        "base_rate": 0.08
+      },
+      {
+        "param": "a1",
+        "multiplier": 10.0,
+        "value": 10.0,
+        "violations": 2,
+        "tau_diff": 0.0845711558405064,
+        "basin_same": false,
+        "base_rate": 0.08
+      },
+      {
+        "param": "t1",
+        "multiplier": 100.0,
+        "value": 100.0,
+        "violations": 23,
+        "tau_diff": 0.08390767509413216,
+        "basin_same": false,
+        "base_rate": 0.92
+      },
+      {
+        "param": "m1",
+        "multiplier": 100.0,
+        "value": 100.0,
+        "violations": 13,
+        "tau_diff": 0.07391413451230866,
+        "basin_same": false,
+        "base_rate": 0.52
+      },
+      {
+        "param": "e1",
+        "multiplier": 0.1,
+        "value": 0.1,
+        "violations": 2,
+        "tau_diff": 0.07357689133918405,
+        "basin_same": false,
+        "base_rate": 0.08
+      },
+      {
+        "param": "z1",
+        "multiplier": 10.0,
+        "value": 10.0,
+        "violations": 2,
+        "tau_diff": 0.07335415005353524,
+        "basin_same": false,
+        "base_rate": 0.08
+      },
+      {
+        "param": "l1",
+        "multiplier": 0.01,
+        "value": 0.01,
+        "violations": 13,
+        "tau_diff": 0.07147939136803355,
+        "basin_same": false,
+        "base_rate": 0.52
+      },
+      {
+        "param": "d1",
+        "multiplier": 100.0,
+        "value": 100.0,
+        "violations": 18,
+        "tau_diff": 0.06548598640422015,
+        "basin_same": false,
+        "base_rate": 0.72
+      },
+      {
+        "param": "t1",
+        "multiplier": 10.0,
+        "value": 10.0,
+        "violations": 19,
+        "tau_diff": 0.0644847358117191,
+        "basin_same": false,
+        "base_rate": 0.76
+      },
+      {
+        "param": "m1",
+        "multiplier": 10.0,
+        "value": 10.0,
+        "violations": 12,
+        "tau_diff": 0.06278301592025398,
+        "basin_same": false,
+        "base_rate": 0.48
+      },
+      {
+        "param": "g1",
+        "multiplier": 0.01,
+        "value": 0.01,
+        "violations": 18,
+        "tau_diff": 0.06148094402148224,
+        "basin_same": false,
+        "base_rate": 0.72
+      },
+      {
+        "param": "m1",
+        "multiplier": 0.01,
+        "value": 0.01,
+        "violations": 13,
+        "tau_diff": 0.06139675417338081,
+        "basin_same": false,
+        "base_rate": 0.52
+      },
+      {
+        "param": "l1",
+        "multiplier": 100.0,
+        "value": 100.0,
+        "violations": 13,
+        "tau_diff": 0.06133588819711561,
+        "basin_same": false,
+        "base_rate": 0.52
+      },
+      {
+        "param": "l1",
+        "multiplier": 0.1,
+        "value": 0.1,
+        "violations": 12,
+        "tau_diff": 0.0606464602288424,
+        "basin_same": false,
+        "base_rate": 0.48
+      },
+      {
+        "param": "k1",
+        "multiplier": 100.0,
+        "value": 100.0,
+        "violations": 12,
+        "tau_diff": 0.05403858851871429,
+        "basin_same": false,
+        "base_rate": 0.48
+      },
+      {
+        "param": "d1",
+        "multiplier": 10.0,
+        "value": 10.0,
+        "violations": 19,
+        "tau_diff": 0.053953988196808134,
+        "basin_same": false,
+        "base_rate": 0.76
+      },
+      {
+        "param": "g1",
+        "multiplier": 0.1,
+        "value": 0.1,
+        "violations": 19,
+        "tau_diff": 0.05049684220086709,
+        "basin_same": false,
+        "base_rate": 0.76
+      },
+      {
+        "param": "t1",
+        "multiplier": 0.01,
+        "value": 0.01,
+        "violations": 18,
+        "tau_diff": 0.05013629883890519,
+        "basin_same": false,
+        "base_rate": 0.72
+      },
+      {
+        "param": "t1",
+        "multiplier": 0.1,
+        "value": 0.1,
+        "violations": 12,
+        "tau_diff": 0.048392912568022306,
+        "basin_same": false,
+        "base_rate": 0.48
+      },
+      {
+        "param": "m1",
+        "multiplier": 0.1,
+        "value": 0.1,
+        "violations": 12,
+        "tau_diff": 0.04827148386026642,
+        "basin_same": false,
+        "base_rate": 0.48
+      },
+      {
+        "param": "l1",
+        "multiplier": 10.0,
+        "value": 10.0,
+        "violations": 12,
+        "tau_diff": 0.047866407694546476,
+        "basin_same": false,
+        "base_rate": 0.48
+      },
+      {
+        "param": "k2",
+        "multiplier": 100.0,
+        "value": 100.0,
+        "violations": 18,
+        "tau_diff": 0.04719845048284921,
+        "basin_same": false,
+        "base_rate": 0.72
+      },
+      {
+        "param": "k2",
+        "multiplier": 10.0,
+        "value": 10.0,
+        "violations": 12,
+        "tau_diff": 0.046845328620121085,
+        "basin_same": false,
+        "base_rate": 0.48
+      },
+      {
+        "param": "k1",
+        "multiplier": 10.0,
+        "value": 10.0,
+        "violations": 12,
+        "tau_diff": 0.03677314807987414,
+        "basin_same": false,
+        "base_rate": 0.48
+      },
+      {
+        "param": "d1",
+        "multiplier": 0.01,
+        "value": 0.01,
+        "violations": 2,
+        "tau_diff": 0.023293936577083896,
+        "basin_same": false,
+        "base_rate": 0.08
+      },
+      {
+        "param": "g1",
+        "multiplier": 100.0,
+        "value": 100.0,
+        "violations": 2,
+        "tau_diff": 0.02328005130354921,
+        "basin_same": false,
+        "base_rate": 0.08
+      },
+      {
+        "param": "k2",
+        "multiplier": 0.01,
+        "value": 0.01,
+        "violations": 15,
+        "tau_diff": 0.022691342311810137,
+        "basin_same": false,
+        "base_rate": 0.6
+      },
+      {
+        "param": "k1",
+        "multiplier": 0.01,
+        "value": 0.01,
+        "violations": 19,
+        "tau_diff": 0.022599312879333977,
+        "basin_same": false,
+        "base_rate": 0.76
+      },
+      {
+        "param": "k2",
+        "multiplier": 0.1,
+        "value": 0.1,
+        "violations": 15,
+        "tau_diff": 0.020177698840083802,
+        "basin_same": false,
+        "base_rate": 0.6
+      },
+      {
+        "param": "k1",
+        "multiplier": 0.1,
+        "value": 0.1,
+        "violations": 19,
+        "tau_diff": 0.019429309351706503,
+        "basin_same": false,
+        "base_rate": 0.76
+      },
+      {
+        "param": "d1",
+        "multiplier": 0.1,
+        "value": 0.1,
+        "violations": 2,
+        "tau_diff": 0.01867527376208672,
+        "basin_same": false,
+        "base_rate": 0.08
+      },
+      {
+        "param": "g1",
+        "multiplier": 10.0,
+        "value": 10.0,
+        "violations": 2,
+        "tau_diff": 0.018560080843598448,
+        "basin_same": false,
+        "base_rate": 0.08
+      }
+    ],
+    "robust": [],
+    "baseline_violations": 12
+  }
+}
