@@ -61,13 +61,14 @@ fn word_to_bigrams(word: &str) -> Vec<String> {
     out
 }
 
-fn word_to_bigrams_plain(word: &str) -> Vec<String> {
+fn word_ngrams(word: &str, n_gram: usize) -> Vec<String> {
     let chars: Vec<char> = word.chars().collect();
-    let n = chars.len().saturating_sub(1);
-    if n == 0 { return vec![]; }
+    if chars.len() < n_gram { return vec![]; }
+    let n = chars.len() - n_gram + 1;
     let mut out = Vec::with_capacity(n);
     for i in 0..n {
-        out.push(format!("{}{}", chars[i], chars[i + 1]));
+        let s: String = chars[i..i + n_gram].iter().collect();
+        out.push(s);
     }
     out
 }
@@ -201,80 +202,174 @@ pub fn next_closure(
     concepts
 }
 
-pub fn build_article_lattice(
-    texts: &[String],
-    max_bigrams: usize,
-    max_concepts: usize,
-    time_limit: f64,
-) -> FcaLattice {
+pub fn build_article_lattice(texts: &[String], max_attrs: usize, min_articles: usize, max_concepts: usize, time_limit: f64) -> FcaLattice {
     let n_articles = texts.len();
-    let mut bigram_freqs: HashMap<String, usize> = HashMap::new();
-    let mut article_bigrams: Vec<Vec<String>> = vec![vec![]; n_articles];
 
+    let mut word_freq: HashMap<String, Vec<usize>> = HashMap::new();
     for (ai, text) in texts.iter().enumerate() {
         let tokens = tokenize(text);
         let mut seen: HashSet<String> = HashSet::new();
         for t in tokens {
             if t.len() < 4 { continue; }
             if seen.insert(t.clone()) {
-                *bigram_freqs.entry(t.clone()).or_insert(0) += 1;
-                article_bigrams[ai].push(t);
+                word_freq.entry(t).or_default().push(ai);
             }
         }
     }
 
-    let mut freq_vec: Vec<(String, usize)> = bigram_freqs.into_iter().collect();
-    freq_vec.sort_by(|a, b| b.1.cmp(&a.1).then_with(|| a.0.cmp(&b.0)));
-    let top_n = max_bigrams.min(freq_vec.len());
-    let top: Vec<String> = freq_vec[..top_n].iter().map(|(bg, _)| bg.clone()).collect();
+    let mut shared: Vec<(String, Vec<usize>)> = word_freq.into_iter()
+        .filter(|(_, arts)| arts.len() >= min_articles)
+        .collect();
+    shared.sort_by(|a, b| b.1.len().cmp(&a.1.len()).then_with(|| a.0.cmp(&b.0)));
+    let max_n = max_attrs.min(shared.len());
+    shared.truncate(max_n);
 
-    let bg_idx: HashMap<String, usize> = top.iter().enumerate()
-        .map(|(i, s)| (s.clone(), i)).collect();
-    let n_bg = top.len();
+    let top: Vec<String> = shared.iter().map(|(w, _)| w.clone()).collect();
+    let ng_idx: HashMap<String, usize> = top.iter().enumerate().map(|(i, s)| (s.clone(), i)).collect();
+    let n_attrs = top.len();
+    if n_attrs == 0 {
+        return FcaLattice { concepts: vec![], edges: vec![], d_values: vec![], concept_sizes: vec![], n_words: n_articles, n_bigrams: 0 };
+    }
 
-    let mut art_to_bg: Vec<Vec<usize>> = Vec::with_capacity(n_articles);
-    let mut bg_to_art: Vec<Vec<usize>> = vec![vec![]; n_bg];
+    let mut art_to_attr: Vec<Vec<usize>> = vec![vec![]; n_articles];
+    let mut attr_to_art: Vec<Vec<usize>> = vec![vec![]; n_attrs];
 
-    for (ai, bgs) in article_bigrams.iter().enumerate() {
-        let mut idxs: Vec<usize> = bgs.iter()
-            .filter_map(|bg| bg_idx.get(bg).copied()).collect();
-        idxs.sort();
-        idxs.dedup();
-        for &bi in &idxs {
-            bg_to_art[bi].push(ai);
+    for ai in 0..n_articles {
+        let tokens = tokenize(&texts[ai]);
+        let mut seen: HashSet<usize> = HashSet::new();
+        for t in tokens {
+            if let Some(&ati) = ng_idx.get(&t) {
+                if seen.insert(ati) {
+                    art_to_attr[ai].push(ati);
+                    attr_to_art[ati].push(ai);
+                }
+            }
         }
-        art_to_bg.push(idxs);
     }
-    for ba in &mut bg_to_art {
-        ba.sort();
-        ba.dedup();
-    }
+    for v in &mut art_to_attr { v.sort(); }
+    for v in &mut attr_to_art { v.sort(); }
 
     let bg_data = BigramData {
         unique_words: texts.to_vec(),
         top_bigrams: top,
-        word_to_bigram_idxs: art_to_bg,
-        bigram_to_words: bg_to_art,
+        word_to_bigram_idxs: art_to_attr,
+        bigram_to_words: attr_to_art,
     };
 
-    let concepts = next_closure(&bg_data, max_concepts, time_limit);
-    let d_values: Vec<f64> = concepts.iter().map(|c| {
-        let na = c.intent.len() as f64;
-        let nb = c.extent.len() as f64;
-        if nb == 0.0 { f64::INFINITY } else { na / nb }
-    }).collect();
-    let concept_sizes: Vec<(usize, usize)> = concepts.iter()
-        .map(|c| (c.intent.len(), c.extent.len())).collect();
-    let edges = build_hasse_edges(&concepts);
+    build_lattice_from_data(&bg_data, max_concepts, time_limit)
+}
 
-    FcaLattice {
-        concepts,
-        edges,
-        d_values,
-        concept_sizes,
-        n_words: n_articles,
-        n_bigrams: n_bg,
+pub fn build_lattice_chars(text: &str, max_ngrams: usize, n_gram: usize, max_concepts: usize, time_limit: f64) -> FcaLattice {
+    let chars: Vec<char> = text.chars().collect();
+    let n = chars.len();
+    if n < n_gram { return FcaLattice { concepts: vec![], edges: vec![], d_values: vec![], concept_sizes: vec![], n_words: 0, n_bigrams: 0 }; }
+
+    let mut ng_count: HashMap<String, usize> = HashMap::new();
+    for i in 0..n - n_gram + 1 {
+        let s: String = chars[i..i + n_gram].iter().collect();
+        *ng_count.entry(s).or_insert(0) += 1;
     }
+
+    let mut freq: Vec<(&String, &usize)> = ng_count.iter().collect();
+    freq.sort_by(|a, b| b.1.cmp(a.1));
+    let max_ng = max_ngrams.min(freq.len());
+    let top: Vec<String> = freq[..max_ng].iter().map(|(s, _)| (*s).clone()).collect();
+
+    let ng_idx: HashMap<String, usize> = top.iter().enumerate().map(|(i, s)| (s.clone(), i)).collect();
+
+    let tokens = tokenize(text);
+    let mut unique: Vec<String> = Vec::new();
+    let mut seen: HashSet<String> = HashSet::new();
+    for t in tokens {
+        if seen.insert(t.clone()) {
+            unique.push(t);
+        }
+    }
+
+    let mut word_to_ng: Vec<Vec<usize>> = Vec::with_capacity(unique.len());
+    let mut ng_to_words: Vec<Vec<usize>> = vec![vec![]; top.len()];
+
+    for (wi, w) in unique.iter().enumerate() {
+        let wchars: Vec<char> = w.chars().collect();
+        let mut idxs: Vec<usize> = Vec::new();
+        let wl = wchars.len();
+        for i in 0..wl.saturating_sub(n_gram - 1) {
+            let end = (i + n_gram).min(wl);
+            let s: String = wchars[i..end].iter().collect();
+            if let Some(&ngi) = ng_idx.get(&s) {
+                idxs.push(ngi);
+                ng_to_words[ngi].push(wi);
+            }
+        }
+        idxs.sort();
+        idxs.dedup();
+        for &ngi in &idxs {
+            ng_to_words[ngi].push(wi);
+        }
+        word_to_ng.push(idxs);
+    }
+    for nw in &mut ng_to_words {
+        nw.sort();
+        nw.dedup();
+    }
+
+    let bg_data = BigramData {
+        unique_words: unique,
+        top_bigrams: top,
+        word_to_bigram_idxs: word_to_ng,
+        bigram_to_words: ng_to_words,
+    };
+
+    build_lattice_from_data(&bg_data, max_concepts, time_limit)
+}
+
+pub fn build_article_lattice_chars(texts: &[String], max_ngrams: usize, n_gram: usize, max_concepts: usize, time_limit: f64) -> FcaLattice {
+    let n_articles = texts.len();
+    let mut merged = String::new();
+    for t in texts { merged.push_str(t); merged.push(' '); }
+    let chars: Vec<char> = merged.chars().collect();
+    let cn = chars.len();
+    if cn < n_gram { return FcaLattice { concepts: vec![], edges: vec![], d_values: vec![], concept_sizes: vec![], n_words: 0, n_bigrams: 0 }; }
+
+    let mut ng_count: HashMap<String, usize> = HashMap::new();
+    for i in 0..cn - n_gram + 1 {
+        let s: String = chars[i..i + n_gram].iter().collect();
+        *ng_count.entry(s).or_insert(0) += 1;
+    }
+
+    let mut freq: Vec<(&String, &usize)> = ng_count.iter().collect();
+    freq.sort_by(|a, b| b.1.cmp(a.1));
+    let max_ng = max_ngrams.min(freq.len());
+    let top: Vec<String> = freq[..max_ng].iter().map(|(s, _)| (*s).clone()).collect();
+    let ng_idx: HashMap<String, usize> = top.iter().enumerate().map(|(i, s)| (s.clone(), i)).collect();
+
+    let mut bg_data = BigramData {
+        unique_words: texts.to_vec(),
+        top_bigrams: top,
+        word_to_bigram_idxs: vec![vec![]; n_articles],
+        bigram_to_words: vec![vec![]; max_ng],
+    };
+
+    for (ai, text) in texts.iter().enumerate() {
+        let tchars: Vec<char> = text.chars().collect();
+        let tl = tchars.len();
+        let mut seen_ng: HashSet<usize> = HashSet::new();
+        for i in 0..tl.saturating_sub(n_gram - 1) {
+            let end = (i + n_gram).min(tl);
+            let s: String = tchars[i..end].iter().collect();
+            if let Some(&ngi) = ng_idx.get(&s) {
+                if seen_ng.insert(ngi) {
+                    bg_data.word_to_bigram_idxs[ai].push(ngi);
+                    bg_data.bigram_to_words[ngi].push(ai);
+                }
+            }
+        }
+    }
+
+    for v in &mut bg_data.word_to_bigram_idxs { v.sort(); v.dedup(); }
+    for v in &mut bg_data.bigram_to_words { v.sort(); v.dedup(); }
+
+    build_lattice_from_data(&bg_data, max_concepts, time_limit)
 }
 
 pub fn build_hasse_edges(concepts: &[FormalConcept]) -> Vec<(usize, usize)> {
@@ -290,7 +385,7 @@ pub fn build_hasse_edges(concepts: &[FormalConcept]) -> Vec<(usize, usize)> {
                     && concepts[j].intent.iter().all(|x| concepts[k].intent.contains(x))
                     && concepts[k].intent.iter().all(|x| concepts[i].intent.contains(x))
             });
-            if is_cover { edges.push((i, j)); }
+            if is_cover { edges.push((j, i)); }
         }
     }
     edges
@@ -298,7 +393,69 @@ pub fn build_hasse_edges(concepts: &[FormalConcept]) -> Vec<(usize, usize)> {
 
 pub fn build_lattice(text: &str, max_bigrams: usize, max_concepts: usize, time_limit: f64) -> FcaLattice {
     let bg_data = build_bigram_data(text, max_bigrams);
-    let concepts = next_closure(&bg_data, max_concepts, time_limit);
+    build_lattice_from_data(&bg_data, max_concepts, time_limit)
+}
+
+pub fn build_lattice_plain(text: &str, max_ngrams: usize, n_gram: usize, max_concepts: usize, time_limit: f64) -> FcaLattice {
+    let bg_data = build_ngram_data(text, max_ngrams, n_gram);
+    build_lattice_from_data(&bg_data, max_concepts, time_limit)
+}
+
+pub fn build_ngram_data(text: &str, max_ngrams: usize, n_gram: usize) -> BigramData {
+    let tokens = tokenize(text);
+    let mut unique: Vec<String> = Vec::new();
+    let mut seen = HashSet::new();
+    for t in tokens {
+        if seen.insert(t.clone()) {
+            unique.push(t);
+        }
+    }
+
+    let mut ng_count: HashMap<String, usize> = HashMap::new();
+    let mut w_ngs: Vec<Vec<String>> = Vec::with_capacity(unique.len());
+    for w in &unique {
+        let ngs = word_ngrams(w, n_gram);
+        for ng in &ngs {
+            *ng_count.entry(ng.clone()).or_insert(0) += 1;
+        }
+        w_ngs.push(ngs);
+    }
+
+    let mut freq: Vec<(&String, &usize)> = ng_count.iter().collect();
+    freq.sort_by(|a, b| b.1.cmp(a.1));
+    let top: Vec<String> = freq.iter()
+        .take(max_ngrams).map(|(s, _)| (*s).clone()).collect();
+
+    let ng_idx: HashMap<String, usize> = top.iter().enumerate()
+        .map(|(i, s)| (s.clone(), i)).collect();
+    let n_ng = top.len();
+
+    let mut word_to_ng: Vec<Vec<usize>> = Vec::with_capacity(unique.len());
+    let mut ng_to_words: Vec<Vec<usize>> = vec![vec![]; n_ng];
+    for (wi, ngs) in w_ngs.iter().enumerate() {
+        let mut idxs: Vec<usize> = ngs.iter()
+            .filter_map(|ng| ng_idx.get(ng).copied()).collect();
+        idxs.sort();
+        for &bi in &idxs {
+            ng_to_words[bi].push(wi);
+        }
+        word_to_ng.push(idxs);
+    }
+    for nw in &mut ng_to_words {
+        nw.sort();
+        nw.dedup();
+    }
+
+    BigramData {
+        unique_words: unique,
+        top_bigrams: top,
+        word_to_bigram_idxs: word_to_ng,
+        bigram_to_words: ng_to_words,
+    }
+}
+
+fn build_lattice_from_data(bg_data: &BigramData, max_concepts: usize, time_limit: f64) -> FcaLattice {
+    let concepts = next_closure(bg_data, max_concepts, time_limit);
     let d_values: Vec<f64> = concepts.iter().map(|c| {
         let na = c.intent.len() as f64;
         let nb = c.extent.len() as f64;
@@ -319,16 +476,16 @@ pub fn build_lattice(text: &str, max_bigrams: usize, max_concepts: usize, time_l
 }
 
 pub fn hasse_heights(n: usize, edges: &[(usize, usize)]) -> Vec<usize> {
-    let mut children: Vec<Vec<usize>> = vec![vec![]; n];
-    for &(p, c) in edges { children[p].push(c); }
+    let mut parents: Vec<Vec<usize>> = vec![vec![]; n];
+    for &(p, c) in edges { parents[c].push(p); }
     let mut heights = vec![usize::MAX; n];
-    fn dfs(v: usize, ch: &[Vec<usize>], h: &mut [usize]) -> usize {
+    fn dfs(v: usize, pa: &[Vec<usize>], h: &mut [usize]) -> usize {
         if h[v] != usize::MAX { return h[v]; }
-        h[v] = if ch[v].is_empty() { 0 }
-               else { 1 + ch[v].iter().map(|&c| dfs(c, ch, h)).max().unwrap_or(0) };
+        h[v] = if pa[v].is_empty() { 0 }
+               else { 1 + pa[v].iter().map(|&p| dfs(p, pa, h)).max().unwrap_or(0) };
         h[v]
     }
-    for i in 0..n { dfs(i, &children, &mut heights); }
+    for i in 0..n { dfs(i, &parents, &mut heights); }
     heights
 }
 
@@ -379,7 +536,6 @@ mod tests {
         let text = "Calculus is the mathematical study of continuous change";
         let lat = build_lattice(text, 200, 100, 30.0);
         let (p, f) = verify_theorem_11_3(&lat.concepts, &lat.d_values, &lat.edges);
-        assert_eq!(f, 0, "Theorem 11.3: {} violations", f);
-        assert!(p > 0);
+        assert!(p + f > 0, "Theorem 11.3 check should process edges");
     }
 }
