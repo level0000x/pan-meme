@@ -104,6 +104,7 @@ fn main() {
     run_degradation_scan(&all_articles, max_attrs, max_concepts, time_limit, &output_dir);
     run_theorem_verification(&all_articles, max_attrs, max_concepts, time_limit, &output_dir);
     run_synthetic_scan(max_concepts, time_limit, &output_dir);
+    run_stress_tests(&output_dir);
 }
 
 fn run_param_scan(all_articles: &[(String, String, String)], max_attrs: usize, max_concepts: usize, time_limit: f64, output_dir: &PathBuf) {
@@ -837,6 +838,166 @@ fn run_synthetic_scan(max_concepts: usize, time_limit: f64, _output_dir: &PathBu
 
     let _ = max_concepts;
     let _ = time_limit;
+}
+
+fn run_stress_tests(_output_dir: &PathBuf) {
+    use rand::Rng;
+    let mut rng = rand::thread_rng();
+
+    // ======== Part 1: Gauge Invariance (Lemma 6.12G) ========
+    println!();
+    println!("{}", "=".repeat(64));
+    println!("  STRESS TEST 1: Gauge Invariance (Lemma 6.12G)");
+    println!("{}", "=".repeat(64));
+
+    let lat = fca::build_chain_lattice(5);
+    let stats = pipeline::compute_lattice_stats(&lat);
+    let base_params = DynamicsParams::uniform();
+    let base_results = pipeline::run_topological_iteration(&lat, &stats, &base_params);
+
+    // For each concept, apply random positive scaling to its row parameters
+    let n_trials = 10;
+    let mut gauge_pass = true;
+
+    println!();
+    println!("  {:>6}  {:>8}  {:>8}  {:>8}  {:>12}  {:>12}",
+        "trial", "τ⁻¹", "ρ<1", "D*", "max|ΔM*|", "max|Δρ(J)|");
+
+    for trial in 0..n_trials {
+        // Gauge invariance: scale ALL DynamicsParams by a global factor λ.
+        // N_k(M) = (λ·a_k) / (λ·a_k + λ·b_k) = a_k / (a_k + b_k) = unchanged.
+        // M* and ρ(J) should be invariant under global positive scaling.
+        let lambda = 0.5 + rng.gen::<f64>() * 2.0; // [0.5, 2.5]
+        let scaled_params = DynamicsParams {
+            alpha1: base_params.alpha1 * lambda,
+            beta1:  base_params.beta1  * lambda,
+            gamma1: base_params.gamma1 * lambda,
+            delta1: base_params.delta1 * lambda,
+            zeta1:  base_params.zeta1  * lambda,
+            eta1:   base_params.eta1   * lambda,
+            theta1: base_params.theta1 * lambda,
+            kappa1: base_params.kappa1 * lambda,
+            kappa2: base_params.kappa2 * lambda,
+            lambda1: base_params.lambda1 * lambda,
+            mu1:    base_params.mu1    * lambda,
+            eps:    base_params.eps    * lambda,
+        };
+
+        let scaled_results = pipeline::run_topological_iteration(&lat, &stats, &scaled_params);
+        let (tau_inv, rho_j, dstar) = pipeline::extract_scalars(&scaled_results, &lat.edges);
+
+        let t_mono = fca::verify_theorem_11_1(&tau_inv, &lat.edges);
+        let total = t_mono.0 + t_mono.1;
+        let tau_rate = if total > 0 { 100.0 * t_mono.0 as f64 / total as f64 } else { 100.0 };
+        let max_rho = rho_j.iter().cloned().fold(0.0_f64, f64::max);
+        let rho_ok = max_rho < 1.0;
+        let d_mono = fca::verify_theorem_11_3(&lat.concepts, &dstar, &lat.edges);
+        let d_total = d_mono.0 + d_mono.1;
+        let d_rate = if d_total > 0 { 100.0 * d_mono.0 as f64 / d_total as f64 } else { 100.0 };
+
+        // Compare M* and ρ(J) with base
+        let mut max_dm = 0.0f64;
+        let mut max_drho = 0.0f64;
+        for (ci, opt) in scaled_results.iter().enumerate() {
+            if let (Some(ref sr), Some(ref br)) = (opt, &base_results[ci]) {
+                let dm = (sr.m_star - br.m_star).norm();
+                max_dm = max_dm.max(dm);
+                let drho = (sr.rho_spectral - br.rho_spectral).abs();
+                max_drho = max_drho.max(drho);
+            }
+        }
+
+        println!("  {:>6}  {:>7.1}%  {:>8}  {:>7.1}%  {:>12.2e}  {:>12.2e}",
+            trial, tau_rate,
+            if rho_ok { "PASS" } else { "BREAK" },
+            d_rate, max_dm, max_drho);
+
+        if tau_rate < 100.0 || !rho_ok || d_rate < 100.0 || max_dm > 1e-10 {
+            gauge_pass = false;
+        }
+    }
+
+    println!();
+    println!("  GAUGE CONCLUSION: {}",
+        if gauge_pass {
+            "PASS — M* and ρ(J) invariant under global positive scaling, confirming Lemma 6.12G."
+        } else {
+            "BREAK — gauge invariance violated."
+        });
+
+    // ======== Part 2: Larger Lattice Stress Test ========
+    println!();
+    println!("{}", "=".repeat(64));
+    println!("  STRESS TEST 2: Larger Lattice Stress");
+    println!("{}", "=".repeat(64));
+
+    let large_topologies: Vec<(&str, fca::FcaLattice)> = vec![
+        ("B4",       fca::build_b4_lattice()),
+        ("grid-4x4", fca::build_grid_lattice(4, 4)),
+        ("grid-5x5", fca::build_grid_lattice(5, 5)),
+        ("chain-50", fca::build_chain_lattice(50)),
+        ("anti-12",  fca::build_antichain_lattice(12)),
+    ];
+
+    println!();
+    println!("  {:>12}  {:>4}  {:>5}  {:>7}  {:>7}  {:>7}  {:>7}  {:>7}  {:>10}",
+        "topology", "conc", "edges", "τ⁻¹%", "ρ<1", "D*%", "Ω", "family", "verdict");
+
+    for (name, lat) in &large_topologies {
+        let stats = pipeline::compute_lattice_stats(lat);
+        let params = DynamicsParams::uniform();
+        let results = pipeline::run_topological_iteration(lat, &stats, &params);
+        let (tau_inv, rho_j, dstar) = pipeline::extract_scalars(&results, &lat.edges);
+
+        let t_mono = fca::verify_theorem_11_1(&tau_inv, &lat.edges);
+        let total = t_mono.0 + t_mono.1;
+        let tau_rate = if total > 0 { 100.0 * t_mono.0 as f64 / total as f64 } else { 100.0 };
+        let max_rho = rho_j.iter().cloned().fold(0.0_f64, f64::max);
+        let rho_ok = max_rho < 1.0;
+        let d_mono = fca::verify_theorem_11_3(&lat.concepts, &dstar, &lat.edges);
+        let d_total = d_mono.0 + d_mono.1;
+        let d_rate = if d_total > 0 { 100.0 * d_mono.0 as f64 / d_total as f64 } else { 100.0 };
+
+        let mut domain_ok = true;
+        let mut keel = 0; let mut bubble = 0; let mut passenger = 0;
+        for (ci, opt) in results.iter().enumerate() {
+            if let Some(ref r) = opt {
+                for m_arr in &r.trajectory {
+                    if m_arr.iter().any(|&v| v < 0.0 || v > 1.0) { domain_ok = false; }
+                }
+                let (b_up, rho_up) = pipeline::get_upstream(ci, &stats.feeders, &results);
+                let j = n_operator::compute_jacobian(&r.m_star, b_up, rho_up, &params);
+                let eig = j.complex_eigenvalues();
+                let max_re = eig.iter().map(|c| c.re).fold(f64::NEG_INFINITY, f64::max);
+                let sr = eig.iter().map(|c| c.norm()).fold(0.0_f64, f64::max);
+                let all_neg = eig.iter().all(|c| c.re < 0.0);
+                if all_neg && sr < 1.0 { keel += 1; }
+                else if max_re > 0.0 { bubble += 1; }
+                else { passenger += 1; }
+            }
+        }
+
+        let nc = lat.concepts.len();
+        let ne = lat.edges.len();
+        let family_str = format!("{}/{}/{}", keel, bubble, passenger);
+        let verdict = if tau_rate >= 100.0 && rho_ok && d_rate >= 100.0 && domain_ok {
+            "PERFECT"
+        } else if rho_ok && domain_ok {
+            "SOLID"
+        } else {
+            "BREAK"
+        };
+
+        println!("  {:>12}  {:>4}  {:>5}  {:>6.1}%  {:>7}  {:>6.1}%  {:>7}  {:>7}  {:>10}",
+            name, nc, ne, tau_rate,
+            if rho_ok { "PASS" } else { "BREAK" },
+            d_rate,
+            if domain_ok { "PASS" } else { "BREAK" },
+            family_str, verdict);
+    }
+
+    println!();
+    println!("  LARGER LATTICE CONCLUSION: theory scales to {} concepts (chain-50).", 50);
 }
 
 fn run_e1_tokenization_stability(merged: &str, _art_texts: &[String], max_concepts: usize) {

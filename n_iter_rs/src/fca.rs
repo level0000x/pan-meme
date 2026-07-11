@@ -753,6 +753,25 @@ pub fn build_antichain_lattice(k: usize) -> FcaLattice {
     build_lattice_from_concepts(concepts)
 }
 
+/// Build a Boolean lattice B_4 (16 concepts = 2^4)
+pub fn build_b4_lattice() -> FcaLattice {
+    let mut concepts = Vec::with_capacity(16);
+    // 16 objects (0..15), 4 attributes (0..3)
+    // Object i has attribute j if bit j of i is 1
+    for intent_mask in 0..16u32 {
+        let mut intent = Vec::new();
+        let mut extent = Vec::new();
+        for j in 0..4 {
+            if (intent_mask >> j) & 1 == 1 { intent.push(j); }
+        }
+        for obj in 0..16 {
+            if (obj & intent_mask) == intent_mask { extent.push(obj as usize); }
+        }
+        concepts.push(FormalConcept { intent, extent });
+    }
+    build_lattice_from_concepts(concepts)
+}
+
 pub fn build_lattice_from_data(bg_data: &BigramData, max_concepts: usize, time_limit: f64) -> FcaLattice {
     let concepts = next_closure(bg_data, max_concepts, time_limit);
     let d_values: Vec<f64> = concepts.iter().map(|c| {
