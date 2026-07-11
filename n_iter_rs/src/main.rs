@@ -128,4 +128,10 @@ fn run_synthetic_suite(max_concepts: usize, time_limit: f64, output_dir: &PathBu
     experiments::run_ode_exact_lyapunov();
     experiments::run_convergence_rate_analysis();
     experiments::run_sensitivity_analysis();
+    experiments::run_cross_metric_correlation();
+    experiments::run_pareto_and_linear_regression();
+    experiments::run_cross_regime_pareto();
+    experiments::run_beta_delta_2d_sweep();
+    experiments::run_super_optimal_characterization();
+    experiments::run_fine_grained_landscape();
 }
