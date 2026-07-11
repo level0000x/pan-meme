@@ -1,0 +1,47 @@
+{
+  "experiment": "E2",
+  "title": "多语料库交叉验证",
+  "domains": 6,
+  "total_concepts": 42,
+  "total_edges": 111,
+  "theorem_11_1_pass": "111/111",
+  "theorem_11_2_pass": "42/42",
+  "per_domain": {
+    "文化": {
+      "concepts": 11,
+      "edges": 30,
+      "thm11_1": "30/30",
+      "thm11_2": "11/11"
+    },
+    "科学": {
+      "concepts": 10,
+      "edges": 28,
+      "thm11_1": "28/28",
+      "thm11_2": "10/10"
+    },
+    "技术": {
+      "concepts": 14,
+      "edges": 33,
+      "thm11_1": "33/33",
+      "thm11_2": "14/14"
+    },
+    "政治": {
+      "concepts": 4,
+      "edges": 12,
+      "thm11_1": "12/12",
+      "thm11_2": "4/4"
+    },
+    "社会": {
+      "concepts": 2,
+      "edges": 5,
+      "thm11_1": "5/5",
+      "thm11_2": "2/2"
+    },
+    "人物": {
+      "concepts": 1,
+      "edges": 3,
+      "thm11_1": "3/3",
+      "thm11_2": "1/1"
+    }
+  }
+}

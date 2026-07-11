@@ -1,0 +1,666 @@
+{
+  "theorem": "11.2",
+  "claim": "E_N = E_H",
+  "total_concepts_tested": 42,
+  "passes": 42,
+  "pass_rate": 100.0,
+  "results": [
+    {
+      "concept": "Academy_Awards",
+      "n_concepts": 4,
+      "n_hasse_edges": 3,
+      "n_non_hasse_ancestors": 3,
+      "hasse_only": false,
+      "max_diff": 0.0,
+      "mean_diff": 0.0,
+      "diffs": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "pass": true
+    },
+    {
+      "concept": "Algebra",
+      "n_concepts": 3,
+      "n_hasse_edges": 2,
+      "n_non_hasse_ancestors": 1,
+      "hasse_only": false,
+      "max_diff": 0.0,
+      "mean_diff": 0.0,
+      "diffs": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "pass": true
+    },
+    {
+      "concept": "Barbie_(film)",
+      "n_concepts": 4,
+      "n_hasse_edges": 3,
+      "n_non_hasse_ancestors": 3,
+      "hasse_only": false,
+      "max_diff": 0.0,
+      "mean_diff": 0.0,
+      "diffs": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "pass": true
+    },
+    {
+      "concept": "Bitcoin",
+      "n_concepts": 3,
+      "n_hasse_edges": 2,
+      "n_non_hasse_ancestors": 1,
+      "hasse_only": false,
+      "max_diff": 0.0,
+      "mean_diff": 0.0,
+      "diffs": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "pass": true
+    },
+    {
+      "concept": "Black_Lives_Matter",
+      "n_concepts": 4,
+      "n_hasse_edges": 3,
+      "n_non_hasse_ancestors": 3,
+      "hasse_only": false,
+      "max_diff": 0.0,
+      "mean_diff": 0.0,
+      "diffs": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "pass": true
+    },
+    {
+      "concept": "BlackBerry",
+      "n_concepts": 4,
+      "n_hasse_edges": 3,
+      "n_non_hasse_ancestors": 3,
+      "hasse_only": false,
+      "max_diff": 0.0,
+      "mean_diff": 0.0,
+      "diffs": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "pass": true
+    },
+    {
+      "concept": "Brexit",
+      "n_concepts": 4,
+      "n_hasse_edges": 3,
+      "n_non_hasse_ancestors": 3,
+      "hasse_only": false,
+      "max_diff": 0.0,
+      "mean_diff": 0.0,
+      "diffs": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "pass": true
+    },
+    {
+      "concept": "Calculus",
+      "n_concepts": 3,
+      "n_hasse_edges": 2,
+      "n_non_hasse_ancestors": 1,
+      "hasse_only": false,
+      "max_diff": 0.0,
+      "mean_diff": 0.0,
+      "diffs": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "pass": true
+    },
+    {
+      "concept": "Carbon",
+      "n_concepts": 4,
+      "n_hasse_edges": 3,
+      "n_non_hasse_ancestors": 3,
+      "hasse_only": false,
+      "max_diff": 0.0,
+      "mean_diff": 0.0,
+      "diffs": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "pass": true
+    },
+    {
+      "concept": "ChatGPT",
+      "n_concepts": 3,
+      "n_hasse_edges": 2,
+      "n_non_hasse_ancestors": 1,
+      "hasse_only": false,
+      "max_diff": 0.0,
+      "mean_diff": 0.0,
+      "diffs": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "pass": true
+    },
+    {
+      "concept": "Christmas",
+      "n_concepts": 4,
+      "n_hasse_edges": 3,
+      "n_non_hasse_ancestors": 3,
+      "hasse_only": false,
+      "max_diff": 0.0,
+      "mean_diff": 0.0,
+      "diffs": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "pass": true
+    },
+    {
+      "concept": "Clubhouse_(app)",
+      "n_concepts": 3,
+      "n_hasse_edges": 2,
+      "n_non_hasse_ancestors": 1,
+      "hasse_only": false,
+      "max_diff": 0.0,
+      "mean_diff": 0.0,
+      "diffs": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "pass": true
+    },
+    {
+      "concept": "COVID-19",
+      "n_concepts": 4,
+      "n_hasse_edges": 3,
+      "n_non_hasse_ancestors": 3,
+      "hasse_only": false,
+      "max_diff": 0.0,
+      "mean_diff": 0.0,
+      "diffs": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "pass": true
+    },
+    {
+      "concept": "Democracy",
+      "n_concepts": 4,
+      "n_hasse_edges": 3,
+      "n_non_hasse_ancestors": 3,
+      "hasse_only": false,
+      "max_diff": 0.0,
+      "mean_diff": 0.0,
+      "diffs": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "pass": true
+    },
+    {
+      "concept": "DNA",
+      "n_concepts": 4,
+      "n_hasse_edges": 3,
+      "n_non_hasse_ancestors": 3,
+      "hasse_only": false,
+      "max_diff": 0.0,
+      "mean_diff": 0.0,
+      "diffs": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "pass": true
+    },
+    {
+      "concept": "Elon_Musk",
+      "n_concepts": 4,
+      "n_hasse_edges": 3,
+      "n_non_hasse_ancestors": 3,
+      "hasse_only": false,
+      "max_diff": 0.0,
+      "mean_diff": 0.0,
+      "diffs": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "pass": true
+    },
+    {
+      "concept": "Evolution",
+      "n_concepts": 4,
+      "n_hasse_edges": 3,
+      "n_non_hasse_ancestors": 3,
+      "hasse_only": false,
+      "max_diff": 0.0,
+      "mean_diff": 0.0,
+      "diffs": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "pass": true
+    },
+    {
+      "concept": "FarmVille",
+      "n_concepts": 3,
+      "n_hasse_edges": 2,
+      "n_non_hasse_ancestors": 1,
+      "hasse_only": false,
+      "max_diff": 0.0,
+      "mean_diff": 0.0,
+      "diffs": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "pass": true
+    },
+    {
+      "concept": "FIFA_World_Cup",
+      "n_concepts": 3,
+      "n_hasse_edges": 2,
+      "n_non_hasse_ancestors": 1,
+      "hasse_only": false,
+      "max_diff": 0.0,
+      "mean_diff": 0.0,
+      "diffs": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "pass": true
+    },
+    {
+      "concept": "GameStop_short_squeeze",
+      "n_concepts": 3,
+      "n_hasse_edges": 2,
+      "n_non_hasse_ancestors": 1,
+      "hasse_only": false,
+      "max_diff": 0.0,
+      "mean_diff": 0.0,
+      "diffs": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "pass": true
+    },
+    {
+      "concept": "Google%2B",
+      "n_concepts": 3,
+      "n_hasse_edges": 2,
+      "n_non_hasse_ancestors": 1,
+      "hasse_only": false,
+      "max_diff": 0.0,
+      "mean_diff": 0.0,
+      "diffs": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "pass": true
+    },
+    {
+      "concept": "Grammy_Awards",
+      "n_concepts": 3,
+      "n_hasse_edges": 2,
+      "n_non_hasse_ancestors": 1,
+      "hasse_only": false,
+      "max_diff": 0.0,
+      "mean_diff": 0.0,
+      "diffs": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "pass": true
+    },
+    {
+      "concept": "Gravity",
+      "n_concepts": 4,
+      "n_hasse_edges": 3,
+      "n_non_hasse_ancestors": 3,
+      "hasse_only": false,
+      "max_diff": 0.0,
+      "mean_diff": 0.0,
+      "diffs": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "pass": true
+    },
+    {
+      "concept": "Halloween",
+      "n_concepts": 4,
+      "n_hasse_edges": 3,
+      "n_non_hasse_ancestors": 3,
+      "hasse_only": false,
+      "max_diff": 0.0,
+      "mean_diff": 0.0,
+      "diffs": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "pass": true
+    },
+    {
+      "concept": "Internet_Explorer",
+      "n_concepts": 4,
+      "n_hasse_edges": 3,
+      "n_non_hasse_ancestors": 3,
+      "hasse_only": false,
+      "max_diff": 0.0,
+      "mean_diff": 0.0,
+      "diffs": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "pass": true
+    },
+    {
+      "concept": "LimeWire",
+      "n_concepts": 3,
+      "n_hasse_edges": 2,
+      "n_non_hasse_ancestors": 1,
+      "hasse_only": false,
+      "max_diff": 0.0,
+      "mean_diff": 0.0,
+      "diffs": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "pass": true
+    },
+    {
+      "concept": "MySpace",
+      "n_concepts": 4,
+      "n_hasse_edges": 3,
+      "n_non_hasse_ancestors": 3,
+      "hasse_only": false,
+      "max_diff": 0.0,
+      "mean_diff": 0.0,
+      "diffs": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "pass": true
+    },
+    {
+      "concept": "Nokia",
+      "n_concepts": 4,
+      "n_hasse_edges": 3,
+      "n_non_hasse_ancestors": 3,
+      "hasse_only": false,
+      "max_diff": 0.0,
+      "mean_diff": 0.0,
+      "diffs": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "pass": true
+    },
+    {
+      "concept": "Olympic_Games",
+      "n_concepts": 4,
+      "n_hasse_edges": 3,
+      "n_non_hasse_ancestors": 3,
+      "hasse_only": false,
+      "max_diff": 0.0,
+      "mean_diff": 0.0,
+      "diffs": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "pass": true
+    },
+    {
+      "concept": "Oppenheimer_(film)",
+      "n_concepts": 4,
+      "n_hasse_edges": 3,
+      "n_non_hasse_ancestors": 3,
+      "hasse_only": false,
+      "max_diff": 0.0,
+      "mean_diff": 0.0,
+      "diffs": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "pass": true
+    },
+    {
+      "concept": "Oxygen",
+      "n_concepts": 4,
+      "n_hasse_edges": 3,
+      "n_non_hasse_ancestors": 3,
+      "hasse_only": false,
+      "max_diff": 0.0,
+      "mean_diff": 0.0,
+      "diffs": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "pass": true
+    },
+    {
+      "concept": "Periodic_table",
+      "n_concepts": 4,
+      "n_hasse_edges": 3,
+      "n_non_hasse_ancestors": 3,
+      "hasse_only": false,
+      "max_diff": 0.0,
+      "mean_diff": 0.0,
+      "diffs": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "pass": true
+    },
+    {
+      "concept": "Philosophy",
+      "n_concepts": 4,
+      "n_hasse_edges": 3,
+      "n_non_hasse_ancestors": 3,
+      "hasse_only": false,
+      "max_diff": 0.0,
+      "mean_diff": 0.0,
+      "diffs": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "pass": true
+    },
+    {
+      "concept": "Photosynthesis",
+      "n_concepts": 4,
+      "n_hasse_edges": 3,
+      "n_non_hasse_ancestors": 3,
+      "hasse_only": false,
+      "max_diff": 0.0,
+      "mean_diff": 0.0,
+      "diffs": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "pass": true
+    },
+    {
+      "concept": "Second_Life",
+      "n_concepts": 3,
+      "n_hasse_edges": 2,
+      "n_non_hasse_ancestors": 1,
+      "hasse_only": false,
+      "max_diff": 0.0,
+      "mean_diff": 0.0,
+      "diffs": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "pass": true
+    },
+    {
+      "concept": "Super_Bowl",
+      "n_concepts": 4,
+      "n_hasse_edges": 3,
+      "n_non_hasse_ancestors": 3,
+      "hasse_only": false,
+      "max_diff": 0.0,
+      "mean_diff": 0.0,
+      "diffs": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "pass": true
+    },
+    {
+      "concept": "Taylor_Swift",
+      "n_concepts": 4,
+      "n_hasse_edges": 3,
+      "n_non_hasse_ancestors": 3,
+      "hasse_only": false,
+      "max_diff": 0.0,
+      "mean_diff": 0.0,
+      "diffs": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "pass": true
+    },
+    {
+      "concept": "Tesla,_Inc.",
+      "n_concepts": 4,
+      "n_hasse_edges": 3,
+      "n_non_hasse_ancestors": 3,
+      "hasse_only": false,
+      "max_diff": 0.0,
+      "mean_diff": 0.0,
+      "diffs": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "pass": true
+    },
+    {
+      "concept": "Thanksgiving",
+      "n_concepts": 3,
+      "n_hasse_edges": 2,
+      "n_non_hasse_ancestors": 1,
+      "hasse_only": false,
+      "max_diff": 0.0,
+      "mean_diff": 0.0,
+      "diffs": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "pass": true
+    },
+    {
+      "concept": "Ukraine",
+      "n_concepts": 4,
+      "n_hasse_edges": 3,
+      "n_non_hasse_ancestors": 3,
+      "hasse_only": false,
+      "max_diff": 0.0,
+      "mean_diff": 0.0,
+      "diffs": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "pass": true
+    },
+    {
+      "concept": "Vine_(service)",
+      "n_concepts": 3,
+      "n_hasse_edges": 2,
+      "n_non_hasse_ancestors": 1,
+      "hasse_only": false,
+      "max_diff": 0.0,
+      "mean_diff": 0.0,
+      "diffs": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "pass": true
+    },
+    {
+      "concept": "Windows_XP",
+      "n_concepts": 3,
+      "n_hasse_edges": 2,
+      "n_non_hasse_ancestors": 1,
+      "hasse_only": false,
+      "max_diff": 0.0,
+      "mean_diff": 0.0,
+      "diffs": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "pass": true
+    }
+  ]
+}

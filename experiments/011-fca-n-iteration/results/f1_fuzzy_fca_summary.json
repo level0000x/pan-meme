@@ -1,0 +1,11 @@
+{
+  "n_docs": 7,
+  "n_attrs": 15,
+  "n_concepts": 8,
+  "n_edges": 13,
+  "fuzzy_sparsity": 0.2,
+  "d_range": [
+    0.0,
+    4.122556248918265
+  ]
+}
