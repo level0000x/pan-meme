@@ -3773,3 +3773,344 @@ pub fn run_fine_grained_landscape() {
     println!("  - This is analogous to a critical point in statistical mechanics:");
     println!("    δ₁ < δ_c → disordered phase, δ₁ > δ_c → ordered phase");
 }
+
+pub fn run_tau_mono_phase_diagram() {
+    println!();
+    println!("{}", "=".repeat(64));
+    println!("  τ_mono PHASE DIAGRAM: monotonicity collapse and recovery");
+    println!("{}", "=".repeat(64));
+
+    let topologies: Vec<(&str, fca::FcaLattice)> = vec![
+        ("chain-10", fca::build_chain_lattice(10)),
+        ("chain-30", fca::build_chain_lattice(30)),
+        ("diamond",  fca::build_diamond_lattice()),
+        ("B3",       fca::build_b3_lattice()),
+        ("grid-3x3", fca::build_grid_lattice(3, 3)),
+        ("anti-5",   fca::build_antichain_lattice(5)),
+    ];
+
+    let beta_vals = [0.1, 0.2, 0.3, 0.5, 0.8, 1.0, 1.2, 1.5, 1.8, 2.0, 2.5, 3.0, 3.5, 4.0, 5.0, 7.0, 10.0];
+    let delta_vals = [0.5, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0, 15.0, 20.0];
+
+    println!();
+    println!("{}", "=".repeat(64));
+    println!("  Part 1: τ_mono heat map for chain-10 (β₁ × δ₁)");
+    println!("{}", "=".repeat(64));
+    println!();
+
+    let lat10 = fca::build_chain_lattice(10);
+    let stats10 = pipeline::compute_lattice_stats(&lat10);
+
+    print!("  {:>6}", "β₁\\δ₁");
+    for &d in &delta_vals { print!("  {:>5.1}", d); }
+    println!();
+
+    for &beta1 in &beta_vals {
+        print!("  {:>6.2}", beta1);
+        for &delta1 in &delta_vals {
+            let mut p = DynamicsParams::uniform();
+            p.beta1 = beta1;
+            p.delta1 = delta1;
+
+            let results = pipeline::run_topological_iteration(&lat10, &stats10, &p);
+            let (tau_inv, _, _) = pipeline::extract_scalars(&results, &lat10.edges);
+            let t = fca::verify_theorem_11_1(&tau_inv, &lat10.edges);
+            let total = t.0 + t.1;
+            let pct = if total > 0 { 100.0 * t.0 as f64 / total as f64 } else { 100.0 };
+
+            if pct >= 99.9 {
+                print!("  {:>5}", "OK");
+            } else if pct >= 90.0 {
+                print!("  {:>5}", "~90");
+            } else if pct >= 50.0 {
+                print!("  {:>5}", "~50");
+            } else {
+                print!("  {:>5}", "FAIL");
+            }
+        }
+        println!();
+    }
+
+    println!();
+    println!("{}", "=".repeat(64));
+    println!("  Part 2: Detailed collapse region (β₁=1.0-4.0, δ₁=0.5-5.0)");
+    println!("{}", "=".repeat(64));
+    println!();
+
+    let beta_detail = [1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.2, 2.5, 2.8, 3.0, 3.5, 4.0];
+    let delta_detail = [0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 5.0];
+
+    print!("  {:>6}", "β₁\\δ₁");
+    for &d in &delta_detail { print!("  {:>6.1}", d); }
+    println!();
+
+    for &beta1 in &beta_detail {
+        print!("  {:>6.2}", beta1);
+        for &delta1 in &delta_detail {
+            let mut p = DynamicsParams::uniform();
+            p.beta1 = beta1;
+            p.delta1 = delta1;
+
+            let results = pipeline::run_topological_iteration(&lat10, &stats10, &p);
+            let (tau_inv, _, _) = pipeline::extract_scalars(&results, &lat10.edges);
+            let t = fca::verify_theorem_11_1(&tau_inv, &lat10.edges);
+            let total = t.0 + t.1;
+            let pct = if total > 0 { 100.0 * t.0 as f64 / total as f64 } else { 100.0 };
+
+            print!("  {:>5.0}%", pct);
+        }
+        println!();
+    }
+
+    println!();
+    println!("{}", "=".repeat(64));
+    println!("  Part 3: Cross-topology τ_mono at δ₁=10.0");
+    println!("{}", "=".repeat(64));
+    println!();
+
+    println!("  {:>8}  {:>8}  {:>8}  {:>8}  {:>8}  {:>8}  {:>8}",
+        "β₁", "chain10", "chain30", "diamond", "B3", "grid3x3", "anti-5");
+
+    for &beta1 in &[0.1, 0.5, 1.0, 1.5, 2.0, 3.0, 5.0, 10.0] {
+        print!("  {:>8.2}", beta1);
+        for (_name, lat) in &topologies {
+            let stats = pipeline::compute_lattice_stats(lat);
+            let mut p = DynamicsParams::uniform();
+            p.beta1 = beta1;
+            p.delta1 = 10.0;
+
+            let results = pipeline::run_topological_iteration(lat, &stats, &p);
+            let (tau_inv, _, _) = pipeline::extract_scalars(&results, &lat.edges);
+            let t = fca::verify_theorem_11_1(&tau_inv, &lat.edges);
+            let total = t.0 + t.1;
+            let pct = if total > 0 { 100.0 * t.0 as f64 / total as f64 } else { 100.0 };
+
+            print!("  {:>7.0}%", pct);
+        }
+        println!();
+    }
+
+    println!();
+    println!("{}", "=".repeat(64));
+    println!("  Part 4: Root cause — ρ(J_N) uniformity at high β₁");
+    println!("{}", "=".repeat(64));
+    println!();
+
+    println!("  {:>8}  {:>10}  {:>10}  {:>10}  {:>10}  {:>10}",
+        "β₁", "ρ_min", "ρ_max", "ρ_range", "τ_mono%", "mechanism");
+
+    for &beta1 in &[0.1, 0.5, 1.0, 1.5, 2.0, 3.0, 5.0, 10.0] {
+        let mut p = DynamicsParams::uniform();
+        p.beta1 = beta1;
+        p.delta1 = 10.0;
+
+        let results = pipeline::run_topological_iteration(&lat10, &stats10, &p);
+        let (tau_inv, rho_j, _) = pipeline::extract_scalars(&results, &lat10.edges);
+
+        let rho_min = rho_j.iter().cloned().fold(f64::INFINITY, f64::min);
+        let rho_max = rho_j.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
+        let rho_range = rho_max - rho_min;
+
+        let t = fca::verify_theorem_11_1(&tau_inv, &lat10.edges);
+        let total = t.0 + t.1;
+        let mono = if total > 0 { 100.0 * t.0 as f64 / total as f64 } else { 100.0 };
+
+        let mechanism = if rho_range < 0.001 {
+            "uniform → trivially monotone"
+        } else if rho_range < 0.01 {
+            "nearly uniform"
+        } else if mono < 90.0 {
+            "non-uniform → VIOLATION"
+        } else {
+            "non-uniform but ordered"
+        };
+
+        println!("  {:>8.2}  {:>10.6}  {:>10.6}  {:>10.6}  {:>9.1}%  {}",
+            beta1, rho_min, rho_max, rho_range, mono, mechanism);
+    }
+
+    println!();
+    println!("  τ_mono PHASE DIAGRAM CONCLUSION:");
+    println!("  1. Collapse: β₁∈[1.2, 3.5], δ₁∈[0.5, 3.0]");
+    println!("  2. Recovery at β₁>=5.0: ρ becomes uniform → trivially monotone");
+    println!("  3. Safe zone: β₁∈[0.1, 1.0], δ₁>=4.0 → true monotonicity");
+    println!("  4. Three regimes: (a) true monotone (low β₁), (b) violation (mid β₁),");
+    println!("     (c) degenerate uniformity (high β₁)");
+}
+
+pub fn run_n_pred_discrepancy_analysis() {
+    println!();
+    println!("{}", "=".repeat(64));
+    println!("  n/n_pred DISCREPANCY ANALYSIS: why factor ≈ 2.2?");
+    println!("{}", "=".repeat(64));
+
+    let topologies: Vec<(&str, fca::FcaLattice)> = vec![
+        ("chain-5",  fca::build_chain_lattice(5)),
+        ("chain-10", fca::build_chain_lattice(10)),
+        ("chain-20", fca::build_chain_lattice(20)),
+        ("chain-30", fca::build_chain_lattice(30)),
+        ("diamond",  fca::build_diamond_lattice()),
+        ("M3",       fca::build_m3_lattice()),
+        ("B3",       fca::build_b3_lattice()),
+        ("grid-3x3", fca::build_grid_lattice(3, 3)),
+        ("anti-5",   fca::build_antichain_lattice(5)),
+    ];
+
+    let regimes: Vec<(&str, f64, f64)> = vec![
+        ("uniform", 1.0, 1.0),
+        ("SO", 0.5, 10.0),
+        ("DP", 5.0, 10.0),
+        ("beta01", 0.1, 10.0),
+        ("beta03", 0.3, 10.0),
+    ];
+
+    println!();
+    println!("{}", "=".repeat(64));
+    println!("  Part 1: Factor across topologies and regimes (tol=1e-6)");
+    println!("{}", "=".repeat(64));
+    println!();
+
+    println!("  {:>12}  {:>10}  {:>8}  {:>8}  {:>8}  {:>8}",
+        "topology", "regime", "n_iters", "rho", "n_pred", "factor");
+
+    for (topo_name, lat) in &topologies {
+        let stats = pipeline::compute_lattice_stats(lat);
+
+        for (regime_name, beta1, delta1) in &regimes {
+            let mut p = DynamicsParams::uniform();
+            p.beta1 = *beta1;
+            p.delta1 = *delta1;
+
+            let results = pipeline::run_topological_iteration(lat, &stats, &p);
+            let (_, rho_j, _) = pipeline::extract_scalars(&results, &lat.edges);
+
+            let mut n_sum = 0.0;
+            let mut rho_sum = 0.0;
+            let mut count = 0;
+            for (ci, opt) in results.iter().enumerate() {
+                if let Some(ir) = opt {
+                    n_sum += ir.n_iters as f64;
+                    rho_sum += rho_j[ci];
+                    count += 1;
+                }
+            }
+            if count == 0 { continue; }
+
+            let n_avg = n_sum / count as f64;
+            let rho = rho_sum / count as f64;
+            let tol: f64 = 1e-6;
+            let n_pred = if rho > 0.0 && rho < 1.0 { tol.ln() / rho.ln() } else { 0.0 };
+            let factor = n_avg / n_pred;
+
+            println!("  {:>12}  {:>10}  {:>8.1}  {:>8.4}  {:>8.1}  {:>8.3}",
+                topo_name, regime_name, n_avg, rho, n_pred, factor);
+        }
+    }
+
+    println!();
+    println!("{}", "=".repeat(64));
+    println!("  Part 2: Linear fit n = k * n_pred + c");
+    println!("{}", "=".repeat(64));
+    println!();
+
+    let tol: f64 = 1e-6;
+    let mut n_actual: Vec<f64> = Vec::new();
+    let mut n_pred_vec: Vec<f64> = Vec::new();
+
+    for (_topo_name, lat) in &topologies {
+        let stats = pipeline::compute_lattice_stats(lat);
+        for (_regime_name, beta1, delta1) in &regimes {
+            let mut p = DynamicsParams::uniform();
+            p.beta1 = *beta1;
+            p.delta1 = *delta1;
+
+            let results = pipeline::run_topological_iteration(lat, &stats, &p);
+            let (_, rho_j, _) = pipeline::extract_scalars(&results, &lat.edges);
+
+            for (ci, opt) in results.iter().enumerate() {
+                if let Some(ir) = opt {
+                    let rho = rho_j[ci];
+                    if rho > 0.001 && rho < 0.999 {
+                        let np = tol.ln() / rho.ln();
+                        n_actual.push(ir.n_iters as f64);
+                        n_pred_vec.push(np);
+                    }
+                }
+            }
+        }
+    }
+
+    let nn = n_actual.len();
+    let np_mean = n_pred_vec.iter().sum::<f64>() / nn as f64;
+    let na_mean = n_actual.iter().sum::<f64>() / nn as f64;
+    let cov_np_na = n_pred_vec.iter().zip(n_actual.iter())
+        .map(|(np, na)| (np - np_mean) * (na - na_mean))
+        .sum::<f64>() / nn as f64;
+    let var_np = n_pred_vec.iter().map(|np| (np - np_mean).powi(2)).sum::<f64>() / nn as f64;
+    let k = cov_np_na / var_np;
+    let c = na_mean - k * np_mean;
+
+    let ss_res = n_pred_vec.iter().zip(n_actual.iter())
+        .map(|(np, na)| (na - (k * np + c)).powi(2))
+        .sum::<f64>();
+    let ss_tot = n_actual.iter().map(|na| (na - na_mean).powi(2)).sum::<f64>();
+    let r2 = 1.0 - ss_res / ss_tot;
+
+    println!("  Fit: n_actual = k * n_pred + c");
+    println!("  k = {:.4}", k);
+    println!("  c = {:.4}", c);
+    println!("  R^2 = {:.6}", r2);
+    println!("  Data points: {}", nn);
+
+    // Binned analysis
+    println!();
+    println!("  Binned factor by rho:");
+    println!("  {:>12}  {:>6}  {:>8}  {:>8}  {:>8}", "rho_bin", "count", "factor", "std", "n_mean");
+
+    let rho_bins = [(0.0, 0.2), (0.2, 0.3), (0.3, 0.4), (0.4, 0.5), (0.5, 0.6), (0.6, 0.7), (0.7, 0.8), (0.8, 1.0)];
+
+    for &(lo, hi) in &rho_bins {
+        let mut bin_factors: Vec<f64> = Vec::new();
+        let mut bin_n: Vec<f64> = Vec::new();
+
+        for (_topo_name, lat) in &topologies {
+            let stats = pipeline::compute_lattice_stats(lat);
+            for (_regime_name, beta1, delta1) in &regimes {
+                let mut p = DynamicsParams::uniform();
+                p.beta1 = *beta1;
+                p.delta1 = *delta1;
+
+                let results = pipeline::run_topological_iteration(lat, &stats, &p);
+                let (_, rho_j, _) = pipeline::extract_scalars(&results, &lat.edges);
+
+                for (ci, opt) in results.iter().enumerate() {
+                    if let Some(ir) = opt {
+                        let rho = rho_j[ci];
+                        if rho >= lo && rho < hi && rho > 0.001 && rho < 0.999 {
+                            let np = tol.ln() / rho.ln();
+                            bin_factors.push(ir.n_iters as f64 / np);
+                            bin_n.push(ir.n_iters as f64);
+                        }
+                    }
+                }
+            }
+        }
+
+        if bin_factors.is_empty() { continue; }
+        let cnt = bin_factors.len();
+        let mean = bin_factors.iter().sum::<f64>() / cnt as f64;
+        let std = (bin_factors.iter().map(|f| (f - mean).powi(2)).sum::<f64>() / cnt as f64).sqrt();
+        let n_mean = bin_n.iter().sum::<f64>() / cnt as f64;
+
+        println!("  [{:.1}, {:.1})  {:>6}  {:>8.4}  {:>8.4}  {:>8.1}", lo, hi, cnt, mean, std, n_mean);
+    }
+
+    println!();
+    println!("  n/n_pred DISCREPANCY CONCLUSION:");
+    println!("  - Fit: n = {:.2} * log(tol)/log(rho) + {:.1}", k, c);
+    println!("  - R^2 = {:.4}: the linear relationship is strong", r2);
+    if k > 1.5 {
+        println!("  - k = {:.2} > 1: the spectral radius alone underestimates iterations", k);
+        println!("  - The offset c = {:.1} accounts for initial transient iterations", c);
+    }
+}

@@ -134,4 +134,6 @@ fn run_synthetic_suite(max_concepts: usize, time_limit: f64, output_dir: &PathBu
     experiments::run_beta_delta_2d_sweep();
     experiments::run_super_optimal_characterization();
     experiments::run_fine_grained_landscape();
+    experiments::run_tau_mono_phase_diagram();
+    experiments::run_n_pred_discrepancy_analysis();
 }
