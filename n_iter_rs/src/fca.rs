@@ -683,6 +683,76 @@ pub fn build_diamond_lattice() -> FcaLattice {
     build_lattice_from_concepts(concepts)
 }
 
+/// Build an M3 lattice (5 concepts: top, 3 incomparable middle, bottom)
+pub fn build_m3_lattice() -> FcaLattice {
+    let concepts = vec![
+        FormalConcept { intent: vec![], extent: vec![0, 1, 2, 3, 4, 5] },
+        FormalConcept { intent: vec![0], extent: vec![0, 1] },
+        FormalConcept { intent: vec![1], extent: vec![2, 3] },
+        FormalConcept { intent: vec![2], extent: vec![4, 5] },
+        FormalConcept { intent: vec![0, 1, 2], extent: vec![] },
+    ];
+    build_lattice_from_concepts(concepts)
+}
+
+/// Build a Boolean lattice B_3 (8 concepts = 2^3, cube)
+pub fn build_b3_lattice() -> FcaLattice {
+    let concepts = vec![
+        FormalConcept { intent: vec![], extent: vec![0, 1, 2, 3, 4, 5, 6, 7] },
+        FormalConcept { intent: vec![0], extent: vec![1, 3, 5, 7] },
+        FormalConcept { intent: vec![1], extent: vec![2, 3, 6, 7] },
+        FormalConcept { intent: vec![2], extent: vec![4, 5, 6, 7] },
+        FormalConcept { intent: vec![0, 1], extent: vec![3, 7] },
+        FormalConcept { intent: vec![0, 2], extent: vec![5, 7] },
+        FormalConcept { intent: vec![1, 2], extent: vec![6, 7] },
+        FormalConcept { intent: vec![0, 1, 2], extent: vec![] },
+    ];
+    build_lattice_from_concepts(concepts)
+}
+
+/// Build a grid (product) lattice: rows × cols
+pub fn build_grid_lattice(rows: usize, cols: usize) -> FcaLattice {
+    let n = rows * cols;
+    let mut concepts = Vec::with_capacity(n);
+    for r in 0..rows {
+        for c in 0..cols {
+            let intent: Vec<usize> = (0..r).chain(rows..rows + c).collect();
+            let mut extent = Vec::new();
+            for rr in r..rows {
+                for cc in c..cols {
+                    extent.push(rr * cols + cc);
+                }
+            }
+            concepts.push(FormalConcept { intent, extent });
+        }
+    }
+    build_lattice_from_concepts(concepts)
+}
+
+/// Build an antichain lattice: top + k independent middle + bottom
+pub fn build_antichain_lattice(k: usize) -> FcaLattice {
+    let mut concepts = Vec::with_capacity(k + 2);
+    let mut all_extent: Vec<usize> = Vec::new();
+    let mut all_intent: Vec<usize> = Vec::new();
+    for i in 0..k {
+        concepts.push(FormalConcept {
+            intent: vec![i],
+            extent: vec![i],
+        });
+        all_extent.push(i);
+        all_intent.push(i);
+    }
+    concepts.insert(0, FormalConcept {
+        intent: vec![],
+        extent: all_extent.clone(),
+    });
+    concepts.push(FormalConcept {
+        intent: all_intent,
+        extent: vec![],
+    });
+    build_lattice_from_concepts(concepts)
+}
+
 pub fn build_lattice_from_data(bg_data: &BigramData, max_concepts: usize, time_limit: f64) -> FcaLattice {
     let concepts = next_closure(bg_data, max_concepts, time_limit);
     let d_values: Vec<f64> = concepts.iter().map(|c| {

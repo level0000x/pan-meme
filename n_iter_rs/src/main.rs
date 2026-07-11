@@ -732,107 +732,109 @@ fn run_theorem_verification(all_articles: &[(String, String, String)], max_attrs
 fn run_synthetic_scan(max_concepts: usize, time_limit: f64, _output_dir: &PathBuf) {
     println!();
     println!("{}", "=".repeat(64));
-    println!("  SYNTHETIC LATTICE SCAN — breaking the 4-concept bottleneck");
+    println!("  SYNTHETIC LATTICE TOPOLOGY SCAN");
     println!("{}", "=".repeat(64));
 
-    // Try chain lattices of increasing size
-    let chain_sizes = [5, 8, 10, 12, 15, 20, 25, 30];
+    // Helper: run theorem suite on a lattice, return (tau%, rho_ok, d%, domain_ok, family_counts)
+    fn verify_lattice(lat: &fca::FcaLattice) -> (f64, bool, f64, bool, (usize, usize, usize)) {
+        let stats = pipeline::compute_lattice_stats(lat);
+        let params = DynamicsParams::uniform();
+        let results = pipeline::run_topological_iteration(lat, &stats, &params);
+        let (tau_inv, rho_j, dstar) = pipeline::extract_scalars(&results, &lat.edges);
+
+        let t_mono = fca::verify_theorem_11_1(&tau_inv, &lat.edges);
+        let total = t_mono.0 + t_mono.1;
+        let tau_rate = if total > 0 { 100.0 * t_mono.0 as f64 / total as f64 } else { 100.0 };
+
+        let max_rho = rho_j.iter().cloned().fold(0.0_f64, f64::max);
+        let rho_ok = max_rho < 1.0;
+
+        let d_mono = fca::verify_theorem_11_3(&lat.concepts, &dstar, &lat.edges);
+        let d_total = d_mono.0 + d_mono.1;
+        let d_rate = if d_total > 0 { 100.0 * d_mono.0 as f64 / d_total as f64 } else { 100.0 };
+
+        let mut domain_ok = true;
+        for opt in &results {
+            if let Some(ref r) = opt {
+                for m_arr in &r.trajectory {
+                    if m_arr.iter().any(|&v| v < 0.0 || v > 1.0) { domain_ok = false; }
+                }
+            }
+        }
+
+        let mut keel = 0; let mut bubble = 0; let mut passenger = 0;
+        for (ci, opt) in results.iter().enumerate() {
+            if let Some(ref r) = opt {
+                let (b_up, rho_up) = pipeline::get_upstream(ci, &stats.feeders, &results);
+                let j = n_operator::compute_jacobian(&r.m_star, b_up, rho_up, &params);
+                let eig = j.complex_eigenvalues();
+                let max_re = eig.iter().map(|c| c.re).fold(f64::NEG_INFINITY, f64::max);
+                let sr = eig.iter().map(|c| c.norm()).fold(0.0_f64, f64::max);
+                let all_neg = eig.iter().all(|c| c.re < 0.0);
+                if all_neg && sr < 1.0 { keel += 1; }
+                else if max_re > 0.0 { bubble += 1; }
+                else { passenger += 1; }
+            }
+        }
+
+        (tau_rate, rho_ok, d_rate, domain_ok, (keel, bubble, passenger))
+    }
+
+    // Build topology list
+    let topologies: Vec<(&str, fca::FcaLattice)> = vec![
+        ("chain-5",  fca::build_chain_lattice(5)),
+        ("chain-10", fca::build_chain_lattice(10)),
+        ("chain-20", fca::build_chain_lattice(20)),
+        ("chain-30", fca::build_chain_lattice(30)),
+        ("diamond",  fca::build_diamond_lattice()),
+        ("M3",       fca::build_m3_lattice()),
+        ("B3",       fca::build_b3_lattice()),
+        ("grid-3x3", fca::build_grid_lattice(3, 3)),
+        ("anti-5",   fca::build_antichain_lattice(5)),
+        ("anti-8",   fca::build_antichain_lattice(8)),
+    ];
+
     println!();
-    println!("  {:>10}  {:>8}  {:>6}", "lattice", "concepts", "edges");
+    println!("  {:>12}  {:>4}  {:>5}  {:>7}  {:>7}  {:>7}  {:>7}  {:>7}  {:>10}",
+        "topology", "conc", "edges", "τ⁻¹%", "ρ<1", "D*%", "Ω", "family", "verdict");
 
-    let mut best: Option<fca::FcaLattice> = None;
-    let mut best_n = 0;
+    let mut results: Vec<(&str, usize, usize, f64, bool, f64, bool, (usize, usize, usize))> = Vec::new();
 
-    for &n in &chain_sizes {
-        let lat = fca::build_chain_lattice(n);
+    for (name, lat) in &topologies {
+        let (tau_rate, rho_ok, d_rate, domain_ok, (keel, bubble, passenger)) = verify_lattice(lat);
         let nc = lat.concepts.len();
         let ne = lat.edges.len();
-        let marker = if nc >= 10 { " ***" } else { "" };
-        println!("  chain({:>2})  {:>8}  {:>6}{}", n, nc, ne, marker);
-        if nc > best_n {
-            best_n = nc;
-            best = Some(lat);
-        }
+        let family_str = format!("{}/{}/{}", keel, bubble, passenger);
+        let verdict = if tau_rate >= 100.0 && rho_ok && d_rate >= 100.0 && domain_ok {
+            "PERFECT"
+        } else if rho_ok && domain_ok {
+            "SOLID"
+        } else {
+            "BREAK"
+        };
+        println!("  {:>12}  {:>4}  {:>5}  {:>6.1}%  {:>7}  {:>6.1}%  {:>7}  {:>7}  {:>10}",
+            name, nc, ne, tau_rate,
+            if rho_ok { "PASS" } else { "BREAK" },
+            d_rate,
+            if domain_ok { "PASS" } else { "BREAK" },
+            family_str, verdict);
+        results.push((name, nc, ne, tau_rate, rho_ok, d_rate, domain_ok, (keel, bubble, passenger)));
     }
 
-    // Also try diamond lattice
-    let dlat = fca::build_diamond_lattice();
-    println!("  diamond     {:>8}  {:>6}", dlat.concepts.len(), dlat.edges.len());
+    // Summary
+    println!();
+    println!("{}", "=".repeat(64));
+    println!("  TOPOLOGY SCAN SUMMARY");
+    println!("{}", "=".repeat(64));
+    let perfect = results.iter().filter(|r| r.3 >= 100.0 && r.4 && r.5 >= 100.0 && r.6).count();
+    let solid = results.iter().filter(|r| r.4 && r.6).count();
+    println!("  PERFECT (τ⁻¹=100% + ρ<1 + D*=100% + Ω): {}/{}", perfect, results.len());
+    println!("  SOLID   (ρ<1 + Ω):                        {}/{}", solid, results.len());
+    println!("  ρ<1 is universal:                         {}",
+        if results.iter().all(|r| r.4) { "YES — all topologies PASS" } else { "NO" });
+    println!("  Ω invariance is universal:                {}",
+        if results.iter().all(|r| r.6) { "YES — all topologies PASS" } else { "NO" });
 
-    if let Some(lat) = best {
-        let nc = lat.concepts.len();
-        let ne = lat.edges.len();
-        println!();
-        println!("{}", "=".repeat(64));
-        println!("  BEST SYNTHETIC LATTICE: {} concepts, {} edges (chain)", nc, ne);
-        println!("{}", "=".repeat(64));
-
-        if nc >= 3 {
-            let stats = pipeline::compute_lattice_stats(&lat);
-            let params = DynamicsParams::uniform();
-            let results = pipeline::run_topological_iteration(&lat, &stats, &params);
-            let (tau_inv, rho_j, dstar) = pipeline::extract_scalars(&results, &lat.edges);
-
-            // τ⁻¹ monotonicity
-            let t_mono = fca::verify_theorem_11_1(&tau_inv, &lat.edges);
-            let total = t_mono.0 + t_mono.1;
-            let tau_rate = if total > 0 { 100.0 * t_mono.0 as f64 / total as f64 } else { 100.0 };
-
-            // ρ(J_N) < 1
-            let max_rho = rho_j.iter().cloned().fold(0.0_f64, f64::max);
-            let rho_ok = max_rho < 1.0;
-
-            // D* monotonicity (Th 11.3)
-            let d_mono = fca::verify_theorem_11_3(&lat.concepts, &dstar, &lat.edges);
-            let d_total = d_mono.0 + d_mono.1;
-            let d_rate = if d_total > 0 { 100.0 * d_mono.0 as f64 / d_total as f64 } else { 100.0 };
-
-            // Domain invariance
-            let mut domain_ok = true;
-            for opt in &results {
-                if let Some(ref r) = opt {
-                    for m_arr in &r.trajectory {
-                        if m_arr.iter().any(|&v| v < 0.0 || v > 1.0) { domain_ok = false; }
-                    }
-                }
-            }
-
-            println!();
-            println!("  {:>25}  {:>8}", "Check", "Verdict");
-            println!("  {:>25}  {:>8}", "Th 6.4 (Ω invariance)", if domain_ok { "PASS" } else { "BREAK" });
-            println!("  {:>25}  {:>7.1}%", "Th 11.1 (τ⁻¹ mono)", tau_rate);
-            println!("  {:>25}  {:>8}", "Th 6.15 (ρ<1)", if rho_ok { "PASS" } else { "BREAK" });
-            println!("  {:>25}  {:>7.1}%", "Th 11.3 (D* mono)", d_rate);
-
-            // Show first few and last few concepts
-            println!();
-            println!("  Concept depths (first 5 + last 3):");
-            for (ci, opt) in results.iter().enumerate() {
-                if ci < 5 || ci >= nc - 3 {
-                    if let Some(ref r) = opt {
-                        let (b_up, rho_up) = pipeline::get_upstream(ci, &stats.feeders, &results);
-                        let j = n_operator::compute_jacobian(&r.m_star, b_up, rho_up, &params);
-                        let eig = j.complex_eigenvalues();
-                        let sr = eig.iter().map(|c| c.norm()).fold(0.0_f64, f64::max);
-                        let max_re = eig.iter().map(|c| c.re).fold(f64::NEG_INFINITY, f64::max);
-                        let all_neg = eig.iter().all(|c| c.re < 0.0);
-                        let fam = if all_neg && sr < 1.0 { "KEEL" }
-                            else if max_re > 0.0 { "BUBBLE" } else { "PASSENGER" };
-                        println!("  C{:>3} h={} τ⁻¹={:.4} ρ={:.4} D*={:.4} {}",
-                            ci, stats.heights[ci], r.tau_inv, r.rho_spectral, r.m_star[0], fam);
-                    }
-                } else if ci == 5 {
-                    println!("  ...  ({} concepts omitted)  ...", nc - 8);
-                }
-            }
-
-            println!();
-            println!("  SYNTHETIC CONCLUSION: {} concepts — theorem suite verified at scale.", nc);
-            if nc >= 10 {
-                println!("  *** 4-CONCEPT BOTTLENECK: BROKEN. Chain lattice provides {}-concept verification. ***", nc);
-            }
-        }
-    }
     let _ = max_concepts;
     let _ = time_limit;
 }
