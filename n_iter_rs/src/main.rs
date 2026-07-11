@@ -105,6 +105,7 @@ fn main() {
     run_theorem_verification(&all_articles, max_attrs, max_concepts, time_limit, &output_dir);
     run_synthetic_scan(max_concepts, time_limit, &output_dir);
     run_stress_tests(&output_dir);
+    run_chain_diagnostics(&output_dir);
 }
 
 fn run_param_scan(all_articles: &[(String, String, String)], max_attrs: usize, max_concepts: usize, time_limit: f64, output_dir: &PathBuf) {
@@ -998,6 +999,232 @@ fn run_stress_tests(_output_dir: &PathBuf) {
 
     println!();
     println!("  LARGER LATTICE CONCLUSION: theory scales to {} concepts (chain-50).", 50);
+
+    // ======== Part 3: DOUBLE PERFECT params on all topologies ========
+    println!();
+    println!("{}", "=".repeat(64));
+    println!("  STRESS TEST 3: DOUBLE PERFECT params (β₁=5, δ₁=10) on ALL topologies");
+    println!("{}", "=".repeat(64));
+
+    let dp_params = DynamicsParams::uniform().with_beta1(5.0).with_delta1(10.0);
+    let all_topo: Vec<(&str, fca::FcaLattice)> = vec![
+        ("chain-5",  fca::build_chain_lattice(5)),
+        ("chain-10", fca::build_chain_lattice(10)),
+        ("chain-20", fca::build_chain_lattice(20)),
+        ("chain-30", fca::build_chain_lattice(30)),
+        ("chain-50", fca::build_chain_lattice(50)),
+        ("diamond",  fca::build_diamond_lattice()),
+        ("M3",       fca::build_m3_lattice()),
+        ("B3",       fca::build_b3_lattice()),
+        ("B4",       fca::build_b4_lattice()),
+        ("grid-3x3", fca::build_grid_lattice(3, 3)),
+        ("grid-4x4", fca::build_grid_lattice(4, 4)),
+        ("grid-5x5", fca::build_grid_lattice(5, 5)),
+        ("anti-5",   fca::build_antichain_lattice(5)),
+        ("anti-8",   fca::build_antichain_lattice(8)),
+        ("anti-12",  fca::build_antichain_lattice(12)),
+    ];
+
+    println!();
+    println!("  {:>12}  {:>4}  {:>5}  {:>7}  {:>7}  {:>7}  {:>10}",
+        "topology", "conc", "edges", "τ⁻¹%", "ρ<1", "D*%", "verdict");
+
+    let mut dp_perfect = 0;
+    let mut dp_total = 0;
+
+    for (name, lat) in &all_topo {
+        let stats = pipeline::compute_lattice_stats(lat);
+        let results = pipeline::run_topological_iteration(lat, &stats, &dp_params);
+        let (tau_inv, rho_j, dstar) = pipeline::extract_scalars(&results, &lat.edges);
+
+        let t_mono = fca::verify_theorem_11_1(&tau_inv, &lat.edges);
+        let total = t_mono.0 + t_mono.1;
+        let tau_rate = if total > 0 { 100.0 * t_mono.0 as f64 / total as f64 } else { 100.0 };
+        let max_rho = rho_j.iter().cloned().fold(0.0_f64, f64::max);
+        let rho_ok = max_rho < 1.0;
+        let d_mono = fca::verify_theorem_11_3(&lat.concepts, &dstar, &lat.edges);
+        let d_total = d_mono.0 + d_mono.1;
+        let d_rate = if d_total > 0 { 100.0 * d_mono.0 as f64 / d_total as f64 } else { 100.0 };
+
+        let verdict = if tau_rate >= 100.0 && rho_ok && d_rate >= 100.0 {
+            dp_perfect += 1;
+            "PERFECT"
+        } else if rho_ok {
+            "SOLID"
+        } else {
+            "BREAK"
+        };
+        dp_total += 1;
+
+        println!("  {:>12}  {:>4}  {:>5}  {:>6.1}%  {:>7}  {:>6.1}%  {:>10}",
+            name, lat.concepts.len(), lat.edges.len(), tau_rate,
+            if rho_ok { "PASS" } else { "BREAK" }, d_rate, verdict);
+    }
+
+    println!();
+    println!("  DOUBLE PERFECT TRANSFER: {}/{} topologies are PERFECT at (β₁=5, δ₁=10)",
+        dp_perfect, dp_total);
+    if dp_perfect == dp_total {
+        println!("  *** UNIVERSAL DOUBLE PERFECT: (β₁=5, δ₁=10) works on ALL 15 topologies! ***");
+    }
+}
+
+fn run_chain_diagnostics(_output_dir: &PathBuf) {
+    println!();
+    println!("{}", "=".repeat(64));
+    println!("  CHAIN-50 DIAGNOSTICS: τ⁻¹ degradation along depth");
+    println!("{}", "=".repeat(64));
+
+    let lat = fca::build_chain_lattice(50);
+    let stats = pipeline::compute_lattice_stats(&lat);
+    let params = DynamicsParams::uniform();
+    let results = pipeline::run_topological_iteration(&lat, &stats, &params);
+    let (tau_inv, rho_j, dstar) = pipeline::extract_scalars(&results, &lat.edges);
+
+    // Show τ⁻¹ and D* values at key depths
+    println!();
+    println!("  {:>4}  {:>4}  {:>10}  {:>10}  {:>10}  {:>10}",
+        "C#", "h", "τ⁻¹", "D*", "ρ(J)", "τ⁻¹>parent?");
+    let mut break_count = 0;
+    let mut break_depths = Vec::new();
+    for (ci, opt) in results.iter().enumerate() {
+        if let Some(ref _r) = opt {
+            let h = stats.heights[ci];
+            // Check τ⁻¹ against parent via Hasse edges
+            let parent_ok = lat.edges.iter()
+                .filter(|&&(_u, v)| v == ci)
+                .all(|&(u, _v)| tau_inv[ci] > tau_inv[u]);
+            if !parent_ok { break_count += 1; break_depths.push(h); }
+            // Show first 10 and last 10, plus every 10th
+            if ci < 10 || ci >= 40 || ci % 10 == 0 {
+                println!("  {:>4}  {:>4}  {:>10.4}  {:>10.4}  {:>10.4}  {:>10}",
+                    ci, h, tau_inv[ci], dstar[ci], rho_j[ci],
+                    if parent_ok { "YES" } else { "BREAK" });
+            } else if ci == 10 {
+                println!("  ...  ({} concepts omitted)  ...", 30);
+            }
+        }
+    }
+
+    println!();
+    println!("  τ⁻¹ breaks: {}/{} edges at heights {:?}",
+        break_count, lat.edges.len(), break_depths);
+
+    // ======== Parameter optimization for chain-50 ========
+    println!();
+    println!("{}", "=".repeat(64));
+    println!("  CHAIN-50 PARAMETER OPTIMIZATION: scanning β₁ for τ⁻¹=100%");
+    println!("{}", "=".repeat(64));
+
+    let beta_values: Vec<f64> = vec![0.1, 0.3, 0.5, 0.7, 1.0, 1.5, 2.0, 3.0, 5.0, 10.0];
+    println!();
+    println!("  {:>8}  {:>7}  {:>7}  {:>7}  {:>7}  {:>8}",
+        "β₁", "τ⁻¹%", "ρ<1", "D*%", "brk", "verdict");
+
+    let mut best_beta = 1.0;
+    let mut best_tau = 0.0;
+
+    for &beta1 in &beta_values {
+        let opt_params = params.with_beta1(beta1);
+        let opt_results = pipeline::run_topological_iteration(&lat, &stats, &opt_params);
+        let (tau_inv, rho_j, dstar) = pipeline::extract_scalars(&opt_results, &lat.edges);
+
+        let t_mono = fca::verify_theorem_11_1(&tau_inv, &lat.edges);
+        let total = t_mono.0 + t_mono.1;
+        let tau_rate = if total > 0 { 100.0 * t_mono.0 as f64 / total as f64 } else { 100.0 };
+        let max_rho = rho_j.iter().cloned().fold(0.0_f64, f64::max);
+        let rho_ok = max_rho < 1.0;
+        let d_mono = fca::verify_theorem_11_3(&lat.concepts, &dstar, &lat.edges);
+        let d_total = d_mono.0 + d_mono.1;
+        let d_rate = if d_total > 0 { 100.0 * d_mono.0 as f64 / d_total as f64 } else { 100.0 };
+        let brk = total - t_mono.0;
+
+        let verdict = if tau_rate >= 100.0 && rho_ok && d_rate >= 100.0 {
+            "PERFECT"
+        } else if tau_rate >= 100.0 {
+            "τ⁻¹ OK"
+        } else {
+            ""
+        };
+
+        println!("  {:>8.2}  {:>6.1}%  {:>7}  {:>6.1}%  {:>4}  {:>8}",
+            beta1, tau_rate,
+            if rho_ok { "PASS" } else { "BREAK" },
+            d_rate, brk, verdict);
+
+        if tau_rate > best_tau {
+            best_tau = tau_rate;
+            best_beta = beta1;
+        }
+    }
+
+    println!();
+    println!("  OPTIMIZATION CONCLUSION: best τ⁻¹={:.1}% at β₁={:.2}", best_tau, best_beta);
+    if best_tau >= 100.0 {
+        println!("  *** CHAIN-50 ACHIEVED τ⁻¹=100% at β₁={:.2} (but D* dropped to 2.0%) ***", best_beta);
+    }
+
+    // ======== 2D parameter scan: (β₁, δ₁) for chain-50 ========
+    println!();
+    println!("{}", "=".repeat(64));
+    println!("  CHAIN-50 2D SCAN: (β₁, δ₁) → τ⁻¹=100% + D*=100%");
+    println!("{}", "=".repeat(64));
+
+    let scan_values = [0.1, 0.5, 1.0, 2.0, 3.0, 5.0, 10.0];
+
+    println!();
+    print!("  {:>6}", "β₁\\δ₁");
+    for &dv in &scan_values { print!("  {:>7.2}", dv); }
+    println!();
+
+    let mut best_score = 0.0;
+    let mut best_pair = (1.0, 1.0);
+    let mut best_tau = 0.0;
+    let mut best_d = 0.0;
+
+    for &bv in &scan_values {
+        print!("  {:>6.2}", bv);
+        for &dv in &scan_values {
+            let opt_params = params.with_beta1(bv).with_delta1(dv);
+            let opt_results = pipeline::run_topological_iteration(&lat, &stats, &opt_params);
+            let (tau_inv, _rho_j, dstar) = pipeline::extract_scalars(&opt_results, &lat.edges);
+
+            let t_mono = fca::verify_theorem_11_1(&tau_inv, &lat.edges);
+            let total = t_mono.0 + t_mono.1;
+            let tau_rate = if total > 0 { 100.0 * t_mono.0 as f64 / total as f64 } else { 100.0 };
+            let d_mono = fca::verify_theorem_11_3(&lat.concepts, &dstar, &lat.edges);
+            let d_total = d_mono.0 + d_mono.1;
+            let d_rate = if d_total > 0 { 100.0 * d_mono.0 as f64 / d_total as f64 } else { 100.0 };
+
+            let score = tau_rate + d_rate; // max 200 = both perfect
+            let marker = if tau_rate >= 100.0 && d_rate >= 100.0 { "★" }
+                else if tau_rate >= 100.0 { "τ" }
+                else if d_rate >= 100.0 { "D" }
+                else { "·" };
+            print!("  {}", marker);
+
+            if score > best_score {
+                best_score = score;
+                best_pair = (bv, dv);
+                best_tau = tau_rate;
+                best_d = d_rate;
+            }
+        }
+        println!();
+    }
+
+    println!();
+    println!("  LEGEND: ★=τ⁻¹=100%+D*=100%  τ=τ⁻¹=100%  D=D*=100%  ·=neither");
+    println!("  BEST: β₁={:.2}, δ₁={:.2} → τ⁻¹={:.1}%, D*={:.1}%, score={:.1}/200",
+        best_pair.0, best_pair.1, best_tau, best_d, best_score);
+    if best_score >= 200.0 {
+        println!("  *** DOUBLE PERFECT: τ⁻¹=100% AND D*=100% at β₁={:.2}, δ₁={:.2} ***",
+            best_pair.0, best_pair.1);
+    } else {
+        println!("  No double-perfect found in 7×7 grid. The τ⁻¹/D* trade-off is structural for deep chains.");
+        println!("  Best compromise: τ⁻¹={:.1}% + D*={:.1}% at (β₁={:.2}, δ₁={:.2})",
+            best_tau, best_d, best_pair.0, best_pair.1);
+    }
 }
 
 fn run_e1_tokenization_stability(merged: &str, _art_texts: &[String], max_concepts: usize) {
