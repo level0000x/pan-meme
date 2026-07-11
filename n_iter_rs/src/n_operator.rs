@@ -28,17 +28,17 @@ impl DynamicsParams {
         }
     }
 
-    pub fn with_beta1(&self, beta1: f64) -> Self {
-        Self { beta1, ..*self }
-    }
-
-    pub fn with_delta1(&self, delta1: f64) -> Self {
-        Self { delta1, ..*self }
-    }
-
-    pub fn with_kappa1(&self, kappa1: f64) -> Self {
-        Self { kappa1, ..*self }
-    }
+    pub fn with_alpha1(&self, alpha1: f64) -> Self { Self { alpha1, ..*self } }
+    pub fn with_beta1(&self, beta1: f64) -> Self { Self { beta1, ..*self } }
+    pub fn with_gamma1(&self, gamma1: f64) -> Self { Self { gamma1, ..*self } }
+    pub fn with_delta1(&self, delta1: f64) -> Self { Self { delta1, ..*self } }
+    pub fn with_zeta1(&self, zeta1: f64) -> Self { Self { zeta1, ..*self } }
+    pub fn with_eta1(&self, eta1: f64) -> Self { Self { eta1, ..*self } }
+    pub fn with_theta1(&self, theta1: f64) -> Self { Self { theta1, ..*self } }
+    pub fn with_kappa1(&self, kappa1: f64) -> Self { Self { kappa1, ..*self } }
+    pub fn with_kappa2(&self, kappa2: f64) -> Self { Self { kappa2, ..*self } }
+    pub fn with_lambda1(&self, lambda1: f64) -> Self { Self { lambda1, ..*self } }
+    pub fn with_mu1(&self, mu1: f64) -> Self { Self { mu1, ..*self } }
 }
 
 pub fn n_operator(m: &State5, b_up: f64, rho_up: f64, p: &DynamicsParams) -> State5 {

@@ -372,6 +372,77 @@ pub fn build_article_lattice_chars(texts: &[String], max_ngrams: usize, n_gram: 
     build_lattice_from_data(&bg_data, max_concepts, time_limit)
 }
 
+pub fn build_paragraph_lattice(texts: &[String], max_attrs: usize, min_paragraphs: usize, max_concepts: usize, time_limit: f64) -> FcaLattice {
+    let mut paragraphs: Vec<String> = Vec::new();
+    for text in texts {
+        for para in text.split("\n\n") {
+            let trimmed = para.trim();
+            if trimmed.is_empty() { continue; }
+            let words: Vec<&str> = trimmed.split_whitespace().collect();
+            if words.len() >= 10 {
+                paragraphs.push(trimmed.to_string());
+            }
+        }
+    }
+    if paragraphs.is_empty() {
+        return FcaLattice { concepts: vec![], edges: vec![], d_values: vec![], concept_sizes: vec![], n_words: 0, n_bigrams: 0 };
+    }
+    let n_paras = paragraphs.len();
+
+    let mut word_freq: HashMap<String, Vec<usize>> = HashMap::new();
+    for (pi, para) in paragraphs.iter().enumerate() {
+        let tokens = tokenize(para);
+        let mut seen: HashSet<String> = HashSet::new();
+        for t in tokens {
+            if t.len() < 4 { continue; }
+            if seen.insert(t.clone()) {
+                word_freq.entry(t).or_default().push(pi);
+            }
+        }
+    }
+
+    let mut shared: Vec<(String, Vec<usize>)> = word_freq.into_iter()
+        .filter(|(_, paras)| paras.len() >= min_paragraphs)
+        .collect();
+    shared.sort_by(|a, b| b.1.len().cmp(&a.1.len()).then_with(|| a.0.cmp(&b.0)));
+    let max_n = max_attrs.min(shared.len());
+    shared.truncate(max_n);
+
+    let top: Vec<String> = shared.iter().map(|(w, _)| w.clone()).collect();
+    let ng_idx: HashMap<String, usize> = top.iter().enumerate().map(|(i, s)| (s.clone(), i)).collect();
+    let n_attrs = top.len();
+    if n_attrs == 0 {
+        return FcaLattice { concepts: vec![], edges: vec![], d_values: vec![], concept_sizes: vec![], n_words: n_paras, n_bigrams: 0 };
+    }
+
+    let mut para_to_attr: Vec<Vec<usize>> = vec![vec![]; n_paras];
+    let mut attr_to_para: Vec<Vec<usize>> = vec![vec![]; n_attrs];
+
+    for pi in 0..n_paras {
+        let tokens = tokenize(&paragraphs[pi]);
+        let mut seen: HashSet<usize> = HashSet::new();
+        for t in tokens {
+            if let Some(&ati) = ng_idx.get(&t) {
+                if seen.insert(ati) {
+                    para_to_attr[pi].push(ati);
+                    attr_to_para[ati].push(pi);
+                }
+            }
+        }
+    }
+    for v in &mut para_to_attr { v.sort(); }
+    for v in &mut attr_to_para { v.sort(); }
+
+    let bg_data = BigramData {
+        unique_words: paragraphs,
+        top_bigrams: top,
+        word_to_bigram_idxs: para_to_attr,
+        bigram_to_words: attr_to_para,
+    };
+
+    build_lattice_from_data(&bg_data, max_concepts, time_limit)
+}
+
 pub fn build_hasse_edges(concepts: &[FormalConcept]) -> Vec<(usize, usize)> {
     let n = concepts.len();
     let mut edges = Vec::new();
@@ -393,6 +464,82 @@ pub fn build_hasse_edges(concepts: &[FormalConcept]) -> Vec<(usize, usize)> {
 
 pub fn build_lattice(text: &str, max_bigrams: usize, max_concepts: usize, time_limit: f64) -> FcaLattice {
     let bg_data = build_bigram_data(text, max_bigrams);
+    build_lattice_from_data(&bg_data, max_concepts, time_limit)
+}
+
+pub fn build_cooccurrence_lattice(text: &str, window: usize, max_attrs: usize, max_concepts: usize, time_limit: f64) -> FcaLattice {
+    let tokens_all: Vec<String> = tokenize(text);
+    let mut unique: Vec<String> = Vec::new();
+    let mut seen = HashSet::new();
+    for t in &tokens_all {
+        if seen.insert(t.clone()) {
+            unique.push(t.clone());
+        }
+    }
+    let n_words = unique.len();
+    let word_idx: HashMap<String, usize> = unique.iter().enumerate().map(|(i, w)| (w.clone(), i)).collect();
+
+    let mut cooc: Vec<HashSet<usize>> = vec![HashSet::new(); n_words];
+    let tl = tokens_all.len();
+    for (pos, t) in tokens_all.iter().enumerate() {
+        if let Some(&wi) = word_idx.get(t) {
+            let start = if pos > window { pos - window } else { 0 };
+            let end = (pos + window + 1).min(tl);
+            for j in start..end {
+                if j == pos { continue; }
+                if let Some(&wj) = word_idx.get(&tokens_all[j]) {
+                    cooc[wi].insert(wj);
+                }
+            }
+        }
+    }
+
+    let mut word_to_attr: Vec<Vec<usize>> = Vec::with_capacity(n_words);
+    for w in 0..n_words {
+        let mut attrs: Vec<usize> = cooc[w].iter().cloned().collect();
+        attrs.sort();
+        word_to_attr.push(attrs);
+    }
+
+    let mut attr_to_word: Vec<Vec<usize>> = vec![Vec::new(); n_words];
+    for w in 0..n_words {
+        for &a in &word_to_attr[w] {
+            attr_to_word[a].push(w);
+        }
+    }
+    for v in &mut attr_to_word { v.sort(); v.dedup(); }
+
+    let mut attr_freq: Vec<(usize, usize)> = attr_to_word.iter().enumerate().map(|(i, v)| (i, v.len())).collect();
+    attr_freq.sort_by(|a, b| b.1.cmp(&a.1));
+    let max_n = max_attrs.min(attr_freq.len());
+    let top_attrs: Vec<usize> = attr_freq[..max_n].iter().map(|(i, _)| *i).collect();
+    let attr_map: HashMap<usize, usize> = top_attrs.iter().enumerate().map(|(new_i, &old_i)| (old_i, new_i)).collect();
+
+    let mut trimmed_word_to_attr: Vec<Vec<usize>> = vec![Vec::new(); n_words];
+    for w in 0..n_words {
+        for &a in &word_to_attr[w] {
+            if let Some(&new_a) = attr_map.get(&a) {
+                trimmed_word_to_attr[w].push(new_a);
+            }
+        }
+    }
+    let mut trimmed_attr_to_word: Vec<Vec<usize>> = vec![Vec::new(); max_n];
+    for w in 0..n_words {
+        for &a in &trimmed_word_to_attr[w] {
+            trimmed_attr_to_word[a].push(w);
+        }
+    }
+    for v in &mut trimmed_attr_to_word { v.sort(); v.dedup(); }
+
+    let top_labels: Vec<String> = top_attrs.iter().map(|&i| unique[i].clone()).collect();
+
+    let bg_data = BigramData {
+        unique_words: unique,
+        top_bigrams: top_labels,
+        word_to_bigram_idxs: trimmed_word_to_attr,
+        bigram_to_words: trimmed_attr_to_word,
+    };
+
     build_lattice_from_data(&bg_data, max_concepts, time_limit)
 }
 
@@ -454,7 +601,89 @@ pub fn build_ngram_data(text: &str, max_ngrams: usize, n_gram: usize) -> BigramD
     }
 }
 
-fn build_lattice_from_data(bg_data: &BigramData, max_concepts: usize, time_limit: f64) -> FcaLattice {
+pub fn build_synthetic_lattice(
+    matrix: &[Vec<bool>],
+    max_concepts: usize,
+    time_limit: f64,
+) -> FcaLattice {
+    let n_objects = matrix.len();
+    if n_objects == 0 { return empty_lattice(); }
+    let n_attrs = matrix[0].len();
+    if n_attrs == 0 { return empty_lattice(); }
+
+    let mut obj_to_attr: Vec<Vec<usize>> = vec![vec![]; n_objects];
+    let mut attr_to_obj: Vec<Vec<usize>> = vec![vec![]; n_attrs];
+    for i in 0..n_objects {
+        for j in 0..n_attrs {
+            if matrix[i][j] {
+                obj_to_attr[i].push(j);
+                attr_to_obj[j].push(i);
+            }
+        }
+    }
+
+    let attr_names: Vec<String> = (0..n_attrs).map(|i| format!("a{}", i)).collect();
+    let obj_names: Vec<String> = (0..n_objects).map(|i| format!("o{}", i)).collect();
+
+    let bg = BigramData {
+        unique_words: obj_names,
+        top_bigrams: attr_names,
+        word_to_bigram_idxs: obj_to_attr,
+        bigram_to_words: attr_to_obj,
+    };
+
+    build_lattice_from_data(&bg, max_concepts, time_limit)
+}
+
+fn empty_lattice() -> FcaLattice {
+    FcaLattice {
+        concepts: vec![],
+        edges: vec![],
+        d_values: vec![],
+        concept_sizes: vec![],
+        n_words: 0,
+        n_bigrams: 0,
+    }
+}
+
+pub fn build_lattice_from_concepts(concepts: Vec<FormalConcept>) -> FcaLattice {
+    let n_words = concepts.iter().flat_map(|c| &c.extent).max().map(|&x| x + 1).unwrap_or(0);
+    let n_bigrams = concepts.iter().flat_map(|c| &c.intent).max().map(|&x| x + 1).unwrap_or(0);
+    let d_values: Vec<f64> = concepts.iter().map(|c| {
+        let na = c.intent.len() as f64;
+        let nb = c.extent.len() as f64;
+        if nb == 0.0 { f64::INFINITY } else { na / nb }
+    }).collect();
+    let concept_sizes: Vec<(usize, usize)> = concepts.iter()
+        .map(|c| (c.intent.len(), c.extent.len())).collect();
+    let edges = build_hasse_edges(&concepts);
+    FcaLattice { concepts, edges, d_values, concept_sizes, n_words, n_bigrams }
+}
+
+/// Build a chain lattice with n concepts (linear order)
+pub fn build_chain_lattice(n: usize) -> FcaLattice {
+    let mut concepts = Vec::with_capacity(n);
+    for i in 0..n {
+        concepts.push(FormalConcept {
+            intent: (0..i).collect(),
+            extent: (i..n).collect(),
+        });
+    }
+    build_lattice_from_concepts(concepts)
+}
+
+/// Build a diamond lattice (Boolean lattice B_2 = 4 concepts)
+pub fn build_diamond_lattice() -> FcaLattice {
+    let concepts = vec![
+        FormalConcept { intent: vec![], extent: vec![0, 1, 2, 3] },
+        FormalConcept { intent: vec![0], extent: vec![0, 2] },
+        FormalConcept { intent: vec![1], extent: vec![1, 3] },
+        FormalConcept { intent: vec![0, 1], extent: vec![] },
+    ];
+    build_lattice_from_concepts(concepts)
+}
+
+pub fn build_lattice_from_data(bg_data: &BigramData, max_concepts: usize, time_limit: f64) -> FcaLattice {
     let concepts = next_closure(bg_data, max_concepts, time_limit);
     let d_values: Vec<f64> = concepts.iter().map(|c| {
         let na = c.intent.len() as f64;
