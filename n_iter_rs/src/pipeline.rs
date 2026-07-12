@@ -1,5 +1,5 @@
 use crate::fca::FcaLattice;
-use crate::five_dim;
+use crate::five_dim::{self, State5};
 use crate::n_operator::{self, DynamicsParams, IterResult};
 
 pub struct LatticeStats {
@@ -113,6 +113,38 @@ pub fn extract_scalars(
         .collect();
     let _ = edges;
     (tau_inv, rho_j, dstar)
+}
+
+pub fn compute_edge_tau(
+    results: &[Option<IterResult>],
+    edges: &[(usize, usize)],
+    num_concepts: usize,
+) -> Vec<f64> {
+    let m_stars: Vec<Option<State5>> = results
+        .iter()
+        .map(|r| r.as_ref().map(|ir| ir.m_star))
+        .collect();
+
+    let mut out_count = vec![0usize; num_concepts];
+    let mut tau_sum = vec![0.0_f64; num_concepts];
+
+    for &(gen, spec) in edges {
+        if let (Some(m_gen), Some(m_spec)) = (m_stars[gen], m_stars[spec]) {
+            let tau_e = if m_spec[0] <= m_gen[0] { 1.0 } else { 0.0 };
+            tau_sum[gen] += tau_e;
+            out_count[gen] += 1;
+        }
+    }
+
+    (0..num_concepts)
+        .map(|i| {
+            if out_count[i] > 0 {
+                tau_sum[i] / out_count[i] as f64
+            } else {
+                f64::NAN
+            }
+        })
+        .collect()
 }
 
 pub fn mean(vals: &[f64]) -> f64 {

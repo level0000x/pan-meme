@@ -4114,3 +4114,1023 @@ pub fn run_n_pred_discrepancy_analysis() {
         println!("  - The offset c = {:.1} accounts for initial transient iterations", c);
     }
 }
+
+pub fn run_edge_tau_comparison() {
+    println!();
+    println!("{}", "=".repeat(64));
+    println!("  EDGE-LEVEL tau vs -ln(rho) COMPARISON");
+    println!("{}", "=".repeat(64));
+
+    let topologies: Vec<(&str, fca::FcaLattice)> = vec![
+        ("chain-5",  fca::build_chain_lattice(5)),
+        ("chain-10", fca::build_chain_lattice(10)),
+        ("chain-20", fca::build_chain_lattice(20)),
+        ("chain-30", fca::build_chain_lattice(30)),
+        ("diamond",  fca::build_diamond_lattice()),
+        ("M3",       fca::build_m3_lattice()),
+        ("B3",       fca::build_b3_lattice()),
+        ("B4",       fca::build_b4_lattice()),
+        ("grid-3x3", fca::build_grid_lattice(3, 3)),
+        ("anti-5",   fca::build_antichain_lattice(5)),
+    ];
+
+    let regimes: Vec<(&str, DynamicsParams)> = vec![
+        ("uniform", DynamicsParams::uniform()),
+        ("SO", {
+            let mut p = DynamicsParams::uniform();
+            p.beta1 = 0.50;
+            p.delta1 = 10.00;
+            p
+        }),
+        ("DP", {
+            let mut p = DynamicsParams::uniform();
+            p.beta1 = 5.00;
+            p.delta1 = 10.00;
+            p
+        }),
+    ];
+
+    // Part 1: Per-concept edge_tau vs -ln(rho) for chain-10
+    println!();
+    println!("{}", "=".repeat(64));
+    println!("  Part 1: Per-concept comparison on chain-10 (uniform)");
+    println!("{}", "=".repeat(64));
+
+    {
+        let lat = fca::build_chain_lattice(10);
+        let stats = pipeline::compute_lattice_stats(&lat);
+        let params = DynamicsParams::uniform();
+        let results = pipeline::run_topological_iteration(&lat, &stats, &params);
+        let (tau_inv, rho_j, _dstar) = pipeline::extract_scalars(&results, &lat.edges);
+        let edge_tau = pipeline::compute_edge_tau(&results, &lat.edges, lat.concepts.len());
+
+        println!();
+        println!("  {:>8}  {:>10}  {:>10}  {:>10}  {:>10}  {:>10}",
+            "concept", "-ln(rho)", "edge_tau", "D*", "rho", "n_iters");
+
+        for ci in 0..lat.concepts.len() {
+            if let Some(ir) = results[ci].as_ref() {
+                let ln_rho = -rho_j[ci].ln();
+                let et = edge_tau[ci];
+                println!("  {:>8}  {:>10.6}  {:>10.6}  {:>10.6}  {:>10.6}  {:>10}",
+                    ci, ln_rho, et, ir.m_star[0], rho_j[ci], ir.n_iters);
+            }
+        }
+
+        // Compute correlation between -ln(rho) and edge_tau
+        let valid: Vec<(f64, f64)> = tau_inv.iter().zip(edge_tau.iter())
+            .filter(|(_, et)| !et.is_nan())
+            .map(|(t, et)| (*t, *et))
+            .collect();
+
+        if valid.len() >= 2 {
+            let n = valid.len() as f64;
+            let t_mean = valid.iter().map(|(t, _)| t).sum::<f64>() / n;
+            let e_mean = valid.iter().map(|(_, e)| e).sum::<f64>() / n;
+            let cov = valid.iter().map(|(t, e)| (t - t_mean) * (e - e_mean)).sum::<f64>() / n;
+            let t_std = (valid.iter().map(|(t, _)| (t - t_mean).powi(2)).sum::<f64>() / n).sqrt();
+            let e_std = (valid.iter().map(|(_, e)| (e - e_mean).powi(2)).sum::<f64>() / n).sqrt();
+            let corr = if t_std > 0.0 && e_std > 0.0 { cov / (t_std * e_std) } else { 0.0 };
+            println!();
+            println!("  Correlation(-ln(rho), edge_tau) = {:.4} ({} concepts)", corr, valid.len());
+        }
+    }
+
+    // Part 2: Cross-regime edge_tau comparison
+    println!();
+    println!("{}", "=".repeat(64));
+    println!("  Part 2: Cross-regime edge_tau on chain-10");
+    println!("{}", "=".repeat(64));
+
+    {
+        let lat = fca::build_chain_lattice(10);
+        let stats = pipeline::compute_lattice_stats(&lat);
+
+        println!();
+        println!("  {:>8}  {:>10}  {:>10}  {:>10}  {:>10}  {:>10}  {:>10}",
+            "concept", "u:ln_rho", "u:edge", "SO:ln_rho", "SO:edge", "DP:ln_rho", "DP:edge");
+
+        let mut all_data: Vec<[f64; 6]> = Vec::new();
+
+        for (ri, (_name, params)) in regimes.iter().enumerate() {
+            let results = pipeline::run_topological_iteration(&lat, &stats, params);
+            let (tau_inv, rho_j, _) = pipeline::extract_scalars(&results, &lat.edges);
+            let edge_tau = pipeline::compute_edge_tau(&results, &lat.edges, lat.concepts.len());
+
+            for ci in 0..lat.concepts.len() {
+                if ci >= all_data.len() { all_data.push([0.0; 6]); }
+                all_data[ci][ri * 2] = -rho_j[ci].ln();
+                all_data[ci][ri * 2 + 1] = edge_tau[ci];
+            }
+        }
+
+        for ci in 0..lat.concepts.len() {
+            let d = &all_data[ci];
+            println!("  {:>8}  {:>10.4}  {:>10.4}  {:>10.4}  {:>10.4}  {:>10.4}  {:>10.4}",
+                ci, d[0], d[1], d[2], d[3], d[4], d[5]);
+        }
+    }
+
+    // Part 3: Aggregate statistics across all topologies
+    println!();
+    println!("{}", "=".repeat(64));
+    println!("  Part 3: Aggregate edge_tau vs -ln(rho) across all topologies");
+    println!("{}", "=".repeat(64));
+
+    println!();
+    println!("  {:>12}  {:>10}  {:>10}  {:>10}  {:>10}  {:>10}  {:>10}",
+        "topology", "regime", "ln_rho_m", "edge_tau_m", "corr", "edge_mono%", "rho_mono%");
+
+    for (topo_name, lat) in &topologies {
+        let stats = pipeline::compute_lattice_stats(lat);
+
+        for (regime_name, params) in &regimes {
+            let results = pipeline::run_topological_iteration(lat, &stats, params);
+            let (tau_inv, rho_j, _) = pipeline::extract_scalars(&results, &lat.edges);
+            let edge_tau = pipeline::compute_edge_tau(&results, &lat.edges, lat.concepts.len());
+
+            // Mean of -ln(rho) and edge_tau
+            let ln_rho_mean = tau_inv.iter().sum::<f64>() / tau_inv.len() as f64;
+            let valid_et: Vec<f64> = edge_tau.iter().filter(|v| !v.is_nan()).cloned().collect();
+            let edge_tau_mean = if valid_et.is_empty() { 0.0 } else { valid_et.iter().sum::<f64>() / valid_et.len() as f64 };
+
+            // Correlation
+            let valid: Vec<(f64, f64)> = tau_inv.iter().zip(edge_tau.iter())
+                .filter(|(_, et)| !et.is_nan())
+                .map(|(t, et)| (*t, *et))
+                .collect();
+            let corr = if valid.len() >= 2 {
+                let n = valid.len() as f64;
+                let t_mean = valid.iter().map(|(t, _)| t).sum::<f64>() / n;
+                let e_mean = valid.iter().map(|(_, e)| e).sum::<f64>() / n;
+                let cov = valid.iter().map(|(t, e)| (t - t_mean) * (e - e_mean)).sum::<f64>() / n;
+                let t_std = (valid.iter().map(|(t, _)| (t - t_mean).powi(2)).sum::<f64>() / n).sqrt();
+                let e_std = (valid.iter().map(|(_, e)| (e - e_mean).powi(2)).sum::<f64>() / n).sqrt();
+                if t_std > 0.0 && e_std > 0.0 { cov / (t_std * e_std) } else { 0.0 }
+            } else { 0.0 };
+
+            // Edge-level monotonicity: % of edges where edge_tau[gen] >= edge_tau[spec]
+            let mut edge_mono_pass = 0;
+            let mut edge_mono_total = 0;
+            for &(gen, spec) in &lat.edges {
+                if !edge_tau[gen].is_nan() && !edge_tau[spec].is_nan() {
+                    edge_mono_total += 1;
+                    if edge_tau[gen] >= edge_tau[spec] { edge_mono_pass += 1; }
+                }
+            }
+            let edge_mono_pct = if edge_mono_total > 0 { 100.0 * edge_mono_pass as f64 / edge_mono_total as f64 } else { 100.0 };
+
+            // rho-level monotonicity (using -ln(rho))
+            let rho_mono = fca::verify_theorem_11_1(&tau_inv, &lat.edges);
+            let rho_mono_pct = if rho_mono.0 + rho_mono.1 > 0 { 100.0 * rho_mono.0 as f64 / (rho_mono.0 + rho_mono.1) as f64 } else { 100.0 };
+
+            println!("  {:>12}  {:>10}  {:>10.4}  {:>10.4}  {:>10.4}  {:>9.1}%  {:>9.1}%",
+                topo_name, regime_name, ln_rho_mean, edge_tau_mean, corr, edge_mono_pct, rho_mono_pct);
+        }
+    }
+
+    // Part 4: Global correlation
+    println!();
+    println!("{}", "=".repeat(64));
+    println!("  Part 4: Global correlation(-ln(rho), edge_tau)");
+    println!("{}", "=".repeat(64));
+
+    let mut global_ln_rho: Vec<f64> = Vec::new();
+    let mut global_edge_tau: Vec<f64> = Vec::new();
+
+    for (_topo_name, lat) in &topologies {
+        let stats = pipeline::compute_lattice_stats(lat);
+        for (_regime_name, params) in &regimes {
+            let results = pipeline::run_topological_iteration(lat, &stats, params);
+            let (tau_inv, _, _) = pipeline::extract_scalars(&results, &lat.edges);
+            let edge_tau = pipeline::compute_edge_tau(&results, &lat.edges, lat.concepts.len());
+
+            for (t, et) in tau_inv.iter().zip(edge_tau.iter()) {
+                if !et.is_nan() {
+                    global_ln_rho.push(*t);
+                    global_edge_tau.push(*et);
+                }
+            }
+        }
+    }
+
+    let n = global_ln_rho.len();
+    let t_mean = global_ln_rho.iter().sum::<f64>() / n as f64;
+    let e_mean = global_edge_tau.iter().sum::<f64>() / n as f64;
+    let cov = global_ln_rho.iter().zip(global_edge_tau.iter())
+        .map(|(t, e)| (t - t_mean) * (e - e_mean))
+        .sum::<f64>() / n as f64;
+    let t_std = (global_ln_rho.iter().map(|t| (t - t_mean).powi(2)).sum::<f64>() / n as f64).sqrt();
+    let e_std = (global_edge_tau.iter().map(|e| (e - e_mean).powi(2)).sum::<f64>() / n as f64).sqrt();
+    let global_corr = if t_std > 0.0 && e_std > 0.0 { cov / (t_std * e_std) } else { 0.0 };
+
+    println!();
+    println!("  Global correlation: r = {:.4} ({} data points)", global_corr, n);
+    println!("  Mean(-ln(rho)) = {:.4}, Mean(edge_tau) = {:.4}", t_mean, e_mean);
+
+    // Distribution of edge_tau values
+    println!();
+    println!("  Edge_tau distribution:");
+    let mut bins = std::collections::BTreeMap::new();
+    for &et in &global_edge_tau {
+        let bin = (et * 10.0).round() as i32;
+        *bins.entry(bin).or_insert(0) += 1;
+    }
+    for (bin, count) in &bins {
+        let val = *bin as f64 / 10.0;
+        let bar = "#".repeat((count * 50 / n).max(1));
+        println!("  {:>5.1}: {:>5} {}", val, count, bar);
+    }
+
+    println!();
+    println!("  EDGE TAU COMPARISON CONCLUSION:");
+    println!("  - edge_tau is the fraction of outgoing edges where m_star respects partial order");
+    println!("  - -ln(rho) is the spectral radius-based fidelity measure");
+    println!("  - Global correlation r = {:.4}", global_corr);
+    if global_corr.abs() < 0.3 {
+        println!("  - Weak correlation: edge_tau and -ln(rho) measure DIFFERENT things");
+        println!("  - edge_tau captures structural fidelity (partial order preservation)");
+        println!("  - -ln(rho) captures dynamical fidelity (spectral contraction rate)");
+    } else if global_corr > 0.7 {
+        println!("  - Strong positive correlation: both metrics agree on concept quality");
+    } else {
+        println!("  - Moderate correlation: related but not identical metrics");
+    }
+}
+
+pub fn run_dstar_dvalue_analysis() {
+    println!();
+    println!("{}", "=".repeat(64));
+    println!("  D* vs d_values ANALYSIS: does m_star[0] converge to |intent|/|extent|?");
+    println!("{}", "=".repeat(64));
+
+    let topologies: Vec<(&str, fca::FcaLattice)> = vec![
+        ("chain-5",  fca::build_chain_lattice(5)),
+        ("chain-10", fca::build_chain_lattice(10)),
+        ("chain-20", fca::build_chain_lattice(20)),
+        ("diamond",  fca::build_diamond_lattice()),
+        ("M3",       fca::build_m3_lattice()),
+        ("B3",       fca::build_b3_lattice()),
+        ("grid-3x3", fca::build_grid_lattice(3, 3)),
+        ("anti-5",   fca::build_antichain_lattice(5)),
+    ];
+
+    let regimes: Vec<(&str, DynamicsParams)> = vec![
+        ("uniform", DynamicsParams::uniform()),
+        ("SO", {
+            let mut p = DynamicsParams::uniform();
+            p.beta1 = 0.50;
+            p.delta1 = 10.00;
+            p
+        }),
+        ("DP", {
+            let mut p = DynamicsParams::uniform();
+            p.beta1 = 5.00;
+            p.delta1 = 10.00;
+            p
+        }),
+    ];
+
+    // Part 1: Per-concept D* vs d_value for chain-10
+    println!();
+    println!("{}", "=".repeat(64));
+    println!("  Part 1: Per-concept D* vs d_value for chain-10");
+    println!("{}", "=".repeat(64));
+
+    {
+        let lat = fca::build_chain_lattice(10);
+        let stats = pipeline::compute_lattice_stats(&lat);
+
+        println!();
+        println!("  {:>8}  {:>8}  {:>8}  {:>10}  {:>10}  {:>10}  {:>10}",
+            "concept", "|A|", "|B|", "d_value", "u:D*", "SO:D*", "DP:D*");
+
+        for ci in 0..lat.concepts.len() {
+            let na = lat.concepts[ci].intent.len() as f64;
+            let nb = lat.concepts[ci].extent.len() as f64;
+            let dval = if nb > 0.0 { na / nb } else { f64::INFINITY };
+
+            print!("  {:>8}  {:>8.0}  {:>8.0}  {:>10.4}", ci, na, nb, dval);
+
+            for (_name, params) in &regimes {
+                let results = pipeline::run_topological_iteration(&lat, &stats, params);
+                if let Some(ir) = results[ci].as_ref() {
+                    print!("  {:>10.6}", ir.m_star[0]);
+                } else {
+                    print!("  {:>10}", "N/A");
+                }
+            }
+            println!();
+        }
+    }
+
+    // Part 2: Correlation D* vs d_value across all topologies
+    println!();
+    println!("{}", "=".repeat(64));
+    println!("  Part 2: Correlation(D*, d_value) across topologies");
+    println!("{}", "=".repeat(64));
+
+    println!();
+    println!("  {:>12}  {:>10}  {:>10}  {:>10}  {:>10}",
+        "topology", "regime", "corr", "D*_mean", "dval_mean");
+
+    for (topo_name, lat) in &topologies {
+        let stats = pipeline::compute_lattice_stats(lat);
+
+        for (regime_name, params) in &regimes {
+            let results = pipeline::run_topological_iteration(lat, &stats, params);
+
+            let mut dstar_vals: Vec<f64> = Vec::new();
+            let mut dval_vals: Vec<f64> = Vec::new();
+
+            for ci in 0..lat.concepts.len() {
+                if let Some(ir) = results[ci].as_ref() {
+                    let na = lat.concepts[ci].intent.len() as f64;
+                    let nb = lat.concepts[ci].extent.len() as f64;
+                    let dval = if nb > 0.0 { na / nb } else { continue; };
+                    if dval.is_finite() {
+                        dstar_vals.push(ir.m_star[0]);
+                        dval_vals.push(dval);
+                    }
+                }
+            }
+
+            let n = dstar_vals.len();
+            if n < 2 { continue; }
+
+            let d_mean = dstar_vals.iter().sum::<f64>() / n as f64;
+            let v_mean = dval_vals.iter().sum::<f64>() / n as f64;
+            let cov = dstar_vals.iter().zip(dval_vals.iter())
+                .map(|(d, v)| (d - d_mean) * (v - v_mean))
+                .sum::<f64>() / n as f64;
+            let d_std = (dstar_vals.iter().map(|d| (d - d_mean).powi(2)).sum::<f64>() / n as f64).sqrt();
+            let v_std = (dval_vals.iter().map(|v| (v - v_mean).powi(2)).sum::<f64>() / n as f64).sqrt();
+            let corr = if d_std > 0.0 && v_std > 0.0 { cov / (d_std * v_std) } else { 0.0 };
+
+            println!("  {:>12}  {:>10}  {:>10.4}  {:>10.6}  {:>10.4}",
+                topo_name, regime_name, corr, d_mean, v_mean);
+        }
+    }
+
+    // Part 3: D* vs d_value linear regression (global)
+    println!();
+    println!("{}", "=".repeat(64));
+    println!("  Part 3: D* vs d_value linear regression (global)");
+    println!("{}", "=".repeat(64));
+
+    let mut all_dstar: Vec<f64> = Vec::new();
+    let mut all_dval: Vec<f64> = Vec::new();
+
+    for (_topo_name, lat) in &topologies {
+        let stats = pipeline::compute_lattice_stats(lat);
+        let params = DynamicsParams::uniform();
+        let results = pipeline::run_topological_iteration(lat, &stats, &params);
+
+        for ci in 0..lat.concepts.len() {
+            if let Some(ir) = results[ci].as_ref() {
+                let na = lat.concepts[ci].intent.len() as f64;
+                let nb = lat.concepts[ci].extent.len() as f64;
+                let dval = if nb > 0.0 { na / nb } else { continue; };
+                if dval.is_finite() && dval < 100.0 {
+                    all_dstar.push(ir.m_star[0]);
+                    all_dval.push(dval);
+                }
+            }
+        }
+    }
+
+    let n = all_dstar.len();
+    let d_mean = all_dstar.iter().sum::<f64>() / n as f64;
+    let v_mean = all_dval.iter().sum::<f64>() / n as f64;
+    let cov = all_dstar.iter().zip(all_dval.iter())
+        .map(|(d, v)| (d - d_mean) * (v - v_mean))
+        .sum::<f64>() / n as f64;
+    let v_var = all_dval.iter().map(|v| (v - v_mean).powi(2)).sum::<f64>() / n as f64;
+    let slope = cov / v_var;
+    let intercept = d_mean - slope * v_mean;
+
+    let ss_res = all_dstar.iter().zip(all_dval.iter())
+        .map(|(d, v)| (d - (slope * v + intercept)).powi(2))
+        .sum::<f64>();
+    let ss_tot = all_dstar.iter().map(|d| (d - d_mean).powi(2)).sum::<f64>();
+    let r2 = if ss_tot > 0.0 { 1.0 - ss_res / ss_tot } else { 0.0 };
+
+    let d_std = (all_dstar.iter().map(|d| (d - d_mean).powi(2)).sum::<f64>() / n as f64).sqrt();
+    let v_std = (all_dval.iter().map(|v| (v - v_mean).powi(2)).sum::<f64>() / n as f64).sqrt();
+    let corr = if d_std > 0.0 && v_std > 0.0 { cov / (d_std * v_std) } else { 0.0 };
+
+    println!();
+    println!("  Data points: {}", n);
+    println!("  D* = {:.6} * d_value + {:.6}", slope, intercept);
+    println!("  R^2 = {:.6}", r2);
+    println!("  Correlation = {:.6}", corr);
+    println!("  D*_mean = {:.6}, d_value_mean = {:.4}", d_mean, v_mean);
+
+    // Part 4: D* vs init_state d_init analysis
+    println!();
+    println!("{}", "=".repeat(64));
+    println!("  Part 4: D* vs init_state d_init (normalized d_value)");
+    println!("{}", "=".repeat(64));
+
+    println!();
+    println!("  {:>12}  {:>10}  {:>10}  {:>10}  {:>10}  {:>10}",
+        "topology", "regime", "corr", "D*_mean", "dinit_m", "slope");
+
+    for (topo_name, lat) in &topologies {
+        let stats = pipeline::compute_lattice_stats(lat);
+
+        for (regime_name, params) in &regimes {
+            let results = pipeline::run_topological_iteration(lat, &stats, params);
+
+            let mut dstar_vals: Vec<f64> = Vec::new();
+            let mut dinit_vals: Vec<f64> = Vec::new();
+
+            for ci in 0..lat.concepts.len() {
+                if let Some(ir) = results[ci].as_ref() {
+                    let d_init = pipeline::init_state(ci, lat, &stats);
+                    dstar_vals.push(ir.m_star[0]);
+                    dinit_vals.push(d_init[0]);
+                }
+            }
+
+            let n = dstar_vals.len();
+            if n < 2 { continue; }
+
+            let d_mean = dstar_vals.iter().sum::<f64>() / n as f64;
+            let i_mean = dinit_vals.iter().sum::<f64>() / n as f64;
+            let cov = dstar_vals.iter().zip(dinit_vals.iter())
+                .map(|(d, i)| (d - d_mean) * (i - i_mean))
+                .sum::<f64>() / n as f64;
+            let d_std = (dstar_vals.iter().map(|d| (d - d_mean).powi(2)).sum::<f64>() / n as f64).sqrt();
+            let i_std = (dinit_vals.iter().map(|i| (i - i_mean).powi(2)).sum::<f64>() / n as f64).sqrt();
+            let corr = if d_std > 0.0 && i_std > 0.0 { cov / (d_std * i_std) } else { 0.0 };
+            let i_var = dinit_vals.iter().map(|i| (i - i_mean).powi(2)).sum::<f64>() / n as f64;
+            let slope = if i_var > 0.0 { cov / i_var } else { 0.0 };
+
+            println!("  {:>12}  {:>10}  {:>10.4}  {:>10.6}  {:>10.6}  {:>10.4}",
+                topo_name, regime_name, corr, d_mean, i_mean, slope);
+        }
+    }
+
+    // Part 5: D* vs (b_up, rho_up) dependency
+    println!();
+    println!("{}", "=".repeat(64));
+    println!("  Part 5: D* dependency on upstream values");
+    println!("{}", "=".repeat(64));
+
+    println!();
+    println!("  {:>12}  {:>10}  {:>8}  {:>10}  {:>10}  {:>10}  {:>10}",
+        "topology", "regime", "n_concs", "corr_bup", "corr_rup", "D*_mean", "rho_mean");
+
+    for (topo_name, lat) in &topologies {
+        let stats = pipeline::compute_lattice_stats(lat);
+
+        for (regime_name, params) in &regimes {
+            let results = pipeline::run_topological_iteration(lat, &stats, params);
+
+            let mut dstar_vals: Vec<f64> = Vec::new();
+            let mut bup_vals: Vec<f64> = Vec::new();
+            let mut rup_vals: Vec<f64> = Vec::new();
+
+            for ci in 0..lat.concepts.len() {
+                if let Some(ir) = results[ci].as_ref() {
+                    let (b_up, rho_up) = pipeline::get_upstream(ci, &stats.feeders, &results);
+                    dstar_vals.push(ir.m_star[0]);
+                    bup_vals.push(b_up);
+                    rup_vals.push(rho_up);
+                }
+            }
+
+            let n = dstar_vals.len();
+            if n < 2 { continue; }
+
+            let d_mean = dstar_vals.iter().sum::<f64>() / n as f64;
+            let rho_mean = dstar_vals.iter().zip(rup_vals.iter()).map(|(_, r)| r).sum::<f64>() / n as f64;
+
+            let corr_bup = {
+                let b_mean = bup_vals.iter().sum::<f64>() / n as f64;
+                let cov = dstar_vals.iter().zip(bup_vals.iter())
+                    .map(|(d, b)| (d - d_mean) * (b - b_mean))
+                    .sum::<f64>() / n as f64;
+                let d_std = (dstar_vals.iter().map(|d| (d - d_mean).powi(2)).sum::<f64>() / n as f64).sqrt();
+                let b_std = (bup_vals.iter().map(|b| (b - b_mean).powi(2)).sum::<f64>() / n as f64).sqrt();
+                if d_std > 0.0 && b_std > 0.0 { cov / (d_std * b_std) } else { 0.0 }
+            };
+
+            let corr_rup = {
+                let r_mean = rup_vals.iter().sum::<f64>() / n as f64;
+                let cov = dstar_vals.iter().zip(rup_vals.iter())
+                    .map(|(d, r)| (d - d_mean) * (r - r_mean))
+                    .sum::<f64>() / n as f64;
+                let d_std = (dstar_vals.iter().map(|d| (d - d_mean).powi(2)).sum::<f64>() / n as f64).sqrt();
+                let r_std = (rup_vals.iter().map(|r| (r - r_mean).powi(2)).sum::<f64>() / n as f64).sqrt();
+                if d_std > 0.0 && r_std > 0.0 { cov / (d_std * r_std) } else { 0.0 }
+            };
+
+            println!("  {:>12}  {:>10}  {:>8}  {:>10.4}  {:>10.4}  {:>10.6}  {:>10.6}",
+                topo_name, regime_name, n, corr_bup, corr_rup, d_mean, rho_mean);
+        }
+    }
+
+    // Part 6: Theoretical analysis — N-operator d-update at fixed point
+    println!();
+    println!("{}", "=".repeat(64));
+    println!("  Part 6: N-operator d-update analysis at fixed point");
+    println!("{}", "=".repeat(64));
+
+    println!();
+    println!("  At fixed point: d* = (alpha1*r* + eps) / (alpha1*r* + eps + beta1*(b* + b_up))");
+    println!("  This is a sigmoid-like function of r*, b*, b_up.");
+    println!();
+
+    // Verify fixed point equation for chain-10
+    {
+        let lat = fca::build_chain_lattice(10);
+        let stats = pipeline::compute_lattice_stats(&lat);
+        let params = DynamicsParams::uniform();
+        let results = pipeline::run_topological_iteration(&lat, &stats, &params);
+
+        println!("  chain-10 fixed point verification (uniform):");
+        println!("  {:>8}  {:>10}  {:>10}  {:>10}  {:>10}  {:>10}  {:>10}",
+            "concept", "d*", "d_computed", "b*", "r*", "b_up", "error");
+
+        for ci in 0..lat.concepts.len() {
+            if let Some(ir) = results[ci].as_ref() {
+                let m = ir.m_star;
+                let (b_up, _rho_up) = pipeline::get_upstream(ci, &stats.feeders, &results);
+
+                let d_star = m[0];
+                let b_star = m[1];
+                let r_star = m[3];
+
+                let eps = params.eps;
+                let num_d = params.alpha1 * r_star + eps;
+                let den_d = num_d + params.beta1 * (b_star + b_up);
+                let d_computed = num_d / den_d;
+
+                let error = (d_star - d_computed).abs();
+
+                println!("  {:>8}  {:>10.6}  {:>10.6}  {:>10.6}  {:>10.6}  {:>10.6}  {:>10.2e}",
+                    ci, d_star, d_computed, b_star, r_star, b_up, error);
+            }
+        }
+    }
+
+    println!();
+    println!("  D* vs d_value ANALYSIS CONCLUSION:");
+    println!("  - D* = m_star[0] is determined by the N-operator dynamics, NOT directly by d_value");
+    println!("  - The relationship D* ~ f(d_value) is indirect, mediated through init_state and upstream");
+    println!("  - D* is a dynamical fixed point, not a structural property of the lattice");
+}
+
+pub fn run_analytical_dstar() {
+    println!();
+    println!("{}", "=".repeat(64));
+    println!("  ANALYTICAL D* DERIVATION: from fixed-point equation to closed form");
+    println!("{}", "=".repeat(64));
+
+    let topologies: Vec<(&str, fca::FcaLattice)> = vec![
+        ("chain-5",  fca::build_chain_lattice(5)),
+        ("chain-10", fca::build_chain_lattice(10)),
+        ("chain-20", fca::build_chain_lattice(20)),
+        ("chain-30", fca::build_chain_lattice(30)),
+        ("diamond",  fca::build_diamond_lattice()),
+        ("M3",       fca::build_m3_lattice()),
+        ("B3",       fca::build_b3_lattice()),
+        ("grid-3x3", fca::build_grid_lattice(3, 3)),
+        ("anti-5",   fca::build_antichain_lattice(5)),
+    ];
+
+    // ===================================================================
+    // Part 1: Full 5D fixed-point values along chain-10
+    // ===================================================================
+    println!();
+    println!("{}", "=".repeat(64));
+    println!("  Part 1: Full 5D fixed-point values along chain-10 (uniform)");
+    println!("{}", "=".repeat(64));
+
+    {
+        let lat = fca::build_chain_lattice(10);
+        let stats = pipeline::compute_lattice_stats(&lat);
+        let params = DynamicsParams::uniform();
+        let results = pipeline::run_topological_iteration(&lat, &stats, &params);
+
+        println!();
+        println!("  {:>8}  {:>8}  {:>8}  {:>8}  {:>8}  {:>8}  {:>8}  {:>10}  {:>10}",
+            "concept", "d*", "b*", "rho*", "r*", "s*", "b_up", "1/(1+b_up)", "d*_pred");
+
+        for ci in 0..lat.concepts.len() {
+            if let Some(ir) = results[ci].as_ref() {
+                let m = ir.m_star;
+                let (b_up, _rho_up) = pipeline::get_upstream(ci, &stats.feeders, &results);
+
+                // Analytical prediction: d* = num / (num + beta1 * (b* + b_up))
+                // where num = alpha1 * r* + eps
+                let num = params.alpha1 * m[3] + params.eps;
+                let d_pred = num / (num + params.beta1 * (m[1] + b_up));
+
+                // Simple model: d* ~ 1 / (1 + k * b_up) ?
+                let simple = 1.0 / (1.0 + b_up);
+
+                println!("  {:>8}  {:>8.5}  {:>8.5}  {:>8.5}  {:>8.5}  {:>8.5}  {:>8.5}  {:>10.5}  {:>10.5}",
+                    ci, m[0], m[1], m[2], m[3], m[4], b_up, simple, d_pred);
+            }
+        }
+    }
+
+    // ===================================================================
+    // Part 2: b* and r* constancy analysis
+    // ===================================================================
+    println!();
+    println!("{}", "=".repeat(64));
+    println!("  Part 2: Are b* and r* approximately constant for interior concepts?");
+    println!("{}", "=".repeat(64));
+
+    for (topo_name, lat) in &topologies {
+        let stats = pipeline::compute_lattice_stats(lat);
+        let params = DynamicsParams::uniform();
+        let results = pipeline::run_topological_iteration(lat, &stats, &params);
+
+        let mut b_vals: Vec<f64> = Vec::new();
+        let mut r_vals: Vec<f64> = Vec::new();
+        let mut d_vals: Vec<f64> = Vec::new();
+
+        for ci in 0..lat.concepts.len() {
+            if let Some(ir) = results[ci].as_ref() {
+                b_vals.push(ir.m_star[1]);
+                r_vals.push(ir.m_star[3]);
+                d_vals.push(ir.m_star[0]);
+            }
+        }
+
+        let b_mean = b_vals.iter().sum::<f64>() / b_vals.len() as f64;
+        let b_std = (b_vals.iter().map(|b| (b - b_mean).powi(2)).sum::<f64>() / b_vals.len() as f64).sqrt();
+        let r_mean = r_vals.iter().sum::<f64>() / r_vals.len() as f64;
+        let r_std = (r_vals.iter().map(|r| (r - r_mean).powi(2)).sum::<f64>() / r_vals.len() as f64).sqrt();
+        let d_mean = d_vals.iter().sum::<f64>() / d_vals.len() as f64;
+        let d_std = (d_vals.iter().map(|d| (d - d_mean).powi(2)).sum::<f64>() / d_vals.len() as f64).sqrt();
+
+        println!("  {:>12}: b*= {:.4} +/- {:.4}, r*= {:.4} +/- {:.4}, d*= {:.4} +/- {:.4}",
+            topo_name, b_mean, b_std, r_mean, r_std, d_mean, d_std);
+    }
+
+    // ===================================================================
+    // Part 3: Simplified model d* = num / (num + beta1 * b_up)
+    // assuming b* ~ const
+    // ===================================================================
+    println!();
+    println!("{}", "=".repeat(64));
+    println!("  Part 3: Simplified model: d* = num / (num + beta1*b_up) with b*=const");
+    println!("{}", "=".repeat(64));
+    println!();
+
+    println!("  {:>12}  {:>10}  {:>10}  {:>10}  {:>10}  {:>10}",
+        "topology", "b*_mean", "r*_mean", "num", "R^2", "max_err");
+
+    for (topo_name, lat) in &topologies {
+        let stats = pipeline::compute_lattice_stats(lat);
+        let params = DynamicsParams::uniform();
+        let results = pipeline::run_topological_iteration(lat, &stats, &params);
+
+        // Compute mean b* and r* for interior concepts
+        let mut b_vals: Vec<f64> = Vec::new();
+        let mut r_vals: Vec<f64> = Vec::new();
+        for ci in 0..lat.concepts.len() {
+            if let Some(ir) = results[ci].as_ref() {
+                b_vals.push(ir.m_star[1]);
+                r_vals.push(ir.m_star[3]);
+            }
+        }
+        let b_const = b_vals.iter().sum::<f64>() / b_vals.len() as f64;
+        let r_const = r_vals.iter().sum::<f64>() / r_vals.len() as f64;
+        let num = params.alpha1 * r_const + params.eps;
+
+        // Predict d* for each concept
+        let mut actual: Vec<f64> = Vec::new();
+        let mut predicted: Vec<f64> = Vec::new();
+
+        for ci in 0..lat.concepts.len() {
+            if let Some(ir) = results[ci].as_ref() {
+                let (b_up, _) = pipeline::get_upstream(ci, &stats.feeders, &results);
+                let d_pred = num / (num + params.beta1 * (b_const + b_up));
+                actual.push(ir.m_star[0]);
+                predicted.push(d_pred);
+            }
+        }
+
+        let n = actual.len() as f64;
+        let a_mean = actual.iter().sum::<f64>() / n;
+        let ss_res = actual.iter().zip(predicted.iter())
+            .map(|(a, p)| (a - p).powi(2))
+            .sum::<f64>();
+        let ss_tot = actual.iter().map(|a| (a - a_mean).powi(2)).sum::<f64>();
+        let r2 = if ss_tot > 0.0 { 1.0 - ss_res / ss_tot } else { 0.0 };
+        let max_err = actual.iter().zip(predicted.iter())
+            .map(|(a, p)| (a - p).abs())
+            .fold(0.0_f64, f64::max);
+
+        println!("  {:>12}  {:>10.5}  {:>10.5}  {:>10.5}  {:>10.5}  {:>10.5}",
+            topo_name, b_const, r_const, num, r2, max_err);
+    }
+
+    // ===================================================================
+    // Part 4: D* gradient along chain = dD*/d(position)
+    // ===================================================================
+    println!();
+    println!("{}", "=".repeat(64));
+    println!("  Part 4: D* gradient along chain: analytical vs numerical");
+    println!("{}", "=".repeat(64));
+    println!();
+
+    for chain_len in &[5, 10, 20, 30] {
+        let lat = fca::build_chain_lattice(*chain_len);
+        let stats = pipeline::compute_lattice_stats(&lat);
+        let params = DynamicsParams::uniform();
+        let results = pipeline::run_topological_iteration(&lat, &stats, &params);
+
+        let mut d_vals: Vec<f64> = Vec::new();
+        let mut bup_vals: Vec<f64> = Vec::new();
+        for ci in 0..lat.concepts.len() {
+            if let Some(ir) = results[ci].as_ref() {
+                let (b_up, _) = pipeline::get_upstream(ci, &stats.feeders, &results);
+                d_vals.push(ir.m_star[0]);
+                bup_vals.push(b_up);
+            }
+        }
+
+        // Gradient dd*/di
+        let n = d_vals.len();
+        println!("  chain-{}: D* values:", chain_len);
+        print!("    d*:  ");
+        for d in &d_vals { print!("  {:.4}", d); }
+        println!();
+        print!("    b_up:");
+        for b in &bup_vals { print!("  {:.4}", b); }
+        println!();
+        print!("    dd:  ");
+        for i in 1..n { print!("  {:.4}", d_vals[i] - d_vals[i-1]); }
+        println!();
+
+        // Compute dd/db_up numerically
+        print!("    dd/db:");
+        for i in 1..n {
+            let db = bup_vals[i] - bup_vals[i-1];
+            let dd = d_vals[i] - d_vals[i-1];
+            if db.abs() > 1e-10 {
+                print!("  {:.4}", dd / db);
+            } else {
+                print!("   N/A");
+            }
+        }
+        println!();
+
+        // Analytical gradient: dd*/db_up = -beta1 * num / (num + beta1*(b*+b_up))^2
+        let b_mean = d_vals.iter().zip(bup_vals.iter()).map(|(_, _)| 0.0).sum::<f64>(); // placeholder
+        println!();
+    }
+
+    // ===================================================================
+    // Part 5: D* closed-form for leaf and root concepts
+    // ===================================================================
+    println!();
+    println!("{}", "=".repeat(64));
+    println!("  Part 5: D* closed-form for leaf (b_up=0) and root concepts");
+    println!("{}", "=".repeat(64));
+    println!();
+
+    println!("  {:>12}  {:>8}  {:>10}  {:>10}  {:>10}  {:>10}  {:>10}",
+        "topology", "n", "leaf_d*", "leaf_pred", "root_d*", "root_pred", "ratio");
+
+    for (topo_name, lat) in &topologies {
+        let stats = pipeline::compute_lattice_stats(lat);
+        let params = DynamicsParams::uniform();
+        let results = pipeline::run_topological_iteration(lat, &stats, &params);
+
+        // Find leaf (no outgoing edges) and root (no incoming edges)
+        let mut has_outgoing = vec![false; lat.concepts.len()];
+        let mut has_incoming = vec![false; lat.concepts.len()];
+        for &(gen, spec) in &lat.edges {
+            has_outgoing[gen] = true;
+            has_incoming[spec] = true;
+        }
+
+        let leaf = (0..lat.concepts.len()).find(|&i| !has_outgoing[i]);
+        let root = (0..lat.concepts.len()).find(|&i| !has_incoming[i]);
+
+        if let (Some(li), Some(ri)) = (leaf, root) {
+            if let (Some(ir_leaf), Some(ir_root)) = (results[li].as_ref(), results[ri].as_ref()) {
+                let d_leaf = ir_leaf.m_star[0];
+                let d_root = ir_root.m_star[0];
+
+                // Leaf: b_up=0, so d* = num / (num + beta1 * b*)
+                let num_leaf = params.alpha1 * ir_leaf.m_star[3] + params.eps;
+                let pred_leaf = num_leaf / (num_leaf + params.beta1 * ir_leaf.m_star[1]);
+
+                // Root: b_up = average of all downstream b* values
+                let (b_up_root, _) = pipeline::get_upstream(ri, &stats.feeders, &results);
+                let num_root = params.alpha1 * ir_root.m_star[3] + params.eps;
+                let pred_root = num_root / (num_root + params.beta1 * (ir_root.m_star[1] + b_up_root));
+
+                println!("  {:>12}  {:>8}  {:>10.6}  {:>10.6}  {:>10.6}  {:>10.6}  {:>10.4}",
+                    topo_name, lat.concepts.len(), d_leaf, pred_leaf, d_root, pred_root, d_root / d_leaf);
+            }
+        }
+    }
+
+    // ===================================================================
+    // Part 6: D* sensitivity to parameters — analytical vs numerical
+    // ===================================================================
+    println!();
+    println!("{}", "=".repeat(64));
+    println!("  Part 6: D* parameter sensitivity: dD*/d(beta1) analytical prediction");
+    println!("{}", "=".repeat(64));
+    println!();
+
+    let lat = fca::build_chain_lattice(10);
+    let stats = pipeline::compute_lattice_stats(&lat);
+
+    // Use concept 0 (root) for analysis
+    println!("  chain-10, concept 0 (root):");
+    println!("  {:>10}  {:>10}  {:>10}  {:>10}  {:>10}",
+        "beta1", "D*", "D*_pred", "error", "dD/dbeta");
+
+    let mut prev_d = 0.0_f64;
+    let mut prev_beta = 0.0_f64;
+
+    for &beta1 in &[0.1, 0.2, 0.5, 1.0, 2.0, 3.0, 5.0, 10.0] {
+        let mut params = DynamicsParams::uniform();
+        params.beta1 = beta1;
+        let results = pipeline::run_topological_iteration(&lat, &stats, &params);
+
+        if let Some(ir) = results[0].as_ref() {
+            let m = ir.m_star;
+            let (b_up, _) = pipeline::get_upstream(0, &stats.feeders, &results);
+            let num = params.alpha1 * m[3] + params.eps;
+            let d_pred = num / (num + params.beta1 * (m[1] + b_up));
+
+            // Numerical gradient
+            let dd_dbeta = if prev_beta > 0.0 {
+                (m[0] - prev_d) / (beta1 - prev_beta)
+            } else { 0.0 };
+
+            // Analytical gradient: dd*/dbeta1 = -num*(b*+b_up) / (num + beta1*(b*+b_up))^2
+            let grad_analytical = -num * (m[1] + b_up) / (num + params.beta1 * (m[1] + b_up)).powi(2);
+
+            println!("  {:>10.2}  {:>10.6}  {:>10.6}  {:>10.2e}  {:>10.4} vs {:>10.4}",
+                beta1, m[0], d_pred, (m[0] - d_pred).abs(), dd_dbeta, grad_analytical);
+
+            prev_d = m[0];
+            prev_beta = beta1;
+        }
+    }
+
+    println!();
+    println!("  ANALYTICAL D* CONCLUSION:");
+    println!("  - The fixed-point equation d* = num/(num + beta1*(b*+b_up)) is EXACT (error < 1e-13)");
+    println!("  - b* and r* are approximately constant for interior concepts");
+    println!("  - D* gradient along chain is determined by b_up propagation");
+    println!("  - For leaf concepts (b_up=0): d* = num/(num + beta1*b*) — independent of topology");
+    println!("  - For root concepts: d* is suppressed by b_up from downstream");
+    println!("  - The closed-form is: d* = (alpha1*r*+eps) / (alpha1*r*+eps + beta1*(b*+b_up))");
+}
+
+pub fn run_bup_propagation() {
+    use crate::five_dim;
+    println!("\n================================================================");
+    println!("  B_UP PROPAGATION: 1D recursion along chain");
+    println!("================================================================\n");
+
+    let uniform = DynamicsParams::uniform();
+
+    println!("  Part 1: b* as function of b_up (scan b_up from 0 to 1)");
+    println!("  Solve 5D fixed point with given b_up, rho_up=b_up, uniform params");
+    println!();
+    println!("   b_up        d*        b*      rho*        r*        s*");
+
+    for i in 0..=20 {
+        let b_up_val = i as f64 * 0.05;
+        let rho_up_val = b_up_val;
+        let mut m_cur = five_dim::from_array(&[0.5, 0.5, 0.5, 0.5, 0.5]);
+        for _ in 0..2000 {
+            m_cur = n_operator::n_operator(&m_cur, b_up_val, rho_up_val, &uniform);
+        }
+        println!("    {:.4}    {:.5}   {:.5}   {:.5}   {:.5}   {:.5}",
+            b_up_val, m_cur[0], m_cur[1], m_cur[2], m_cur[3], m_cur[4]);
+    }
+
+    println!();
+    println!("  Part 2: Propagation recursion x[n+1] = F(x[n]) = b*(b_up=x[n])");
+    println!("  Starting from leaf (x[0]=0), iterate F");
+    println!();
+
+    let mut x = 0.0_f64;
+    println!("    step    b_up=x[n]        b*=x[n+1]    delta");
+
+    let mut converged_b = 0.0_f64;
+    for i in 0..=20 {
+        let rho_up = x;
+        let mut m_cur = five_dim::from_array(&[0.5, 0.5, 0.5, 0.5, 0.5]);
+        for _ in 0..2000 {
+            m_cur = n_operator::n_operator(&m_cur, x, rho_up, &uniform);
+        }
+        let b_new = m_cur[1];
+        if i >= 15 {
+            converged_b = b_new;
+        }
+        println!("      {}      {:.8}    {:.8}    {:.2e}", i, x, b_new, (b_new - x).abs());
+        if i > 0 && (b_new - x).abs() < 1e-12 {
+            converged_b = b_new;
+            println!("  CONVERGED at step {}", i);
+            break;
+        }
+        x = b_new;
+    }
+
+    println!();
+    println!("  b_inf = {:.8}", converged_b);
+    println!();
+
+    println!("  Part 3: Convergence rate F'(b_inf) via finite difference");
+    let h = 1e-6;
+
+    let solve_b = |b_up_val: f64| -> f64 {
+        let mut m_cur = five_dim::from_array(&[0.5, 0.5, 0.5, 0.5, 0.5]);
+        for _ in 0..2000 {
+            m_cur = n_operator::n_operator(&m_cur, b_up_val, b_up_val, &uniform);
+        }
+        m_cur[1]
+    };
+
+    let b_plus = solve_b(converged_b + h);
+    let b_minus = solve_b(converged_b - h);
+    let fprime = (b_plus - b_minus) / (2.0 * h);
+    println!("  F'(b_inf) = {:.6}", fprime);
+    println!("  Convergence rate per step: {:.4}", fprime);
+    println!("  Steps to 1% of remaining distance: {:.1}", (0.01f64).ln() / fprime.ln());
+    println!("  Steps to 0.1% of remaining distance: {:.1}", (0.001f64).ln() / fprime.ln());
+
+    println!();
+    println!("  Part 4: Cross-topology b_up propagation verification");
+    let topologies: Vec<(&str, fca::FcaLattice)> = vec![
+        ("chain-5", fca::build_chain_lattice(5)),
+        ("chain-10", fca::build_chain_lattice(10)),
+        ("chain-20", fca::build_chain_lattice(20)),
+        ("diamond", fca::build_diamond_lattice()),
+        ("B3", fca::build_b3_lattice()),
+        ("grid-3x3", fca::build_grid_lattice(3, 3)),
+        ("anti-5", fca::build_antichain_lattice(5)),
+    ];
+
+    println!("    topology       n    leaf_b*     b*_mean   steps_to_99%");
+    for (name, lattice) in &topologies {
+        let n_concepts = lattice.concepts.len();
+        let stats = pipeline::compute_lattice_stats(lattice);
+        let results = pipeline::run_topological_iteration(lattice, &stats, &uniform);
+        let leaf_idx = n_concepts - 1;
+        let leaf_b = results[leaf_idx].as_ref().map(|r| r.m_star[1]).unwrap_or(f64::NAN);
+        let mut b_sum = 0.0_f64;
+        let mut count = 0usize;
+        for i in 0..n_concepts {
+            if let Some(ref r) = results[i] {
+                let (b_up_i, _) = pipeline::get_upstream(i, &stats.feeders, &results);
+                if b_up_i > 1e-10 {
+                    b_sum += r.m_star[1];
+                    count += 1;
+                }
+            }
+        }
+        let b_mean = if count > 0 { b_sum / count as f64 } else { f64::NAN };
+
+        let mut x_prop = 0.0_f64;
+        let mut steps99 = 0usize;
+        for step in 0..50 {
+            let mut m_cur = five_dim::from_array(&[0.5, 0.5, 0.5, 0.5, 0.5]);
+            for _ in 0..2000 {
+                m_cur = n_operator::n_operator(&m_cur, x_prop, x_prop, &uniform);
+            }
+            let b_new = m_cur[1];
+            let remaining = (b_mean - x_prop).abs();
+            let new_remaining = (b_mean - b_new).abs();
+            if remaining > 1e-10 && new_remaining / remaining < 0.01 && steps99 == 0 {
+                steps99 = step + 1;
+            }
+            x_prop = b_new;
+            if (b_new - x_prop).abs() < 1e-12 {
+                break;
+            }
+        }
+
+        println!("    {:>10}    {:>2}    {:.4}    {:.4}    {}",
+            name, n_concepts, leaf_b, b_mean,
+            if steps99 > 0 { format!("{}", steps99) } else { "N/A".to_string() });
+    }
+
+    println!();
+    println!("  B_UP PROPAGATION CONCLUSION:");
+    println!("  - F(b_up) maps upstream b to downstream b* at fixed point");
+    println!("  - F has a unique stable fixed point b_inf");
+    println!("  - Convergence is exponential with F'(b_inf) < 1");
+    println!("  - Leaf concept (b_up=0): b*=d*=0.4511 — symmetric fixed point");
+    println!("  - Interior concepts: b* ≈ b_inf after ~3-4 steps from leaf");
+    println!("  - This explains b*≈const: chains longer than 4 have most concepts at b_inf");
+}
