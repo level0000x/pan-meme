@@ -12153,3 +12153,204 @@ pub fn run_cross_topology_optimal() {
     println!("  - Actual convergence rate may vary with topology");
     println!("  - Speedup from optimization should be topology-uniform");
 }
+
+pub fn run_max_rho_analysis() {
+    println!("\n{}", "=".repeat(72));
+    println!("  MAX RHO ANALYSIS: which concept determines the worst convergence?");
+    println!("{}", "=".repeat(72));
+
+    let topologies: Vec<(&str, fca::FcaLattice)> = vec![
+        ("chain-5",   fca::build_chain_lattice(5)),
+        ("chain-10",  fca::build_chain_lattice(10)),
+        ("chain-20",  fca::build_chain_lattice(20)),
+        ("diamond",   fca::build_diamond_lattice()),
+        ("M3",        fca::build_m3_lattice()),
+        ("B3",        fca::build_b3_lattice()),
+        ("B4",        fca::build_b4_lattice()),
+        ("grid-3x3",  fca::build_grid_lattice(3, 3)),
+        ("anti-5",    fca::build_antichain_lattice(5)),
+        ("anti-8",    fca::build_antichain_lattice(8)),
+    ];
+
+    let regimes: Vec<(&str, f64, f64, f64)> = vec![
+        ("default",     1.0,  10.0, 0.01),
+        ("v2.56_opt",   7.0,  5.0,  5.27),
+        ("global_opt",  15.0, 15.3, 5.17),
+    ];
+
+    // Part 1: Per-concept detail for default parameters on chain-10
+    println!("\n  Part 1: Per-concept detail (chain-10, default params)");
+    {
+        let lat = fca::build_chain_lattice(10);
+        let stats = pipeline::compute_lattice_stats(&lat);
+        let params = DynamicsParams::uniform();
+        let results = pipeline::run_topological_iteration(&lat, &stats, &params);
+
+        println!("  {:>4}  {:>6}  {:>6}  {:>10}  {:>10}  {:>10}  {:>10}  {:>10}  {:>10}  {:>10}",
+            "idx", "height", "nfeed", "ρ_spect", "d*", "b*", "ρ*", "r*", "s*", "n_iter");
+        for (i, opt) in results.iter().enumerate() {
+            if let Some(ref r) = opt {
+                let h = stats.heights[i];
+                let nf = stats.feeders[i].len();
+                println!("  {:>4}  {:>6}  {:>6}  {:>10.5}  {:>10.5}  {:>10.5}  {:>10.5}  {:>10.5}  {:>10.5}  {:>10}",
+                    i, h, nf, r.rho_spectral, r.m_star[0], r.m_star[1], r.m_star[2], r.m_star[3], r.m_star[4], r.n_iters);
+            }
+        }
+    }
+
+    // Part 2: max\_ρ concept across topologies and regimes
+    println!("\n  Part 2: max\_ρ concept identification");
+    for &(regime_name, b1, d1, eps) in &regimes {
+        println!("\n  --- {} (β₁={}, δ₁={}, ε={}) ---", regime_name, b1, d1, eps);
+        println!("  {:>12}  {:>4}  {:>6}  {:>6}  {:>10}  {:>10}  {:>10}  {:>10}  {:>10}  {:>10}",
+            "topology", "idx", "height", "nfeed", "max_ρ", "d*", "b*", "ρ*", "r*", "s*");
+
+        let params = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1).with_eps(eps);
+
+        for (name, lat) in &topologies {
+            let stats = pipeline::compute_lattice_stats(lat);
+            let results = pipeline::run_topological_iteration(lat, &stats, &params);
+
+            let mut max_rho = 0.0f64;
+            let mut max_idx = 0usize;
+            let mut max_r: Option<&n_operator::IterResult> = None;
+
+            for (i, opt) in results.iter().enumerate() {
+                if let Some(ref r) = opt {
+                    if r.rho_spectral > max_rho {
+                        max_rho = r.rho_spectral;
+                        max_idx = i;
+                        max_r = Some(r);
+                    }
+                }
+            }
+
+            if let Some(r) = max_r {
+                println!("  {:>12}  {:>4}  {:>6}  {:>6}  {:>10.5}  {:>10.5}  {:>10.5}  {:>10.5}  {:>10.5}  {:>10.5}",
+                    name, max_idx, stats.heights[max_idx], stats.feeders[max_idx].len(),
+                    max_rho, r.m_star[0], r.m_star[1], r.m_star[2], r.m_star[3], r.m_star[4]);
+            }
+        }
+    }
+
+    // Part 3: Is max\_ρ always the same concept type?
+    println!("\n  Part 3: max\_ρ concept type analysis");
+    for &(regime_name, b1, d1, eps) in &regimes {
+        let params = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1).with_eps(eps);
+        let mut heights_at_max: Vec<usize> = Vec::new();
+        let mut feeders_at_max: Vec<usize> = Vec::new();
+        let mut rho_at_max: Vec<f64> = Vec::new();
+        let mut d_at_max: Vec<f64> = Vec::new();
+
+        for (_name, lat) in &topologies {
+            let stats = pipeline::compute_lattice_stats(lat);
+            let results = pipeline::run_topological_iteration(lat, &stats, &params);
+
+            let mut max_rho = 0.0f64;
+            let mut max_h = 0usize;
+            let mut max_nf = 0usize;
+            let mut max_d = 0.0f64;
+
+            for (i, opt) in results.iter().enumerate() {
+                if let Some(ref r) = opt {
+                    if r.rho_spectral > max_rho {
+                        max_rho = r.rho_spectral;
+                        max_h = stats.heights[i];
+                        max_nf = stats.feeders[i].len();
+                        max_d = r.m_star[0];
+                    }
+                }
+            }
+
+            heights_at_max.push(max_h);
+            feeders_at_max.push(max_nf);
+            rho_at_max.push(max_rho);
+            d_at_max.push(max_d);
+        }
+
+        let avg_h = heights_at_max.iter().sum::<usize>() as f64 / heights_at_max.len() as f64;
+        let avg_nf = feeders_at_max.iter().sum::<usize>() as f64 / feeders_at_max.len() as f64;
+        let avg_rho = rho_at_max.iter().sum::<f64>() / rho_at_max.len() as f64;
+        let avg_d = d_at_max.iter().sum::<f64>() / d_at_max.len() as f64;
+        let rho_std = (rho_at_max.iter().map(|r| (r - avg_rho).powi(2)).sum::<f64>() / rho_at_max.len() as f64).sqrt();
+
+        println!("  {:>12}: avg_height={:.1}, avg_feeders={:.1}, avg_ρ={:.5}±{:.5}, avg_d*={:.5}",
+            regime_name, avg_h, avg_nf, avg_rho, rho_std, avg_d);
+    }
+
+    // Part 4: Analytical prediction of max\_ρ
+    println!("\n  Part 4: Analytical max\_ρ prediction");
+    println!("  {:>12}  {:>10}  {:>10}  {:>10}  {:>10}", "regime", "max_ρ_act", "ρ(J_2D)", "ratio", "d*_maxρ");
+    for &(regime_name, b1, d1, eps) in &regimes {
+        let params = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1).with_eps(eps);
+
+        // Get analytical ρ(J_2D)
+        let rho_an = if let Some((d, b, rho, r, s)) = find_physical_root(b1, d1, eps) {
+            compute_j2d_analytical(d, b, rho, r, s, &DynamicsParams::uniform()).0
+        } else { f64::NAN };
+
+        // Get actual max\_ρ across all topologies
+        let mut all_max_rho: Vec<f64> = Vec::new();
+        let mut all_max_d: Vec<f64> = Vec::new();
+
+        for (_name, lat) in &topologies {
+            let stats = pipeline::compute_lattice_stats(lat);
+            let results = pipeline::run_topological_iteration(lat, &stats, &params);
+
+            let mut max_rho = 0.0f64;
+            let mut max_d = 0.0f64;
+            for opt in &results {
+                if let Some(ref r) = opt {
+                    if r.rho_spectral > max_rho {
+                        max_rho = r.rho_spectral;
+                        max_d = r.m_star[0];
+                    }
+                }
+            }
+            all_max_rho.push(max_rho);
+            all_max_d.push(max_d);
+        }
+
+        let avg_max_rho = all_max_rho.iter().sum::<f64>() / all_max_rho.len() as f64;
+        let avg_max_d = all_max_d.iter().sum::<f64>() / all_max_d.len() as f64;
+        let ratio = avg_max_rho / rho_an;
+
+        println!("  {:>12}  {:>10.5}  {:>10.5}  {:>10.3}  {:>10.5}",
+            regime_name, avg_max_rho, rho_an, ratio, avg_max_d);
+    }
+
+    // Part 5: d\* at max\_ρ vs analytical d\*
+    println!("\n  Part 5: d\* at max\_ρ concept vs analytical d\*");
+    for &(regime_name, b1, d1, eps) in &regimes {
+        let d_an = if let Some((d, _, _, _, _)) = find_physical_root(b1, d1, eps) { d } else { f64::NAN };
+
+        let params = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1).with_eps(eps);
+        let mut d_vals: Vec<f64> = Vec::new();
+
+        for (_name, lat) in &topologies {
+            let stats = pipeline::compute_lattice_stats(lat);
+            let results = pipeline::run_topological_iteration(lat, &stats, &params);
+
+            let mut max_rho = 0.0f64;
+            let mut max_d = 0.0f64;
+            for opt in &results {
+                if let Some(ref r) = opt {
+                    if r.rho_spectral > max_rho {
+                        max_rho = r.rho_spectral;
+                        max_d = r.m_star[0];
+                    }
+                }
+            }
+            d_vals.push(max_d);
+        }
+
+        let avg_d = d_vals.iter().sum::<f64>() / d_vals.len() as f64;
+        println!("  {:>12}: d\*_analytical={:.5}, d\*_maxρ={:.5}, ratio={:.3}",
+            regime_name, d_an, avg_d, avg_d / d_an);
+    }
+
+    println!("\n  MAX RHO ANALYSIS CONCLUSIONS:");
+    println!("  - Identify which concept position determines max\_ρ");
+    println!("  - Compare max\_ρ concept's d\* with analytical d\*");
+    println!("  - Derive analytical formula for max\_ρ if possible");
+}
