@@ -12199,7 +12199,7 @@ pub fn run_max_rho_analysis() {
     }
 
     // Part 2: max\_ρ concept across topologies and regimes
-    println!("\n  Part 2: max\_ρ concept identification");
+    println!("\n  Part 2: max rho concept identification");
     for &(regime_name, b1, d1, eps) in &regimes {
         println!("\n  --- {} (β₁={}, δ₁={}, ε={}) ---", regime_name, b1, d1, eps);
         println!("  {:>12}  {:>4}  {:>6}  {:>6}  {:>10}  {:>10}  {:>10}  {:>10}  {:>10}  {:>10}",
@@ -12234,7 +12234,7 @@ pub fn run_max_rho_analysis() {
     }
 
     // Part 3: Is max\_ρ always the same concept type?
-    println!("\n  Part 3: max\_ρ concept type analysis");
+    println!("\n  Part 3: max rho concept type analysis");
     for &(regime_name, b1, d1, eps) in &regimes {
         let params = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1).with_eps(eps);
         let mut heights_at_max: Vec<usize> = Vec::new();
@@ -12279,7 +12279,7 @@ pub fn run_max_rho_analysis() {
     }
 
     // Part 4: Analytical prediction of max\_ρ
-    println!("\n  Part 4: Analytical max\_ρ prediction");
+    println!("\n  Part 4: Analytical max rho prediction");
     println!("  {:>12}  {:>10}  {:>10}  {:>10}  {:>10}", "regime", "max_ρ_act", "ρ(J_2D)", "ratio", "d*_maxρ");
     for &(regime_name, b1, d1, eps) in &regimes {
         let params = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1).with_eps(eps);
@@ -12320,7 +12320,7 @@ pub fn run_max_rho_analysis() {
     }
 
     // Part 5: d\* at max\_ρ vs analytical d\*
-    println!("\n  Part 5: d\* at max\_ρ concept vs analytical d\*");
+    println!("\n  Part 5: d* at max rho concept vs analytical d*");
     for &(regime_name, b1, d1, eps) in &regimes {
         let d_an = if let Some((d, _, _, _, _)) = find_physical_root(b1, d1, eps) { d } else { f64::NAN };
 
@@ -12345,12 +12345,12 @@ pub fn run_max_rho_analysis() {
         }
 
         let avg_d = d_vals.iter().sum::<f64>() / d_vals.len() as f64;
-        println!("  {:>12}: d\*_analytical={:.5}, d\*_maxρ={:.5}, ratio={:.3}",
+        println!("  {:>12}: d*_analytical={:.5}, d*_maxrho={:.5}, ratio={:.3}",
             regime_name, d_an, avg_d, avg_d / d_an);
     }
 
     println!("\n  MAX RHO ANALYSIS CONCLUSIONS:");
-    println!("  - Identify which concept position determines max\_ρ");
-    println!("  - Compare max\_ρ concept's d\* with analytical d\*");
-    println!("  - Derive analytical formula for max\_ρ if possible");
+    println!("  - Identify which concept position determines max rho");
+    println!("  - Compare max rho concept's d* with analytical d*");
+    println!("  - Derive analytical formula for max rho if possible");
 }
