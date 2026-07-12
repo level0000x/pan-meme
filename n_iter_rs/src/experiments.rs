@@ -6989,7 +6989,7 @@ pub fn run_closed_form_pipeline() {
     println!("  chain_N  interior_D*   d_sc         err          D*/d_sc");
 
     let d_sc = compute_dstar_analytical(1.0, 1.0, eps);
-    for &n in &[5, 10, 20, 50, 100, 200, 500, 1000] {
+    for &n in &[5, 10, 20, 50, 100, 200] {
         let lattice = fca::build_chain_lattice(n);
         let stats = pipeline::compute_lattice_stats(&lattice);
         let results = pipeline::run_topological_iteration(&lattice, &stats, &DynamicsParams::uniform());
@@ -7127,7 +7127,7 @@ pub fn run_closed_form_pipeline() {
     println!();
 
     println!("  chain_N  D*-d_sc       |F'|^N        ratio");
-    for &n in &[5, 10, 20, 50, 100, 200, 500] {
+    for &n in &[5, 10, 20, 50, 100, 200] {
         let lattice = fca::build_chain_lattice(n);
         let stats = pipeline::compute_lattice_stats(&lattice);
         let results = pipeline::run_topological_iteration(&lattice, &stats, &DynamicsParams::uniform());
