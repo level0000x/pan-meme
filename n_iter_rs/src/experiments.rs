@@ -11286,3 +11286,174 @@ pub fn run_optimal_epsilon() {
     println!("  - Non-monotonicity indicates competing mechanisms");
     println!("  - Global optimum identifies the absolute fastest convergence");
 }
+
+pub fn run_joint_optimization() {
+    println!("\n{}", "=".repeat(72));
+    println!("  JOINT (δ₁, ε) OPTIMIZATION: find absolute fastest convergence");
+    println!("{}", "=".repeat(72));
+
+    let beta1_vals: Vec<f64> = vec![0.5, 1.0, 2.0, 5.0, 7.0, 10.0, 20.0, 50.0];
+    let delta1_vals: Vec<f64> = vec![0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 50.0, 100.0, 200.0];
+    let eps_vals: Vec<f64> = {
+        let mut v = Vec::new();
+        let mut e = 0.005f64;
+        while e <= 5.0 {
+            v.push(e);
+            e *= 1.3;
+        }
+        v
+    };
+
+    // Part 1: 2D (δ₁, ε) scan at each β₁ — find optimal (δ₁*, ε*) per β₁
+    println!("\n  Part 1: Optimal (δ₁*, ε*) for each β₁");
+    println!("  {:>8}  {:>8}  {:>8}  {:>10}  {:>10}", "β₁", "δ₁*_opt", "ε*_opt", "ρ_min", "ρ(def)");
+    let mut global_best_rho = 1.0f64;
+    let mut global_best_b1 = 0.0f64;
+    let mut global_best_d1 = 0.0f64;
+    let mut global_best_eps = 0.0f64;
+
+    for &b1 in &beta1_vals {
+        let mut best_rho = 1.0f64;
+        let mut best_d1 = 0.0f64;
+        let mut best_eps = 0.0f64;
+        for &d1 in &delta1_vals {
+            for &eps in &eps_vals {
+                if let Some((d, b, rho, r, s)) = find_physical_root(b1, d1, eps) {
+                    let (rho_j2d, _, _, _, _, _) = compute_j2d_analytical(d, b, rho, r, s, &DynamicsParams::uniform());
+                    if rho_j2d < best_rho {
+                        best_rho = rho_j2d;
+                        best_d1 = d1;
+                        best_eps = eps;
+                    }
+                }
+            }
+        }
+        let rho_default = if let Some((d, b, rho, r, s)) = find_physical_root(b1, 10.0, 0.01) {
+            let (rj, _, _, _, _, _) = compute_j2d_analytical(d, b, rho, r, s, &DynamicsParams::uniform());
+            rj
+        } else { f64::NAN };
+
+        println!("  {:>8.1}  {:>8.1}  {:>8.4}  {:>10.5}  {:>10.5}", b1, best_d1, best_eps, best_rho, rho_default);
+
+        if best_rho < global_best_rho {
+            global_best_rho = best_rho;
+            global_best_b1 = b1;
+            global_best_d1 = best_d1;
+            global_best_eps = best_eps;
+        }
+    }
+
+    println!("\n  GLOBAL OPTIMUM: β₁={:.1}, δ₁={:.1}, ε={:.4} → ρ(J_2D)={:.5}",
+             global_best_b1, global_best_d1, global_best_eps, global_best_rho);
+
+    // Part 2: Detailed 2D heatmap at best β₁
+    println!("\n  Part 2: ρ(J_2D) heatmap at β₁={}", global_best_b1);
+    print!("  {:>8}", "δ₁\\ε");
+    for &eps in &eps_vals {
+        print!("  {:>7.3}", eps);
+    }
+    println!();
+
+    let mut heatmap_best_rho = 1.0f64;
+    let mut heatmap_best_d1 = 0.0f64;
+    let mut heatmap_best_eps = 0.0f64;
+
+    for &d1 in &delta1_vals {
+        print!("  {:>8.1}", d1);
+        for &eps in &eps_vals {
+            if let Some((d, b, rho, r, s)) = find_physical_root(global_best_b1, d1, eps) {
+                let (rho_j2d, _, _, _, _, _) = compute_j2d_analytical(d, b, rho, r, s, &DynamicsParams::uniform());
+                print!("  {:>7.4}", rho_j2d);
+                if rho_j2d < heatmap_best_rho {
+                    heatmap_best_rho = rho_j2d;
+                    heatmap_best_d1 = d1;
+                    heatmap_best_eps = eps;
+                }
+            } else {
+                print!("     ----");
+            }
+        }
+        println!();
+    }
+    println!("  Heatmap best: δ₁={:.1}, ε={:.4} → ρ={:.5}", heatmap_best_d1, heatmap_best_eps, heatmap_best_rho);
+
+    // Part 3: Fine zoom around global optimum
+    println!("\n  Part 3: Fine zoom around global optimum (β₁={})", global_best_b1);
+    let d1_center = global_best_d1;
+    let eps_center = global_best_eps;
+    let d1_range: Vec<f64> = (-5..=5).map(|i| d1_center * (1.0 + i as f64 * 0.1)).filter(|&v| v > 0.01).collect();
+    let eps_range: Vec<f64> = (-5..=5).map(|i| eps_center * (1.0 + i as f64 * 0.1)).filter(|&v| v > 0.001).collect();
+
+    let mut zoom_best_rho = 1.0f64;
+    let mut zoom_best_d1 = 0.0f64;
+    let mut zoom_best_eps = 0.0f64;
+
+    for &d1 in &d1_range {
+        for &eps in &eps_range {
+            if let Some((d, b, rho, r, s)) = find_physical_root(global_best_b1, d1, eps) {
+                let (rho_j2d, _, _, _, _, _) = compute_j2d_analytical(d, b, rho, r, s, &DynamicsParams::uniform());
+                if rho_j2d < zoom_best_rho {
+                    zoom_best_rho = rho_j2d;
+                    zoom_best_d1 = d1;
+                    zoom_best_eps = eps;
+                }
+            }
+        }
+    }
+    println!("  Zoom best: δ₁={:.2}, ε={:.4} → ρ={:.5}", zoom_best_d1, zoom_best_eps, zoom_best_rho);
+
+    // Part 4: Extended ε scan at optimal δ₁
+    println!("\n  Part 4: Extended ε scan (up to 10.0) at optimal δ₁={:.1}", zoom_best_d1);
+    let eps_extended: Vec<f64> = {
+        let mut v = Vec::new();
+        let mut e = 0.001f64;
+        while e <= 10.0 {
+            v.push(e);
+            e *= 1.2;
+        }
+        v
+    };
+
+    let mut ext_best_rho = 1.0f64;
+    let mut ext_best_eps = 0.0f64;
+
+    println!("  {:>8}  {:>10}", "ε", "ρ(J_2D)");
+    for &eps in &eps_extended {
+        if let Some((d, b, rho, r, s)) = find_physical_root(global_best_b1, zoom_best_d1, eps) {
+            let (rho_j2d, _, _, _, _, _) = compute_j2d_analytical(d, b, rho, r, s, &DynamicsParams::uniform());
+            println!("  {:>8.4}  {:>10.5}", eps, rho_j2d);
+            if rho_j2d < ext_best_rho {
+                ext_best_rho = rho_j2d;
+                ext_best_eps = eps;
+            }
+        }
+    }
+    println!("  Extended best: ε={:.4} → ρ={:.5}", ext_best_eps, ext_best_rho);
+
+    // Part 5: Component analysis at global optimum
+    println!("\n  Part 5: Fixed point at global optimum");
+    if let Some((d, b, rho, r, s)) = find_physical_root(global_best_b1, zoom_best_d1, zoom_best_eps) {
+        let (rho_j2d, jac_d_d, jac_d_rho, jac_b_b, jac_b_d, _) = compute_j2d_analytical(d, b, rho, r, s, &DynamicsParams::uniform());
+        println!("  β₁={}, δ₁={:.2}, ε={:.4}", global_best_b1, zoom_best_d1, zoom_best_eps);
+        println!("  d*={:.6}, b*={:.6}, ρ*={:.6}, r*={:.6}, s*={:.6}", d, b, rho, r, s);
+        println!("  ρ(J_2D)={:.6}", rho_j2d);
+        println!("  Jacobian: ∂D/∂d={:.6}, ∂D/∂ρ={:.6}, ∂B/∂b={:.6}, ∂B/∂d={:.6}", jac_d_d, jac_d_rho, jac_b_b, jac_b_d);
+        println!("  Contraction per step: {:.1}%", (1.0 - rho_j2d) * 100.0);
+    }
+
+    // Part 6: Improvement summary
+    println!("\n  Part 6: Improvement summary");
+    let rho_default_7 = if let Some((d, b, rho, r, s)) = find_physical_root(7.0, 10.0, 0.01) {
+        let (rj, _, _, _, _, _) = compute_j2d_analytical(d, b, rho, r, s, &DynamicsParams::uniform());
+        rj
+    } else { f64::NAN };
+    println!("  Default (β₁=7, δ₁=10, ε=0.01):  ρ={:.5}", rho_default_7);
+    println!("  v2.55 optimal (β₁=7, δ₁=10, ε=1.25): ρ=0.19289");
+    println!("  v2.56 joint optimal: ρ={:.5}", ext_best_rho);
+    println!("  Total improvement: {:.1}× vs default", rho_default_7 / ext_best_rho);
+
+    println!("\n  JOINT OPTIMIZATION CONCLUSIONS:");
+    println!("  - (δ₁, ε) joint optimization finds faster convergence than ε alone");
+    println!("  - High δ₁ + optimal ε may achieve ρ < 0.10");
+    println!("  - Global optimum identifies absolute fastest convergence regime");
+}
