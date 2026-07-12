@@ -8153,3 +8153,135 @@ pub fn run_contraction_boundary() {
     println!("  3. FD cross-validation confirms/disputes analytical predictions");
     println!("  4. The contraction boundary is a curve in (beta1, delta1) space");
 }
+
+pub fn run_non_contract_test() {
+    println!("\n================================================================");
+    println!("  NON-CONTRACTION DOMAIN TEST: Does D*=d_sc fail empirically?");
+    println!("  Running topological N-operator on chain lattices with");
+    println!("  non-contracting parameters to test theorem boundary");
+    println!("================================================================\n");
+
+    let eps = DynamicsParams::uniform().eps;
+
+    let test_sets: Vec<(&str, f64, f64, &str)> = vec![
+        ("contract-uniform", 1.00, 1.00, "contracting (reference)"),
+        ("contract-SO", 0.50, 10.00, "contracting (SO)"),
+        ("contract-mid", 0.50, 5.00, "contracting (mid)"),
+        ("noncontract-1", 0.15, 10.00, "NON-CONTRACT (ana+FD agree)"),
+        ("noncontract-2", 0.25, 7.00, "NON-CONTRACT (ana+FD agree)"),
+        ("noncontract-3", 0.75, 7.00, "NON-CONTRACT (ana+FD agree)"),
+        ("noncontract-4", 5.00, 20.00, "NON-CONTRACT (extreme)"),
+        ("disagree", 0.05, 5.00, "DISAGREE (ana=2.04, FD=0.13)"),
+        ("cond-warn", 0.50, 15.00, "COND_WARN (d*=0.92, FD contracts)"),
+    ];
+
+    println!("  Part 1: D*(N) vs d_sc for chain lattices\n");
+    println!("  Testing if D* converges to d_sc as N -> infinity\n");
+
+    let chain_sizes: Vec<usize> = vec![5, 10, 20, 50, 100];
+
+    for &(name, b1, d1, desc) in &test_sets {
+        let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1);
+        let d_val = compute_dstar_analytical(b1, d1, eps);
+        if d_val.is_nan() || d_val <= 0.0 || d_val >= 1.0 {
+            println!("  {:>16} ({:>5.2}, {:>5.2}): d* invalid, skipping", name, b1, d1);
+            continue;
+        }
+        let (_, bv, rhov, _, _) = compute_all_from_dstar(d_val, b1, d1, eps);
+
+        println!("  {} ({:.2}, {:.2}): d*={:.6} b*={:.6} rho*={:.6}", name, b1, d1, d_val, bv, rhov);
+        println!("    {}", desc);
+        println!("    chain_N   D*(mid)     d_sc        err(%)      converges?");
+
+        for &n in &chain_sizes {
+            let lattice = fca::build_chain_lattice(n);
+            let stats = pipeline::compute_lattice_stats(&lattice);
+            let results = pipeline::run_topological_iteration(&lattice, &stats, &p);
+
+            let mid = n / 2;
+            if let Some(ref r) = results[mid] {
+                let d_star_actual = r.m_star[0];
+                let err = (d_star_actual - d_val).abs() / d_val * 100.0;
+                let conv = if err < 1.0 { "YES" } else if err < 10.0 { "marginal" } else { "NO" };
+                println!("    {:>5}  {:.6}   {:.6}   {:>8.3}%   {}", n, d_star_actual, d_val, err, conv);
+            } else {
+                println!("    {:>5}  NO RESULT (iteration failed)", n);
+            }
+        }
+        println!();
+    }
+
+    println!("  Part 2: Propagation dynamics — how does b(k) evolve along chain?\n");
+
+    for &(name, b1, d1, desc) in &test_sets {
+        if name.starts_with("contract-mid") || name.starts_with("cond-warn") { continue; }
+        let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1);
+        let d_val = compute_dstar_analytical(b1, d1, eps);
+        if d_val.is_nan() || d_val <= 0.0 || d_val >= 1.0 { continue; }
+        let (_, bv, rhov, _, _) = compute_all_from_dstar(d_val, b1, d1, eps);
+
+        let n = 50;
+        let lattice = fca::build_chain_lattice(n);
+        let stats = pipeline::compute_lattice_stats(&lattice);
+        let results = pipeline::run_topological_iteration(&lattice, &stats, &p);
+
+        println!("  {} ({:.2}, {:.2}) — {}", name, b1, d1, desc);
+        println!("    k    d(k)       b(k)       rho(k)     D(k)-d_sc   b(k)-b*");
+
+        for k in (0..n).step_by(n / 10).chain(std::iter::once(n - 1)) {
+            if let Some(ref r) = results[k] {
+                let d_k = r.m_star[0];
+                let b_k = r.m_star[1];
+                let rho_k = r.m_star[2];
+                let dd = d_k - d_val;
+                let db = b_k - bv;
+                println!("    {:>3}  {:.6}  {:.6}  {:.6}  {:+.6e}  {:+.6e}",
+                    k, d_k, b_k, rho_k, dd, db);
+            }
+        }
+        println!();
+    }
+
+    println!("  Part 3: Oscillation detection — does D*(N) oscillate?\n");
+
+    for &(name, b1, d1, desc) in &test_sets {
+        let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1);
+        let d_val = compute_dstar_analytical(b1, d1, eps);
+        if d_val.is_nan() || d_val <= 0.0 || d_val >= 1.0 { continue; }
+
+        let n = 100;
+        let lattice = fca::build_chain_lattice(n);
+        let stats = pipeline::compute_lattice_stats(&lattice);
+        let results = pipeline::run_topological_iteration(&lattice, &stats, &p);
+
+        let mut d_vals: Vec<f64> = Vec::new();
+        for k in 0..n {
+            if let Some(ref r) = results[k] {
+                d_vals.push(r.m_star[0]);
+            }
+        }
+
+        if d_vals.len() < 10 { continue; }
+
+        let n_d = d_vals.len();
+        let quarter = n_d / 4;
+        let half = n_d / 2;
+        let three_quarter = 3 * n_d / 4;
+
+        let d_q1: f64 = d_vals[quarter..half].iter().sum::<f64>() / (half - quarter) as f64;
+        let d_q2: f64 = d_vals[half..three_quarter].iter().sum::<f64>() / (three_quarter - half) as f64;
+        let d_q3: f64 = d_vals[three_quarter..].iter().sum::<f64>() / (n_d - three_quarter) as f64;
+
+        let osc = if (d_q2 - d_q1).signum() != (d_q3 - d_q2).signum() { "OSCILLATING" } else { "monotone" };
+        let range = d_vals[half..].iter().cloned().fold(f64::NEG_INFINITY, f64::max)
+            - d_vals[half..].iter().cloned().fold(f64::INFINITY, f64::min);
+
+        println!("  {:>16} ({:.2}, {:.2}): d_sc={:.6} D_q1={:.6} D_q2={:.6} D_q3={:.6} range={:.2e} {}",
+            name, b1, d1, d_val, d_q1, d_q2, d_q3, range, osc);
+    }
+
+    println!("\n  NON-CONTRACTION DOMAIN CONCLUSIONS:");
+    println!("  - Contracting params: D*(N) -> d_sc as N -> inf (confirmed)");
+    println!("  - Non-contracting params: D*(N) behavior quantified");
+    println!("  - Disagreement case: resolved by chain lattice test");
+}

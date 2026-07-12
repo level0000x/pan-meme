@@ -118,6 +118,39 @@ fn main() {
     run_synthetic_suite(max_concepts, time_limit, &output_dir);
 }
 
-fn run_synthetic_suite(_max_concepts: usize, _time_limit: f64, _output_dir: &PathBuf) {
+fn run_synthetic_suite(max_concepts: usize, time_limit: f64, output_dir: &PathBuf) {
+    experiments::run_synthetic_scan(max_concepts, time_limit, &output_dir);
+    experiments::run_stress_tests(&output_dir);
+    experiments::run_chain_diagnostics(&output_dir);
+    experiments::run_th617_verification();
+    experiments::run_ode_verification();
+    experiments::run_ode_stability_analysis();
+    experiments::run_ode_exact_lyapunov();
+    experiments::run_convergence_rate_analysis();
+    experiments::run_sensitivity_analysis();
+    experiments::run_cross_metric_correlation();
+    experiments::run_pareto_and_linear_regression();
+    experiments::run_cross_regime_pareto();
+    experiments::run_beta_delta_2d_sweep();
+    experiments::run_super_optimal_characterization();
+    experiments::run_fine_grained_landscape();
+    experiments::run_tau_mono_phase_diagram();
+    experiments::run_n_pred_discrepancy_analysis();
+    experiments::run_edge_tau_comparison();
+    experiments::run_dstar_dvalue_analysis();
+    experiments::run_analytical_dstar();
+    experiments::run_bup_propagation();
+    experiments::run_rho_analytical();
+    experiments::run_jacobian_coupling();
+    experiments::run_super_optimal_analytical();
+    experiments::run_characteristic_polynomial();
+    experiments::run_predictive_validation();
+    experiments::run_rho_propagation();
+    experiments::run_gamma_analysis();
+    experiments::run_dstar_equation();
+    experiments::run_closed_form_pipeline();
+    experiments::run_topology_pipeline();
+    experiments::run_contraction_analysis();
+    experiments::run_analytical_j2d();
     experiments::run_contraction_boundary();
 }
