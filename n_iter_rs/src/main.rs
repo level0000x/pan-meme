@@ -149,4 +149,5 @@ fn run_synthetic_suite(max_concepts: usize, time_limit: f64, output_dir: &PathBu
     experiments::run_gamma_analysis();
     experiments::run_dstar_equation();
     experiments::run_closed_form_pipeline();
+    experiments::run_topology_pipeline();
 }
