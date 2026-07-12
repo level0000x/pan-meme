@@ -10768,3 +10768,166 @@ pub fn run_asymptotic_limits() {
     println!("  - β₁→∞: ρ→finite limit ρ_∞(δ₁) < 1");
     println!("  - Global ρ∈[ρ_min, ρ_max] with universal contraction ρ<1");
 }
+
+pub fn run_upper_bound_analysis() {
+    println!("\n================================================================");
+    println!("  UPPER BOUND ANALYSIS: Origin of ρ_max ≈ 0.813");
+    println!("  Test hypothesis: ρ_max = (1+ε)/(1+2ε)");
+    println!("================================================================\n");
+
+    let uniform = DynamicsParams::uniform();
+
+    println!("  Part 1: ε-scan at β₁=5000, δ₁=10\n");
+    println!("  ε        ρ(J_2D)    (1+ε)/(1+2ε)  ratio     d*        b*        ρ*");
+
+    let eps_vals: Vec<f64> = vec![0.01, 0.02, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.4, 0.5, 0.75, 1.0, 2.0, 5.0];
+
+    for &eps_v in &eps_vals {
+        let p = DynamicsParams { eps: eps_v, ..uniform };
+        let big_b1 = 5000.0_f64;
+        let d1 = 10.0_f64;
+        let mut mc = five_dim::from_array(&[0.5, 0.5, 0.3, 0.5, 0.5]);
+        let p_b1 = p.with_beta1(big_b1).with_delta1(d1);
+        for _ in 0..20000 {
+            let mc_next = n_operator::n_operator(&mc, mc[1], mc[2], &p_b1);
+            let delta = (five_dim::to_array(&mc_next)[0] - five_dim::to_array(&mc)[0]).abs()
+                .max((five_dim::to_array(&mc_next)[1] - five_dim::to_array(&mc)[1]).abs())
+                .max((five_dim::to_array(&mc_next)[2] - five_dim::to_array(&mc)[2]).abs());
+            mc = mc_next;
+            if delta < 1e-14 { break; }
+        }
+
+        let m_star = mc;
+        let j = n_operator::compute_jacobian(&m_star, mc[1], mc[2], &p_b1);
+        let eigs = j.complex_eigenvalues();
+        let rho_j = eigs.iter().map(|c| c.norm()).fold(0.0_f64, f64::max);
+
+        let (rho_j2d, _, _, _, _, _) = compute_j2d_analytical(mc[0], mc[1], mc[2], mc[3], mc[4], &p_b1);
+        let rho_use = if rho_j2d.is_finite() && rho_j2d > 0.0 { rho_j2d } else { rho_j };
+        let formula = (1.0 + eps_v) / (1.0 + 2.0 * eps_v);
+        let ratio = rho_use / formula;
+
+        println!("  {:>5.2}    {:.6}   {:.6}       {:.6}   {:.6}   {:.6}   {:.6}",
+            eps_v, rho_use, formula, ratio, mc[0], mc[1], mc[2]);
+    }
+
+    println!("\n  Part 2: ε-scan at β₁=5000, δ₁=1 (low δ₁)\n");
+    println!("  ε        ρ(J_2D)    (1+ε)/(1+2ε)  ratio");
+
+    for &eps_v in &[0.05_f64, 0.1, 0.2, 0.3, 0.5, 1.0] {
+        let p = DynamicsParams { eps: eps_v, ..uniform };
+        let big_b1 = 5000.0_f64;
+        let d1 = 1.0_f64;
+        let mut mc = five_dim::from_array(&[0.5, 0.5, 0.3, 0.5, 0.5]);
+        let p_b1 = p.with_beta1(big_b1).with_delta1(d1);
+        for _ in 0..20000 {
+            let mc_next = n_operator::n_operator(&mc, mc[1], mc[2], &p_b1);
+            let delta = (five_dim::to_array(&mc_next)[0] - five_dim::to_array(&mc)[0]).abs()
+                .max((five_dim::to_array(&mc_next)[1] - five_dim::to_array(&mc)[1]).abs())
+                .max((five_dim::to_array(&mc_next)[2] - five_dim::to_array(&mc)[2]).abs());
+            mc = mc_next;
+            if delta < 1e-14 { break; }
+        }
+        let (rho_j2d, _, _, _, _, _) = compute_j2d_analytical(mc[0], mc[1], mc[2], mc[3], mc[4], &p.with_beta1(big_b1).with_delta1(d1));
+        let rho_use = if rho_j2d.is_finite() && rho_j2d > 0.0 { rho_j2d } else {
+            let j = n_operator::compute_jacobian(&mc, mc[1], mc[2], &p.with_beta1(big_b1).with_delta1(d1));
+            j.complex_eigenvalues().iter().map(|c| c.norm()).fold(0.0_f64, f64::max)
+        };
+        let formula = (1.0 + eps_v) / (1.0 + 2.0 * eps_v);
+        let ratio = rho_use / formula;
+
+        println!("  {:>5.2}    {:.6}   {:.6}       {:.6}", eps_v, rho_use, formula, ratio);
+    }
+
+    println!("\n  Part 3: Component structure at β₁→∞ for various ε\n");
+    println!("  ε        d*        b*        ρ*        r*        s*");
+
+    for &eps_v in &[0.05_f64, 0.1, 0.2, 0.3, 0.5, 1.0] {
+        let p = DynamicsParams { eps: eps_v, ..uniform };
+        let big_b1 = 5000.0_f64;
+        let d1 = 10.0_f64;
+        let mut mc = five_dim::from_array(&[0.5, 0.5, 0.3, 0.5, 0.5]);
+        let p_b1 = p.with_beta1(big_b1).with_delta1(d1);
+        for _ in 0..20000 {
+            let mc_next = n_operator::n_operator(&mc, mc[1], mc[2], &p_b1);
+            let delta = (five_dim::to_array(&mc_next)[0] - five_dim::to_array(&mc)[0]).abs()
+                .max((five_dim::to_array(&mc_next)[1] - five_dim::to_array(&mc)[1]).abs())
+                .max((five_dim::to_array(&mc_next)[2] - five_dim::to_array(&mc)[2]).abs());
+            mc = mc_next;
+            if delta < 1e-14 { break; }
+        }
+        println!("  {:>5.2}    {:.6}   {:.6}   {:.6}   {:.6}   {:.6}",
+            eps_v, mc[0], mc[1], mc[2], mc[3], mc[4]);
+    }
+
+    println!("\n  Part 4: δ₁-scan at β₁=5000 for various ε\n");
+    println!("  ε       | ρ(δ=1)    ρ(5)     ρ(10)    ρ(50)    ρ(200)   | formula");
+
+    for &eps_v in &[0.1_f64, 0.3, 1.0] {
+        let p = DynamicsParams { eps: eps_v, ..uniform };
+        print!("  {:>5.2}   |", eps_v);
+        for &d1 in &[1.0_f64, 5.0, 10.0, 50.0, 200.0] {
+            let big_b1 = 5000.0_f64;
+            let mut mc = five_dim::from_array(&[0.5, 0.5, 0.3, 0.5, 0.5]);
+            let p_b1 = p.with_beta1(big_b1).with_delta1(d1);
+            for _ in 0..20000 {
+                let mc_next = n_operator::n_operator(&mc, mc[1], mc[2], &p_b1);
+                let delta = (five_dim::to_array(&mc_next)[0] - five_dim::to_array(&mc)[0]).abs()
+                    .max((five_dim::to_array(&mc_next)[1] - five_dim::to_array(&mc)[1]).abs())
+                    .max((five_dim::to_array(&mc_next)[2] - five_dim::to_array(&mc)[2]).abs());
+                mc = mc_next;
+                if delta < 1e-14 { break; }
+            }
+            let (rho_j2d, _, _, _, _, _) = compute_j2d_analytical(mc[0], mc[1], mc[2], mc[3], mc[4], &p_b1);
+            let rho_use = if rho_j2d.is_finite() && rho_j2d > 0.0 { rho_j2d } else {
+                let j = n_operator::compute_jacobian(&mc, mc[1], mc[2], &p_b1);
+                j.complex_eigenvalues().iter().map(|c| c.norm()).fold(0.0_f64, f64::max)
+            };
+            print!("  {:.4}", rho_use);
+        }
+        let formula = (1.0 + eps_v) / (1.0 + 2.0 * eps_v);
+        println!("  | {:.4}", formula);
+    }
+
+    println!("\n  Part 5: Verification of (1+ε)/(1+2ε) formula\n");
+
+    let mut max_err = 0.0_f64;
+    let mut max_err_eps = 0.0_f64;
+    println!("  ε        ρ_numerical  ρ_formula    |error|    |error|%");
+
+    for &eps_v in &[0.01_f64, 0.05, 0.1, 0.2, 0.3, 0.5, 0.75, 1.0, 2.0, 5.0] {
+        let p = DynamicsParams { eps: eps_v, ..uniform };
+        let big_b1 = 10000.0_f64;
+        let d1 = 10.0_f64;
+        let mut mc = five_dim::from_array(&[0.5, 0.5, 0.3, 0.5, 0.5]);
+        let p_b1 = p.with_beta1(big_b1).with_delta1(d1);
+        for _ in 0..50000 {
+            let mc_next = n_operator::n_operator(&mc, mc[1], mc[2], &p_b1);
+            let delta = (five_dim::to_array(&mc_next)[0] - five_dim::to_array(&mc)[0]).abs()
+                .max((five_dim::to_array(&mc_next)[1] - five_dim::to_array(&mc)[1]).abs())
+                .max((five_dim::to_array(&mc_next)[2] - five_dim::to_array(&mc)[2]).abs());
+            mc = mc_next;
+            if delta < 1e-15 { break; }
+        }
+        let (rho_j2d, _, _, _, _, _) = compute_j2d_analytical(mc[0], mc[1], mc[2], mc[3], mc[4], &p_b1);
+        let rho_use = if rho_j2d.is_finite() && rho_j2d > 0.0 { rho_j2d } else {
+            let j = n_operator::compute_jacobian(&mc, mc[1], mc[2], &p_b1);
+            j.complex_eigenvalues().iter().map(|c| c.norm()).fold(0.0_f64, f64::max)
+        };
+        let formula = (1.0 + eps_v) / (1.0 + 2.0 * eps_v);
+        let err = (rho_use - formula).abs();
+        let err_pct = err / formula * 100.0;
+
+        if err_pct > max_err { max_err = err_pct; max_err_eps = eps_v; }
+
+        println!("  {:>5.2}    {:.6}     {:.6}     {:.6}   {:.4}%",
+            eps_v, rho_use, formula, err, err_pct);
+    }
+
+    println!("\n  Max error: {:.4}% at ε={}", max_err, max_err_eps);
+
+    println!("\n  UPPER BOUND ANALYSIS CONCLUSIONS:");
+    println!("  - Hypothesis ρ_max = (1+ε)/(1+2ε) tested across ε∈[0.01, 5.0]");
+    println!("  - Formula verified (if max error < 1%)");
+    println!("  - Upper bound is ε-dependent, not a universal constant");
+}

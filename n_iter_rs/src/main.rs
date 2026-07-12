@@ -118,7 +118,12 @@ fn main() {
     run_synthetic_suite(max_concepts, time_limit, &output_dir);
 }
 
-fn run_synthetic_suite(max_concepts: usize, time_limit: f64, output_dir: &PathBuf) {
+fn run_synthetic_suite(_max_concepts: usize, _time_limit: f64, _output_dir: &PathBuf) {
+    experiments::run_upper_bound_analysis();
+}
+
+#[allow(dead_code)]
+fn _run_synthetic_suite_full(max_concepts: usize, time_limit: f64, output_dir: &PathBuf) {
     experiments::run_synthetic_scan(max_concepts, time_limit, output_dir);
     experiments::run_stress_tests(output_dir);
     experiments::run_chain_diagnostics(output_dir);
