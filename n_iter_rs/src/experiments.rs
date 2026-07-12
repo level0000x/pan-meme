@@ -8621,3 +8621,197 @@ pub fn run_boundary_conditions() {
     println!("  - Which analytical condition (b*=0, r*=0, rho*=1) matches rho(J_2D)=1?");
     println!("  - Phase diagram: contracting region in (b1, d1) space");
 }
+
+fn find_self_consistent_fp(p: &DynamicsParams) -> Option<(f64, f64, f64, f64, f64, f64, f64)> {
+    let b_init_vals: Vec<f64> = vec![0.05, 0.10, 0.30, 0.50, 0.80, 1.00, 1.50];
+    let rho_init_vals: Vec<f64> = vec![0.05, 0.10, 0.30, 0.50, 0.70, 0.90];
+
+    let mut best_fp: Option<(f64, f64, f64, f64, f64, f64, f64)> = None;
+    let mut count = 0_u32;
+
+    for &b_init in &b_init_vals {
+        for &r_init in &rho_init_vals {
+            let (d_fp, b_fp, rho_fp, r_fp, s_fp, _, converged) =
+                iterate_propagation_map(b_init, r_init, p, 20000, 1e-14);
+            if !converged || d_fp.is_nan() || b_fp.is_nan() || rho_fp.is_nan() { continue; }
+            if b_fp < -0.1 || rho_fp > 2.0 { continue; }
+
+            if best_fp.is_none() {
+                let rho_j2d = {
+                    let (r, _, _, _, _, c) = compute_j2d_analytical(d_fp, b_fp, rho_fp, r_fp, s_fp, p);
+                    if c < 1e10 { r } else { f64::NAN }
+                };
+                best_fp = Some((d_fp, b_fp, rho_fp, r_fp, s_fp, rho_j2d, 0.0));
+            }
+            count += 1;
+        }
+    }
+
+    if count == 0 { return None; }
+    best_fp
+}
+
+pub fn run_nonuniform_robustness() {
+    println!("\n================================================================");
+    println!("  NON-UNIFORM PARAMETER ROBUSTNESS TEST");
+    println!("  Does D*=d_sc hold when all 11 params are independent?");
+    println!("================================================================\n");
+
+    let base = DynamicsParams::uniform();
+
+    let param_sets: Vec<(&str, DynamicsParams)> = vec![
+        ("uniform-ref", base.clone()),
+        ("asym-1", DynamicsParams {
+            alpha1: 2.0, beta1: 0.5, gamma1: 1.5, delta1: 3.0,
+            zeta1: 0.8, eta1: 1.2, theta1: 1.0, kappa1: 0.5,
+            kappa2: 2.0, lambda1: 1.0, mu1: 0.5, eps: 0.01,
+        }),
+        ("asym-2", DynamicsParams {
+            alpha1: 0.5, beta1: 2.0, gamma1: 0.8, delta1: 0.3,
+            zeta1: 2.0, eta1: 0.5, theta1: 1.5, kappa1: 2.0,
+            kappa2: 0.3, lambda1: 0.5, mu1: 2.0, eps: 0.01,
+        }),
+        ("wide-range", DynamicsParams {
+            alpha1: 5.0, beta1: 0.2, gamma1: 3.0, delta1: 0.1,
+            zeta1: 4.0, eta1: 0.3, theta1: 2.0, kappa1: 0.1,
+            kappa2: 5.0, lambda1: 0.2, mu1: 3.0, eps: 0.01,
+        }),
+        ("small-eps", DynamicsParams {
+            alpha1: 1.0, beta1: 1.0, gamma1: 1.0, delta1: 1.0,
+            zeta1: 1.0, eta1: 1.0, theta1: 1.0, kappa1: 1.0,
+            kappa2: 1.0, lambda1: 1.0, mu1: 1.0, eps: 0.001,
+        }),
+        ("large-eps", DynamicsParams {
+            alpha1: 1.0, beta1: 1.0, gamma1: 1.0, delta1: 1.0,
+            zeta1: 1.0, eta1: 1.0, theta1: 1.0, kappa1: 1.0,
+            kappa2: 1.0, lambda1: 1.0, mu1: 1.0, eps: 0.1,
+        }),
+        ("mixed-1", DynamicsParams {
+            alpha1: 0.7, beta1: 1.3, gamma1: 0.9, delta1: 1.5,
+            zeta1: 1.1, eta1: 0.8, theta1: 1.4, kappa1: 0.6,
+            kappa2: 1.8, lambda1: 0.4, mu1: 1.6, eps: 0.01,
+        }),
+        ("mixed-2", DynamicsParams {
+            alpha1: 1.5, beta1: 0.8, gamma1: 1.2, delta1: 0.6,
+            zeta1: 0.9, eta1: 1.4, theta1: 0.7, kappa1: 1.3,
+            kappa2: 0.5, lambda1: 1.7, mu1: 0.3, eps: 0.01,
+        }),
+        ("extreme-1", DynamicsParams {
+            alpha1: 10.0, beta1: 0.1, gamma1: 8.0, delta1: 0.2,
+            zeta1: 6.0, eta1: 0.3, theta1: 4.0, kappa1: 0.4,
+            kappa2: 2.0, lambda1: 0.5, mu1: 3.0, eps: 0.001,
+        }),
+        ("balanced", DynamicsParams {
+            alpha1: 1.2, beta1: 0.9, gamma1: 1.1, delta1: 0.8,
+            zeta1: 1.3, eta1: 0.7, theta1: 1.0, kappa1: 0.9,
+            kappa2: 1.1, lambda1: 0.8, mu1: 1.2, eps: 0.05,
+        }),
+    ];
+
+    let chain_sizes: Vec<usize> = vec![5, 10, 20, 50];
+
+    println!("  Part 1: Self-consistent FP via propagation map iteration\n");
+    println!("  name             d_sc        b_sc        rho_sc      r_sc        s_sc        rho(J2D)  physical?");
+
+    let mut fp_data: Vec<(&str, f64, f64, f64, f64, f64, f64, bool)> = Vec::new();
+
+    for &(name, ref p) in &param_sets {
+        match find_self_consistent_fp(p) {
+            Some((d_fp, b_fp, rho_fp, r_fp, s_fp, rho_j2d, _)) => {
+                let physical = b_fp >= 0.0 && rho_fp <= 1.0 && d_fp >= 0.0 && d_fp <= 1.0;
+                let phys_str = if physical { "YES" } else { "NO" };
+                println!("  {:>14}  {:.6}  {:+.6}  {:.6}  {:+.6}  {:.6}  {:>8}  {}",
+                    name, d_fp, b_fp, rho_fp, r_fp, s_fp,
+                    if rho_j2d.is_nan() { "NaN".to_string() } else { format!("{:.4}", rho_j2d) },
+                    phys_str);
+                fp_data.push((name, d_fp, b_fp, rho_fp, r_fp, s_fp, rho_j2d, physical));
+            }
+            None => {
+                println!("  {:>14}  NO FP FOUND", name);
+                fp_data.push((name, f64::NAN, 0.0, 0.0, 0.0, 0.0, f64::NAN, false));
+            }
+        }
+    }
+
+    println!("\n  Part 2: D*(N) vs d_sc on chain lattices\n");
+
+    for (i, &(_, ref p)) in param_sets.iter().enumerate() {
+        let d_fp = fp_data[i].1;
+        let physical = fp_data[i].7;
+        if d_fp.is_nan() {
+            println!("  {:>14}: SKIP (no FP)", fp_data[i].0);
+            continue;
+        }
+
+        println!("  {} (physical={}):", fp_data[i].0, physical);
+        println!("    chain_N   D*(mid)     d_sc        err(%)      converges?");
+
+        for &n in &chain_sizes {
+            let lattice = fca::build_chain_lattice(n);
+            let stats = pipeline::compute_lattice_stats(&lattice);
+            let results = pipeline::run_topological_iteration(&lattice, &stats, p);
+
+            let mid = n / 2;
+            if let Some(ref r) = results[mid] {
+                let d_star_actual = r.m_star[0];
+                let err = if d_fp > 0.0 { (d_star_actual - d_fp).abs() / d_fp * 100.0 } else { f64::NAN };
+                let conv = if err < 1.0 { "YES" } else if err < 10.0 { "marginal" } else { "NO" };
+                println!("    {:>5}  {:.6}   {:.6}   {:>8.3}%   {}", n, d_star_actual, d_fp, err, conv);
+            } else {
+                println!("    {:>5}  NO RESULT", n);
+            }
+        }
+        println!();
+    }
+
+    println!("  Part 3: Non-uniform param sensitivity — which params matter most?\n");
+
+    let base_p = DynamicsParams::uniform();
+    let perturbations: Vec<(&str, f64)> = vec![
+        ("alpha1+", 1.5), ("alpha1-", 0.5),
+        ("beta1+", 1.5), ("beta1-", 0.5),
+        ("gamma1+", 1.5), ("gamma1-", 0.5),
+        ("delta1+", 1.5), ("delta1-", 0.5),
+        ("zeta1+", 1.5), ("zeta1-", 0.5),
+        ("eta1+", 1.5), ("eta1-", 0.5),
+        ("theta1+", 1.5), ("theta1-", 0.5),
+        ("kappa1+", 1.5), ("kappa1-", 0.5),
+        ("kappa2+", 1.5), ("kappa2-", 0.5),
+        ("lambda1+", 1.5), ("lambda1-", 0.5),
+        ("mu1+", 1.5), ("mu1-", 0.5),
+    ];
+
+    let (_, d_ref, _, _, _, _, _) = find_self_consistent_fp(&base_p).unwrap();
+
+    println!("  param_perturb   d_sc        delta_d     rel_change");
+
+    for &(pname, factor) in &perturbations {
+        let p = match pname {
+            "alpha1+" | "alpha1-" => DynamicsParams { alpha1: base_p.alpha1 * factor, ..base_p.clone() },
+            "beta1+" | "beta1-" => DynamicsParams { beta1: base_p.beta1 * factor, ..base_p.clone() },
+            "gamma1+" | "gamma1-" => DynamicsParams { gamma1: base_p.gamma1 * factor, ..base_p.clone() },
+            "delta1+" | "delta1-" => DynamicsParams { delta1: base_p.delta1 * factor, ..base_p.clone() },
+            "zeta1+" | "zeta1-" => DynamicsParams { zeta1: base_p.zeta1 * factor, ..base_p.clone() },
+            "eta1+" | "eta1-" => DynamicsParams { eta1: base_p.eta1 * factor, ..base_p.clone() },
+            "theta1+" | "theta1-" => DynamicsParams { theta1: base_p.theta1 * factor, ..base_p.clone() },
+            "kappa1+" | "kappa1-" => DynamicsParams { kappa1: base_p.kappa1 * factor, ..base_p.clone() },
+            "kappa2+" | "kappa2-" => DynamicsParams { kappa2: base_p.kappa2 * factor, ..base_p.clone() },
+            "lambda1+" | "lambda1-" => DynamicsParams { lambda1: base_p.lambda1 * factor, ..base_p.clone() },
+            "mu1+" | "mu1-" => DynamicsParams { mu1: base_p.mu1 * factor, ..base_p.clone() },
+            _ => continue,
+        };
+
+        if let Some((d_p, _, _, _, _, _, _)) = find_self_consistent_fp(&p) {
+            let delta = d_p - d_ref;
+            let rel = delta / d_ref * 100.0;
+            println!("  {:>14}  {:.6}  {:+.6}  {:+.3}%", pname, d_p, delta, rel);
+        } else {
+            println!("  {:>14}  NO FP FOUND", pname);
+        }
+    }
+
+    println!("\n  NON-UNIFORM ROBUSTNESS CONCLUSIONS:");
+    println!("  - Does D*=d_sc hold for non-uniform params?");
+    println!("  - Which parameters have the strongest effect on d_sc?");
+    println!("  - Is the phase transition mechanism robust?");
+}
