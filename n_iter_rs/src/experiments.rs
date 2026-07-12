@@ -14932,3 +14932,464 @@ pub fn run_k_factor_analytical() {
     println!("  If k_0 >> k_eff, the nonlinear effect decays as M → M*.");
     println!("  The A/(A+B) structure creates f'(x) = e(a-b)/(sum)^2 at each step.");
 }
+
+pub fn run_distance_correction() {
+    use crate::five_dim;
+    use crate::n_operator;
+
+    println!("{}", "=".repeat(72));
+    println!("  ITERATION COUNT DISTANCE CORRECTION: n vs ||ΔM₀|| relationship");
+    println!("{}", "=".repeat(72));
+
+    let regimes: &[(&str, f64, f64, f64)] = &[
+        ("b1=0.5,e=10", 0.5, 1.0, 10.0),
+        ("b1=0.5,e=20", 0.5, 1.0, 20.0),
+        ("b1=0.5,e=50", 0.5, 1.0, 50.0),
+        ("b1=1,e=10", 1.0, 1.0, 10.0),
+        ("b1=1,e=20", 1.0, 1.0, 20.0),
+        ("b1=1,e=30", 1.0, 1.0, 30.0),
+        ("b1=1,e=50", 1.0, 1.0, 50.0),
+        ("b1=1,e=100", 1.0, 1.0, 100.0),
+        ("b1=1.5,d=0.5,e=50", 1.5, 0.5, 50.0),
+        ("b1=2,e=30", 2.0, 1.0, 30.0),
+        ("b1=2,e=50", 2.0, 1.0, 50.0),
+        ("b1=2,e=100", 2.0, 1.0, 100.0),
+        ("b1=2,e=200", 2.0, 1.0, 200.0),
+        ("b1=3,e=50", 3.0, 1.0, 50.0),
+        ("b1=3,e=100", 3.0, 1.0, 100.0),
+        ("b1=3,e=200", 3.0, 1.0, 200.0),
+        ("b1=3,e=500", 3.0, 1.0, 500.0),
+        ("b1=4,e=100", 4.0, 1.0, 100.0),
+        ("b1=4,e=500", 4.0, 1.0, 500.0),
+        ("b1=5,e=1000", 5.0, 1.0, 1000.0),
+    ];
+
+    let tol = 1e-12;
+    let m0_default = five_dim::make_state(0.5, 0.5, 0.5, 0.5, 0.5);
+
+    println!("\n  Phase 1: Top concept (b_up=0) iteration data");
+    println!("  {:>20} {:>8} {:>10} {:>8} {:>10} {:>10} {:>10} {:>10} {:>8}",
+        "regime", "n_iters", "rho(J)", "d0", "n_pred", "n_act/n_p", "rho_eff", "k_eff", "k_0");
+    println!("  {}", "-".repeat(108));
+
+    let mut data: Vec<(f64, f64, f64, f64, f64, f64, f64, f64, f64)> = Vec::new();
+
+    for &(rname, b1, d1, eps) in regimes {
+        let p = n_operator::DynamicsParams::uniform()
+            .with_beta1(b1).with_delta1(d1).with_eps(eps);
+        let r = n_operator::run_iteration(&m0_default, 0.0, 0.0, &p, 5000, tol);
+        if !r.converged { continue; }
+
+        let m_star = r.m_star;
+        let j = n_operator::compute_jacobian(&m_star, 0.0, 0.0, &p);
+        let eigs = j.complex_eigenvalues();
+        let rho_j = eigs.iter().map(|c| c.norm()).fold(0.0_f64, f64::max);
+
+        let d0: f64 = (0..5).map(|k| (m0_default[k] - m_star[k]).powi(2)).sum::<f64>().sqrt();
+
+        let n_iters = r.n_iters as f64;
+        let rho_eff = if n_iters > 0.0 && d0 > 1e-15 {
+            (tol / d0).powf(1.0 / n_iters)
+        } else { 0.0 };
+
+        let k_eff = if rho_j > 1e-15 { rho_eff / rho_j } else { f64::NAN };
+        let n_pred = if rho_j > 0.0 && rho_j < 1.0 && d0 > tol {
+            (d0 / tol).ln() / (1.0 / rho_j).ln()
+        } else { 0.0 };
+        let ratio = if n_pred > 0.0 { n_iters / n_pred } else { f64::NAN };
+
+        let m1_arr = if r.trajectory.len() > 1 { r.trajectory[1] } else { five_dim::to_array(&m0_default) };
+        let d1_val: f64 = (0..5).map(|k| (m1_arr[k] - m_star[k]).powi(2)).sum::<f64>().sqrt();
+        let rho_0 = if d0 > 1e-15 { d1_val / d0 } else { 0.0 };
+        let k_0 = if rho_j > 1e-15 { rho_0 / rho_j } else { f64::NAN };
+
+        println!("  {:>20} {:>8} {:>10.6} {:>8.4} {:>10.1} {:>10.3} {:>10.6} {:>8.3} {:>8.3}",
+            rname, r.n_iters, rho_j, d0, n_pred, ratio, rho_eff, k_eff, k_0);
+
+        data.push((rho_j, d0, n_iters, n_pred, ratio, rho_eff, k_eff, k_0, eps));
+    }
+
+    println!("\n  Phase 2: Multiple initial conditions (varying d0)");
+    println!("  For v2.64_opt regime (b1=1.5, d1=0.5, eps=50), test different M0:");
+
+    let p_opt = n_operator::DynamicsParams::uniform()
+        .with_beta1(1.5).with_delta1(0.5).with_eps(50.0);
+    let r_opt = n_operator::run_iteration(&m0_default, 0.0, 0.0, &p_opt, 5000, 1e-14);
+    let m_star_opt = r_opt.m_star;
+    let j_opt = n_operator::compute_jacobian(&m_star_opt, 0.0, 0.0, &p_opt);
+    let eigs_opt = j_opt.complex_eigenvalues();
+    let rho_j_opt = eigs_opt.iter().map(|c| c.norm()).fold(0.0_f64, f64::max);
+
+    let m0_variants: &[(&str, [f64; 5])] = &[
+        ("M0=[0.1]^5", [0.1; 5]),
+        ("M0=[0.2]^5", [0.2; 5]),
+        ("M0=[0.3]^5", [0.3; 5]),
+        ("M0=[0.4]^5", [0.4; 5]),
+        ("M0=[0.5]^5", [0.5; 5]),
+        ("M0=[0.6]^5", [0.6; 5]),
+        ("M0=[0.7]^5", [0.7; 5]),
+        ("M0=[0.8]^5", [0.8; 5]),
+        ("M0=[0.9]^5", [0.9; 5]),
+    ];
+
+    println!("  {:>15} {:>8} {:>8} {:>10} {:>10} {:>10} {:>10}",
+        "M0", "n_iters", "d0", "n_pred", "n_act/n_p", "k_eff", "k_0");
+    println!("  {}", "-".repeat(78));
+
+    let mut m0_data: Vec<(f64, f64, f64, f64, f64)> = Vec::new();
+
+    for &(mname, m0_arr) in m0_variants {
+        let m0 = five_dim::make_state(m0_arr[0], m0_arr[1], m0_arr[2], m0_arr[3], m0_arr[4]);
+        let r = n_operator::run_iteration(&m0, 0.0, 0.0, &p_opt, 5000, tol);
+        if !r.converged { continue; }
+
+        let d0: f64 = (0..5).map(|k| (m0[k] - m_star_opt[k]).powi(2)).sum::<f64>().sqrt();
+        let n_iters = r.n_iters as f64;
+        let rho_eff = if n_iters > 0.0 && d0 > 1e-15 {
+            (tol / d0).powf(1.0 / n_iters)
+        } else { 0.0 };
+        let k_eff = if rho_j_opt > 1e-15 { rho_eff / rho_j_opt } else { f64::NAN };
+        let n_pred = if rho_j_opt > 0.0 && rho_j_opt < 1.0 && d0 > tol {
+            (d0 / tol).ln() / (1.0 / rho_j_opt).ln()
+        } else { 0.0 };
+        let ratio = if n_pred > 0.0 { n_iters / n_pred } else { f64::NAN };
+
+        let m1_arr = if r.trajectory.len() > 1 { r.trajectory[1] } else { m0_arr };
+        let d1_val: f64 = (0..5).map(|k| (m1_arr[k] - m_star_opt[k]).powi(2)).sum::<f64>().sqrt();
+        let rho_0 = if d0 > 1e-15 { d1_val / d0 } else { 0.0 };
+        let k_0 = if rho_j_opt > 1e-15 { rho_0 / rho_j_opt } else { f64::NAN };
+
+        println!("  {:>15} {:>8} {:>8.4} {:>10.1} {:>10.3} {:>10.3} {:>10.3}",
+            mname, r.n_iters, d0, n_pred, ratio, k_eff, k_0);
+
+        m0_data.push((d0, n_iters, n_pred, k_eff, k_0));
+    }
+
+    println!("\n  Phase 3: Distance-corrected formula n = [ln(d0/tol) + α·ln(d0)] / ln(1/(k·ρ))");
+    println!("  Fit: n_actual/n_pred = f(d0, rho(J))");
+
+    let ratios: Vec<f64> = data.iter().filter(|d| d.4.is_finite() && d.4 > 0.0).map(|d| d.4).collect();
+    let ln_d0s: Vec<f64> = data.iter().filter(|d| d.4.is_finite() && d.4 > 0.0).map(|d| d.1.ln()).collect();
+    let rho_js: Vec<f64> = data.iter().filter(|d| d.4.is_finite() && d.4 > 0.0).map(|d| d.0).collect();
+
+    if ratios.len() >= 3 {
+        let n = ratios.len() as f64;
+        let mean_r: f64 = ratios.iter().sum::<f64>() / n;
+        let mean_ld: f64 = ln_d0s.iter().sum::<f64>() / n;
+        let mean_rho: f64 = rho_js.iter().sum::<f64>() / n;
+
+        let var_ld: f64 = ln_d0s.iter().map(|x| (x - mean_ld).powi(2)).sum::<f64>() / n;
+        let cov_rld: f64 = ratios.iter().zip(ln_d0s.iter()).map(|(r, l)| (r - mean_r) * (l - mean_ld)).sum::<f64>() / n;
+        let var_rho: f64 = rho_js.iter().map(|x| (x - mean_rho).powi(2)).sum::<f64>() / n;
+        let cov_rrho: f64 = ratios.iter().zip(rho_js.iter()).map(|(r, rh)| (r - mean_r) * (rh - mean_rho)).sum::<f64>() / n;
+
+        let slope_d0 = if var_ld > 1e-20 { cov_rld / var_ld } else { 0.0 };
+        let slope_rho = if var_rho > 1e-20 { cov_rrho / var_rho } else { 0.0 };
+
+        println!("  n_actual/n_pred = {:.3} + {:.3}·ln(d0) + {:.3}·ρ(J)", mean_r - slope_d0 * mean_ld - slope_rho * mean_rho, slope_d0, slope_rho);
+
+        let residuals: Vec<f64> = data.iter().filter(|d| d.4.is_finite() && d.4 > 0.0)
+            .map(|d| {
+                let pred_ratio = (mean_r - slope_d0 * mean_ld - slope_rho * mean_rho)
+                    + slope_d0 * d.1.ln() + slope_rho * d.0;
+                ((d.4 - pred_ratio) / d.4).abs()
+            }).collect();
+        let mape = residuals.iter().sum::<f64>() / residuals.len() as f64 * 100.0;
+        println!("  Correction MAPE: {:.1}%", mape);
+    }
+
+    println!("\n  Phase 4: Optimal k for each regime");
+    println!("  k_opt = argmin |n_actual - ln(d0/tol)/ln(1/(k·ρ))|");
+    println!("  {:>20} {:>10} {:>10} {:>10} {:>10} {:>10}",
+        "regime", "rho(J)", "d0", "n_act", "k_opt", "n_corr");
+    println!("  {}", "-".repeat(78));
+
+    for &(rname, b1, d1, eps) in regimes {
+        let p = n_operator::DynamicsParams::uniform()
+            .with_beta1(b1).with_delta1(d1).with_eps(eps);
+        let r = n_operator::run_iteration(&m0_default, 0.0, 0.0, &p, 5000, tol);
+        if !r.converged { continue; }
+
+        let m_star = r.m_star;
+        let j = n_operator::compute_jacobian(&m_star, 0.0, 0.0, &p);
+        let eigs = j.complex_eigenvalues();
+        let rho_j = eigs.iter().map(|c| c.norm()).fold(0.0_f64, f64::max);
+
+        let d0: f64 = (0..5).map(|k| (m0_default[k] - m_star[k]).powi(2)).sum::<f64>().sqrt();
+        let n_act = r.n_iters as f64;
+
+        if rho_j <= 0.0 || rho_j >= 1.0 || d0 <= tol { continue; }
+
+        let k_opt = if n_act > 0.0 {
+            let ln_ratio = (d0 / tol).ln() / n_act;
+            (-(ln_ratio - (1.0 / rho_j).ln())).exp()
+        } else { f64::NAN };
+
+        let n_corr = if k_opt > 0.0 && k_opt * rho_j < 1.0 {
+            (d0 / tol).ln() / (1.0 / (k_opt * rho_j)).ln()
+        } else { 0.0 };
+
+        println!("  {:>20} {:>10.6} {:>10.4} {:>10} {:>10.3} {:>10.1}",
+            rname, rho_j, d0, r.n_iters, k_opt, n_corr);
+    }
+
+    println!("\n  Phase 5: Summary statistics");
+    let k_opts: Vec<f64> = data.iter().filter(|d| d.6.is_finite() && d.6 > 0.0).map(|d| d.6).collect();
+    if !k_opts.is_empty() {
+        let mut sorted = k_opts.clone();
+        sorted.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        let median = sorted[sorted.len() / 2];
+        let mean = sorted.iter().sum::<f64>() / sorted.len() as f64;
+        let min = sorted[0];
+        let max = sorted[sorted.len() - 1];
+        println!("  k_eff: mean={:.3}, median={:.3}, range=[{:.3}, {:.3}]", mean, median, min, max);
+    }
+
+    let k0s: Vec<f64> = data.iter().filter(|d| d.7.is_finite() && d.7 > 0.0).map(|d| d.7).collect();
+    if !k0s.is_empty() {
+        let mut sorted = k0s.clone();
+        sorted.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        let median = sorted[sorted.len() / 2];
+        let mean = sorted.iter().sum::<f64>() / sorted.len() as f64;
+        let min = sorted[0];
+        let max = sorted[sorted.len() - 1];
+        println!("  k_0:   mean={:.3}, median={:.3}, range=[{:.3}, {:.3}]", mean, median, min, max);
+    }
+
+    let ratios_all: Vec<f64> = data.iter().filter(|d| d.4.is_finite() && d.4 > 0.0).map(|d| d.4).collect();
+    if !ratios_all.is_empty() {
+        let mut sorted = ratios_all.clone();
+        sorted.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        let median = sorted[sorted.len() / 2];
+        let mean = sorted.iter().sum::<f64>() / sorted.len() as f64;
+        println!("  n_act/n_pred: mean={:.3}, median={:.3}", mean, median);
+    }
+
+    println!("\n  === DISTANCE CORRECTION SUMMARY ===");
+    println!("  The naive formula n = ln(d0/tol)/ln(1/ρ) assumes linear contraction.");
+    println!("  The actual contraction is nonlinear: k = ρ_eff/ρ(J) > 1.");
+    println!("  If k can be predicted from (d0, ρ(J)), the formula becomes:");
+    println!("  n = ln(d0/tol) / ln(1/(k·ρ(J)))");
+    println!("  This section quantifies the correction needed.");
+}
+
+pub fn run_lattice_prediction_validation() {
+    use crate::five_dim;
+    use crate::n_operator;
+    use crate::pipeline;
+
+    println!("{}", "=".repeat(72));
+    println!("  LATTICE PREDICTION VALIDATION: per-concept n_iters prediction");
+    println!("  Testing v2.77 correction formula on ALL concepts (b_up >= 0)");
+    println!("{}", "=".repeat(72));
+
+    let topologies: Vec<(&str, fca::FcaLattice)> = vec![
+        ("chain-3", fca::build_chain_lattice(3)),
+        ("chain-5", fca::build_chain_lattice(5)),
+        ("diamond", fca::build_diamond_lattice()),
+        ("M3", fca::build_m3_lattice()),
+        ("grid-3x3", fca::build_grid_lattice(3, 3)),
+        ("anti-3", fca::build_antichain_lattice(3)),
+    ];
+
+    let regimes: &[(&str, f64, f64, f64)] = &[
+        ("b1=1,e=20", 1.0, 1.0, 20.0),
+        ("b1=1.5,d=0.5,e=50", 1.5, 0.5, 50.0),
+        ("b1=2,e=100", 2.0, 1.0, 100.0),
+        ("b1=3,e=200", 3.0, 1.0, 200.0),
+    ];
+
+    let tol = 1e-12_f64;
+
+    let mut all_records: Vec<(f64, f64, f64, f64, f64, f64, f64)> = Vec::new();
+
+    println!("\n  {:>12} {:>10} {:>4} {:>6} {:>8} {:>8} {:>10} {:>8} {:>10} {:>10} {:>10} {:>8}",
+        "topo", "regime", "ci", "h", "b_up", "rho_up", "rho(J)", "d0", "n_act", "n_naive", "n_corr", "k_opt");
+    println!("  {}", "-".repeat(126));
+
+    for (tname, lat) in &topologies {
+        let stats = pipeline::compute_lattice_stats(lat);
+
+        for &(rname, b1, d1, eps) in regimes {
+            let p = n_operator::DynamicsParams::uniform()
+                .with_beta1(b1).with_delta1(d1).with_eps(eps);
+
+            let results = pipeline::run_topological_iteration(lat, &stats, &p);
+
+            let n = lat.concepts.len();
+            let sorted: Vec<usize> = {
+                let mut s: Vec<usize> = (0..n).collect();
+                s.sort_by_key(|&i| std::cmp::Reverse(stats.heights[i]));
+                s
+            };
+
+            for &ci in &sorted {
+                let ref r = results[ci];
+                let ref res = match r {
+                    Some(ref res) => res,
+                    None => continue,
+                };
+                if !res.converged { continue; }
+
+                let (b_up, rho_up) = pipeline::get_upstream(ci, &stats.feeders, &results);
+                let m0 = pipeline::init_state(ci, lat, &stats);
+                let m_star = res.m_star;
+
+                let j = n_operator::compute_jacobian(&m_star, b_up, rho_up, &p);
+                let eigs = j.complex_eigenvalues();
+                let rho_j = eigs.iter().map(|c| c.norm()).fold(0.0_f64, f64::max);
+
+                let d0: f64 = (0..5).map(|k| (m0[k] - m_star[k]).powi(2)).sum::<f64>().sqrt();
+                let n_act = res.n_iters as f64;
+
+                if rho_j <= 0.0 || rho_j >= 1.0 || d0 <= tol { continue; }
+
+                let n_naive = (d0 / tol).ln() / (1.0 / rho_j).ln();
+
+                let correction = 1.221 + 0.690 * d0.ln() - 1.988 * rho_j;
+                let correction = correction.max(0.5).min(3.0);
+                let n_corr = n_naive * correction;
+
+                let rho_eff = if n_act > 0.0 && d0 > tol {
+                    (tol / d0).powf(1.0 / n_act)
+                } else { 0.0 };
+                let k_opt = if rho_j > 1e-15 { rho_eff / rho_j } else { f64::NAN };
+
+                println!("  {:>12} {:>10} {:>4} {:>6} {:>8.4} {:>8.4} {:>10.6} {:>8.4} {:>10} {:>10.1} {:>10.1} {:>8.3}",
+                    tname, rname, ci, stats.heights[ci], b_up, rho_up, rho_j, d0,
+                    res.n_iters, n_naive, n_corr, k_opt);
+
+                all_records.push((rho_j, d0, n_act, n_naive, n_corr, k_opt, b_up));
+            }
+        }
+    }
+
+    println!("\n  Phase 2: Accuracy analysis");
+
+    let naive_errors: Vec<f64> = all_records.iter()
+        .filter(|r| r.3 > 0.0 && r.2 > 0.0)
+        .map(|r| ((r.2 - r.3) / r.2).abs())
+        .collect();
+    let corr_errors: Vec<f64> = all_records.iter()
+        .filter(|r| r.4 > 0.0 && r.2 > 0.0)
+        .map(|r| ((r.2 - r.4) / r.2).abs())
+        .collect();
+
+    if !naive_errors.is_empty() {
+        let mut sorted_ne = naive_errors.clone();
+        sorted_ne.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        let median_ne = sorted_ne[sorted_ne.len() / 2];
+        let mean_ne = sorted_ne.iter().sum::<f64>() / sorted_ne.len() as f64;
+        println!("  Naive formula:  MAPE={:.1}%, median={:.1}%, n={}", mean_ne * 100.0, median_ne * 100.0, sorted_ne.len());
+    }
+    if !corr_errors.is_empty() {
+        let mut sorted_ce = corr_errors.clone();
+        sorted_ce.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        let median_ce = sorted_ce[sorted_ce.len() / 2];
+        let mean_ce = sorted_ce.iter().sum::<f64>() / sorted_ce.len() as f64;
+        println!("  Corrected formula: MAPE={:.1}%, median={:.1}%, n={}", mean_ce * 100.0, median_ce * 100.0, sorted_ce.len());
+    }
+
+    println!("\n  Phase 3: b_up dependency analysis");
+    let low_bup: Vec<f64> = all_records.iter()
+        .filter(|r| r.6 < 0.1 && r.4 > 0.0 && r.2 > 0.0)
+        .map(|r| ((r.2 - r.4) / r.2).abs())
+        .collect();
+    let high_bup: Vec<f64> = all_records.iter()
+        .filter(|r| r.6 >= 0.1 && r.4 > 0.0 && r.2 > 0.0)
+        .map(|r| ((r.2 - r.4) / r.2).abs())
+        .collect();
+
+    if !low_bup.is_empty() {
+        let mean_low = low_bup.iter().sum::<f64>() / low_bup.len() as f64;
+        println!("  b_up < 0.1: MAPE={:.1}%, n={}", mean_low * 100.0, low_bup.len());
+    }
+    if !high_bup.is_empty() {
+        let mean_high = high_bup.iter().sum::<f64>() / high_bup.len() as f64;
+        println!("  b_up >= 0.1: MAPE={:.1}%, n={}", mean_high * 100.0, high_bup.len());
+    }
+
+    println!("\n  Phase 4: k_opt vs b_up regression");
+    let k_bup_pairs: Vec<(f64, f64)> = all_records.iter()
+        .filter(|r| r.5.is_finite() && r.5 > 0.0 && r.5 < 10.0)
+        .map(|r| (r.6, r.5))
+        .collect();
+
+    if k_bup_pairs.len() >= 3 {
+        let n = k_bup_pairs.len() as f64;
+        let mean_b: f64 = k_bup_pairs.iter().map(|p| p.0).sum::<f64>() / n;
+        let mean_k: f64 = k_bup_pairs.iter().map(|p| p.1).sum::<f64>() / n;
+        let var_b: f64 = k_bup_pairs.iter().map(|p| (p.0 - mean_b).powi(2)).sum::<f64>() / n;
+        let cov_bk: f64 = k_bup_pairs.iter().map(|p| (p.0 - mean_b) * (p.1 - mean_k)).sum::<f64>() / n;
+        let slope = if var_b > 1e-20 { cov_bk / var_b } else { 0.0 };
+        let intercept = mean_k - slope * mean_b;
+
+        let residuals: Vec<f64> = k_bup_pairs.iter()
+            .map(|p| {
+                let pred = intercept + slope * p.0;
+                ((p.1 - pred) / p.1).abs()
+            }).collect();
+        let mape = residuals.iter().sum::<f64>() / residuals.len() as f64 * 100.0;
+
+        println!("  k_opt = {:.3} + {:.3}·b_up  (MAPE={:.1}%)", intercept, slope, mape);
+        println!("  k_opt stats: mean={:.3}, median={:.3}", mean_k,
+            { let mut s: Vec<f64> = k_bup_pairs.iter().map(|p| p.1).collect(); s.sort_by(|a,b| a.partial_cmp(b).unwrap()); s[s.len()/2] });
+    }
+
+    println!("\n  Phase 5: Lattice-level prediction (max n_iters)");
+    for (tname, lat) in &topologies {
+        let stats = pipeline::compute_lattice_stats(lat);
+
+        for &(rname, b1, d1, eps) in regimes {
+            let p = n_operator::DynamicsParams::uniform()
+                .with_beta1(b1).with_delta1(d1).with_eps(eps);
+
+            let results = pipeline::run_topological_iteration(lat, &stats, &p);
+            let n = lat.concepts.len();
+
+            let mut max_n_act: usize = 0;
+            let mut max_n_naive: f64 = 0.0;
+            let mut max_n_corr: f64 = 0.0;
+
+            for ci in 0..n {
+                let ref res = match &results[ci] {
+                    Some(ref r) => r,
+                    None => continue,
+                };
+                if !res.converged { continue; }
+
+                let (b_up, rho_up) = pipeline::get_upstream(ci, &stats.feeders, &results);
+                let m0 = pipeline::init_state(ci, lat, &stats);
+                let m_star = res.m_star;
+
+                let j = n_operator::compute_jacobian(&m_star, b_up, rho_up, &p);
+                let eigs = j.complex_eigenvalues();
+                let rho_j = eigs.iter().map(|c| c.norm()).fold(0.0_f64, f64::max);
+
+                let d0: f64 = (0..5).map(|k| (m0[k] - m_star[k]).powi(2)).sum::<f64>().sqrt();
+
+                if rho_j <= 0.0 || rho_j >= 1.0 || d0 <= tol { continue; }
+
+                if res.n_iters > max_n_act { max_n_act = res.n_iters; }
+
+                let n_naive = (d0 / tol).ln() / (1.0 / rho_j).ln();
+                if n_naive > max_n_naive { max_n_naive = n_naive; }
+
+                let correction = (1.221 + 0.690 * d0.ln() - 1.988 * rho_j).max(0.5).min(3.0);
+                let n_corr = n_naive * correction;
+                if n_corr > max_n_corr { max_n_corr = n_corr; }
+            }
+
+            let naive_err = if max_n_act > 0 { ((max_n_act as f64 - max_n_naive) / max_n_act as f64).abs() * 100.0 } else { 0.0 };
+            let corr_err = if max_n_act > 0 { ((max_n_act as f64 - max_n_corr) / max_n_act as f64).abs() * 100.0 } else { 0.0 };
+
+            println!("  {:>12} {:>10}: n_act={:>3}  n_naive={:>6.1}({:>5.1}%)  n_corr={:>6.1}({:>5.1}%)",
+                tname, rname, max_n_act, max_n_naive, naive_err, max_n_corr, corr_err);
+        }
+    }
+
+    println!("\n  === LATTICE PREDICTION VALIDATION SUMMARY ===");
+    println!("  v2.77 correction formula tested on all concepts (b_up >= 0).");
+    println!("  If MAPE stays < 10% for b_up > 0, the formula generalizes.");
+    println!("  If not, a b_up-dependent correction term is needed.");
+}
