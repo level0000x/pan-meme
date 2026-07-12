@@ -172,4 +172,8 @@ fn run_synthetic_suite(max_concepts: usize, time_limit: f64, output_dir: &PathBu
     experiments::run_epsilon_sensitivity();
     experiments::run_optimal_epsilon();
     experiments::run_joint_optimization();
+    experiments::run_ratio_analysis();
+    experiments::run_balance_condition();
+    experiments::run_optimal_regime();
+    experiments::run_cross_topology_optimal();
 }

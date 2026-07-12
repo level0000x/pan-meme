@@ -39,6 +39,7 @@ impl DynamicsParams {
     pub fn with_kappa2(&self, kappa2: f64) -> Self { Self { kappa2, ..*self } }
     pub fn with_lambda1(&self, lambda1: f64) -> Self { Self { lambda1, ..*self } }
     pub fn with_mu1(&self, mu1: f64) -> Self { Self { mu1, ..*self } }
+    pub fn with_eps(&self, eps: f64) -> Self { Self { eps, ..*self } }
 }
 
 pub fn n_operator(m: &State5, b_up: f64, rho_up: f64, p: &DynamicsParams) -> State5 {

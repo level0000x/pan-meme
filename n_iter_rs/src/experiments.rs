@@ -11457,3 +11457,699 @@ pub fn run_joint_optimization() {
     println!("  - High δ₁ + optimal ε may achieve ρ < 0.10");
     println!("  - Global optimum identifies absolute fastest convergence regime");
 }
+
+pub fn run_ratio_analysis() {
+    println!("\n{}", "=".repeat(72));
+    println!("  RATIO ANALYSIS: β₁/δ₁ coupling-damping balance");
+    println!("{}", "=".repeat(72));
+
+    let beta1_vals: Vec<f64> = vec![0.1, 0.2, 0.5, 1.0, 2.0, 3.0, 5.0, 7.0, 10.0, 15.0, 20.0, 30.0, 50.0, 70.82];
+    let eps_opt: f64 = 5.27;
+
+    // Part 1: For each β₁, find optimal δ₁ at fixed ε=5.27
+    println!("\n  Part 1: Optimal δ₁ per β₁ at ε={}", eps_opt);
+    println!("  {:>8}  {:>8}  {:>8}  {:>10}  {:>8}", "β₁", "δ₁*_opt", "β₁/δ₁*", "ρ_min", "β₁/δ₁*");
+    let mut ratio_data: Vec<(f64, f64, f64, f64)> = Vec::new();
+
+    for &b1 in &beta1_vals {
+        let delta1_fine: Vec<f64> = {
+            let mut v = Vec::new();
+            let mut d = 0.1f64;
+            while d <= 200.0 {
+                v.push(d);
+                d *= 1.15;
+            }
+            v
+        };
+        let mut best_rho = 1.0f64;
+        let mut best_d1 = 0.0f64;
+        for &d1 in &delta1_fine {
+            if let Some((d, b, rho, r, s)) = find_physical_root(b1, d1, eps_opt) {
+                let (rho_j2d, _, _, _, _, _) = compute_j2d_analytical(d, b, rho, r, s, &DynamicsParams::uniform());
+                if rho_j2d < best_rho {
+                    best_rho = rho_j2d;
+                    best_d1 = d1;
+                }
+            }
+        }
+        let ratio = b1 / best_d1;
+        println!("  {:>8.2}  {:>8.2}  {:>8.3}  {:>10.5}  {:>8.3}", b1, best_d1, ratio, best_rho, ratio);
+        ratio_data.push((b1, best_d1, best_rho, ratio));
+    }
+
+    // Part 2: β₁/δ₁ ratio universality test
+    println!("\n  Part 2: Is ρ a universal function of β₁/δ₁?");
+    let ratio_target: Vec<f64> = vec![0.01, 0.05, 0.1, 0.2, 0.5, 1.0, 2.0, 5.0, 10.0];
+    let b1_test: Vec<f64> = vec![1.0, 5.0, 10.0, 20.0, 50.0];
+
+    print!("  {:>10}", "β₁/δ₁");
+    for &b1 in &b1_test {
+        print!("  β₁={:<4}", b1);
+    }
+    println!();
+
+    for &rat in &ratio_target {
+        print!("  {:>10.3}", rat);
+        for &b1 in &b1_test {
+            let d1 = b1 / rat;
+            if let Some((d, b, rho, r, s)) = find_physical_root(b1, d1, eps_opt) {
+                let (rho_j2d, _, _, _, _, _) = compute_j2d_analytical(d, b, rho, r, s, &DynamicsParams::uniform());
+                print!("  {:>7.4}", rho_j2d);
+            } else {
+                print!("     ----");
+            }
+        }
+        println!();
+    }
+
+    // Part 3: Jacobian decomposition at different ratios
+    println!("\n  Part 3: Jacobian components vs β₁/δ₁ ratio (β₁=7, ε={})", eps_opt);
+    println!("  {:>10}  {:>8}  {:>10}  {:>10}  {:>10}  {:>10}  {:>10}", "β₁/δ₁", "δ₁", "ρ(J_2D)", "|∂D/∂d|", "|∂D/∂ρ|", "|∂B/∂b|", "|∂B/∂d|");
+    let b1_jac = 7.0f64;
+    let d1_jac_vals: Vec<f64> = vec![0.5, 1.0, 2.0, 3.5, 5.0, 7.0, 10.0, 14.0, 20.0, 35.0, 50.0, 70.0, 100.0];
+    for &d1 in &d1_jac_vals {
+        let rat = b1_jac / d1;
+        if let Some((d, b, rho, r, s)) = find_physical_root(b1_jac, d1, eps_opt) {
+            let (rho_j2d, jdd, jdr, jbb, jbd, _) = compute_j2d_analytical(d, b, rho, r, s, &DynamicsParams::uniform());
+            println!("  {:>10.3}  {:>8.1}  {:>10.5}  {:>10.5}  {:>10.5}  {:>10.5}  {:>10.5}",
+                     rat, d1, rho_j2d, jdd.abs(), jdr.abs(), jbb.abs(), jbd.abs());
+        }
+    }
+
+    // Part 4: Ratio-optimal ε search
+    println!("\n  Part 4: Optimal ε at different β₁/δ₁ ratios (β₁=7)");
+    let ratios_for_eps: Vec<f64> = vec![0.5, 0.7, 1.0, 1.4, 2.0, 3.0, 5.0, 7.0, 10.0];
+    let eps_scan: Vec<f64> = {
+        let mut v = Vec::new();
+        let mut e = 0.01f64;
+        while e <= 10.0 {
+            v.push(e);
+            e *= 1.3;
+        }
+        v
+    };
+
+    println!("  {:>10}  {:>8}  {:>10}  {:>10}", "β₁/δ₁", "δ₁", "ε*_opt", "ρ_min");
+    for &rat in &ratios_for_eps {
+        let d1 = b1_jac / rat;
+        let mut best_rho = 1.0f64;
+        let mut best_eps = 0.01f64;
+        for &eps in &eps_scan {
+            if let Some((d, b, rho, r, s)) = find_physical_root(b1_jac, d1, eps) {
+                let (rho_j2d, _, _, _, _, _) = compute_j2d_analytical(d, b, rho, r, s, &DynamicsParams::uniform());
+                if rho_j2d < best_rho {
+                    best_rho = rho_j2d;
+                    best_eps = eps;
+                }
+            }
+        }
+        println!("  {:>10.2}  {:>8.2}  {:>10.4}  {:>10.5}", rat, d1, best_eps, best_rho);
+    }
+
+    // Part 5: Optimal ratio vs β₁
+    println!("\n  Part 5: Optimal β₁/δ₁ ratio vs β₁ (with optimal ε)");
+    println!("  {:>8}  {:>8}  {:>8}  {:>10}  {:>8}  {:>10}", "β₁", "δ₁*", "ε*", "ρ_min", "β₁/δ₁*", "ratio");
+    for &(b1, best_d1, best_rho, ratio) in &ratio_data {
+        let eps_fine: Vec<f64> = {
+            let mut v = Vec::new();
+            let mut e = 0.01f64;
+            while e <= 10.0 {
+                v.push(e);
+                e *= 1.25;
+            }
+            v
+        };
+        let mut best_eps2 = 0.01f64;
+        let mut best_rho2 = best_rho;
+        for &eps in &eps_fine {
+            if let Some((d, b, rho, r, s)) = find_physical_root(b1, best_d1, eps) {
+                let (rho_j2d, _, _, _, _, _) = compute_j2d_analytical(d, b, rho, r, s, &DynamicsParams::uniform());
+                if rho_j2d < best_rho2 {
+                    best_rho2 = rho_j2d;
+                    best_eps2 = eps;
+                }
+            }
+        }
+        println!("  {:>8.2}  {:>8.2}  {:>8.3}  {:>10.5}  {:>8.3}  {:>10.5}", b1, best_d1, best_eps2, best_rho2, ratio, best_rho2);
+    }
+
+    // Part 6: Analytical insight — what determines optimal ratio?
+    println!("\n  Part 6: Fixed point components at optimal ratio (β₁=7)");
+    let d1_at_ratio: Vec<f64> = vec![3.5, 5.0, 7.0, 10.0, 14.0, 21.0];
+    println!("  {:>8}  {:>10}  {:>10}  {:>10}  {:>10}  {:>10}  {:>10}", "δ₁", "d*", "b*", "ρ*", "r*", "s*", "ρ(J_2D)");
+    for &d1 in &d1_at_ratio {
+        if let Some((d, b, rho, r, s)) = find_physical_root(b1_jac, d1, eps_opt) {
+            let (rho_j2d, _, _, _, _, _) = compute_j2d_analytical(d, b, rho, r, s, &DynamicsParams::uniform());
+            println!("  {:>8.1}  {:>10.5}  {:>10.5}  {:>10.5}  {:>10.5}  {:>10.5}  {:>10.5}",
+                     d1, d, b, rho, r, s, rho_j2d);
+        }
+    }
+
+    println!("\n  RATIO ANALYSIS CONCLUSIONS:");
+    println!("  - Optimal β₁/δ₁ ratio reveals coupling-damping balance condition");
+    println!("  - Universality test checks if ρ depends only on ratio");
+    println!("  - Jacobian decomposition shows which mechanism dominates");
+}
+
+pub fn run_balance_condition() {
+    println!("\n{}", "=".repeat(72));
+    println!("  BALANCE CONDITION: solve |∂D/∂d| = |∂B/∂d| analytically");
+    println!("{}", "=".repeat(72));
+
+    let beta1_vals: Vec<f64> = vec![0.5, 1.0, 2.0, 3.0, 5.0, 7.0, 10.0, 15.0, 20.0, 30.0, 50.0];
+    let eps_vals: Vec<f64> = vec![0.01, 0.1, 0.5, 1.0, 2.0, 3.0, 5.0, 7.0];
+
+    // Part 1: For each (β₁, ε), solve |∂D/∂d| = |∂B/∂d| for δ₁
+    println!("\n  Part 1: Balance δ₁ vs numerical optimal δ₁");
+    println!("  {:>8}  {:>6}  {:>10}  {:>10}  {:>10}  {:>10}", "β₁", "ε", "δ₁_bal", "δ₁_opt", "ρ_bal", "ρ_opt");
+
+    for &b1 in &beta1_vals {
+        for &eps in &eps_vals {
+            // Find δ₁ where |∂D/∂d| = |∂B/∂d| using bisection
+            let mut d1_lo = 0.1f64;
+            let mut d1_hi = 200.0f64;
+            let mut d1_bal = 0.0f64;
+            let mut found_bal = false;
+
+            for _ in 0..80 {
+                let d1_mid = (d1_lo + d1_hi) / 2.0;
+                if let Some((d, b, rho, r, s)) = find_physical_root(b1, d1_mid, eps) {
+                    let (_, jdd, _, _, jbd, _) = compute_j2d_analytical(d, b, rho, r, s, &DynamicsParams::uniform());
+                    let diff = jdd.abs() - jbd.abs();
+                    if diff > 0.0 {
+                        d1_hi = d1_mid;
+                    } else {
+                        d1_lo = d1_mid;
+                    }
+                    if (d1_hi - d1_lo) < 0.001 {
+                        d1_bal = d1_mid;
+                        found_bal = true;
+                        break;
+                    }
+                } else {
+                    d1_hi = d1_mid;
+                }
+            }
+
+            // Find numerical optimal δ₁
+            let d1_scan: Vec<f64> = {
+                let mut v = Vec::new();
+                let mut d = 0.1f64;
+                while d <= 200.0 {
+                    v.push(d);
+                    d *= 1.1;
+                }
+                v
+            };
+            let mut d1_opt = 0.1f64;
+            let mut rho_opt = 1.0f64;
+            for &d1 in &d1_scan {
+                if let Some((d, b, rho, r, s)) = find_physical_root(b1, d1, eps) {
+                    let (rj, _, _, _, _, _) = compute_j2d_analytical(d, b, rho, r, s, &DynamicsParams::uniform());
+                    if rj < rho_opt {
+                        rho_opt = rj;
+                        d1_opt = d1;
+                    }
+                }
+            }
+
+            if found_bal {
+                let rho_bal = if let Some((d, b, rho, r, s)) = find_physical_root(b1, d1_bal, eps) {
+                    let (rj, _, _, _, _, _) = compute_j2d_analytical(d, b, rho, r, s, &DynamicsParams::uniform());
+                    rj
+                } else { f64::NAN };
+                println!("  {:>8.1}  {:>6.2}  {:>10.3}  {:>10.3}  {:>10.5}  {:>10.5}", b1, eps, d1_bal, d1_opt, rho_bal, rho_opt);
+            } else {
+                println!("  {:>8.1}  {:>6.2}  {:>10}  {:>10.3}  {:>10}  {:>10.5}", b1, eps, "NO_BAL", d1_opt, "----", rho_opt);
+            }
+        }
+    }
+
+    // Part 2: Balance condition quality — how close is ρ_bal to ρ_opt?
+    println!("\n  Part 2: Balance condition accuracy (ρ_bal vs ρ_opt)");
+    let mut n_good = 0usize;
+    let mut n_total = 0usize;
+    let mut residuals: Vec<f64> = Vec::new();
+
+    for &b1 in &beta1_vals {
+        for &eps in &eps_vals {
+            let mut d1_lo = 0.1f64;
+            let mut d1_hi = 200.0f64;
+            let mut d1_bal = 0.0f64;
+            let mut found_bal = false;
+
+            for _ in 0..80 {
+                let d1_mid = (d1_lo + d1_hi) / 2.0;
+                if let Some((d, b, rho, r, s)) = find_physical_root(b1, d1_mid, eps) {
+                    let (_, jdd, _, _, jbd, _) = compute_j2d_analytical(d, b, rho, r, s, &DynamicsParams::uniform());
+                    let diff = jdd.abs() - jbd.abs();
+                    if diff > 0.0 { d1_hi = d1_mid; } else { d1_lo = d1_mid; }
+                    if (d1_hi - d1_lo) < 0.001 { d1_bal = d1_mid; found_bal = true; break; }
+                } else { d1_hi = d1_mid; }
+            }
+
+            if found_bal {
+                let rho_bal = if let Some((d, b, rho, r, s)) = find_physical_root(b1, d1_bal, eps) {
+                    let (rj, _, _, _, _, _) = compute_j2d_analytical(d, b, rho, r, s, &DynamicsParams::uniform());
+                    rj
+                } else { continue; };
+
+                let d1_scan: Vec<f64> = {
+                    let mut v = Vec::new();
+                    let mut d = 0.1f64;
+                    while d <= 200.0 { v.push(d); d *= 1.1; }
+                    v
+                };
+                let rho_opt = d1_scan.iter().filter_map(|&d1| {
+                    find_physical_root(b1, d1, eps).map(|(d, b, rho, r, s)| {
+                        compute_j2d_analytical(d, b, rho, r, s, &DynamicsParams::uniform()).0
+                    })
+                }).fold(1.0f64, f64::min);
+
+                let residual = (rho_bal - rho_opt).abs();
+                let rel = residual / rho_opt;
+                residuals.push(rel);
+                n_total += 1;
+                if rel < 0.05 { n_good += 1; }
+            }
+        }
+    }
+
+    println!("  Total cases: {}", n_total);
+    println!("  ρ_bal within 5% of ρ_opt: {} ({:.0}%)", n_good, 100.0 * n_good as f64 / n_total.max(1) as f64);
+    if !residuals.is_empty() {
+        residuals.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        let median = residuals[residuals.len() / 2];
+        let mean = residuals.iter().sum::<f64>() / residuals.len() as f64;
+        println!("  Median relative residual: {:.4}", median);
+        println!("  Mean relative residual: {:.4}", mean);
+    }
+
+    // Part 3: Analytical approximation for δ₁_bal(β₁, ε)
+    println!("\n  Part 3: δ₁_bal scaling analysis");
+    println!("  {:>8}  {:>6}  {:>10}  {:>10}  {:>10}", "β₁", "ε", "δ₁_bal", "β₁/δ₁", "ε·β₁/δ₁");
+    for &b1 in &beta1_vals {
+        let eps = 5.0f64;
+        let mut d1_lo = 0.1f64;
+        let mut d1_hi = 200.0f64;
+        let mut d1_bal = 0.0f64;
+        let mut found = false;
+        for _ in 0..80 {
+            let d1_mid = (d1_lo + d1_hi) / 2.0;
+            if let Some((d, b, rho, r, s)) = find_physical_root(b1, d1_mid, eps) {
+                let (_, jdd, _, _, jbd, _) = compute_j2d_analytical(d, b, rho, r, s, &DynamicsParams::uniform());
+                if jdd.abs() - jbd.abs() > 0.0 { d1_hi = d1_mid; } else { d1_lo = d1_mid; }
+                if (d1_hi - d1_lo) < 0.001 { d1_bal = d1_mid; found = true; break; }
+            } else { d1_hi = d1_mid; }
+        }
+        if found {
+            let ratio = b1 / d1_bal;
+            let eps_ratio = eps * b1 / d1_bal;
+            println!("  {:>8.1}  {:>6.2}  {:>10.3}  {:>10.3}  {:>10.3}", b1, eps, d1_bal, ratio, eps_ratio);
+        }
+    }
+
+    // Part 4: Jacobian structure at balance point
+    println!("\n  Part 4: Full Jacobian at balance point (ε=5.0)");
+    println!("  {:>8}  {:>10}  {:>10}  {:>10}  {:>10}  {:>10}  {:>10}", "β₁", "δ₁_bal", "ρ(J_2D)", "J[0,0]", "J[0,1]", "J[1,0]", "J[1,1]");
+    for &b1 in &beta1_vals {
+        let eps = 5.0f64;
+        let mut d1_lo = 0.1f64;
+        let mut d1_hi = 200.0f64;
+        let mut d1_bal = 0.0f64;
+        let mut found = false;
+        for _ in 0..80 {
+            let d1_mid = (d1_lo + d1_hi) / 2.0;
+            if let Some((d, b, rho, r, s)) = find_physical_root(b1, d1_mid, eps) {
+                let (_, jdd, _, _, jbd, _) = compute_j2d_analytical(d, b, rho, r, s, &DynamicsParams::uniform());
+                if jdd.abs() - jbd.abs() > 0.0 { d1_hi = d1_mid; } else { d1_lo = d1_mid; }
+                if (d1_hi - d1_lo) < 0.001 { d1_bal = d1_mid; found = true; break; }
+            } else { d1_hi = d1_mid; }
+        }
+        if found {
+            if let Some((d, b, rho, r, s)) = find_physical_root(b1, d1_bal, eps) {
+                let (rj, j00, j01, _, j10, _) = compute_j2d_analytical(d, b, rho, r, s, &DynamicsParams::uniform());
+                println!("  {:>8.1}  {:>10.3}  {:>10.5}  {:>10.5}  {:>10.5}  {:>10.5}  {:>10.5}",
+                         b1, d1_bal, rj, j00, j01, j10, j00);
+            }
+        }
+    }
+
+    // Part 5: Cross-ε validation — does balance δ₁ track optimal δ₁ across ε?
+    println!("\n  Part 5: Balance vs optimal δ₁ across ε (β₁=7)");
+    let b1_cross = 7.0f64;
+    let eps_cross: Vec<f64> = vec![0.1, 0.5, 1.0, 2.0, 3.0, 5.0, 7.0, 10.0];
+    println!("  {:>8}  {:>10}  {:>10}  {:>10}  {:>10}", "ε", "δ₁_bal", "δ₁_opt", "ρ_bal", "ρ_opt");
+    for &eps in &eps_cross {
+        // Balance
+        let mut d1_lo = 0.1f64;
+        let mut d1_hi = 200.0f64;
+        let mut d1_bal = 0.0f64;
+        let mut found = false;
+        for _ in 0..80 {
+            let d1_mid = (d1_lo + d1_hi) / 2.0;
+            if let Some((d, b, rho, r, s)) = find_physical_root(b1_cross, d1_mid, eps) {
+                let (_, jdd, _, _, jbd, _) = compute_j2d_analytical(d, b, rho, r, s, &DynamicsParams::uniform());
+                if jdd.abs() - jbd.abs() > 0.0 { d1_hi = d1_mid; } else { d1_lo = d1_mid; }
+                if (d1_hi - d1_lo) < 0.001 { d1_bal = d1_mid; found = true; break; }
+            } else { d1_hi = d1_mid; }
+        }
+        // Optimal
+        let d1_scan: Vec<f64> = {
+            let mut v = Vec::new();
+            let mut d = 0.1f64;
+            while d <= 200.0 { v.push(d); d *= 1.1; }
+            v
+        };
+        let mut d1_opt = 0.1f64;
+        let mut rho_opt = 1.0f64;
+        for &d1 in &d1_scan {
+            if let Some((d, b, rho, r, s)) = find_physical_root(b1_cross, d1, eps) {
+                let (rj, _, _, _, _, _) = compute_j2d_analytical(d, b, rho, r, s, &DynamicsParams::uniform());
+                if rj < rho_opt { rho_opt = rj; d1_opt = d1; }
+            }
+        }
+        let rho_bal = if found {
+            if let Some((d, b, rho, r, s)) = find_physical_root(b1_cross, d1_bal, eps) {
+                compute_j2d_analytical(d, b, rho, r, s, &DynamicsParams::uniform()).0
+            } else { f64::NAN }
+        } else { f64::NAN };
+        println!("  {:>8.2}  {:>10.3}  {:>10.3}  {:>10.5}  {:>10.5}", eps, d1_bal, d1_opt, rho_bal, rho_opt);
+    }
+
+    println!("\n  BALANCE CONDITION CONCLUSIONS:");
+    println!("  - |∂D/∂d| = |∂B/∂d| gives analytical estimate of optimal δ₁");
+    println!("  - Compare balance-predicted δ₁ with numerically optimal δ₁");
+    println!("  - If accurate, this gives a closed-form optimization criterion");
+}
+
+pub fn run_optimal_regime() {
+    println!("\n{}", "=".repeat(72));
+    println!("  OPTIMAL REGIME: dynamics at globally optimal parameters");
+    println!("{}", "=".repeat(72));
+
+    // Parameter sets to compare
+    let regimes: Vec<(&str, f64, f64, f64)> = vec![
+        ("default", 1.0, 10.0, 0.01),
+        ("v2.55_opt", 7.0, 10.0, 1.25),
+        ("v2.56_opt", 7.0, 5.0, 5.27),
+        ("global_opt", 15.0, 15.3, 5.17),
+        ("sweet_low", 7.0, 7.0, 5.43),
+        ("sweet_high", 30.0, 35.0, 5.0),
+    ];
+
+    // Part 1: Fixed point comparison
+    println!("\n  Part 1: Fixed point at each regime");
+    println!("  {:>12}  {:>8}  {:>6}  {:>6}  {:>10}  {:>10}  {:>10}  {:>10}  {:>10}  {:>10}",
+             "regime", "β₁", "δ₁", "ε", "d*", "b*", "ρ*", "r*", "s*", "ρ(J_2D)");
+    for &(name, b1, d1, eps) in &regimes {
+        if let Some((d, b, rho, r, s)) = find_physical_root(b1, d1, eps) {
+            let (rho_j2d, _, _, _, _, _) = compute_j2d_analytical(d, b, rho, r, s, &DynamicsParams::uniform());
+            println!("  {:>12}  {:>8.1}  {:>6.1}  {:>6.2}  {:>10.5}  {:>10.5}  {:>10.5}  {:>10.5}  {:>10.5}  {:>10.5}",
+                     name, b1, d1, eps, d, b, rho, r, s, rho_j2d);
+        }
+    }
+
+    // Part 2: Jacobian full decomposition at each regime
+    println!("\n  Part 2: Jacobian structure at each regime");
+    println!("  {:>12}  {:>10}  {:>10}  {:>10}  {:>10}  {:>10}  {:>10}",
+             "regime", "ρ(J_2D)", "J[0,0]", "J[0,1]", "J[1,0]", "J[1,1]", "det(J)");
+    for &(name, b1, d1, eps) in &regimes {
+        if let Some((d, b, rho, r, s)) = find_physical_root(b1, d1, eps) {
+            let (rho_j2d, j00, j01, _, j10, _) = compute_j2d_analytical(d, b, rho, r, s, &DynamicsParams::uniform());
+            let det = j00 * j00 - j01 * j10;
+            println!("  {:>12}  {:>10.5}  {:>10.5}  {:>10.5}  {:>10.5}  {:>10.5}  {:>10.6}",
+                     name, rho_j2d, j00, j01, j10, j00, det);
+        }
+    }
+
+    // Part 3: Convergence iterations estimate
+    println!("\n  Part 3: Iterations to converge (|M-M*| < 0.01)");
+    println!("  {:>12}  {:>10}  {:>10}  {:>10}", "regime", "ρ(J_2D)", "n_iter", "n_default");
+    let rho_default = if let Some((d, b, rho, r, s)) = find_physical_root(1.0, 10.0, 0.01) {
+        compute_j2d_analytical(d, b, rho, r, s, &DynamicsParams::uniform()).0
+    } else { 0.5 };
+    for &(name, b1, d1, eps) in &regimes {
+        if let Some((d, b, rho, r, s)) = find_physical_root(b1, d1, eps) {
+            let (rho_j2d, _, _, _, _, _) = compute_j2d_analytical(d, b, rho, r, s, &DynamicsParams::uniform());
+            let n_iter = (0.01f64.ln() / rho_j2d.ln()).ceil();
+            let n_default = (0.01f64.ln() / rho_default.ln()).ceil();
+            println!("  {:>12}  {:>10.5}  {:>10.0}  {:>10.0}", name, rho_j2d, n_iter, n_default);
+        }
+    }
+
+    // Part 4: Robustness — ρ degradation when deviating from optimal
+    println!("\n  Part 4: Robustness around global optimum (β₁=15, δ₁=15.3, ε=5.17)");
+    let b1_opt = 15.0f64;
+    let d1_opt = 15.3f64;
+    let eps_opt = 5.17f64;
+
+    // Perturb β₁
+    println!("\n  4a: β₁ perturbation (δ₁={}, ε={})", d1_opt, eps_opt);
+    println!("  {:>8}  {:>10}  {:>10}", "β₁", "ρ(J_2D)", "Δρ/ρ");
+    let rho_base = if let Some((d, b, rho, r, s)) = find_physical_root(b1_opt, d1_opt, eps_opt) {
+        compute_j2d_analytical(d, b, rho, r, s, &DynamicsParams::uniform()).0
+    } else { 0.153 };
+    for &b1 in &[5.0, 7.0, 10.0, 12.0, 15.0, 18.0, 20.0, 25.0, 30.0, 50.0] {
+        if let Some((d, b, rho, r, s)) = find_physical_root(b1, d1_opt, eps_opt) {
+            let (rho_j2d, _, _, _, _, _) = compute_j2d_analytical(d, b, rho, r, s, &DynamicsParams::uniform());
+            let delta = (rho_j2d - rho_base) / rho_base;
+            println!("  {:>8.1}  {:>10.5}  {:>10.4}", b1, rho_j2d, delta);
+        }
+    }
+
+    // Perturb δ₁
+    println!("\n  4b: δ₁ perturbation (β₁={}, ε={})", b1_opt, eps_opt);
+    println!("  {:>8}  {:>10}  {:>10}", "δ₁", "ρ(J_2D)", "Δρ/ρ");
+    for &d1 in &[5.0, 8.0, 10.0, 12.0, 15.3, 18.0, 20.0, 25.0, 30.0, 50.0] {
+        if let Some((d, b, rho, r, s)) = find_physical_root(b1_opt, d1, eps_opt) {
+            let (rho_j2d, _, _, _, _, _) = compute_j2d_analytical(d, b, rho, r, s, &DynamicsParams::uniform());
+            let delta = (rho_j2d - rho_base) / rho_base;
+            println!("  {:>8.1}  {:>10.5}  {:>10.4}", d1, rho_j2d, delta);
+        }
+    }
+
+    // Perturb ε
+    println!("\n  4c: ε perturbation (β₁={}, δ₁={})", b1_opt, d1_opt);
+    println!("  {:>8}  {:>10}  {:>10}", "ε", "ρ(J_2D)", "Δρ/ρ");
+    for &eps in &[0.5, 1.0, 2.0, 3.0, 4.0, 5.17, 6.0, 7.0, 8.0, 10.0] {
+        if let Some((d, b, rho, r, s)) = find_physical_root(b1_opt, d1_opt, eps) {
+            let (rho_j2d, _, _, _, _, _) = compute_j2d_analytical(d, b, rho, r, s, &DynamicsParams::uniform());
+            let delta = (rho_j2d - rho_base) / rho_base;
+            println!("  {:>8.2}  {:>10.5}  {:>10.4}", eps, rho_j2d, delta);
+        }
+    }
+
+    // Part 5: Robustness bandwidth — parameter range where ρ < 1.1 × ρ_opt
+    println!("\n  Part 5: Robustness bandwidth (ρ < 1.1 × ρ_opt)");
+    let rho_limit = rho_base * 1.1;
+
+    // β₁ bandwidth
+    let mut b1_lo = 1.0f64;
+    let mut b1_hi = 100.0f64;
+    for _ in 0..50 {
+        let b1_mid = (b1_lo + b1_hi) / 2.0;
+        if let Some((d, b, rho, r, s)) = find_physical_root(b1_mid, d1_opt, eps_opt) {
+            let (rj, _, _, _, _, _) = compute_j2d_analytical(d, b, rho, r, s, &DynamicsParams::uniform());
+            if rj < rho_limit { b1_lo = b1_mid; } else { b1_hi = b1_mid; }
+        }
+        if (b1_hi - b1_lo) < 0.01 { break; }
+    }
+    println!("  β₁ range: [{:.1}, {:.1}] (optimal {})", b1_lo, b1_hi, b1_opt);
+
+    // δ₁ bandwidth
+    let mut d1_lo = 1.0f64;
+    let mut d1_hi = 100.0f64;
+    for _ in 0..50 {
+        let d1_mid = (d1_lo + d1_hi) / 2.0;
+        if let Some((d, b, rho, r, s)) = find_physical_root(b1_opt, d1_mid, eps_opt) {
+            let (rj, _, _, _, _, _) = compute_j2d_analytical(d, b, rho, r, s, &DynamicsParams::uniform());
+            if rj < rho_limit { d1_lo = d1_mid; } else { d1_hi = d1_mid; }
+        }
+        if (d1_hi - d1_lo) < 0.01 { break; }
+    }
+    println!("  δ₁ range: [{:.1}, {:.1}] (optimal {})", d1_lo, d1_hi, d1_opt);
+
+    // ε bandwidth
+    let mut eps_lo = 0.1f64;
+    let mut eps_hi = 20.0f64;
+    for _ in 0..50 {
+        let eps_mid = (eps_lo + eps_hi) / 2.0;
+        if let Some((d, b, rho, r, s)) = find_physical_root(b1_opt, d1_opt, eps_mid) {
+            let (rj, _, _, _, _, _) = compute_j2d_analytical(d, b, rho, r, s, &DynamicsParams::uniform());
+            if rj < rho_limit { eps_lo = eps_mid; } else { eps_hi = eps_mid; }
+        }
+        if (eps_hi - eps_lo) < 0.01 { break; }
+    }
+    println!("  ε range: [{:.2}, {:.2}] (optimal {})", eps_lo, eps_hi, eps_opt);
+
+    // Part 6: Summary comparison
+    println!("\n  Part 6: Final summary");
+    println!("  Default (β₁=1, δ₁=10, ε=0.01): ρ={:.4}, n_iter={:.0}", rho_default, (0.01f64.ln() / rho_default.ln()).ceil());
+    if let Some((d, b, rho, r, s)) = find_physical_root(b1_opt, d1_opt, eps_opt) {
+        let (rho_opt, _, _, _, _, _) = compute_j2d_analytical(d, b, rho, r, s, &DynamicsParams::uniform());
+        let n_opt = (0.01f64.ln() / rho_opt.ln()).ceil();
+        println!("  Optimal (β₁={}, δ₁={}, ε={}): ρ={:.4}, n_iter={:.0}", b1_opt, d1_opt, eps_opt, rho_opt, n_opt);
+        println!("  Speedup: {:.1}× fewer iterations", rho_default.ln() / rho_opt.ln());
+        println!("  Each iteration contracts {:.1}% vs {:.1}%", (1.0 - rho_opt) * 100.0, (1.0 - rho_default) * 100.0);
+    }
+
+    println!("\n  OPTIMAL REGIME CONCLUSIONS:");
+    println!("  - Global optimum provides significant speedup over default");
+    println!("  - Robustness bandwidth quantifies parameter sensitivity");
+    println!("  - Jacobian structure at optimum reveals convergence geometry");
+}
+
+pub fn run_cross_topology_optimal() {
+    println!("\n{}", "=".repeat(72));
+    println!("  CROSS-TOPOLOGY OPTIMAL: verify topology-independence at optimal params");
+    println!("{}", "=".repeat(72));
+
+    let topologies: Vec<(&str, fca::FcaLattice)> = vec![
+        ("chain-5",   fca::build_chain_lattice(5)),
+        ("chain-10",  fca::build_chain_lattice(10)),
+        ("chain-20",  fca::build_chain_lattice(20)),
+        ("chain-50",  fca::build_chain_lattice(50)),
+        ("diamond",   fca::build_diamond_lattice()),
+        ("M3",        fca::build_m3_lattice()),
+        ("B3",        fca::build_b3_lattice()),
+        ("B4",        fca::build_b4_lattice()),
+        ("grid-3x3",  fca::build_grid_lattice(3, 3)),
+        ("grid-4x4",  fca::build_grid_lattice(4, 4)),
+        ("anti-5",    fca::build_antichain_lattice(5)),
+        ("anti-8",    fca::build_antichain_lattice(8)),
+        ("anti-12",   fca::build_antichain_lattice(12)),
+    ];
+
+    let regimes: Vec<(&str, f64, f64, f64)> = vec![
+        ("default",     1.0,  10.0, 0.01),
+        ("v2.56_opt",   7.0,  5.0,  5.27),
+        ("global_opt",  15.0, 15.3, 5.17),
+        ("sweet_high",  30.0, 35.0, 5.0),
+    ];
+
+    // Part 1: Analytical ρ(J_2D) — should be topology-independent
+    println!("\n  Part 1: Analytical ρ(J_2D) (topology-independent by theory)");
+    println!("  {:>12}  {:>10}  {:>10}  {:>10}", "regime", "β₁", "δ₁", "ρ(J_2D)_an");
+    for &(name, b1, d1, eps) in &regimes {
+        if let Some((d, b, rho, r, s)) = find_physical_root(b1, d1, eps) {
+            let (rho_j2d, _, _, _, _, _) = compute_j2d_analytical(d, b, rho, r, s, &DynamicsParams::uniform());
+            println!("  {:>12}  {:>10.1}  {:>10.1}  {:>10.5}", name, b1, d1, rho_j2d);
+        }
+    }
+
+    // Part 2: Actual N-operator convergence on each topology
+    println!("\n  Part 2: Actual convergence rate by topology");
+    for &(regime_name, b1, d1, eps) in &regimes {
+        println!("\n  --- {} (β₁={}, δ₁={}, ε={}) ---", regime_name, b1, d1, eps);
+        println!("  {:>12}  {:>4}  {:>8}  {:>8}  {:>10}  {:>10}  {:>10}",
+            "topology", "conc", "avg_itr", "max_itr", "avg_ρ", "max_ρ", "ρ<1");
+
+        let params = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1).with_eps(eps);
+
+        let mut rho_vals: Vec<f64> = Vec::new();
+        let mut iter_vals: Vec<usize> = Vec::new();
+
+        for (name, lat) in &topologies {
+            let stats = pipeline::compute_lattice_stats(lat);
+            let results = pipeline::run_topological_iteration(lat, &stats, &params);
+
+            let mut iters: Vec<usize> = Vec::new();
+            let mut rhos: Vec<f64> = Vec::new();
+
+            for opt in &results {
+                if let Some(ref dr) = opt {
+                    iters.push(dr.n_iters);
+                    rhos.push(dr.rho_spectral);
+                }
+            }
+
+            if iters.is_empty() { continue; }
+
+            let avg_itr = iters.iter().sum::<usize>() as f64 / iters.len() as f64;
+            let max_itr = *iters.iter().max().unwrap_or(&0);
+            let avg_rho = rhos.iter().sum::<f64>() / rhos.len() as f64;
+            let max_rho = rhos.iter().cloned().fold(0.0_f64, f64::max);
+            let rho_ok = max_rho < 1.0;
+
+            println!("  {:>12}  {:>4}  {:>8.0}  {:>8}  {:>10.4}  {:>10.4}  {:>10}",
+                name, lat.concepts.len(), avg_itr, max_itr, avg_rho, max_rho,
+                if rho_ok { "YES" } else { "BREAK" });
+
+            rho_vals.push(avg_rho);
+            iter_vals.push(avg_itr as usize);
+        }
+
+        // Statistics across topologies
+        if !rho_vals.is_empty() {
+            let rho_mean = rho_vals.iter().sum::<f64>() / rho_vals.len() as f64;
+            let rho_min = rho_vals.iter().cloned().fold(1.0_f64, f64::min);
+            let rho_max = rho_vals.iter().cloned().fold(0.0_f64, f64::max);
+            let rho_std = (rho_vals.iter().map(|r| (r - rho_mean).powi(2)).sum::<f64>() / rho_vals.len() as f64).sqrt();
+            println!("  {:>12}  {:>4}  {:>8}  {:>8}  {:>10.4}  {:>10.4}  {:>10}",
+                "STATS", "", "", "", rho_mean, rho_max, "");
+            println!("  {:>12}  {:>4}  {:>8}  {:>8}  {:>10.4}  {:>10.4}",
+                "spread", "", "", "", rho_std, (rho_max - rho_min));
+        }
+    }
+
+    // Part 3: Topology-independence verification
+    println!("\n  Part 3: Topology-independence of optimal parameters");
+    println!("  {:>12}  {:>10}  {:>10}  {:>10}  {:>10}", "regime", "ρ_an", "ρ_actual", "Δρ", "rel_err");
+    for &(regime_name, b1, d1, eps) in &regimes {
+        let rho_an = if let Some((d, b, rho, r, s)) = find_physical_root(b1, d1, eps) {
+            compute_j2d_analytical(d, b, rho, r, s, &DynamicsParams::uniform()).0
+        } else { f64::NAN };
+
+        let params = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1).with_eps(eps);
+        let mut rho_actual_all: Vec<f64> = Vec::new();
+
+        for (_name, lat) in &topologies {
+            let stats = pipeline::compute_lattice_stats(lat);
+            let results = pipeline::run_topological_iteration(lat, &stats, &params);
+
+            for opt in &results {
+                if let Some(ref dr) = opt {
+                    rho_actual_all.push(dr.rho_spectral);
+                }
+            }
+        }
+
+        if !rho_actual_all.is_empty() {
+            let rho_actual_mean = rho_actual_all.iter().sum::<f64>() / rho_actual_all.len() as f64;
+            let delta = rho_actual_mean - rho_an;
+            let rel = delta.abs() / rho_an;
+            println!("  {:>12}  {:>10.5}  {:>10.5}  {:>10.5}  {:>10.4}",
+                regime_name, rho_an, rho_actual_mean, delta, rel);
+        }
+    }
+
+    // Part 4: Speedup across topologies
+    println!("\n  Part 4: Speedup (global_opt vs default) per topology");
+    println!("  {:>12}  {:>10}  {:>10}  {:>10}", "topology", "ρ_default", "ρ_optimal", "speedup");
+
+    let params_def = DynamicsParams::uniform().with_beta1(1.0).with_delta1(10.0).with_eps(0.01);
+    let params_opt = DynamicsParams::uniform().with_beta1(15.0).with_delta1(15.3).with_eps(5.17);
+
+    for (name, lat) in &topologies {
+        let stats = pipeline::compute_lattice_stats(lat);
+
+        let results_def = pipeline::run_topological_iteration(lat, &stats, &params_def);
+        let results_opt = pipeline::run_topological_iteration(lat, &stats, &params_opt);
+
+        let rho_def: Vec<f64> = results_def.iter().filter_map(|r| r.as_ref().map(|d| d.rho_spectral)).collect();
+        let rho_opt: Vec<f64> = results_opt.iter().filter_map(|r| r.as_ref().map(|d| d.rho_spectral)).collect();
+
+        if !rho_def.is_empty() && !rho_opt.is_empty() {
+            let avg_def = rho_def.iter().sum::<f64>() / rho_def.len() as f64;
+            let avg_opt = rho_opt.iter().sum::<f64>() / rho_opt.len() as f64;
+            let speedup = if avg_opt > 0.001 { avg_def.ln() / avg_opt.ln() } else { f64::NAN };
+            println!("  {:>12}  {:>10.5}  {:>10.5}  {:>10.1}×", name, avg_def, avg_opt, speedup);
+        }
+    }
+
+    println!("\n  CROSS-TOPOLOGY CONCLUSIONS:");
+    println!("  - Analytical ρ(J_2D) is topology-independent");
+    println!("  - Actual convergence rate may vary with topology");
+    println!("  - Speedup from optimization should be topology-uniform");
+}
