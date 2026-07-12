@@ -151,4 +151,5 @@ fn run_synthetic_suite(max_concepts: usize, time_limit: f64, output_dir: &PathBu
     experiments::run_closed_form_pipeline();
     experiments::run_topology_pipeline();
     experiments::run_contraction_analysis();
+    experiments::run_analytical_j2d();
 }
