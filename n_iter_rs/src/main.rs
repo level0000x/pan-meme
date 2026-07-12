@@ -122,6 +122,7 @@ fn run_synthetic_suite(max_concepts: usize, time_limit: f64, output_dir: &PathBu
     experiments::run_top_concept_analysis();
     experiments::run_max_rho_minimization();
     experiments::run_joint_bottleneck_optimization();
+    experiments::run_lattice_validation_optimal();
     experiments::run_synthetic_scan(max_concepts, time_limit, output_dir);
     experiments::run_stress_tests(output_dir);
     experiments::run_chain_diagnostics(output_dir);

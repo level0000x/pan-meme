@@ -1867,6 +1867,119 @@ pub fn run_ode_stability_analysis() {
         });
 }
 
+pub fn run_lattice_validation_optimal() {
+    use crate::fca;
+    use crate::pipeline;
+
+    println!("\n{}", "=".repeat(72));
+    println!("  LATTICE VALIDATION: v2.64 optimal on real topologies");
+    println!("{}", "=".repeat(72));
+
+    let regimes: Vec<(&str, f64, f64, f64)> = vec![
+        ("default",     1.0,  1.0,  0.5),
+        ("v2.56_opt",   7.0,  5.0,  5.27),
+        ("v2.64_opt",   1.5,  0.5,  50.0),
+        ("v2.64_extreme", 2.80, 0.30, 250.0),
+    ];
+
+    let lattices: Vec<(&str, fca::FcaLattice)> = vec![
+        ("chain-5", fca::build_chain_lattice(5)),
+        ("chain-10", fca::build_chain_lattice(10)),
+        ("chain-20", fca::build_chain_lattice(20)),
+        ("diamond", fca::build_diamond_lattice()),
+        ("B4", fca::build_b4_lattice()),
+        ("grid-3x3", fca::build_grid_lattice(3, 3)),
+        ("anti-8", fca::build_antichain_lattice(8)),
+    ];
+
+    for &(name, b1, d1, eps) in &regimes {
+        let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1).with_eps(eps);
+        println!("\n  Regime: {} (b1={}, d1={}, eps={})", name, b1, d1, eps);
+        println!("  {:>12} {:>6} {:>10} {:>10} {:>10} {:>10} {:>8}", "topology", "n_c", "max_rho", "analytic", "tau_inv", "n_iters", "conv%");
+
+        let (top_fp, top_rho) = top_concept_fixed_point(b1, d1, eps);
+
+        for &(lat_name, ref lat) in &lattices {
+            let stats = pipeline::compute_lattice_stats(lat);
+            let results = pipeline::run_topological_iteration(lat, &stats, &p);
+
+            let mut max_rho_actual = 0.0_f64;
+            let mut max_tau_inv = 0.0_f64;
+            let mut total_iters = 0_u64;
+            let mut n_converged = 0;
+            let mut n_total = 0;
+            let mut top_concept_rho = 0.0_f64;
+            let mut top_concept_idx = 0;
+
+            for (i, opt) in results.iter().enumerate() {
+                if let Some(ref r) = opt {
+                    n_total += 1;
+                    if r.converged {
+                        n_converged += 1;
+                        total_iters += r.n_iters as u64;
+                    }
+                    if r.rho_spectral > max_rho_actual {
+                        max_rho_actual = r.rho_spectral;
+                    }
+                    if r.tau_inv > max_tau_inv {
+                        max_tau_inv = r.tau_inv;
+                    }
+                    if stats.heights[i] == *stats.heights.iter().max().unwrap() {
+                        top_concept_rho = r.rho_spectral;
+                        top_concept_idx = i;
+                    }
+                }
+            }
+
+            let conv_pct = 100.0 * n_converged as f64 / n_total.max(1) as f64;
+            let avg_iters = if n_converged > 0 { total_iters as f64 / n_converged as f64 } else { 0.0 };
+
+            println!("  {:>12} {:>6} {:>10.6} {:>10.6} {:>10.4} {:>10.1} {:>7.1}%",
+                     lat_name, n_total, max_rho_actual, top_rho, max_tau_inv, avg_iters, conv_pct);
+        }
+    }
+
+    println!("\n  Cross-regime summary on chain-10:");
+    println!("  {:>15} {:>10} {:>10} {:>10} {:>10} {:>10}", "regime", "max_rho", "analytic", "ratio", "avg_iters", "conv%");
+    for &(name, b1, d1, eps) in &regimes {
+        let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1).with_eps(eps);
+        let (_, top_rho) = top_concept_fixed_point(b1, d1, eps);
+        let lat = fca::build_chain_lattice(10);
+        let stats = pipeline::compute_lattice_stats(&lat);
+        let results = pipeline::run_topological_iteration(&lat, &stats, &p);
+
+        let mut max_rho_actual = 0.0_f64;
+        let mut total_iters = 0_u64;
+        let mut n_converged = 0;
+        let mut n_total = 0;
+
+        for opt in &results {
+            if let Some(ref r) = opt {
+                n_total += 1;
+                if r.converged {
+                    n_converged += 1;
+                    total_iters += r.n_iters as u64;
+                }
+                if r.rho_spectral > max_rho_actual {
+                    max_rho_actual = r.rho_spectral;
+                }
+            }
+        }
+
+        let conv_pct = 100.0 * n_converged as f64 / n_total.max(1) as f64;
+        let avg_iters = if n_converged > 0 { total_iters as f64 / n_converged as f64 } else { 0.0 };
+        let ratio = max_rho_actual / top_rho.max(1e-15);
+
+        println!("  {:>15} {:>10.6} {:>10.6} {:>10.4} {:>10.1} {:>10.1}%", name, max_rho_actual, top_rho, ratio, avg_iters, conv_pct);
+    }
+
+    println!("\n  LATTICE VALIDATION CONCLUSIONS:");
+    println!("  v2.64_opt (b1=1.5, d1=0.5, eps=50):");
+    println!("  - Analytical max_rho = 0.0173");
+    println!("  - Should achieve ~58x faster convergence vs default");
+    println!("  - Top concept convergence rate determines global bottleneck");
+}
+
 pub fn run_ode_exact_lyapunov() {
     println!();
     println!("{}", "=".repeat(64));
