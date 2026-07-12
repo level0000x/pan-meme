@@ -10771,163 +10771,518 @@ pub fn run_asymptotic_limits() {
 
 pub fn run_upper_bound_analysis() {
     println!("\n================================================================");
-    println!("  UPPER BOUND ANALYSIS: Origin of ρ_max ≈ 0.813");
-    println!("  Test hypothesis: ρ_max = (1+ε)/(1+2ε)");
+    println!("  UPPER BOUND ANALYSIS: Origin of ρ_max (β₁→∞ limit)");
+    println!("  Using analytical find_physical_root + compute_j2d_analytical");
     println!("================================================================\n");
 
-    let uniform = DynamicsParams::uniform();
+    println!("  Part 1: ε-scan at β₁=100, δ₁=10 (analytical)\n");
+    println!("  ε        d*        b*        ρ*        r*        s*        ρ(J_2D)    (1+ε)/(1+2ε)");
 
-    println!("  Part 1: ε-scan at β₁=5000, δ₁=10\n");
-    println!("  ε        ρ(J_2D)    (1+ε)/(1+2ε)  ratio     d*        b*        ρ*");
-
-    let eps_vals: Vec<f64> = vec![0.01, 0.02, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.4, 0.5, 0.75, 1.0, 2.0, 5.0];
+    let eps_vals: Vec<f64> = vec![0.01, 0.02, 0.05, 0.1, 0.15, 0.2, 0.3, 0.5, 0.75, 1.0, 2.0, 5.0];
 
     for &eps_v in &eps_vals {
-        let p = DynamicsParams { eps: eps_v, ..uniform };
-        let big_b1 = 5000.0_f64;
-        let d1 = 10.0_f64;
-        let mut mc = five_dim::from_array(&[0.5, 0.5, 0.3, 0.5, 0.5]);
-        let p_b1 = p.with_beta1(big_b1).with_delta1(d1);
-        for _ in 0..20000 {
-            let mc_next = n_operator::n_operator(&mc, mc[1], mc[2], &p_b1);
-            let delta = (five_dim::to_array(&mc_next)[0] - five_dim::to_array(&mc)[0]).abs()
-                .max((five_dim::to_array(&mc_next)[1] - five_dim::to_array(&mc)[1]).abs())
-                .max((five_dim::to_array(&mc_next)[2] - five_dim::to_array(&mc)[2]).abs());
-            mc = mc_next;
-            if delta < 1e-14 { break; }
+        if let Some((dv, bv, rhov, rv, sv)) = find_physical_root(100.0, 10.0, eps_v) {
+            let p = DynamicsParams { eps: eps_v, ..DynamicsParams::uniform() }.with_beta1(100.0).with_delta1(10.0);
+            let (rho_j2d, _, _, _, _, _) = compute_j2d_analytical(dv, bv, rhov, rv, sv, &p);
+            let formula = (1.0 + eps_v) / (1.0 + 2.0 * eps_v);
+            println!("  {:>5.2}    {:.6}   {:.6}   {:.6}   {:.6}   {:.6}   {:.6}   {:.6}",
+                eps_v, dv, bv, rhov, rv, sv, rho_j2d, formula);
+        } else {
+            println!("  {:>5.2}    NO PHYSICAL ROOT", eps_v);
         }
-
-        let m_star = mc;
-        let j = n_operator::compute_jacobian(&m_star, mc[1], mc[2], &p_b1);
-        let eigs = j.complex_eigenvalues();
-        let rho_j = eigs.iter().map(|c| c.norm()).fold(0.0_f64, f64::max);
-
-        let (rho_j2d, _, _, _, _, _) = compute_j2d_analytical(mc[0], mc[1], mc[2], mc[3], mc[4], &p_b1);
-        let rho_use = if rho_j2d.is_finite() && rho_j2d > 0.0 { rho_j2d } else { rho_j };
-        let formula = (1.0 + eps_v) / (1.0 + 2.0 * eps_v);
-        let ratio = rho_use / formula;
-
-        println!("  {:>5.2}    {:.6}   {:.6}       {:.6}   {:.6}   {:.6}   {:.6}",
-            eps_v, rho_use, formula, ratio, mc[0], mc[1], mc[2]);
     }
 
-    println!("\n  Part 2: ε-scan at β₁=5000, δ₁=1 (low δ₁)\n");
-    println!("  ε        ρ(J_2D)    (1+ε)/(1+2ε)  ratio");
+    println!("\n  Part 2: β₁-scaling for various ε (δ₁=10)\n");
+    println!("  ε       | ρ(β=1)    ρ(5)     ρ(15)    ρ(50)    ρ(100)   | ρ_max");
 
     for &eps_v in &[0.05_f64, 0.1, 0.2, 0.3, 0.5, 1.0] {
-        let p = DynamicsParams { eps: eps_v, ..uniform };
-        let big_b1 = 5000.0_f64;
-        let d1 = 1.0_f64;
-        let mut mc = five_dim::from_array(&[0.5, 0.5, 0.3, 0.5, 0.5]);
-        let p_b1 = p.with_beta1(big_b1).with_delta1(d1);
-        for _ in 0..20000 {
-            let mc_next = n_operator::n_operator(&mc, mc[1], mc[2], &p_b1);
-            let delta = (five_dim::to_array(&mc_next)[0] - five_dim::to_array(&mc)[0]).abs()
-                .max((five_dim::to_array(&mc_next)[1] - five_dim::to_array(&mc)[1]).abs())
-                .max((five_dim::to_array(&mc_next)[2] - five_dim::to_array(&mc)[2]).abs());
-            mc = mc_next;
-            if delta < 1e-14 { break; }
+        print!("  {:>5.2}   |", eps_v);
+        let mut max_rho = 0.0_f64;
+        for &b1 in &[1.0_f64, 5.0, 15.0, 50.0, 100.0] {
+            if let Some((dv, bv, rhov, rv, sv)) = find_physical_root(b1, 10.0, eps_v) {
+                let p = DynamicsParams { eps: eps_v, ..DynamicsParams::uniform() }.with_beta1(b1).with_delta1(10.0);
+                let (rho_j2d, _, _, _, _, _) = compute_j2d_analytical(dv, bv, rhov, rv, sv, &p);
+                if rho_j2d > max_rho { max_rho = rho_j2d; }
+                print!("  {:.4}", rho_j2d);
+            } else {
+                print!("   N/A ");
+            }
         }
-        let (rho_j2d, _, _, _, _, _) = compute_j2d_analytical(mc[0], mc[1], mc[2], mc[3], mc[4], &p.with_beta1(big_b1).with_delta1(d1));
-        let rho_use = if rho_j2d.is_finite() && rho_j2d > 0.0 { rho_j2d } else {
-            let j = n_operator::compute_jacobian(&mc, mc[1], mc[2], &p.with_beta1(big_b1).with_delta1(d1));
-            j.complex_eigenvalues().iter().map(|c| c.norm()).fold(0.0_f64, f64::max)
-        };
-        let formula = (1.0 + eps_v) / (1.0 + 2.0 * eps_v);
-        let ratio = rho_use / formula;
-
-        println!("  {:>5.2}    {:.6}   {:.6}       {:.6}", eps_v, rho_use, formula, ratio);
+        println!("  | {:.4}", max_rho);
     }
 
-    println!("\n  Part 3: Component structure at β₁→∞ for various ε\n");
-    println!("  ε        d*        b*        ρ*        r*        s*");
-
-    for &eps_v in &[0.05_f64, 0.1, 0.2, 0.3, 0.5, 1.0] {
-        let p = DynamicsParams { eps: eps_v, ..uniform };
-        let big_b1 = 5000.0_f64;
-        let d1 = 10.0_f64;
-        let mut mc = five_dim::from_array(&[0.5, 0.5, 0.3, 0.5, 0.5]);
-        let p_b1 = p.with_beta1(big_b1).with_delta1(d1);
-        for _ in 0..20000 {
-            let mc_next = n_operator::n_operator(&mc, mc[1], mc[2], &p_b1);
-            let delta = (five_dim::to_array(&mc_next)[0] - five_dim::to_array(&mc)[0]).abs()
-                .max((five_dim::to_array(&mc_next)[1] - five_dim::to_array(&mc)[1]).abs())
-                .max((five_dim::to_array(&mc_next)[2] - five_dim::to_array(&mc)[2]).abs());
-            mc = mc_next;
-            if delta < 1e-14 { break; }
-        }
-        println!("  {:>5.2}    {:.6}   {:.6}   {:.6}   {:.6}   {:.6}",
-            eps_v, mc[0], mc[1], mc[2], mc[3], mc[4]);
-    }
-
-    println!("\n  Part 4: δ₁-scan at β₁=5000 for various ε\n");
-    println!("  ε       | ρ(δ=1)    ρ(5)     ρ(10)    ρ(50)    ρ(200)   | formula");
+    println!("\n  Part 3: δ₁-independence at β₁=100\n");
+    println!("  ε       | ρ(δ=1)    ρ(5)     ρ(10)    ρ(50)    ρ(200)");
 
     for &eps_v in &[0.1_f64, 0.3, 1.0] {
-        let p = DynamicsParams { eps: eps_v, ..uniform };
         print!("  {:>5.2}   |", eps_v);
         for &d1 in &[1.0_f64, 5.0, 10.0, 50.0, 200.0] {
-            let big_b1 = 5000.0_f64;
-            let mut mc = five_dim::from_array(&[0.5, 0.5, 0.3, 0.5, 0.5]);
-            let p_b1 = p.with_beta1(big_b1).with_delta1(d1);
-            for _ in 0..20000 {
-                let mc_next = n_operator::n_operator(&mc, mc[1], mc[2], &p_b1);
-                let delta = (five_dim::to_array(&mc_next)[0] - five_dim::to_array(&mc)[0]).abs()
-                    .max((five_dim::to_array(&mc_next)[1] - five_dim::to_array(&mc)[1]).abs())
-                    .max((five_dim::to_array(&mc_next)[2] - five_dim::to_array(&mc)[2]).abs());
-                mc = mc_next;
-                if delta < 1e-14 { break; }
+            if let Some((dv, bv, rhov, rv, sv)) = find_physical_root(100.0, d1, eps_v) {
+                let p = DynamicsParams { eps: eps_v, ..DynamicsParams::uniform() }.with_beta1(100.0).with_delta1(d1);
+                let (rho_j2d, _, _, _, _, _) = compute_j2d_analytical(dv, bv, rhov, rv, sv, &p);
+                print!("  {:.4}", rho_j2d);
+            } else {
+                print!("   N/A ");
             }
-            let (rho_j2d, _, _, _, _, _) = compute_j2d_analytical(mc[0], mc[1], mc[2], mc[3], mc[4], &p_b1);
-            let rho_use = if rho_j2d.is_finite() && rho_j2d > 0.0 { rho_j2d } else {
-                let j = n_operator::compute_jacobian(&mc, mc[1], mc[2], &p_b1);
-                j.complex_eigenvalues().iter().map(|c| c.norm()).fold(0.0_f64, f64::max)
-            };
-            print!("  {:.4}", rho_use);
         }
-        let formula = (1.0 + eps_v) / (1.0 + 2.0 * eps_v);
-        println!("  | {:.4}", formula);
+        println!();
     }
 
-    println!("\n  Part 5: Verification of (1+ε)/(1+2ε) formula\n");
+    println!("\n  Part 4: Component structure at β₁→∞ for various ε\n");
+    println!("  ε        d*        b*        ρ*        r*        ρ(J_2D)   1-d*");
 
-    let mut max_err = 0.0_f64;
-    let mut max_err_eps = 0.0_f64;
-    println!("  ε        ρ_numerical  ρ_formula    |error|    |error|%");
+    for &eps_v in &[0.01_f64, 0.05, 0.1, 0.2, 0.3, 0.5, 1.0, 2.0, 5.0] {
+        if let Some((dv, bv, rhov, rv, sv)) = find_physical_root(100.0, 10.0, eps_v) {
+            let p = DynamicsParams { eps: eps_v, ..DynamicsParams::uniform() }.with_beta1(100.0).with_delta1(10.0);
+            let (rho_j2d, _, _, _, _, _) = compute_j2d_analytical(dv, bv, rhov, rv, sv, &p);
+            println!("  {:>5.2}    {:.6}   {:.6}   {:.6}   {:.6}   {:.6}   {:.6}",
+                eps_v, dv, bv, rhov, rv, rho_j2d, 1.0 - dv);
+        }
+    }
 
-    for &eps_v in &[0.01_f64, 0.05, 0.1, 0.2, 0.3, 0.5, 0.75, 1.0, 2.0, 5.0] {
-        let p = DynamicsParams { eps: eps_v, ..uniform };
-        let big_b1 = 10000.0_f64;
-        let d1 = 10.0_f64;
+    println!("\n  Part 5: Fit ρ_max as function of ε\n");
+
+    let mut data: Vec<(f64, f64)> = Vec::new();
+    for &eps_v in &[0.01_f64, 0.02, 0.05, 0.1, 0.15, 0.2, 0.3, 0.5, 0.75, 1.0, 2.0, 5.0] {
+        if let Some((dv, bv, rhov, rv, sv)) = find_physical_root(100.0, 10.0, eps_v) {
+            let p = DynamicsParams { eps: eps_v, ..DynamicsParams::uniform() }.with_beta1(100.0).with_delta1(10.0);
+            let (rho_j2d, _, _, _, _, _) = compute_j2d_analytical(dv, bv, rhov, rv, sv, &p);
+            if rho_j2d.is_finite() { data.push((eps_v, rho_j2d)); }
+        }
+    }
+
+    println!("  Model A: ρ = A / (1 + B·ε)^C  (rational power)");
+    println!("  Model B: ρ = A · ε^(-α)         (power law)");
+    println!("  Model C: ρ = A · exp(-B·ε)      (exponential)");
+
+    if data.len() >= 3 {
+        let log_eps: Vec<f64> = data.iter().map(|(e, _)| e.ln()).collect();
+        let log_rho: Vec<f64> = data.iter().map(|(_, r)| r.ln()).collect();
+        let (slope, intercept, r2) = linreg(&log_eps, &log_rho);
+        println!("\n  Power law fit: ρ = {:.4} · ε^{:.4}", intercept.exp(), slope);
+        println!("    R² = {:.6}", r2);
+
+        println!("\n  Data vs power law:");
+        println!("  ε        ρ_actual   ρ_fit      err%");
+        for &(e, r) in &data {
+            let fit = intercept.exp() * e.powf(slope);
+            let err = (r - fit) / r * 100.0;
+            println!("  {:>5.2}    {:.6}   {:.6}   {:+.2}%", e, r, fit, err);
+        }
+    }
+
+    println!("\n  UPPER BOUND ANALYSIS CONCLUSIONS:");
+    println!("  - ρ_max depends on ε (not a universal constant)");
+    println!("  - Self-consistent iteration may converge to different root than analytical formula");
+    println!("  - Physical root (from closing equation) gives correct ρ_max");
+}
+
+pub fn run_root_comparison() {
+    println!("\n================================================================");
+    println!("  ROOT COMPARISON: Analytical vs Self-consistent Iteration");
+    println!("  Which root does the propagation map actually converge to?");
+    println!("================================================================\n");
+
+    let beta1_vals: Vec<f64> = vec![0.5, 1.0, 2.0, 5.0, 10.0, 15.0, 20.0, 50.0, 100.0];
+    let d1 = 10.0_f64;
+
+    println!("  Part 1: Side-by-side comparison at δ₁=10\n");
+    println!("  β₁      | Analytical (closing eq)          | Self-consistent iteration        | Match?");
+    println!("          | d*       b*       ρ*      ρ(J2D) | d*       b*       ρ*      ρ(J2D) |");
+
+    for &b1 in &beta1_vals {
+        let ana_str = if let Some((dv, bv, rhov, rv, sv)) = find_physical_root(b1, d1, DynamicsParams::uniform().eps) {
+            let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1);
+            let (rho_j2d, _, _, _, _, _) = compute_j2d_analytical(dv, bv, rhov, rv, sv, &p);
+            format!("{:.5}  {:.5}  {:.5} {:.5}", dv, bv, rhov, rho_j2d)
+        } else {
+            "NO ROOT                               ".into()
+        };
+
+        let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1);
         let mut mc = five_dim::from_array(&[0.5, 0.5, 0.3, 0.5, 0.5]);
-        let p_b1 = p.with_beta1(big_b1).with_delta1(d1);
         for _ in 0..50000 {
-            let mc_next = n_operator::n_operator(&mc, mc[1], mc[2], &p_b1);
+            let mc_next = n_operator::n_operator(&mc, mc[1], mc[2], &p);
             let delta = (five_dim::to_array(&mc_next)[0] - five_dim::to_array(&mc)[0]).abs()
                 .max((five_dim::to_array(&mc_next)[1] - five_dim::to_array(&mc)[1]).abs())
                 .max((five_dim::to_array(&mc_next)[2] - five_dim::to_array(&mc)[2]).abs());
             mc = mc_next;
-            if delta < 1e-15 { break; }
+            if delta < 1e-14 { break; }
         }
-        let (rho_j2d, _, _, _, _, _) = compute_j2d_analytical(mc[0], mc[1], mc[2], mc[3], mc[4], &p_b1);
-        let rho_use = if rho_j2d.is_finite() && rho_j2d > 0.0 { rho_j2d } else {
-            let j = n_operator::compute_jacobian(&mc, mc[1], mc[2], &p_b1);
-            j.complex_eigenvalues().iter().map(|c| c.norm()).fold(0.0_f64, f64::max)
-        };
-        let formula = (1.0 + eps_v) / (1.0 + 2.0 * eps_v);
-        let err = (rho_use - formula).abs();
-        let err_pct = err / formula * 100.0;
+        let (rho_j2d_iter, _, _, _, _, _) = compute_j2d_analytical(mc[0], mc[1], mc[2], mc[3], mc[4], &p);
+        let iter_str = format!("{:.5}  {:.5}  {:.5} {:.5}", mc[0], mc[1], mc[2], rho_j2d_iter);
 
-        if err_pct > max_err { max_err = err_pct; max_err_eps = eps_v; }
+        let ana_d = find_physical_root(b1, d1, DynamicsParams::uniform().eps).map(|(d,_,_,_,_)| d);
+        let d_match = if let Some(ad) = ana_d { (ad - mc[0]).abs() < 1e-3 } else { false };
+        let match_str = if d_match { "YES" } else { "NO" };
 
-        println!("  {:>5.2}    {:.6}     {:.6}     {:.6}   {:.4}%",
-            eps_v, rho_use, formula, err, err_pct);
+        println!("  {:>6.1}  | {} | {} | {}", b1, ana_str, iter_str, match_str);
     }
 
-    println!("\n  Max error: {:.4}% at ε={}", max_err, max_err_eps);
+    println!("\n  Part 2: Multiple initial conditions test\n");
 
-    println!("\n  UPPER BOUND ANALYSIS CONCLUSIONS:");
-    println!("  - Hypothesis ρ_max = (1+ε)/(1+2ε) tested across ε∈[0.01, 5.0]");
-    println!("  - Formula verified (if max error < 1%)");
-    println!("  - Upper bound is ε-dependent, not a universal constant");
+    let test_b1 = 50.0_f64;
+    println!("  Testing β₁={}, δ₁={} with 5 different initial conditions:", test_b1, d1);
+
+    let inits: Vec<[f64; 5]> = vec![
+        [0.5, 0.5, 0.3, 0.5, 0.5],
+        [0.1, 0.1, 0.1, 0.1, 0.1],
+        [0.9, 0.9, 0.9, 0.9, 0.9],
+        [0.01, 0.99, 0.01, 0.99, 0.01],
+        [0.99, 0.01, 0.99, 0.01, 0.99],
+    ];
+
+    println!("  Init #   | d*        b*        ρ*        r*        s*        ρ(J_2D)");
+
+    for (idx, init) in inits.iter().enumerate() {
+        let p = DynamicsParams::uniform().with_beta1(test_b1).with_delta1(d1);
+        let mut mc = five_dim::from_array(init);
+        let mut converged = false;
+        for _ in 0..50000 {
+            let mc_next = n_operator::n_operator(&mc, mc[1], mc[2], &p);
+            let delta = (five_dim::to_array(&mc_next)[0] - five_dim::to_array(&mc)[0]).abs()
+                .max((five_dim::to_array(&mc_next)[1] - five_dim::to_array(&mc)[1]).abs())
+                .max((five_dim::to_array(&mc_next)[2] - five_dim::to_array(&mc)[2]).abs());
+            mc = mc_next;
+            if delta < 1e-14 { converged = true; break; }
+        }
+        let (rho_j2d, _, _, _, _, _) = compute_j2d_analytical(mc[0], mc[1], mc[2], mc[3], mc[4], &p);
+        println!("  {}       | {:.6}  {:.6}  {:.6}  {:.6}  {:.6}  {:.6}  {}",
+            idx + 1, mc[0], mc[1], mc[2], mc[3], mc[4], rho_j2d,
+            if converged { "" } else { "(not converged)" });
+    }
+
+    println!("\n  Part 3: All roots from closing equation at β₁={}, δ₁={}", test_b1, d1);
+    let eps = DynamicsParams::uniform().eps;
+    let all_roots = find_all_roots(test_b1, d1, eps);
+    println!("  Found {} roots total:", all_roots.len());
+    println!("  #  | d*        b*        ρ*        r*        s*        physical?");
+    for (i, &(dv, bv, rhov, rv, sv, phys)) in all_roots.iter().enumerate() {
+        println!("  {}  | {:.6}  {:.6}  {:.6}  {:.6}  {:.6}  {}", i + 1, dv, bv, rhov, rv, sv, if phys { "YES" } else { "no" });
+    }
+
+    println!("\n  Part 4: Iteration convergence basin analysis\n");
+    println!("  Testing 20 random initial conditions at β₁={}, δ₁={}:", test_b1, d1);
+    let seeds: Vec<[f64; 5]> = vec![
+        [0.1, 0.1, 0.1, 0.1, 0.1],
+        [0.2, 0.3, 0.4, 0.5, 0.6],
+        [0.3, 0.5, 0.7, 0.2, 0.4],
+        [0.4, 0.7, 0.2, 0.6, 0.3],
+        [0.5, 0.5, 0.5, 0.5, 0.5],
+        [0.6, 0.2, 0.8, 0.3, 0.7],
+        [0.7, 0.4, 0.1, 0.8, 0.2],
+        [0.8, 0.6, 0.3, 0.1, 0.9],
+        [0.9, 0.8, 0.6, 0.4, 0.2],
+        [0.99, 0.01, 0.5, 0.5, 0.5],
+        [0.01, 0.99, 0.5, 0.5, 0.5],
+        [0.5, 0.5, 0.01, 0.99, 0.5],
+        [0.5, 0.5, 0.99, 0.01, 0.5],
+        [0.5, 0.5, 0.5, 0.5, 0.01],
+        [0.5, 0.5, 0.5, 0.5, 0.99],
+        [0.33, 0.33, 0.33, 0.33, 0.33],
+        [0.67, 0.67, 0.67, 0.67, 0.67],
+        [0.25, 0.75, 0.25, 0.75, 0.25],
+        [0.75, 0.25, 0.75, 0.25, 0.75],
+        [0.15, 0.85, 0.15, 0.85, 0.15],
+    ];
+
+    let mut root_map: Vec<(f64, f64, f64, f64, f64, f64)> = Vec::new();
+    for (idx, init) in seeds.iter().enumerate() {
+        let p = DynamicsParams::uniform().with_beta1(test_b1).with_delta1(d1);
+        let mut mc = five_dim::from_array(init);
+        for _ in 0..50000 {
+            let mc_next = n_operator::n_operator(&mc, mc[1], mc[2], &p);
+            let delta = (five_dim::to_array(&mc_next)[0] - five_dim::to_array(&mc)[0]).abs()
+                .max((five_dim::to_array(&mc_next)[1] - five_dim::to_array(&mc)[1]).abs())
+                .max((five_dim::to_array(&mc_next)[2] - five_dim::to_array(&mc)[2]).abs());
+            mc = mc_next;
+            if delta < 1e-14 { break; }
+        }
+        let (rho_j2d, _, _, _, _, _) = compute_j2d_analytical(mc[0], mc[1], mc[2], mc[3], mc[4], &p);
+        root_map.push((mc[0], mc[1], mc[2], mc[3], mc[4], rho_j2d));
+    }
+
+    println!("  Init# | d*        b*        ρ*        ρ(J_2D)");
+    for (idx, &(dv, bv, rhov, _rv, _sv, rho_j2d)) in root_map.iter().enumerate() {
+        println!("  {:>4}  | {:.6}  {:.6}  {:.6}  {:.6}", idx + 1, dv, bv, rhov, rho_j2d);
+    }
+
+    let unique_ds: Vec<f64> = {
+        let mut ds: Vec<f64> = root_map.iter().map(|r| r.0).collect();
+        ds.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        ds.dedup_by(|a, b| (*a - *b).abs() < 1e-4);
+        ds
+    };
+    println!("\n  Distinct fixed points found: {}", unique_ds.len());
+    for &d in &unique_ds {
+        let matching: Vec<&(f64, f64, f64, f64, f64, f64)> = root_map.iter().filter(|r| (r.0 - d).abs() < 1e-4).collect();
+        let avg_rho = matching.iter().map(|r| r.5).sum::<f64>() / matching.len() as f64;
+        println!("    d*≈{:.5}: {} initial conditions → ρ(J_2D)≈{:.5}", d, matching.len(), avg_rho);
+    }
+
+    println!("\n  ROOT COMPARISON CONCLUSIONS:");
+    println!("  - Check if analytical and iteration agree for each β₁");
+    println!("  - Identify the convergence basin for each fixed point");
+    println!("  - Determine if iteration root ≠ analytical root (multi-root region)");
+}
+
+pub fn run_epsilon_sensitivity() {
+    println!("\n{}", "=".repeat(72));
+    println!("  EPSILON SENSITIVITY: ε controls ρ_max, bifurcation, and root structure");
+    println!("{}", "=".repeat(72));
+
+    let beta1_vals: Vec<f64> = vec![0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 50.0, 100.0];
+    let eps_vals: Vec<f64> = vec![
+        0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.15, 0.2, 0.3, 0.5, 0.7, 1.0,
+    ];
+    let delta1: f64 = 10.0;
+
+    // Part 1: ρ(J_2D) vs ε for each β₁
+    println!("\n  Part 1: ρ(J_2D) vs ε at δ₁={}", delta1);
+    print!("  {:>6}", "ε");
+    for &b1 in &beta1_vals {
+        print!("  β₁={:<4}", b1);
+    }
+    println!();
+
+    let mut rho_max_per_eps: Vec<(f64, f64)> = Vec::new();
+
+    for &eps in &eps_vals {
+        print!("  {:>6.3}", eps);
+        let mut rho_max = 0.0f64;
+        for &b1 in &beta1_vals {
+            if let Some((d, b, rho, r, s)) = find_physical_root(b1, delta1, eps) {
+                let (rho_j2d, _, _, _, _, _) = compute_j2d_analytical(d, b, rho, r, s, &DynamicsParams::uniform());
+                print!("  {:>7.4}", rho_j2d);
+                if rho_j2d > rho_max {
+                    rho_max = rho_j2d;
+                }
+            } else {
+                print!("    ----");
+            }
+        }
+        rho_max_per_eps.push((eps, rho_max));
+        println!();
+    }
+
+    // Part 2: ρ_max(ε) summary
+    println!("\n  Part 2: ρ_max(ε) = max over β₁ of ρ(J_2D)");
+    println!("  {:>8}  {:>10}", "ε", "ρ_max");
+    for &(eps, rho_max) in &rho_max_per_eps {
+        println!("  {:>8.3}  {:>10.5}", eps, rho_max);
+    }
+
+    // Part 3: Multi-root scan at each ε
+    println!("\n  Part 3: Physical root count vs ε (β₁=50, δ₁={})", delta1);
+    println!("  {:>8}  {:>10}  {:>8}", "ε", "n_roots", "n_phys");
+    for &eps in &eps_vals {
+        let all_roots = find_all_roots(50.0, delta1, eps);
+        let n_phys = all_roots.iter().filter(|r| r.5).count();
+        println!("  {:>8.3}  {:>10}  {:>8}", eps, all_roots.len(), n_phys);
+    }
+
+    // Part 4: ε-dependence of fixed point components at β₁=100
+    println!("\n  Part 4: Fixed point components vs ε at β₁=100, δ₁={}", delta1);
+    println!("  {:>8}  {:>10}  {:>10}  {:>10}  {:>10}  {:>10}  {:>10}",
+             "ε", "d*", "b*", "ρ*", "r*", "s*", "ρ(J_2D)");
+    for &eps in &eps_vals {
+        if let Some((d, b, rho, r, s)) = find_physical_root(100.0, delta1, eps) {
+            let (rho_j2d, _, _, _, _, _) = compute_j2d_analytical(d, b, rho, r, s, &DynamicsParams::uniform());
+            println!("  {:>8.3}  {:>10.5}  {:>10.5}  {:>10.5}  {:>10.5}  {:>10.5}  {:>10.5}",
+                     eps, d, b, rho, r, s, rho_j2d);
+        } else {
+            println!("  {:>8.3}  NO PHYSICAL ROOT", eps);
+        }
+    }
+
+    // Part 5: Bifurcation boundary shift with ε
+    println!("\n  Part 5: Bifurcation boundary δ₁_bif(β₁) at different ε");
+    let b1_scan: Vec<f64> = vec![0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 50.0];
+    let eps_for_bif: Vec<f64> = vec![0.001, 0.01, 0.05, 0.1, 0.2, 0.5];
+    print!("  {:>6}", "β₁");
+    for &eps in &eps_for_bif {
+        print!("  ε={:<5}", eps);
+    }
+    println!();
+
+    for &b1 in &b1_scan {
+        print!("  {:>6.1}", b1);
+        for &eps in &eps_for_bif {
+            let mut d1_low = 0.1f64;
+            let mut d1_high = 200.0f64;
+            let mut found = false;
+            for _ in 0..60 {
+                let d1_mid = (d1_low + d1_high) / 2.0;
+                let n_roots = find_all_roots(b1, d1_mid, eps).iter().filter(|r| r.5).count();
+                if n_roots > 1 {
+                    d1_high = d1_mid;
+                    found = true;
+                } else {
+                    d1_low = d1_mid;
+                }
+                if (d1_high - d1_low) < 0.001 {
+                    break;
+                }
+            }
+            if found {
+                print!("  {:>7.2}", (d1_low + d1_high) / 2.0);
+            } else {
+                print!("     none");
+            }
+        }
+        println!();
+    }
+
+    // Part 6: ε sensitivity exponent
+    println!("\n  Part 6: ρ_max scaling with ε (log-log regression)");
+    let log_data: Vec<(f64, f64)> = rho_max_per_eps.iter()
+        .filter(|(_, r)| *r > 0.001)
+        .map(|(e, r)| (e.ln(), r.ln()))
+        .collect();
+    if log_data.len() >= 3 {
+        let xs: Vec<f64> = log_data.iter().map(|p| p.0).collect();
+        let ys: Vec<f64> = log_data.iter().map(|p| p.1).collect();
+        let (slope, intercept, r2) = linreg(&xs, &ys);
+        println!("  ln(ρ_max) = {:.4} · ln(ε) + {:.4}", slope, intercept);
+        println!("  ρ_max ∝ ε^{:.4}", slope);
+        println!("  R² = {:.6}", r2);
+        println!("  Interpretation: ε^{:.2} controls the upper bound of convergence rate", slope);
+    }
+
+    println!("\n  EPSILON SENSITIVITY CONCLUSIONS:");
+    println!("  - ε is the master parameter controlling ρ_max");
+    println!("  - Multi-root regions may emerge/disappear with ε");
+    println!("  - Bifurcation boundary shifts systematically with ε");
+}
+
+pub fn run_optimal_epsilon() {
+    println!("\n{}", "=".repeat(72));
+    println!("  OPTIMAL EPSILON: find ε*(β₁) that minimizes ρ(J_2D)");
+    println!("{}", "=".repeat(72));
+
+    let beta1_vals: Vec<f64> = vec![0.1, 0.2, 0.5, 1.0, 2.0, 3.0, 5.0, 7.0, 10.0, 15.0, 20.0, 30.0, 50.0, 70.0, 100.0];
+    let eps_fine: Vec<f64> = {
+        let mut v = Vec::new();
+        let mut e = 0.001f64;
+        while e <= 2.0 {
+            v.push(e);
+            e *= 1.15;
+        }
+        v
+    };
+    let delta1: f64 = 10.0;
+
+    // Part 1: Fine ε scan for each β₁
+    println!("\n  Part 1: ρ(J_2D) vs ε (fine scan) for selected β₁");
+    let b1_show: Vec<f64> = vec![0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 50.0, 100.0];
+    print!("  {:>8}", "ε");
+    for &b1 in &b1_show {
+        print!("  β₁={:<5}", b1);
+    }
+    println!();
+
+    for &eps in &eps_fine {
+        print!("  {:>8.4}", eps);
+        for &b1 in &b1_show {
+            if let Some((d, b, rho, r, s)) = find_physical_root(b1, delta1, eps) {
+                let (rho_j2d, _, _, _, _, _) = compute_j2d_analytical(d, b, rho, r, s, &DynamicsParams::uniform());
+                print!("  {:>8.4}", rho_j2d);
+            } else {
+                print!("      ----");
+            }
+        }
+        println!();
+    }
+
+    // Part 2: Optimal ε*(β₁) curve
+    println!("\n  Part 2: Optimal ε*(β₁) that minimizes ρ(J_2D)");
+    println!("  {:>8}  {:>10}  {:>10}  {:>10}", "β₁", "ε*_opt", "ρ_min", "ρ(ε=0.01)");
+    let mut global_best_rho = 1.0f64;
+    let mut global_best_b1 = 0.0f64;
+    let mut global_best_eps = 0.0f64;
+
+    for &b1 in &beta1_vals {
+        let mut best_rho = 1.0f64;
+        let mut best_eps = 0.0f64;
+        for &eps in &eps_fine {
+            if let Some((d, b, rho, r, s)) = find_physical_root(b1, delta1, eps) {
+                let (rho_j2d, _, _, _, _, _) = compute_j2d_analytical(d, b, rho, r, s, &DynamicsParams::uniform());
+                if rho_j2d < best_rho {
+                    best_rho = rho_j2d;
+                    best_eps = eps;
+                }
+            }
+        }
+        let rho_default = if let Some((d, b, rho, r, s)) = find_physical_root(b1, delta1, 0.01) {
+            let (rho_j2d, _, _, _, _, _) = compute_j2d_analytical(d, b, rho, r, s, &DynamicsParams::uniform());
+            rho_j2d
+        } else { f64::NAN };
+
+        println!("  {:>8.1}  {:>10.4}  {:>10.5}  {:>10.5}", b1, best_eps, best_rho, rho_default);
+
+        if best_rho < global_best_rho {
+            global_best_rho = best_rho;
+            global_best_b1 = b1;
+            global_best_eps = best_eps;
+        }
+    }
+
+    println!("\n  Global optimum: β₁={:.1}, ε={:.4} → ρ(J_2D)={:.5}", global_best_b1, global_best_eps, global_best_rho);
+
+    // Part 3: Non-monotonicity analysis
+    println!("\n  Part 3: Non-monotonicity check (ρ derivative sign changes)");
+    println!("  {:>8}  {:>8}  {:>10}", "β₁", "n_sign", "monotonic?");
+    for &b1 in &beta1_vals {
+        let mut rhos: Vec<f64> = Vec::new();
+        for &eps in &eps_fine {
+            if let Some((d, b, rho, r, s)) = find_physical_root(b1, delta1, eps) {
+                let (rho_j2d, _, _, _, _, _) = compute_j2d_analytical(d, b, rho, r, s, &DynamicsParams::uniform());
+                rhos.push(rho_j2d);
+            }
+        }
+        let mut sign_changes = 0usize;
+        for i in 1..rhos.len() {
+            if i >= 2 {
+                let prev_diff = rhos[i-1] - rhos[i-2];
+                let curr_diff = rhos[i] - rhos[i-1];
+                if prev_diff * curr_diff < 0.0 && prev_diff.abs() > 1e-6 && curr_diff.abs() > 1e-6 {
+                    sign_changes += 1;
+                }
+            }
+        }
+        let mono = if sign_changes == 0 { "YES" } else { "NO" };
+        println!("  {:>8.1}  {:>8}  {:>10}", b1, sign_changes, mono);
+    }
+
+    // Part 4: ε sensitivity at optimal point
+    println!("\n  Part 4: Curvature of ρ(ε) near optimal ε*");
+    println!("  {:>8}  {:>10}  {:>10}  {:>10}  {:>10}", "β₁", "ε*", "ρ(ε*-δ)", "ρ(ε*)", "ρ(ε*+δ)");
+    for &b1 in &beta1_vals {
+        let mut best_eps = 0.01f64;
+        let mut best_rho = 1.0f64;
+        for &eps in &eps_fine {
+            if let Some((d, b, rho, r, s)) = find_physical_root(b1, delta1, eps) {
+                let (rho_j2d, _, _, _, _, _) = compute_j2d_analytical(d, b, rho, r, s, &DynamicsParams::uniform());
+                if rho_j2d < best_rho {
+                    best_rho = rho_j2d;
+                    best_eps = eps;
+                }
+            }
+        }
+        let delta_eps = best_eps * 0.2;
+        let rho_minus = if let Some((d, b, rho, r, s)) = find_physical_root(b1, delta1, (best_eps - delta_eps).max(0.0001)) {
+            let (rj, _, _, _, _, _) = compute_j2d_analytical(d, b, rho, r, s, &DynamicsParams::uniform());
+            rj
+        } else { f64::NAN };
+        let rho_plus = if let Some((d, b, rho, r, s)) = find_physical_root(b1, delta1, best_eps + delta_eps) {
+            let (rj, _, _, _, _, _) = compute_j2d_analytical(d, b, rho, r, s, &DynamicsParams::uniform());
+            rj
+        } else { f64::NAN };
+        println!("  {:>8.1}  {:>10.4}  {:>10.5}  {:>10.5}  {:>10.5}", b1, best_eps, rho_minus, best_rho, rho_plus);
+    }
+
+    println!("\n  OPTIMAL EPSILON CONCLUSIONS:");
+    println!("  - ε*(β₁) curve maps the fastest-convergence parameters");
+    println!("  - Non-monotonicity indicates competing mechanisms");
+    println!("  - Global optimum identifies the absolute fastest convergence");
 }
