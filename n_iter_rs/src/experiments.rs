@@ -16589,3 +16589,286 @@ pub fn run_jacobian_spectral_structure() {
     println!("  6. Parameter sensitivity of spectral structure");
     println!("  7. Trace/determinant structural constraints");
 }
+
+fn schur_eigvecs(j: &nalgebra::SMatrix<f64, 5, 5>) -> Vec<[f64; 5]> {
+    let schur = j.schur();
+    let t = schur.unpack().0;
+    let q = schur.unpack().1;
+    let mut vecs: Vec<[f64; 5]> = Vec::new();
+    for col in 0..5 {
+        let is_complex_pair = col + 1 < 5
+            && (t[(col + 1, col)].abs() > 1e-10 || t[(col, col + 1)].abs() > 1e-10);
+        if is_complex_pair && col + 1 < 5 {
+            let re: [f64; 5] = (0..5).map(|r| q[(r, col)]).collect::<Vec<_>>().try_into().unwrap();
+            let im: [f64; 5] = (0..5).map(|r| q[(r, col + 1)]).collect::<Vec<_>>().try_into().unwrap();
+            vecs.push(re);
+            vecs.push(im);
+        } else if col > 0 && t[(col, col - 1)].abs() > 1e-10 {
+            continue;
+        } else {
+            let v: [f64; 5] = (0..5).map(|r| q[(r, col)]).collect::<Vec<_>>().try_into().unwrap();
+            vecs.push(v);
+        }
+    }
+    vecs
+}
+
+fn project_on_basis(delta: &[f64; 5], basis: &[[f64; 5]]) -> Vec<f64> {
+    basis.iter().map(|v| {
+        let dot: f64 = delta.iter().zip(v.iter()).map(|(a, b)| a * b).sum();
+        let norm2: f64 = v.iter().map(|x| x * x).sum();
+        if norm2 > 1e-30 { dot / norm2 } else { 0.0 }
+    }).collect()
+}
+
+pub fn run_eigendecomposition_dynamics() {
+    println!("\n=== v2.83 EIGENDECOMPOSITION DYNAMICS ===");
+
+    let test_configs: Vec<(&str, f64, f64, f64)> = vec![
+        ("default", 1.5, 0.5, 0.1),
+        ("balanced", 2.0, 2.0, 0.1),
+        ("high_eps", 1.5, 0.5, 10.0),
+        ("low_eps", 1.5, 0.5, 0.01),
+        ("v264_opt", 7.0, 7.0, 5.27),
+        ("extreme_b", 15.0, 0.5, 0.1),
+        ("high_d", 1.5, 5.0, 0.1),
+        ("small", 0.1, 0.1, 0.01),
+    ];
+
+    // ── Phase 1: Eigenmode decomposition of trajectory ──
+    println!("\n--- Phase 1: Trajectory eigenmode projection ---");
+    for &(name, b1, d1, eps) in &test_configs {
+        let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1).with_eps(eps);
+        let m0 = five_dim::make_state(0.5, 0.5, 0.5, 0.5, 0.5);
+        let res = n_operator::run_iteration(&m0, 0.0, 0.0, &p, 5000, 1e-12);
+        if !res.converged { continue; }
+
+        let j = jac_from_arr(&res.jacobian);
+        let basis = schur_eigvecs(&j);
+        let m_star_arr = five_dim::to_array(&res.m_star);
+        let traj = &res.trajectory;
+        let n_traj = traj.len();
+
+        // Project first, mid, last deviation
+        let delta_first: [f64; 5] = (0..5).map(|k| traj[0][k] - m_star_arr[k]).collect::<Vec<_>>().try_into().unwrap();
+        let delta_mid: [f64; 5] = (0..5).map(|k| traj[n_traj / 2][k] - m_star_arr[k]).collect::<Vec<_>>().try_into().unwrap();
+        let delta_last: [f64; 5] = (0..5).map(|k| traj[n_traj - 1][k] - m_star_arr[k]).collect::<Vec<_>>().try_into().unwrap();
+
+        let proj_first = project_on_basis(&delta_first, &basis);
+        let proj_mid = project_on_basis(&delta_mid, &basis);
+        let proj_last = project_on_basis(&delta_last, &basis);
+
+        println!("  {:<12}:", name);
+        print!("    first:  ");
+        for v in &proj_first { print!("{:+.4} ", v); }
+        println!();
+        print!("    mid:    ");
+        for v in &proj_mid { print!("{:+.4} ", v); }
+        println!();
+        print!("    last:   ");
+        for v in &proj_last { print!("{:+.4} ", v); }
+        println!();
+
+        // Norm decomposition
+        let norm_first: f64 = proj_first.iter().map(|x| x * x).sum::<f64>().sqrt();
+        let norm_mid: f64 = proj_mid.iter().map(|x| x * x).sum::<f64>().sqrt();
+        let dominant_frac_first = if norm_first > 1e-30 { proj_first[0].powi(2) / proj_first.iter().map(|x| x.powi(2)).sum::<f64>() } else { 0.0 };
+        let dominant_frac_mid = if norm_mid > 1e-30 { proj_mid[0].powi(2) / proj_mid.iter().map(|x| x.powi(2)).sum::<f64>() } else { 0.0 };
+        println!("    dominant fraction: first={:.4}, mid={:.4}", dominant_frac_first, dominant_frac_mid);
+    }
+
+    // ── Phase 2: Per-step contraction rate analysis ──
+    println!("\n--- Phase 2: Per-step contraction rate ---");
+    for &(name, b1, d1, eps) in &test_configs {
+        let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1).with_eps(eps);
+        let m0 = five_dim::make_state(0.5, 0.5, 0.5, 0.5, 0.5);
+        let res = n_operator::run_iteration(&m0, 0.0, 0.0, &p, 5000, 1e-12);
+        if !res.converged { continue; }
+
+        let eigs = sorted_eigs(&jac_from_arr(&res.jacobian));
+        let rho = eigs[0].norm();
+        let m_star_arr = five_dim::to_array(&res.m_star);
+        let traj = &res.trajectory;
+        let n_traj = traj.len();
+
+        // Compute per-step norm ratios (skip first few, last few)
+        let start = 2usize.min(n_traj - 2);
+        let end = (n_traj - 2).max(start + 1);
+        let mut step_rates: Vec<f64> = Vec::new();
+        for k in start..end {
+            let norm_k: f64 = (0..5).map(|i| (traj[k][i] - m_star_arr[i]).powi(2)).sum::<f64>().sqrt();
+            let norm_k1: f64 = (0..5).map(|i| (traj[k + 1][i] - m_star_arr[i]).powi(2)).sum::<f64>().sqrt();
+            if norm_k > 1e-30 {
+                step_rates.push(norm_k1 / norm_k);
+            }
+        }
+
+        let mean_rate = if step_rates.len() > 0 {
+            step_rates.iter().sum::<f64>() / step_rates.len() as f64
+        } else { 0.0 };
+        let ratio_to_rho = if rho > 1e-15 { mean_rate / rho } else { 0.0 };
+
+        // First step rate (nonlinear)
+        let norm_0: f64 = (0..5).map(|i| (traj[0][i] - m_star_arr[i]).powi(2)).sum::<f64>().sqrt();
+        let norm_1: f64 = (0..5).map(|i| (traj[1][i] - m_star_arr[i]).powi(2)).sum::<f64>().sqrt();
+        let first_rate = if norm_0 > 1e-30 { norm_1 / norm_0 } else { 0.0 };
+        let first_ratio = if rho > 1e-15 { first_rate / rho } else { 0.0 };
+
+        // Late rate (last 10% of steps)
+        let late_start = (n_traj as f64 * 0.9) as usize;
+        let late_rates: Vec<f64> = step_rates.iter().skip(late_start.saturating_sub(start)).copied().collect();
+        let late_mean = if late_rates.len() > 0 {
+            late_rates.iter().sum::<f64>() / late_rates.len() as f64
+        } else { 0.0 };
+        let late_ratio = if rho > 1e-15 { late_mean / rho } else { 0.0 };
+
+        println!("  {:<12}: |λ₁|={:.5}, first_rate/ρ={:.4}, mean_rate/ρ={:.4}, late_rate/ρ={:.4}, N={}",
+            name, rho, first_ratio, ratio_to_rho, late_ratio, n_traj);
+    }
+
+    // ── Phase 3: Initial transient cost ──
+    println!("\n--- Phase 3: Transient cost analysis ---");
+    println!("  Measuring: extra iterations from initial misalignment vs spectral prediction");
+
+    let mut transient_data: Vec<(&str, f64, f64, f64, f64, f64)> = Vec::new();
+    for &(name, b1, d1, eps) in &test_configs {
+        let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1).with_eps(eps);
+        let m0 = five_dim::make_state(0.5, 0.5, 0.5, 0.5, 0.5);
+        let res = n_operator::run_iteration(&m0, 0.0, 0.0, &p, 5000, 1e-12);
+        if !res.converged { continue; }
+
+        let eigs = sorted_eigs(&jac_from_arr(&res.jacobian));
+        let rho = eigs[0].norm();
+        let m_star_arr = five_dim::to_array(&res.m_star);
+        let traj = &res.trajectory;
+        let n_traj = traj.len();
+
+        let d0: f64 = (0..5).map(|k| (traj[0][k] - m_star_arr[k]).powi(2)).sum::<f64>().sqrt();
+        let tol = 1e-12_f64;
+        let n_spectral = if rho > 1e-15 && rho < 1.0 {
+            (d0 / tol).ln() / (1.0 / rho).ln()
+        } else { 0.0 };
+
+        // Count iterations to reach 10%, 50%, 90% of convergence
+        let targets = [0.1, 0.5, 0.9];
+        let mut reach_counts = [0usize; 3];
+        for (ti, &target) in targets.iter().enumerate() {
+            let threshold = d0 * (1.0 - target);
+            for k in 0..n_traj {
+                let dk: f64 = (0..5).map(|i| (traj[k][i] - m_star_arr[i]).powi(2)).sum::<f64>().sqrt();
+                if dk < threshold {
+                    reach_counts[ti] = k;
+                    break;
+                }
+            }
+        }
+
+        // What spectral theory predicts for each target
+        let pred_counts: Vec<f64> = targets.iter().map(|&t| {
+            if rho > 1e-15 && rho < 1.0 {
+                -(1.0 - t).ln() / (-rho.ln())
+            } else { 0.0 }
+        }).collect();
+
+        println!("  {:<12}: n_act={}, n_spec={:.0}, ratio={:.4}",
+            name, n_traj, n_spectral, n_traj as f64 / n_spectral.max(1.0));
+        println!("    10%: actual={}, predicted={:.1}, ratio={:.2}",
+            reach_counts[0], pred_counts[0], reach_counts[0] as f64 / pred_counts[0].max(1.0));
+        println!("    50%: actual={}, predicted={:.1}, ratio={:.2}",
+            reach_counts[1], pred_counts[1], reach_counts[1] as f64 / pred_counts[1].max(1.0));
+        println!("    90%: actual={}, predicted={:.1}, ratio={:.2}",
+            reach_counts[2], pred_counts[2], reach_counts[2] as f64 / pred_counts[2].max(1.0));
+
+        transient_data.push((name, b1, d1, eps, n_traj as f64, n_spectral));
+    }
+
+    // ── Phase 4: Effective contraction decomposition ──
+    println!("\n--- Phase 4: Effective contraction rate decomposition ---");
+    println!("  ρ_eff = actual average contraction, ρ(J) = spectral radius");
+    println!("  k = ρ_eff / ρ(J) — nonlinear amplification factor");
+
+    for &(name, b1, d1, eps) in &test_configs {
+        let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1).with_eps(eps);
+        let m0 = five_dim::make_state(0.5, 0.5, 0.5, 0.5, 0.5);
+        let res = n_operator::run_iteration(&m0, 0.0, 0.0, &p, 5000, 1e-12);
+        if !res.converged { continue; }
+
+        let eigs = sorted_eigs(&jac_from_arr(&res.jacobian));
+        let rho = eigs[0].norm();
+        let m_star_arr = five_dim::to_array(&res.m_star);
+        let traj = &res.trajectory;
+
+        let d0: f64 = (0..5).map(|k| (traj[0][k] - m_star_arr[k]).powi(2)).sum::<f64>().sqrt();
+        let d_final: f64 = (0..5).map(|k| (traj[traj.len() - 1][k] - m_star_arr[k]).powi(2)).sum::<f64>().sqrt();
+        let n = traj.len() as f64;
+
+        let rho_eff = if n > 1.0 && d0 > 1e-30 {
+            (d_final / d0).powf(1.0 / n)
+        } else { 0.0 };
+
+        let k = if rho > 1e-15 { rho_eff / rho } else { 0.0 };
+
+        // Also compute geometric mean of per-step rates
+        let mut log_sum = 0.0_f64;
+        let mut count = 0usize;
+        for k_idx in 1..traj.len() {
+            let norm_k: f64 = (0..5).map(|i| (traj[k_idx][i] - m_star_arr[i]).powi(2)).sum::<f64>().sqrt();
+            let norm_prev: f64 = (0..5).map(|i| (traj[k_idx - 1][i] - m_star_arr[i]).powi(2)).sum::<f64>().sqrt();
+            if norm_prev > 1e-30 && norm_k > 1e-30 {
+                log_sum += (norm_k / norm_prev).ln();
+                count += 1;
+            }
+        }
+        let geom_mean = if count > 0 { (log_sum / count as f64).exp() } else { 0.0 };
+        let k_geom = if rho > 1e-15 { geom_mean / rho } else { 0.0 };
+
+        println!("  {:<12}: ρ(J)={:.5}, ρ_eff={:.5}, k_eff={:.4}, k_geom={:.4}, N={}",
+            name, rho, rho_eff, k, k_geom, traj.len());
+    }
+
+    // ── Phase 5: Eigenmode energy evolution ──
+    println!("\n--- Phase 5: Eigenmode energy evolution ---");
+    println!("  How does the trajectory's projection onto each eigenmode evolve?");
+
+    for &(name, b1, d1, eps) in &[("default", 1.5, 0.5, 0.1), ("balanced", 2.0, 2.0, 0.1)] {
+        let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1).with_eps(eps);
+        let m0 = five_dim::make_state(0.5, 0.5, 0.5, 0.5, 0.5);
+        let res = n_operator::run_iteration(&m0, 0.0, 0.0, &p, 5000, 1e-12);
+        if !res.converged { continue; }
+
+        let j = jac_from_arr(&res.jacobian);
+        let basis = schur_eigvecs(&j);
+        let m_star_arr = five_dim::to_array(&res.m_star);
+        let traj = &res.trajectory;
+
+        let sample_ks: Vec<usize> = (0..traj.len())
+            .filter(|&k| k % (traj.len() / 10).max(1) == 0 || k == traj.len() - 1)
+            .collect();
+
+        println!("  {}:", name);
+        print!("  {:>6}", "step");
+        for m in 0..basis.len().min(5) { print!(" {:>8}", format!("mode{}", m + 1)); }
+        print!(" {:>8}", "total");
+        println!();
+
+        for &k in &sample_ks {
+            let delta: [f64; 5] = (0..5).map(|i| traj[k][i] - m_star_arr[i]).collect::<Vec<_>>().try_into().unwrap();
+            let proj = project_on_basis(&delta, &basis);
+            let total: f64 = delta.iter().map(|x| x * x).sum::<f64>().sqrt();
+            print!("  {:>6}", k);
+            for m in 0..basis.len().min(5) {
+                print!(" {:>8.4}", proj[m].abs());
+            }
+            print!(" {:>8.4e}", total);
+            println!();
+        }
+    }
+
+    // ── Phase 6: Summary ──
+    println!("\n  === EIGENDECOMPOSITION DYNAMICS SUMMARY ===");
+    println!("  1. Trajectory projected onto Jacobian eigenmodes");
+    println!("  2. Per-step contraction rates vs spectral prediction");
+    println!("  3. Transient cost: early iterations deviate from spectral");
+    println!("  4. Effective ρ vs spectral ρ(J) quantified");
+    println!("  5. Eigenmode energy evolution tracked");
+}
