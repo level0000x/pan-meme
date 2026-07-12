@@ -13008,3 +13008,95 @@ pub fn run_asymptotic_constant_mapping() {
     println!("\n  ASYMPTOTIC CONSTANT CONCLUSIONS:");
     println!("  C(b1, d1) mapping complete");
 }
+
+pub fn run_end_to_end_prediction() {
+    use crate::fca;
+    use crate::pipeline;
+
+    println!("\n{}", "=".repeat(72));
+    println!("  END-TO-END PREDICTION: closed-form max_rho -> iteration count");
+    println!("  No numerical simulation needed for prediction!");
+    println!("{}", "=".repeat(72));
+
+    let alpha1 = 1.0_f64;
+    let tol = 1e-12_f64;
+    let ln_tol = tol.ln().abs();
+
+    let test_cases: Vec<(&str, f64, f64, f64)> = vec![
+        ("default",     1.0,  1.0,  0.5),
+        ("v2.56_opt",   7.0,  5.0,  5.27),
+        ("v2.64_opt",   1.5,  0.5,  50.0),
+        ("extreme",     2.80, 0.30, 250.0),
+        ("low_b1",      0.5,  5.0,  10.0),
+        ("high_b1",     20.0, 5.0,  10.0),
+        ("symmetric",   10.0, 10.0, 20.0),
+        ("asymmetric",  3.0,  27.0, 10.0),
+        ("tiny_eps",    5.0,  5.0,  0.1),
+        ("huge_eps",    5.0,  5.0,  1000.0),
+        ("balanced",    4.0,  4.0,  5.0),
+        ("practical",   2.0,  1.0,  20.0),
+    ];
+
+    let lat = fca::build_chain_lattice(10);
+    let stats = pipeline::compute_lattice_stats(&lat);
+
+    println!("\n  {:>12} {:>10} {:>10} {:>10} {:>10} {:>10} {:>10} {:>10}",
+             "regime", "C_formula", "rho_pred", "rho_actual", "ratio", "iters_pred", "iters_max", "iters_avg");
+
+    for &(name, b1, d1, eps) in &test_cases {
+        let c_formula = alpha1.max((b1 * d1).sqrt());
+        let rho_pred = c_formula / eps;
+
+        let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1).with_eps(eps);
+        let results = pipeline::run_topological_iteration(&lat, &stats, &p);
+
+        let mut max_rho_actual = 0.0_f64;
+        let mut max_iters = 0_u64;
+        let mut total_iters = 0_u64;
+        let mut n_converged = 0_u64;
+
+        for opt in &results {
+            if let Some(ref r) = opt {
+                if r.converged {
+                    n_converged += 1;
+                    total_iters += r.n_iters as u64;
+                    if r.n_iters as u64 > max_iters {
+                        max_iters = r.n_iters as u64;
+                    }
+                }
+                if r.rho_spectral > max_rho_actual {
+                    max_rho_actual = r.rho_spectral;
+                }
+            }
+        }
+
+        let avg_iters = if n_converged > 0 { total_iters as f64 / n_converged as f64 } else { 0.0 };
+        let ratio = max_rho_actual / rho_pred.max(1e-30);
+        let iters_pred = if rho_pred < 1.0 { ln_tol / (-rho_pred.ln()) } else { f64::INFINITY };
+
+        println!("  {:>12} {:>10.4} {:>10.6} {:>10.6} {:>10.4} {:>10.1} {:>10} {:>10.1}",
+                 name, c_formula, rho_pred, max_rho_actual, ratio, iters_pred, max_iters, avg_iters);
+    }
+
+    println!("\n  Prediction accuracy summary:");
+    println!("  max_rho prediction: formula / actual ratio should be ~1.0");
+    println!("  iters prediction: should match max_iters (bottleneck concept)");
+
+    println!("\n  Cross-validation: predict best regime for target convergence rate:");
+    let targets: Vec<f64> = vec![0.5, 0.3, 0.1, 0.05, 0.01, 0.005, 0.001];
+    println!("  {:>10} {:>10} {:>10} {:>10} {:>10} {:>12}", "target_rho", "eps_needed", "b1", "d1", "C", "iters_pred");
+    for &target_rho in &targets {
+        let b1 = 1.0_f64;
+        let d1 = 1.0_f64;
+        let c = alpha1.max((b1 * d1).sqrt());
+        let eps_needed = c / target_rho;
+        let iters = ln_tol / (-target_rho.ln());
+        println!("  {:>10.4} {:>10.1} {:>10.1} {:>10.1} {:>10.4} {:>12.1}",
+                 target_rho, eps_needed, b1, d1, c, iters);
+    }
+
+    println!("\n  END-TO-END PREDICTION CONCLUSIONS:");
+    println!("  Closed-form: max_rho = max(alpha1, sqrt(b1*d1)) / eps");
+    println!("  Predicted iterations = -ln(tol) / ln(1/max_rho)");
+    println!("  No numerical simulation needed!");
+}
