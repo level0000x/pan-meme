@@ -12355,6 +12355,22 @@ pub fn run_max_rho_analysis() {
     println!("  - Derive analytical formula for max rho if possible");
 }
 
+fn top_concept_fixed_point(b1: f64, d1: f64, eps: f64) -> ([f64; 5], f64) {
+    let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1).with_eps(eps);
+    let mut m = five_dim::make_state(0.5, 0.5, 0.5, 0.5, 0.5);
+    for _ in 0..200 {
+        let m_new = n_operator::n_operator(&m, 0.0, 0.0, &p);
+        let diff = (m_new - m).abs().max();
+        m = m_new;
+        if diff < 1e-14 { break; }
+    }
+    let j = n_operator::compute_jacobian(&m, 0.0, 0.0, &p);
+    let eigs = j.complex_eigenvalues();
+    let rho_spect = eigs.iter().map(|c| c.norm()).fold(0.0_f64, f64::max);
+    let arr = [m[0], m[1], m[2], m[3], m[4]];
+    (arr, rho_spect)
+}
+
 pub fn run_top_concept_analysis() {
     println!("\n{}", "=".repeat(72));
     println!("  TOP CONCEPT ANALYSIS: degenerate subsystem with b_up=0, rho_up=0");
@@ -12369,37 +12385,18 @@ pub fn run_top_concept_analysis() {
         ("sweet_high",  30.0, 35.0, 5.0),
     ];
 
-    // Part 1: Top concept fixed point by Newton iteration
+    // Part 1: Top concept fixed point
     println!("\n  Part 1: Top concept fixed point (b_up=0, rho_up=0)");
     println!("  {:>12}  {:>6}  {:>6}  {:>6}  {:>10}  {:>10}  {:>10}  {:>10}  {:>10}  {:>10}",
         "regime", "beta1", "delta1", "eps", "d*", "b*", "rho*", "r*", "s*", "max_rho");
 
     for &(name, b1, d1, eps) in &regimes {
-        let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1).with_eps(eps);
-
-        // Newton iteration for top concept fixed point
-        let mut m = [0.5f64; 5];
-        for _ in 0..200 {
-            let m_new = n_operator::n_operator(
-                &n_operator::State5 { d: m[0], b: m[1], rho: m[2], r: m[3], s: m[4] },
-                0.0, 0.0, &p
-            );
-            let next = [m_new.d, m_new.b, m_new.rho, m_new.r, m_new.s];
-            let diff: f64 = next.iter().zip(m.iter()).map(|(a, b)| (a - b).powi(2)).sum::<f64>().sqrt();
-            m = next;
-            if diff < 1e-14 { break; }
-        }
-
-        // Compute Jacobian at fixed point
-        let m_star = n_operator::State5 { d: m[0], b: m[1], rho: m[2], r: m[3], s: m[4] };
-        let jac = n_operator::compute_jacobian(&m_star, 0.0, 0.0, &p);
-        let rho_spect = jac.spectral_radius();
-
+        let (arr, rho_spect) = top_concept_fixed_point(b1, d1, eps);
         println!("  {:>12}  {:>6.1}  {:>6.1}  {:>6.2}  {:>10.5}  {:>10.5}  {:>10.5}  {:>10.5}  {:>10.5}  {:>10.5}",
-            name, b1, d1, eps, m[0], m[1], m[2], m[3], m[4], rho_spect);
+            name, b1, d1, eps, arr[0], arr[1], arr[2], arr[3], arr[4], rho_spect);
     }
 
-    // Part 2: Compare top concept rho_spect with iteration max_rho
+    // Part 2: Compare with iteration max_rho
     println!("\n  Part 2: Analytical max_rho vs iteration max_rho");
     println!("  {:>12}  {:>10}  {:>10}  {:>10}", "regime", "rho_an", "rho_iter", "match");
 
@@ -12411,32 +12408,16 @@ pub fn run_top_concept_analysis() {
     ];
 
     for &(name, b1, d1, eps) in &regimes {
+        let (_, rho_an) = top_concept_fixed_point(b1, d1, eps);
         let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1).with_eps(eps);
 
-        // Analytical
-        let mut m = [0.5f64; 5];
-        for _ in 0..200 {
-            let m_new = n_operator::n_operator(
-                &n_operator::State5 { d: m[0], b: m[1], rho: m[2], r: m[3], s: m[4] },
-                0.0, 0.0, &p
-            );
-            let next = [m_new.d, m_new.b, m_new.rho, m_new.r, m_new.s];
-            let diff: f64 = next.iter().zip(m.iter()).map(|(a, b)| (a - b).powi(2)).sum::<f64>().sqrt();
-            m = next;
-            if diff < 1e-14 { break; }
-        }
-        let m_star = n_operator::State5 { d: m[0], b: m[1], rho: m[2], r: m[3], s: m[4] };
-        let jac = n_operator::compute_jacobian(&m_star, 0.0, 0.0, &p);
-        let rho_an = jac.spectral_radius();
-
-        // Iteration
         let mut rho_iter_vals: Vec<f64> = Vec::new();
         for (_tname, lat) in &topologies {
             let stats = pipeline::compute_lattice_stats(lat);
             let results = pipeline::run_topological_iteration(lat, &stats, &p);
-            for opt in &results {
+            for (i, opt) in results.iter().enumerate() {
                 if let Some(ref r) = opt {
-                    if r.n_upstream == 0 {
+                    if stats.feeders[i].is_empty() {
                         rho_iter_vals.push(r.rho_spectral);
                     }
                 }
@@ -12454,104 +12435,41 @@ pub fn run_top_concept_analysis() {
         println!("  {:>12}  {:>10.5}  {:>10.5}  {:>10}", name, rho_an, rho_iter, match_str);
     }
 
-    // Part 3: Parameter scan — max_rho(beta1, delta1, eps)
-    println!("\n  Part 3: max_rho parameter sensitivity");
-    let b1_vals: Vec<f64> = vec![0.5, 1.0, 2.0, 5.0, 7.0, 10.0, 15.0, 20.0, 50.0, 100.0];
-
-    // 3a: beta1 scan at fixed delta1=10, eps=0.01
-    println!("\n  3a: max_rho vs beta1 (delta1=10, eps=0.01)");
+    // Part 3: Parameter scans
+    println!("\n  Part 3a: max_rho vs beta1 (delta1=10, eps=0.01)");
     println!("  {:>8}  {:>10}  {:>10}  {:>10}  {:>10}", "beta1", "d*_top", "b*_top", "rho*_top", "max_rho");
+    let b1_vals: Vec<f64> = vec![0.5, 1.0, 2.0, 5.0, 7.0, 10.0, 15.0, 20.0, 50.0, 100.0];
     for &b1 in &b1_vals {
-        let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(10.0).with_eps(0.01);
-        let mut m = [0.5f64; 5];
-        for _ in 0..200 {
-            let m_new = n_operator::n_operator(
-                &n_operator::State5 { d: m[0], b: m[1], rho: m[2], r: m[3], s: m[4] },
-                0.0, 0.0, &p
-            );
-            let next = [m_new.d, m_new.b, m_new.rho, m_new.r, m_new.s];
-            let diff: f64 = next.iter().zip(m.iter()).map(|(a, b)| (a - b).powi(2)).sum::<f64>().sqrt();
-            m = next;
-            if diff < 1e-14 { break; }
-        }
-        let m_star = n_operator::State5 { d: m[0], b: m[1], rho: m[2], r: m[3], s: m[4] };
-        let rho_spect = n_operator::compute_jacobian(&m_star, 0.0, 0.0, &p).spectral_radius();
-        println!("  {:>8.1}  {:>10.5}  {:>10.5}  {:>10.5}  {:>10.5}", b1, m[0], m[1], m[2], rho_spect);
+        let (arr, rho_spect) = top_concept_fixed_point(b1, 10.0, 0.01);
+        println!("  {:>8.1}  {:>10.5}  {:>10.5}  {:>10.5}  {:>10.5}", b1, arr[0], arr[1], arr[2], rho_spect);
     }
 
-    // 3b: delta1 scan at fixed beta1=7, eps=5.27
-    println!("\n  3b: max_rho vs delta1 (beta1=7, eps=5.27)");
+    println!("\n  Part 3b: max_rho vs delta1 (beta1=7, eps=5.27)");
     println!("  {:>8}  {:>10}  {:>10}  {:>10}  {:>10}", "delta1", "d*_top", "b*_top", "rho*_top", "max_rho");
     let d1_vals: Vec<f64> = vec![0.5, 1.0, 2.0, 5.0, 7.0, 10.0, 15.0, 20.0, 50.0, 100.0];
     for &d1 in &d1_vals {
-        let p = DynamicsParams::uniform().with_beta1(7.0).with_delta1(d1).with_eps(5.27);
-        let mut m = [0.5f64; 5];
-        for _ in 0..200 {
-            let m_new = n_operator::n_operator(
-                &n_operator::State5 { d: m[0], b: m[1], rho: m[2], r: m[3], s: m[4] },
-                0.0, 0.0, &p
-            );
-            let next = [m_new.d, m_new.b, m_new.rho, m_new.r, m_new.s];
-            let diff: f64 = next.iter().zip(m.iter()).map(|(a, b)| (a - b).powi(2)).sum::<f64>().sqrt();
-            m = next;
-            if diff < 1e-14 { break; }
-        }
-        let m_star = n_operator::State5 { d: m[0], b: m[1], rho: m[2], r: m[3], s: m[4] };
-        let rho_spect = n_operator::compute_jacobian(&m_star, 0.0, 0.0, &p).spectral_radius();
-        println!("  {:>8.1}  {:>10.5}  {:>10.5}  {:>10.5}  {:>10.5}", d1, m[0], m[1], m[2], rho_spect);
+        let (arr, rho_spect) = top_concept_fixed_point(7.0, d1, 5.27);
+        println!("  {:>8.1}  {:>10.5}  {:>10.5}  {:>10.5}  {:>10.5}", d1, arr[0], arr[1], arr[2], rho_spect);
     }
 
-    // 3c: eps scan at fixed beta1=7, delta1=5
-    println!("\n  3c: max_rho vs eps (beta1=7, delta1=5)");
+    println!("\n  Part 3c: max_rho vs eps (beta1=7, delta1=5)");
     println!("  {:>8}  {:>10}  {:>10}  {:>10}  {:>10}", "eps", "d*_top", "b*_top", "rho*_top", "max_rho");
     let eps_vals: Vec<f64> = vec![0.001, 0.01, 0.1, 0.5, 1.0, 2.0, 3.0, 5.0, 7.0, 10.0];
     for &eps in &eps_vals {
-        let p = DynamicsParams::uniform().with_beta1(7.0).with_delta1(5.0).with_eps(eps);
-        let mut m = [0.5f64; 5];
-        for _ in 0..200 {
-            let m_new = n_operator::n_operator(
-                &n_operator::State5 { d: m[0], b: m[1], rho: m[2], r: m[3], s: m[4] },
-                0.0, 0.0, &p
-            );
-            let next = [m_new.d, m_new.b, m_new.rho, m_new.r, m_new.s];
-            let diff: f64 = next.iter().zip(m.iter()).map(|(a, b)| (a - b).powi(2)).sum::<f64>().sqrt();
-            m = next;
-            if diff < 1e-14 { break; }
-        }
-        let m_star = n_operator::State5 { d: m[0], b: m[1], rho: m[2], r: m[3], s: m[4] };
-        let rho_spect = n_operator::compute_jacobian(&m_star, 0.0, 0.0, &p).spectral_radius();
-        println!("  {:>8.3}  {:>10.5}  {:>10.5}  {:>10.5}  {:>10.5}", eps, m[0], m[1], m[2], rho_spect);
+        let (arr, rho_spect) = top_concept_fixed_point(7.0, 5.0, eps);
+        println!("  {:>8.3}  {:>10.5}  {:>10.5}  {:>10.5}  {:>10.5}", eps, arr[0], arr[1], arr[2], rho_spect);
     }
 
-    // Part 4: Top concept rho_spect vs interior rho(J_2D)
-    println!("\n  Part 4: max_rho (top) vs rho(J_2D) (interior) comparison");
+    // Part 4: max_rho vs rho(J_2D)
+    println!("\n  Part 4: max_rho (top) vs rho(J_2D) (interior)");
     println!("  {:>12}  {:>10}  {:>10}  {:>10}  {:>10}", "regime", "max_rho", "rho_J2D", "ratio", "dominan");
     for &(name, b1, d1, eps) in &regimes {
-        let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1).with_eps(eps);
-
-        // Top concept
-        let mut m = [0.5f64; 5];
-        for _ in 0..200 {
-            let m_new = n_operator::n_operator(
-                &n_operator::State5 { d: m[0], b: m[1], rho: m[2], r: m[3], s: m[4] },
-                0.0, 0.0, &p
-            );
-            let next = [m_new.d, m_new.b, m_new.rho, m_new.r, m_new.s];
-            let diff: f64 = next.iter().zip(m.iter()).map(|(a, b)| (a - b).powi(2)).sum::<f64>().sqrt();
-            m = next;
-            if diff < 1e-14 { break; }
-        }
-        let m_star = n_operator::State5 { d: m[0], b: m[1], rho: m[2], r: m[3], s: m[4] };
-        let max_rho = n_operator::compute_jacobian(&m_star, 0.0, 0.0, &p).spectral_radius();
-
-        // Interior rho(J_2D)
+        let (_, max_rho) = top_concept_fixed_point(b1, d1, eps);
         let rho_j2d = if let Some((d, b, rho, r, s)) = find_physical_root(b1, d1, eps) {
-            compute_j2d_analytical(d, b, rho, r, s, &p).0
+            compute_j2d_analytical(d, b, rho, r, s, &DynamicsParams::uniform()).0
         } else { f64::NAN };
-
         let ratio = max_rho / rho_j2d;
         let dom = if max_rho > rho_j2d { "TOP" } else { "INTERIOR" };
-
         println!("  {:>12}  {:>10.5}  {:>10.5}  {:>10.3}  {:>10}", name, max_rho, rho_j2d, ratio, dom);
     }
 
@@ -12559,4 +12477,104 @@ pub fn run_top_concept_analysis() {
     println!("  - Top concept fixed point solves exactly with b_up=0, rho_up=0");
     println!("  - max_rho is determined by the top concept Jacobian");
     println!("  - Compare with interior rho(J_2D) to identify bottleneck");
+}
+
+pub fn run_max_rho_minimization() {
+    println!("\n{}", "=".repeat(72));
+    println!("  MINIMIZE max_rho: true global optimum over (beta1, delta1, eps)");
+    println!("{}", "=".repeat(72));
+
+    let b1_vals: Vec<f64> = (1..=60).map(|i| i as f64 * 0.5).collect();
+    let d1_vals: Vec<f64> = (1..=60).map(|i| i as f64 * 0.5).collect();
+    let eps_vals: Vec<f64> = vec![0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 50.0];
+
+    let mut best_rho = 1.0_f64;
+    let mut best_params = (0.0, 0.0, 0.0);
+    let mut count = 0_u64;
+    let mut results: Vec<(f64, f64, f64, f64, f64, f64)> = Vec::new();
+
+    for &eps in &eps_vals {
+        for &b1 in &b1_vals {
+            for &d1 in &d1_vals {
+                let (_, rho) = top_concept_fixed_point(b1, d1, eps);
+                count += 1;
+                if rho < best_rho {
+                    best_rho = rho;
+                    best_params = (b1, d1, eps);
+                }
+                if b1 <= 5.0 && d1 >= 15.0 && eps >= 10.0 {
+                    results.push((b1, d1, eps, rho, 0.0, 0.0));
+                }
+            }
+        }
+    }
+
+    println!("\n  Scan: {} parameter combinations", count);
+    println!("  GLOBAL MINIMUM: beta1={}, delta1={}, eps={} => max_rho={:.6}",
+             best_params.0, best_params.1, best_params.2, best_rho);
+
+    println!("\n  Coarse scan in promising region (low b1, high d1, high eps):");
+    println!("  {:>6} {:>6} {:>6} {:>10}", "beta1", "delta1", "eps", "max_rho");
+    results.sort_by(|a, b| a.3.partial_cmp(&b.3).unwrap());
+    for r in results.iter().take(20) {
+        println!("  {:>6.1} {:>6.1} {:>6.1} {:>10.6}", r.0, r.1, r.2, r.3);
+    }
+
+    println!("\n  Fine grid around coarse optimum:");
+    let c_b1 = best_params.0;
+    let c_d1 = best_params.1;
+    let c_eps = best_params.2;
+
+    let fb1_vals: Vec<f64> = (0..=40).map(|i| (c_b1 - 2.0 + i as f64 * 0.1).max(0.1)).collect();
+    let fd1_vals: Vec<f64> = (0..=40).map(|i| c_d1 - 2.0 + i as f64 * 0.1).collect();
+    let feps_vals: Vec<f64> = vec![
+        c_eps * 0.5, c_eps * 0.75, c_eps, c_eps * 1.25, c_eps * 1.5,
+        c_eps * 2.0, c_eps * 3.0, c_eps * 5.0,
+    ];
+
+    let mut fine_best_rho = 1.0_f64;
+    let mut fine_best_params = (0.0, 0.0, 0.0);
+    let mut fine_top10: Vec<(f64, f64, f64, f64)> = Vec::new();
+
+    for &eps in &feps_vals {
+        for &b1 in &fb1_vals {
+            for &d1 in &fd1_vals {
+                let (_, rho) = top_concept_fixed_point(b1, d1, eps);
+                if rho < fine_best_rho {
+                    fine_best_rho = rho;
+                    fine_best_params = (b1, d1, eps);
+                }
+                fine_top10.push((b1, d1, eps, rho));
+            }
+        }
+    }
+
+    fine_top10.sort_by(|a, b| a.3.partial_cmp(&b.3).unwrap());
+    println!("  FINE MINIMUM: beta1={:.2}, delta1={:.2}, eps={:.2} => max_rho={:.6}",
+             fine_best_params.0, fine_best_params.1, fine_best_params.2, fine_best_rho);
+    println!("\n  Top 10 fine results:");
+    println!("  {:>8} {:>8} {:>8} {:>10}", "beta1", "delta1", "eps", "max_rho");
+    for r in fine_top10.iter().take(10) {
+        println!("  {:>8.2} {:>8.2} {:>8.2} {:>10.6}", r.0, r.1, r.2, r.3);
+    }
+
+    println!("\n  eps sensitivity at fine optimum (b1={:.2}, d1={:.2}):", fine_best_params.0, fine_best_params.1);
+    println!("  {:>8} {:>10}", "eps", "max_rho");
+    for &eps in &[0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 50.0, 100.0, 200.0, 500.0] {
+        let (_, rho) = top_concept_fixed_point(fine_best_params.0, fine_best_params.1, eps);
+        println!("  {:>8.1} {:>10.6}", eps, rho);
+    }
+
+    println!("\n  Asymmetry analysis: what happens as b1/d1 ratio varies?");
+    println!("  Fixed: delta1=30.0, eps=50.0");
+    println!("  {:>8} {:>8} {:>10} {:>10} {:>10}", "beta1", "b1/d1", "max_rho", "d*", "b*");
+    for &b1 in &[0.1, 0.2, 0.5, 1.0, 2.0, 3.0, 5.0, 7.0, 10.0, 15.0, 20.0] {
+        let (fp, rho) = top_concept_fixed_point(b1, 30.0, 50.0);
+        println!("  {:>8.1} {:>8.3} {:>10.6} {:>10.4} {:>10.4}", b1, b1 / 30.0, rho, fp[0], fp[1]);
+    }
+
+    println!("\n  MAX-RHO MINIMIZATION CONCLUSIONS:");
+    println!("  Coarse optimum: ({:.1}, {:.1}, {:.1}) => {:.6}", best_params.0, best_params.1, best_params.2, best_rho);
+    println!("  Fine optimum:   ({:.2}, {:.2}, {:.2}) => {:.6}", fine_best_params.0, fine_best_params.1, fine_best_params.2, fine_best_rho);
+    println!("  Strategy: small beta1, large delta1, large eps");
 }
