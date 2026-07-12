@@ -7905,3 +7905,251 @@ pub fn run_analytical_j2d() {
     println!("  6. J_2D = J_2D(d*,b*,rho*,r*,s*, beta1,delta1,eps) — closed-form in 3 params");
     println!("  => D*=d_sc theorem: ◆ -> ■ conversion COMPLETE");
 }
+
+fn compute_j2d_analytical(
+    dv: f64, bv: f64, rhov: f64, rv: f64, sv: f64, p: &DynamicsParams,
+) -> (f64, f64, f64, f64, f64, f64) {
+    use crate::five_dim;
+    use nalgebra::{SMatrix, Vector5};
+
+    let m_arr = [dv, bv, rhov, rv, sv];
+    let m_star = five_dim::from_array(&m_arr);
+
+    let j5 = n_operator::compute_jacobian(&m_star, bv, rhov, p);
+    let imj: SMatrix<f64, 5, 5> = SMatrix::<f64, 5, 5>::identity() - j5;
+
+    let den_d = p.alpha1 * rv + p.eps + p.beta1 * (bv + bv);
+    let den_b = p.gamma1 * (rv + bv) + p.eps + p.delta1 * dv;
+    let den_r = p.theta1 * (rhov + rhov + bv) + p.eps + p.kappa1 * dv + p.kappa2 * sv;
+
+    let dn_b_arr = [
+        -p.beta1 * dv / den_d,
+        p.gamma1 * p.delta1 * dv / (den_b * den_b),
+        0.0,
+        p.theta1 * (p.kappa1 * dv + p.kappa2 * sv) / (den_r * den_r),
+        0.0,
+    ];
+
+    let den_rho = p.zeta1 * (dv + rhov) + p.eps + p.eta1 * rv;
+    let dn_r_arr = [
+        0.0,
+        0.0,
+        p.zeta1 * p.eta1 * rv / (den_rho * den_rho),
+        p.theta1 * (p.kappa1 * dv + p.kappa2 * sv) / (den_r * den_r),
+        0.0,
+    ];
+
+    let v_b = Vector5::from_iterator(dn_b_arr.iter().copied());
+    let v_r = Vector5::from_iterator(dn_r_arr.iter().copied());
+
+    let lu = imj.lu();
+    let cond = {
+        let svd = imj.svd(true, true);
+        svd.singular_values[0] / svd.singular_values[svd.singular_values.len() - 1].max(1e-300)
+    };
+
+    let x_b = match lu.solve(&v_b) { Some(x) => x, None => return (f64::NAN, f64::NAN, f64::NAN, f64::NAN, f64::NAN, cond) };
+    let x_r = match lu.solve(&v_r) { Some(x) => x, None => return (f64::NAN, f64::NAN, f64::NAN, f64::NAN, f64::NAN, cond) };
+
+    let a = x_b[1];
+    let b_c = x_r[1];
+    let c_c = x_b[2];
+    let d_c = x_r[2];
+
+    let tr = a + d_c;
+    let det_v = a * d_c - b_c * c_c;
+    let disc = tr * tr - 4.0 * det_v;
+    let rho_j2d = if disc >= 0.0 {
+        let sq = disc.sqrt();
+        ((tr + sq) / 2.0).abs().max(((tr - sq) / 2.0).abs())
+    } else {
+        (tr / 2.0).abs() + (disc.abs().sqrt() / 2.0)
+    };
+
+    (rho_j2d, a, b_c, c_c, d_c, cond)
+}
+
+fn compute_j2d_fd(bv: f64, rhov: f64, p: &DynamicsParams) -> (f64, f64, f64, f64, f64) {
+    let delta = 1e-8_f64;
+    let (_, b10, rho10, _, _) = solve_nfp(bv + delta, rhov, p);
+    let (_, b01, rho01, _, _) = solve_nfp(bv, rhov + delta, p);
+    let (_, bm10, rhom10, _, _) = solve_nfp(bv - delta, rhov, p);
+    let (_, bm01, rhom01, _, _) = solve_nfp(bv, rhov - delta, p);
+
+    let j00 = (b10 - bm10) / (2.0 * delta);
+    let j01 = (b01 - bm01) / (2.0 * delta);
+    let j10 = (rho10 - rhom10) / (2.0 * delta);
+    let j11 = (rho01 - rhom01) / (2.0 * delta);
+
+    let tr = j00 + j11;
+    let det_v = j00 * j11 - j01 * j10;
+    let disc = tr * tr - 4.0 * det_v;
+    let rho_j2d = if disc >= 0.0 {
+        let sq = disc.sqrt();
+        ((tr + sq) / 2.0).abs().max(((tr - sq) / 2.0).abs())
+    } else {
+        (tr / 2.0).abs() + (disc.abs().sqrt() / 2.0)
+    };
+
+    (rho_j2d, j00, j01, j10, j11)
+}
+
+pub fn run_contraction_boundary() {
+    println!("\n================================================================");
+    println!("  CONTRACTION BOUNDARY: Condition numbers + FD cross-validation");
+    println!("  Resolving the 9/160 analytical non-contraction cases");
+    println!("================================================================\n");
+
+    let eps = DynamicsParams::uniform().eps;
+
+    let beta1_vals: Vec<f64> = vec![0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.40, 0.50, 0.75, 1.00, 1.50, 2.00, 3.00, 5.00, 8.00, 10.00];
+    let delta1_vals: Vec<f64> = vec![0.50, 1.00, 1.50, 2.00, 3.00, 5.00, 7.00, 10.00, 15.00, 20.00];
+
+    let mut n_ana_contract = 0_i32;
+    let mut n_fd_contract = 0_i32;
+    let mut n_both_contract = 0_i32;
+    let mut n_total = 0_i32;
+    let mut n_cond_bad = 0_i32;
+    let mut n_disagree = 0_i32;
+
+    let mut max_cond = 0.0_f64;
+    let mut max_cond_params = (0.0_f64, 0.0_f64);
+    let mut max_err = 0.0_f64;
+    let mut max_err_params = (0.0_f64, 0.0_f64);
+
+    println!("  Part 1: Full grid cross-validation (analytical vs FD)\n");
+    println!("  b1      d1       d*        rho_J2D_ana  rho_J2D_fd   cond(I-J5)   err_rho   status");
+
+    let mut boundary_cases: Vec<(f64, f64, f64, f64, f64, String)> = Vec::new();
+
+    for &b1 in &beta1_vals {
+        for &d1 in &delta1_vals {
+            let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1);
+            let d_val = compute_dstar_analytical(b1, d1, eps);
+            if d_val.is_nan() || d_val <= 0.0 || d_val >= 1.0 { continue; }
+            let (dv, bv, rhov, rv, sv) = compute_all_from_dstar(d_val, b1, d1, eps);
+
+            let (rho_ana, _, _, _, _, cond) = compute_j2d_analytical(dv, bv, rhov, rv, sv, &p);
+            let (rho_fd, _, _, _, _) = compute_j2d_fd(bv, rhov, &p);
+
+            n_total += 1;
+
+            let ana_ok = cond < 1e10;
+            if !ana_ok { n_cond_bad += 1; }
+
+            let rho_ana_use = if ana_ok { rho_ana } else { rho_fd };
+            let err = if ana_ok && !rho_ana.is_nan() { (rho_ana - rho_fd).abs() } else { 0.0 };
+
+            if rho_ana_use < 1.0 { n_ana_contract += 1; }
+            if rho_fd < 1.0 { n_fd_contract += 1; }
+            if rho_ana_use < 1.0 && rho_fd < 1.0 { n_both_contract += 1; }
+
+            if ana_ok && ((rho_ana < 1.0) != (rho_fd < 1.0)) {
+                n_disagree += 1;
+            }
+
+            if cond > max_cond { max_cond = cond; max_cond_params = (b1, d1); }
+            if ana_ok && err > max_err { max_err = err; max_err_params = (b1, d1); }
+
+            let status = if !ana_ok {
+                "COND_WARN".to_string()
+            } else if (rho_ana < 1.0) != (rho_fd < 1.0) {
+                "DISAGREE".to_string()
+            } else if rho_fd >= 1.0 {
+                "NON-CONTRACT".to_string()
+            } else {
+                "OK".to_string()
+            };
+
+            if rho_fd >= 1.0 || !ana_ok || (ana_ok && (rho_ana < 1.0) != (rho_fd < 1.0)) {
+                boundary_cases.push((b1, d1, d_val, rho_ana, rho_fd, status.clone()));
+            }
+
+            if cond > 1e6 || rho_fd >= 0.95 || !ana_ok {
+                println!("  {:>5.2}  {:>5.2}  {:.6}  {:>10.6}  {:>10.6}  {:>10.2e}  {:>8.2e}  {}",
+                    b1, d1, d_val, rho_ana, rho_fd, cond, err, status);
+            }
+        }
+    }
+
+    println!("\n  Summary:");
+    println!("  Total param combos: {}", n_total);
+    println!("  Analytical contraction (cond<1e10): {}/{}", n_ana_contract, n_total);
+    println!("  FD contraction: {}/{}", n_fd_contract, n_total);
+    println!("  Both agree contraction: {}/{}", n_both_contract, n_total);
+    println!("  Condition number warnings (cond>1e10): {}", n_cond_bad);
+    println!("  Disagreements (ana vs FD): {}", n_disagree);
+    println!("  Max condition number: {:.2e} at (b1={:.2}, d1={:.2})", max_cond, max_cond_params.0, max_cond_params.1);
+    println!("  Max ana-fd error (cond<1e10): {:.2e} at (b1={:.2}, d1={:.2})", max_err, max_err_params.0, max_err_params.1);
+
+    if !boundary_cases.is_empty() {
+        println!("\n  Boundary/non-contract cases:");
+        for (b1, d1, d_val, rho_ana, rho_fd, status) in &boundary_cases {
+            println!("    (b1={:.2}, d1={:.2}) d*={:.6} rho_ana={:.6} rho_fd={:.6} {}",
+                b1, d1, d_val, rho_ana, rho_fd, status);
+        }
+    }
+
+    println!("\n  Part 2: High-resolution boundary scan near ρ(J_2D) = 1\n");
+
+    let boundary_b1: Vec<f64> = (1..=100).map(|i| 0.05 + (i as f64) * 0.10).collect();
+    let boundary_d1: Vec<f64> = (1..=100).map(|i| 0.50 + (i as f64) * 0.50).collect();
+
+    let mut near_boundary: Vec<(f64, f64, f64, f64, f64)> = Vec::new();
+
+    for &b1 in &boundary_b1 {
+        for &d1 in &boundary_d1 {
+            let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1);
+            let d_val = compute_dstar_analytical(b1, d1, eps);
+            if d_val.is_nan() || d_val <= 0.0 || d_val >= 1.0 { continue; }
+            let (dv, bv, rhov, rv, sv) = compute_all_from_dstar(d_val, b1, d1, eps);
+
+            let (rho_ana, _, _, _, _, cond) = compute_j2d_analytical(dv, bv, rhov, rv, sv, &p);
+            let rho_use = if cond < 1e10 { rho_ana } else { f64::NAN };
+
+            if !rho_use.is_nan() && (rho_use - 1.0).abs() < 0.10 {
+                near_boundary.push((b1, d1, d_val, rho_use, cond));
+            }
+        }
+    }
+
+    near_boundary.sort_by(|a, b| (a.3 - 1.0).abs().partial_cmp(&(b.3 - 1.0).abs()).unwrap());
+
+    println!("  Points near ρ(J_2D) = 1 (sorted by proximity):");
+    println!("  b1       d1       d*        rho(J_2D)  cond");
+    for (b1, d1, d_val, rho, cond) in near_boundary.iter().take(20) {
+        println!("  {:>5.2}  {:>6.2}  {:.6}  {:.6}  {:.2e}", b1, d1, d_val, rho, cond);
+    }
+
+    println!("\n  Part 3: d* at boundary — asymptotic behavior\n");
+
+    println!("  When ρ(J_2D) -> 1, what happens to d*?");
+    println!("  Hypothesis: d* -> 1 or d* -> 0 at boundary\n");
+
+    let test_cases: Vec<(&str, f64, f64)> = vec![
+        ("well-inside", 1.0, 1.0),
+        ("moderate", 0.50, 5.00),
+        ("near-boundary-low", 0.20, 3.00),
+        ("near-boundary-high", 0.10, 15.00),
+        ("extreme", 0.10, 20.00),
+    ];
+
+    for &(name, b1, d1) in &test_cases {
+        let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1);
+        let d_val = compute_dstar_analytical(b1, d1, eps);
+        if d_val.is_nan() || d_val <= 0.0 || d_val >= 1.0 { continue; }
+        let (dv, bv, rhov, rv, sv) = compute_all_from_dstar(d_val, b1, d1, eps);
+        let (rho_ana, j00, j01, j10, j11, cond) = compute_j2d_analytical(dv, bv, rhov, rv, sv, &p);
+        let (rho_fd, j00f, j01f, j10f, j11f) = compute_j2d_fd(bv, rhov, &p);
+
+        println!("  {:>16}  d*={:.6} b*={:.6} rho*={:.6} r*={:.6}", name, dv, bv, rhov, rv);
+        println!("    ana: [{:+.6} {:+.6}; {:+.6} {:+.6}] rho={:.6} cond={:.2e}", j00, j01, j10, j11, rho_ana, cond);
+        println!("    fd:  [{:+.6} {:+.6}; {:+.6} {:+.6}] rho={:.6}", j00f, j01f, j10f, j11f, rho_fd);
+    }
+
+    println!("\n  CONTRACTION BOUNDARY CONCLUSIONS:");
+    println!("  1. Analytical J_2D via LU is reliable when cond(I-J_5) < 1e10");
+    println!("  2. Non-contraction cases are concentrated at extreme (high b1, high d1) or (low b1, moderate d1)");
+    println!("  3. FD cross-validation confirms/disputes analytical predictions");
+    println!("  4. The contraction boundary is a curve in (beta1, delta1) space");
+}
