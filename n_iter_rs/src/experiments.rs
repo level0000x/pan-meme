@@ -9529,13 +9529,15 @@ pub fn run_tau_predictive_validation() {
         let tau_ana = if rho_ana > 0.0 && rho_ana < 1.0 { -1.0 / rho_ana.ln() } else { f64::NAN };
 
         let d_fp = dv;
+        let b_up_fp = bv;
+        let rho_up_fp = rhov;
         let mut m = five_dim::from_array(&[0.5_f64, 0.5, 0.5, 0.5, 0.5]);
         let max_iter = 200;
         let mut d_hist: Vec<f64> = Vec::new();
         let mut converged = false;
 
         for _k in 0..max_iter {
-            m = n_operator(&m, &p);
+            m = n_operator(&m, b_up_fp, rho_up_fp, &p);
             let d_curr = m[0];
             d_hist.push(d_curr);
 
@@ -9593,14 +9595,14 @@ pub fn run_tau_predictive_validation() {
         let (rho_j2d, _, _, _, _, cond) = compute_j2d_analytical(dv, bv, rhov, rv, sv, &p);
 
         let m_fp = five_dim::from_array(&[dv, bv, rhov, rv, sv]);
-        let jac = crate::n_operator::compute_jacobian(&m_fp, &p);
+         let jac = crate::n_operator::compute_jacobian(&m_fp, bv, rhov, &p);
         let eigenvalues = jac.eigenvalues();
         let rho_j5: f64 = eigenvalues.iter().map(|c| c.norm()).fold(0.0_f64, f64::max);
 
         let mut m = five_dim::from_array(&[0.5_f64, 0.5, 0.5, 0.5, 0.5]);
-        let mut d_hist: Vec<f64> = Vec::new();
-        for _k in 0..200 {
-            m = n_operator(&m, &p);
+         let mut d_hist: Vec<f64> = Vec::new();
+         for _k in 0..200 {
+             m = n_operator(&m, bv, rhov, &p);
             d_hist.push(m[0]);
             if d_hist.len() > 10 {
                 let recent_diff = (m[0] - d_hist[d_hist.len() - 2]).abs();
