@@ -17139,3 +17139,255 @@ pub fn run_lattice_coupling_model() {
     println!("  4. Cascade correction: depth-dependent overhead");
     println!("  5. Perturbation expansion: ρ(b_up) quadratic fit");
 }
+
+fn mean_f64(v: &[f64]) -> f64 {
+    if v.is_empty() { return 0.0; }
+    v.iter().sum::<f64>() / v.len() as f64
+}
+
+fn std_f64(v: &[f64]) -> f64 {
+    if v.len() < 2 { return 0.0; }
+    let m = mean_f64(v);
+    (v.iter().map(|x| (x - m).powi(2)).sum::<f64>() / (v.len() - 1) as f64).sqrt()
+}
+
+fn median_f64(v: &[f64]) -> f64 {
+    if v.is_empty() { return 0.0; }
+    let mut s = v.to_vec();
+    s.sort_by(|a, b| a.partial_cmp(b).unwrap());
+    s[s.len() / 2]
+}
+
+fn mape_f64(actual: &[f64], predicted: &[f64]) -> f64 {
+    let errs: Vec<f64> = actual.iter().zip(predicted.iter())
+        .filter(|(a, _)| a.abs() > 0.5)
+        .map(|(a, p)| ((a - p) / a).abs())
+        .collect();
+    mean_f64(&errs) * 100.0
+}
+
+pub fn run_full_lattice_prediction() {
+    println!("\n=== v2.85 FULL LATTICE PREDICTION PIPELINE ===");
+
+    let p = DynamicsParams::uniform();
+    let b1 = p.beta1;
+    let d1 = p.delta1;
+    let eps = p.eps;
+
+    let topologies: Vec<(&str, fca::FcaLattice)> = vec![
+        ("chain(2)", fca::build_chain_lattice(2)),
+        ("chain(3)", fca::build_chain_lattice(3)),
+        ("chain(5)", fca::build_chain_lattice(5)),
+        ("chain(7)", fca::build_chain_lattice(7)),
+        ("chain(10)", fca::build_chain_lattice(10)),
+        ("diamond", fca::build_diamond_lattice()),
+        ("M3", fca::build_m3_lattice()),
+        ("B3", fca::build_b3_lattice()),
+        ("B4", fca::build_b4_lattice()),
+        ("grid(2,2)", fca::build_grid_lattice(2, 2)),
+        ("grid(3,2)", fca::build_grid_lattice(3, 2)),
+        ("grid(3,3)", fca::build_grid_lattice(3, 3)),
+        ("antichain(3)", fca::build_antichain_lattice(3)),
+        ("antichain(5)", fca::build_antichain_lattice(5)),
+    ];
+
+    // ── Phase 1: Full lattice pipeline — lattice d₀ vs isolated d₀ ──
+    println!("\n--- Phase 1: Lattice-aware prediction pipeline ---");
+    println!("  Testing: n_pred_lattice = ⌈ln(d₀_lattice/tol) / ln(1/ρ(J))⌉");
+
+    let mut all_ratios_naive: Vec<f64> = Vec::new();
+    let mut all_ratios_lattice: Vec<f64> = Vec::new();
+    let mut all_ratios_overhead: Vec<f64> = Vec::new();
+
+    println!("  {:<15} {:>5} {:>8} {:>8} {:>8} {:>8} {:>8}",
+        "topo", "N", "MAPE_na", "MAPE_lt", "med_r_na", "med_r_lt", "mean_ov");
+    for (name, ref lat) in &topologies {
+        let stats = pipeline::compute_lattice_stats(lat);
+        let results = pipeline::run_topological_iteration(lat, &stats, &p);
+
+        let mut ratios_naive: Vec<f64> = Vec::new();
+        let mut ratios_lattice: Vec<f64> = Vec::new();
+        let mut overheads: Vec<f64> = Vec::new();
+
+        for ci in 0..lat.concepts.len() {
+            if let Some(Some(ref res)) = results.get(ci) {
+                if !res.converged { continue; }
+                let rho = res.rho_spectral;
+                let m_star_arr = five_dim::to_array(&res.m_star);
+                let m0 = pipeline::init_state(ci, lat, &stats);
+                let m0_arr = five_dim::to_array(&m0);
+                let d0_lattice: f64 = (0..5).map(|k| (m0_arr[k] - m_star_arr[k]).powi(2)).sum::<f64>().sqrt();
+                let n_actual = res.n_iters as f64;
+
+                // Lattice-aware prediction
+                let n_pred_lattice = n_pred_from_rho(d0_lattice, rho, 1e-12);
+                if n_pred_lattice > 1.0 {
+                    ratios_lattice.push(n_actual / n_pred_lattice);
+                }
+
+                // Isolated concept prediction (naive d₀ from isolated fixed point)
+                let iso = run_iso_concept(b1, d1, eps, m0_arr);
+                let iso_m_star = five_dim::to_array(&iso.m_star);
+                let d0_iso: f64 = (0..5).map(|k| (m0_arr[k] - iso_m_star[k]).powi(2)).sum::<f64>().sqrt();
+                let n_pred_naive = n_pred_from_rho(d0_iso, rho, 1e-12);
+                if n_pred_naive > 1.0 {
+                    ratios_naive.push(n_actual / n_pred_naive);
+                }
+
+                if iso.n_iters > 1 {
+                    overheads.push(n_actual / iso.n_iters as f64);
+                }
+            }
+        }
+
+        let mape_na = mape_f64(&ratios_naive.iter().map(|r| *r).collect::<Vec<_>>(),
+            &vec![1.0; ratios_naive.len()]);
+        let mape_lt = mape_f64(&ratios_lattice.iter().map(|r| *r).collect::<Vec<_>>(),
+            &vec![1.0; ratios_lattice.len()]);
+
+        all_ratios_naive.extend(&ratios_naive);
+        all_ratios_lattice.extend(&ratios_lattice);
+        all_ratios_overhead.extend(&overheads);
+
+        println!("  {:<15} {:>5} {:>8.1}% {:>8.1}% {:>8.4} {:>8.4} {:>8.4}",
+            name, ratios_lattice.len(),
+            mape_na, mape_lt,
+            median_f64(&ratios_naive),
+            median_f64(&ratios_lattice),
+            mean_f64(&overheads));
+    }
+
+    println!("\n  Global summary:");
+    println!("    Naive (isolated d₀):  MAPE={:.1}%, median_ratio={:.4}, mean_ratio={:.4}",
+        mape_f64(&all_ratios_naive, &vec![1.0; all_ratios_naive.len()]),
+        median_f64(&all_ratios_naive), mean_f64(&all_ratios_naive));
+    println!("    Lattice (lattice d₀): MAPE={:.1}%, median_ratio={:.4}, mean_ratio={:.4}",
+        mape_f64(&all_ratios_lattice, &vec![1.0; all_ratios_lattice.len()]),
+        median_f64(&all_ratios_lattice), mean_f64(&all_ratios_lattice));
+    println!("    Mean overhead: {:.4}", mean_f64(&all_ratios_overhead));
+
+    // ── Phase 2: Parameter variation ──
+    println!("\n--- Phase 2: Parameter variation ---");
+    let param_configs: Vec<(&str, f64, f64, f64)> = vec![
+        ("default", 1.5, 0.5, 0.1),
+        ("balanced", 2.0, 2.0, 0.1),
+        ("high_beta", 5.0, 0.5, 0.1),
+        ("high_eps", 1.5, 0.5, 10.0),
+        ("low_eps", 1.5, 0.5, 0.01),
+        ("v264_opt", 7.0, 7.0, 5.27),
+        ("extreme", 15.0, 0.5, 0.1),
+    ];
+
+    for &(pname, b1v, d1v, epsv) in &param_configs {
+        let p_var = DynamicsParams::uniform().with_beta1(b1v).with_delta1(d1v).with_eps(epsv);
+        let mut ratios: Vec<f64> = Vec::new();
+
+        for (name, ref lat) in &topologies {
+            let stats = pipeline::compute_lattice_stats(lat);
+            let results = pipeline::run_topological_iteration(lat, &stats, &p_var);
+
+            for ci in 0..lat.concepts.len() {
+                if let Some(Some(ref res)) = results.get(ci) {
+                    if !res.converged { continue; }
+                    let rho = res.rho_spectral;
+                    let m_star_arr = five_dim::to_array(&res.m_star);
+                    let m0 = pipeline::init_state(ci, lat, &stats);
+                    let m0_arr = five_dim::to_array(&m0);
+                    let d0: f64 = (0..5).map(|k| (m0_arr[k] - m_star_arr[k]).powi(2)).sum::<f64>().sqrt();
+                    let n_pred = n_pred_from_rho(d0, rho, 1e-12);
+                    if n_pred > 1.0 {
+                        ratios.push(res.n_iters as f64 / n_pred);
+                    }
+                }
+            }
+        }
+
+        let mape = mape_f64(&ratios, &vec![1.0; ratios.len()]);
+        println!("  {:<12}: N={:>4}, MAPE={:>5.1}%, median={:.4}, mean={:.4}, std={:.4}",
+            pname, ratios.len(), mape, median_f64(&ratios), mean_f64(&ratios), std_f64(&ratios));
+    }
+
+    // ── Phase 3: Cross-parameter large-scale validation ──
+    println!("\n--- Phase 3: Large-scale cross-parameter validation ---");
+    let test_lats: Vec<(&str, fca::FcaLattice)> = vec![
+        ("chain(5)", fca::build_chain_lattice(5)),
+        ("diamond", fca::build_diamond_lattice()),
+        ("B3", fca::build_b3_lattice()),
+        ("grid(3,2)", fca::build_grid_lattice(3, 2)),
+    ];
+
+    let mut grand_ratios: Vec<f64> = Vec::new();
+    let b1_scan: Vec<f64> = vec![0.3, 0.5, 1.0, 1.5, 2.0, 3.0, 5.0, 7.0, 10.0, 15.0];
+    let d1_scan: Vec<f64> = vec![0.3, 0.5, 1.0, 2.0, 3.0, 5.0, 7.0, 10.0];
+    let eps_scan: Vec<f64> = vec![0.01, 0.05, 0.1, 0.5, 1.0, 2.0, 5.0, 10.0, 50.0];
+
+    let mut param_count = 0usize;
+    for &b1v in &b1_scan {
+        for &d1v in &d1_scan {
+            for &epsv in &eps_scan {
+                let p_var = DynamicsParams::uniform().with_beta1(b1v).with_delta1(d1v).with_eps(epsv);
+                param_count += 1;
+                for (_, ref lat) in &test_lats {
+                    let stats = pipeline::compute_lattice_stats(lat);
+                    let results = pipeline::run_topological_iteration(lat, &stats, &p_var);
+                    for ci in 0..lat.concepts.len() {
+                        if let Some(Some(ref res)) = results.get(ci) {
+                            if !res.converged { continue; }
+                            let rho = res.rho_spectral;
+                            let m_star_arr = five_dim::to_array(&res.m_star);
+                            let m0 = pipeline::init_state(ci, lat, &stats);
+                            let m0_arr = five_dim::to_array(&m0);
+                            let d0: f64 = (0..5).map(|k| (m0_arr[k] - m_star_arr[k]).powi(2)).sum::<f64>().sqrt();
+                            let n_pred = n_pred_from_rho(d0, rho, 1e-12);
+                            if n_pred > 1.0 {
+                                grand_ratios.push(res.n_iters as f64 / n_pred);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    let grand_mape = mape_f64(&grand_ratios, &vec![1.0; grand_ratios.len()]);
+    println!("  Parameter combinations: {}", param_count);
+    println!("  Total data points: {}", grand_ratios.len());
+    println!("  MAPE (ratio vs 1.0): {:.1}%", grand_mape);
+    println!("  Median ratio: {:.4}", median_f64(&grand_ratios));
+    println!("  Mean ratio: {:.4}", mean_f64(&grand_ratios));
+    println!("  Std ratio: {:.4}", std_f64(&grand_ratios));
+
+    // ── Phase 4: Ratio distribution ──
+    println!("\n--- Phase 4: Ratio distribution ---");
+    let buckets: Vec<(f64, f64)> = vec![
+        (0.5, 0.7), (0.7, 0.8), (0.8, 0.9), (0.9, 0.95),
+        (0.95, 1.0), (1.0, 1.05), (1.05, 1.1), (1.1, 1.2), (1.2, 1.5), (1.5, 3.0),
+    ];
+    for &(lo, hi) in &buckets {
+        let count = grand_ratios.iter().filter(|&&r| r >= lo && r < hi).count();
+        let pct = count as f64 / grand_ratios.len().max(1) as f64 * 100.0;
+        let bar_len = (pct / 2.0) as usize;
+        let bar: String = "#".repeat(bar_len);
+        println!("  [{:.2}, {:.2}): {:>5} ({:>5.1}%) {}", lo, hi, count, pct, bar);
+    }
+
+    // ── Phase 5: Compare with v2.79 constant 1.21 ──
+    println!("\n--- Phase 5: Old 1.21 constant vs new lattice-aware ---");
+    let old_mape = mape_f64(&grand_ratios, &vec![1.21; grand_ratios.len()]);
+    let new_mape = mape_f64(&grand_ratios, &vec![1.0; grand_ratios.len()]);
+    println!("  Old model (n = 1.21 × n_naive):  MAPE = {:.1}%", old_mape);
+    println!("  New model (n = 1.00 × n_lattice): MAPE = {:.1}%", new_mape);
+    if new_mape < old_mape {
+        println!("  → Lattice-aware prediction is {:.1}% MORE accurate!", old_mape - new_mape);
+    } else {
+        println!("  → Old constant still better by {:.1}%", new_mape - old_mape);
+    }
+
+    // ── Phase 6: Summary ──
+    println!("\n  === FULL LATTICE PREDICTION SUMMARY ===");
+    println!("  1. Lattice-aware prediction: MAPE quantified across all topologies");
+    println!("  2. Parameter variation: robustness across 7 regimes");
+    println!("  3. Large-scale validation: {} data points", grand_ratios.len());
+    println!("  4. Ratio distribution: histogram across all cases");
+    println!("  5. Old 1.21 vs new lattice-aware comparison");
+}
