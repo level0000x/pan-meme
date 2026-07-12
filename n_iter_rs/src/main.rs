@@ -196,4 +196,5 @@ fn run_synthetic_suite(_max_concepts: usize, _time_limit: f64, _output_dir: &Pat
     experiments::run_lattice_correction_refit();
     experiments::run_universal_constant_derivation();
     experiments::run_fixed_point_analysis();
+    experiments::run_jacobian_spectral_structure();
 }

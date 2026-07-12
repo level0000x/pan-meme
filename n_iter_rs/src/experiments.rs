@@ -16206,3 +16206,386 @@ pub fn run_fixed_point_analysis() {
     println!("  5. Analytical approximation: d*≈1-0.5/ε, r*≈1-1.5/ε");
     println!("  6. d₀ can be predicted from analytical M* approximation");
 }
+
+fn jac_from_arr(arr: &[f64; 25]) -> nalgebra::SMatrix<f64, 5, 5> {
+    nalgebra::SMatrix::<f64, 5, 5>::from_row_slice(arr)
+}
+
+fn sorted_eigs(j: &nalgebra::SMatrix<f64, 5, 5>) -> Vec<nalgebra::Complex<f64>> {
+    let mut eigs: Vec<nalgebra::Complex<f64>> = j.complex_eigenvalues().iter().copied().collect();
+    eigs.sort_by(|a, b| b.norm().partial_cmp(&a.norm()).unwrap());
+    eigs
+}
+
+fn power_iter_dominant_vec(j: &nalgebra::SMatrix<f64, 5, 5>, n_steps: usize) -> [f64; 5] {
+    let mut v = [1.0_f64, 0.5, 0.3, 0.2, 0.1];
+    for _ in 0..n_steps {
+        let mut w = [0.0_f64; 5];
+        for i in 0..5 {
+            for jj in 0..5 { w[i] += j[(i, jj)] * v[jj]; }
+        }
+        let norm: f64 = w.iter().map(|x| x * x).sum::<f64>().sqrt();
+        if norm > 1e-30 { for i in 0..5 { v[i] = w[i] / norm; } }
+    }
+    v
+}
+
+pub fn run_jacobian_spectral_structure() {
+    println!("\n=== v2.82 JACOBIAN SPECTRAL STRUCTURE ===");
+
+    let p_default = DynamicsParams::uniform();
+
+    // ── Phase 1: Full eigenvalue spectrum for default ──
+    println!("\n--- Phase 1: Default spectrum (b_up=0, rho_up=0) ---");
+    let res0 = n_operator::run_iteration(
+        &five_dim::make_state(0.5, 0.5, 0.5, 0.5, 0.5), 0.0, 0.0, &p_default, 2000, 1e-12,
+    );
+    if res0.converged {
+        let j = jac_from_arr(&res0.jacobian);
+        let eigs = sorted_eigs(&j);
+        println!("  m* = [{:.8}, {:.8}, {:.8}, {:.8}, {:.8}]",
+            res0.m_star[0], res0.m_star[1], res0.m_star[2], res0.m_star[3], res0.m_star[4]);
+        println!("  Eigenvalues (sorted by |λ|):");
+        for (k, e) in eigs.iter().enumerate() {
+            println!("    λ{} = {:.8} + {:.8}i, |λ{}| = {:.8}",
+                k + 1, e.re, e.im, k + 1, e.norm());
+        }
+        let gap = eigs[0].norm() - eigs[1].norm();
+        let gap_ratio = eigs[1].norm() / eigs[0].norm();
+        println!("  Spectral gap = {:.8}", gap);
+        println!("  Gap ratio |λ₂|/|λ₁| = {:.8}", gap_ratio);
+        let tr: f64 = (0..5).map(|i| j[(i, i)]).sum();
+        let det = j.determinant();
+        let eig_sum: f64 = eigs.iter().map(|e| e.re).sum();
+        let eig_prod: f64 = eigs.iter().map(|e| e.norm()).product();
+        println!("  tr(J) = {:.8}, ΣRe(λ) = {:.8}, diff = {:.2e}", tr, eig_sum, (tr - eig_sum).abs());
+        println!("  det(J) = {:.8e}, Π|λ| = {:.8e}", det, eig_prod);
+        let n_complex = eigs.iter().filter(|e| e.im.abs() > 1e-10).count();
+        println!("  Complex eigenvalues: {}/5", n_complex);
+    }
+
+    // ── Phase 2: Spectral gap across parameter regimes ──
+    println!("\n--- Phase 2: Spectral gap across regimes ---");
+    let regimes: Vec<(&str, f64, f64, f64)> = vec![
+        ("default", 1.5, 0.5, 0.1),
+        ("high_beta", 5.0, 0.5, 0.1),
+        ("low_beta", 0.3, 0.5, 0.1),
+        ("high_delta", 1.5, 5.0, 0.1),
+        ("low_delta", 1.5, 0.1, 0.1),
+        ("balanced", 2.0, 2.0, 0.1),
+        ("high_eps", 1.5, 0.5, 10.0),
+        ("low_eps", 1.5, 0.5, 0.01),
+        ("v263_optimal", 1.5, 0.5, 50.0),
+        ("v264_optimal", 7.0, 7.0, 5.27),
+        ("extreme_beta", 15.0, 0.5, 0.1),
+        ("extreme_delta", 1.5, 15.0, 0.1),
+        ("small_all", 0.1, 0.1, 0.01),
+        ("large_all", 10.0, 10.0, 10.0),
+        ("asymmetric", 3.0, 0.3, 1.0),
+    ];
+
+    let mut regime_data: Vec<(&str, f64, f64, f64, f64, f64, f64, f64, usize)> = Vec::new();
+
+    for &(name, b1, d1, eps) in &regimes {
+        let p = DynamicsParams::uniform()
+            .with_beta1(b1).with_delta1(d1).with_eps(eps);
+        let res = n_operator::run_iteration(
+            &five_dim::make_state(0.5, 0.5, 0.5, 0.5, 0.5), 0.0, 0.0, &p, 5000, 1e-12,
+        );
+        if res.converged {
+            let j = jac_from_arr(&res.jacobian);
+            let eigs = sorted_eigs(&j);
+            let rho = eigs[0].norm();
+            let lambda2 = eigs[1].norm();
+            let gap = rho - lambda2;
+            let gap_ratio = if rho > 1e-15 { lambda2 / rho } else { 0.0 };
+            let n_complex = eigs.iter().filter(|e| e.im.abs() > 1e-10).count();
+            regime_data.push((name, b1, d1, eps, rho, lambda2, gap, gap_ratio, n_complex));
+        }
+    }
+
+    println!("  {:<20} {:>6} {:>6} {:>8} {:>8} {:>8} {:>8} {:>8} {:>4}",
+        "regime", "β₁", "δ₁", "ε", "|λ₁|", "|λ₂|", "gap", "ratio", "ℂ");
+    for &(name, b1, d1, eps, rho, l2, gap, ratio, nc) in &regime_data {
+        println!("  {:<20} {:>6.1} {:>6.1} {:>8.2} {:>8.5} {:>8.5} {:>8.5} {:>8.5} {:>4}",
+            name, b1, d1, eps, rho, l2, gap, ratio, nc);
+    }
+
+    // ── Phase 3: Spectral gap vs ε scaling ──
+    println!("\n--- Phase 3: Spectral gap vs ε ---");
+    let eps_vals: Vec<f64> = vec![0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 50.0, 100.0];
+    let mut eps_data: Vec<(f64, f64, f64, f64, f64, f64, usize)> = Vec::new();
+
+    for &eps in &eps_vals {
+        let p = DynamicsParams::uniform().with_eps(eps);
+        let res = n_operator::run_iteration(
+            &five_dim::make_state(0.5, 0.5, 0.5, 0.5, 0.5), 0.0, 0.0, &p, 5000, 1e-12,
+        );
+        if res.converged {
+            let j = jac_from_arr(&res.jacobian);
+            let eigs = sorted_eigs(&j);
+            let rho = eigs[0].norm();
+            let l2 = eigs[1].norm();
+            let l3 = eigs[2].norm();
+            let gap = rho - l2;
+            let nc = eigs.iter().filter(|e| e.im.abs() > 1e-10).count();
+            eps_data.push((eps, rho, l2, l3, gap, gap / rho.max(1e-15), nc));
+        }
+    }
+
+    println!("  {:>8} {:>8} {:>8} {:>8} {:>8} {:>8} {:>4}", "ε", "|λ₁|", "|λ₂|", "|λ₃|", "gap", "gap/ρ", "ℂ");
+    for &(eps, l1, l2, l3, gap, gap_rel, nc) in &eps_data {
+        println!("  {:>8.3} {:>8.5} {:>8.5} {:>8.5} {:>8.5} {:>8.5} {:>4}",
+            eps, l1, l2, l3, gap, gap_rel, nc);
+    }
+
+    // ── Phase 4: Eigenvalue type analysis ──
+    println!("\n--- Phase 4: Eigenvalue type (real vs complex) ---");
+    let mut type_counts = (0usize, 0usize, 0usize); // all_real, mixed, all_complex
+    let b1_vals: Vec<f64> = vec![0.1, 0.3, 0.5, 1.0, 1.5, 2.0, 3.0, 5.0, 7.0, 10.0, 15.0];
+    let d1_vals: Vec<f64> = vec![0.1, 0.3, 0.5, 1.0, 2.0, 3.0, 5.0, 7.0, 10.0];
+    let eps2_vals: Vec<f64> = vec![0.01, 0.1, 1.0, 10.0];
+
+    let mut total = 0usize;
+    let mut type_real5 = 0usize;
+    let mut type_3r2c = 0usize;
+    let mut type_1r4c = 0usize;
+
+    for &b1 in &b1_vals {
+        for &d1 in &d1_vals {
+            for &eps in &eps2_vals {
+                let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1).with_eps(eps);
+                let res = n_operator::run_iteration(
+                    &five_dim::make_state(0.5, 0.5, 0.5, 0.5, 0.5), 0.0, 0.0, &p, 5000, 1e-12,
+                );
+                if res.converged {
+                    total += 1;
+                    let j = jac_from_arr(&res.jacobian);
+                    let eigs = sorted_eigs(&j);
+                    let nc = eigs.iter().filter(|e| e.im.abs() > 1e-10).count();
+                    match nc {
+                        0 => type_real5 += 1,
+                        2 | 4 => type_3r2c += 1,
+                        _ => type_1r4c += 1,
+                    }
+                }
+            }
+        }
+    }
+
+    println!("  Total regimes: {}", total);
+    println!("  All real (5 real): {} ({:.1}%)", type_real5, type_real5 as f64 / total.max(1) as f64 * 100.0);
+    println!("  3 real + 2 complex (conjugate): {} ({:.1}%)", type_3r2c, type_3r2c as f64 / total.max(1) as f64 * 100.0);
+    println!("  1 real + 4 complex: {} ({:.1}%)", type_1r4c, type_1r4c as f64 / total.max(1) as f64 * 100.0);
+
+    // ── Phase 5: Single-mode decay test ──
+    println!("\n--- Phase 5: Single-mode decay prediction ---");
+    println!("  Testing: does n_iters ≈ -ln(d₀/tol)/ln(1/|λ₁|) + correction?");
+
+    let test_configs: Vec<(&str, f64, f64, f64)> = vec![
+        ("default", 1.5, 0.5, 0.1),
+        ("balanced", 2.0, 2.0, 0.1),
+        ("high_eps", 1.5, 0.5, 10.0),
+        ("low_eps", 1.5, 0.5, 0.01),
+        ("v264_opt", 7.0, 7.0, 5.27),
+        ("extreme", 15.0, 0.5, 0.1),
+    ];
+
+    for &(name, b1, d1, eps) in &test_configs {
+        let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1).with_eps(eps);
+        let m0 = five_dim::make_state(0.5, 0.5, 0.5, 0.5, 0.5);
+        let res = n_operator::run_iteration(&m0, 0.0, 0.0, &p, 5000, 1e-12);
+        if !res.converged { continue; }
+
+        let j = jac_from_arr(&res.jacobian);
+        let eigs = sorted_eigs(&j);
+        let rho = eigs[0].norm();
+        let l2 = eigs[1].norm();
+        let gap = rho - l2;
+
+        let m_star_arr = five_dim::to_array(&res.m_star);
+        let d0: f64 = (0..5).map(|k| (m0[k] - m_star_arr[k]).powi(2)).sum::<f64>().sqrt();
+        let tol = 1e-12_f64;
+
+        let n_spectral = if rho > 1e-15 && rho < 1.0 {
+            (d0 / tol).ln() / (1.0 / rho).ln()
+        } else { 0.0 };
+        let n_actual = res.n_iters as f64;
+        let ratio = n_actual / n_spectral.max(1.0);
+        let correction = ratio - 1.0;
+
+        println!("  {:<12}: |λ₁|={:.5}, |λ₂|={:.5}, gap={:.5}, n_actual={}, n_spectral={:.0}, ratio={:.4}, correction={:.4}",
+            name, rho, l2, gap, res.n_iters, n_spectral, ratio, correction);
+    }
+
+    // ── Phase 6: Power iteration & eigenvector alignment ──
+    println!("\n--- Phase 6: Dominant eigenvector & trajectory alignment ---");
+    for &(name, b1, d1, eps) in &test_configs {
+        let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1).with_eps(eps);
+        let m0 = five_dim::make_state(0.5, 0.5, 0.5, 0.5, 0.5);
+        let res = n_operator::run_iteration(&m0, 0.0, 0.0, &p, 5000, 1e-12);
+        if !res.converged { continue; }
+
+        let j = jac_from_arr(&res.jacobian);
+        let e1 = power_iter_dominant_vec(&j, 200);
+        let e1_norm: f64 = e1.iter().map(|x| x * x).sum::<f64>().sqrt();
+        let e1_unit: Vec<f64> = e1.iter().map(|x| x / e1_norm.max(1e-30)).collect();
+
+        let m_star_arr = five_dim::to_array(&res.m_star);
+        let delta0: Vec<f64> = (0..5).map(|k| m0[k] - m_star_arr[k]).collect();
+        let delta0_norm: f64 = delta0.iter().map(|x| x * x).sum::<f64>().sqrt();
+        let delta0_unit: Vec<f64> = delta0.iter().map(|x| x / delta0_norm.max(1e-30)).collect();
+
+        let dot: f64 = e1_unit.iter().zip(delta0_unit.iter()).map(|(a, b)| a * b).sum();
+        let alignment = dot.abs();
+
+        // Check trajectory convergence to eigenvector
+        let traj = &res.trajectory;
+        let n_traj = traj.len();
+        let mid_idx = n_traj / 2;
+        let delta_mid: Vec<f64> = (0..5).map(|k| traj[mid_idx][k] - m_star_arr[k]).collect();
+        let delta_mid_norm: f64 = delta_mid.iter().map(|x| x * x).sum::<f64>().sqrt();
+        let delta_mid_unit: Vec<f64> = delta_mid.iter().map(|x| x / delta_mid_norm.max(1e-30)).collect();
+        let dot_mid: f64 = e1_unit.iter().zip(delta_mid_unit.iter()).map(|(a, b)| a * b).sum();
+
+        println!("  {:<12}: e1=[{:.3},{:.3},{:.3},{:.3},{:.3}], align_0={:.4}, align_mid={:.4}",
+            name, e1_unit[0], e1_unit[1], e1_unit[2], e1_unit[3], e1_unit[4], alignment, dot_mid.abs());
+    }
+
+    // ── Phase 7: Eigenvalue parameter dependence ──
+    println!("\n--- Phase 7: Eigenvalue parameter sensitivity ---");
+    println!("  Scanning β₁ ∈ [0.1, 15], δ₁=0.5, ε=0.1:");
+    let scan_b1: Vec<f64> = (1..=30).map(|i| 0.1 + (i as f64) * 0.5).collect();
+    let mut b1_scan: Vec<(f64, f64, f64, f64, f64)> = Vec::new();
+    for &b1 in &scan_b1 {
+        let p = DynamicsParams::uniform().with_beta1(b1);
+        let res = n_operator::run_iteration(
+            &five_dim::make_state(0.5, 0.5, 0.5, 0.5, 0.5), 0.0, 0.0, &p, 5000, 1e-12,
+        );
+        if res.converged {
+            let j = jac_from_arr(&res.jacobian);
+            let eigs = sorted_eigs(&j);
+            b1_scan.push((b1, eigs[0].norm(), eigs[1].norm(), eigs[2].norm(), eigs[0].norm() - eigs[1].norm()));
+        }
+    }
+
+    println!("  {:>6} {:>8} {:>8} {:>8} {:>8}", "β₁", "|λ₁|", "|λ₂|", "|λ₃|", "gap");
+    for (i, item) in b1_scan.iter().enumerate() {
+        if i % 3 == 0 || i == b1_scan.len() - 1 {
+            println!("  {:>6.1} {:>8.5} {:>8.5} {:>8.5} {:>8.5}", item.0, item.1, item.2, item.3, item.4);
+        }
+    }
+
+    // ── Phase 8: Spectral gap analytical structure ──
+    println!("\n--- Phase 8: Spectral gap analytical structure ---");
+    println!("  Testing: gap ≈ f(ε, β₁, δ₁)?");
+
+    let mut gap_table: Vec<(f64, f64, f64, f64, f64, f64)> = Vec::new();
+    for &eps in &[0.01, 0.1, 1.0, 10.0] {
+        for &b1 in &[0.5, 1.0, 2.0, 5.0, 10.0] {
+            for &d1 in &[0.5, 1.0, 2.0, 5.0] {
+                let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1).with_eps(eps);
+                let res = n_operator::run_iteration(
+                    &five_dim::make_state(0.5, 0.5, 0.5, 0.5, 0.5), 0.0, 0.0, &p, 5000, 1e-12,
+                );
+                if res.converged {
+                    let j = jac_from_arr(&res.jacobian);
+                    let eigs = sorted_eigs(&j);
+                    let rho = eigs[0].norm();
+                    let gap = rho - eigs[1].norm();
+                    let tr: f64 = (0..5).map(|i| j[(i, i)]).sum();
+                    gap_table.push((eps, b1, d1, rho, gap, tr));
+                }
+            }
+        }
+    }
+
+    // Try: gap ≈ a * rho^2 + b * rho (quadratic in spectral radius)
+    let n_pts = gap_table.len() as f64;
+    let (mut sx, mut sy, mut sxy, mut sx2) = (0.0, 0.0, 0.0, 0.0);
+    let (mut sx2y, mut sx3, mut sx4) = (0.0, 0.0, 0.0);
+    for &(_, _, _, rho, gap, _) in &gap_table {
+        let x = rho;
+        let x2 = x * x;
+        sx += x; sy += gap; sxy += x * gap; sx2 += x2;
+        sx2y += x2 * gap; sx3 += x2 * x; sx4 += x2 * x2;
+    }
+    // Linear: gap = a*rho + b
+    let denom_lin = n_pts * sx2 - sx * sx;
+    let a_lin = if denom_lin.abs() > 1e-20 { (n_pts * sxy - sx * sy) / denom_lin } else { 0.0 };
+    let b_lin = (sy - a_lin * sx) / n_pts;
+    let ss_res_lin: f64 = gap_table.iter().map(|&(_, _, _, rho, gap, _)| (gap - a_lin * rho - b_lin).powi(2)).sum();
+    let ss_tot: f64 = gap_table.iter().map(|&(_, _, _, _, gap, _)| (gap - sy / n_pts).powi(2)).sum();
+    let r2_lin = if ss_tot > 1e-30 { 1.0 - ss_res_lin / ss_tot } else { 0.0 };
+
+    // gap/rho vs eps
+    println!("  Linear fit: gap = {:.4}·ρ + {:.4} (R² = {:.6})", a_lin, b_lin, r2_lin);
+    println!("  Points: {}", gap_table.len());
+
+    // gap/rho vs 1/eps
+    println!("\n  gap/ρ vs 1/ε:");
+    let mut gap_eps_data: Vec<(f64, f64, f64)> = Vec::new();
+    for &eps in &[0.01, 0.05, 0.1, 0.5, 1.0, 2.0, 5.0, 10.0, 50.0, 100.0] {
+        let p = DynamicsParams::uniform().with_eps(eps);
+        let res = n_operator::run_iteration(
+            &five_dim::make_state(0.5, 0.5, 0.5, 0.5, 0.5), 0.0, 0.0, &p, 5000, 1e-12,
+        );
+        if res.converged {
+            let j = jac_from_arr(&res.jacobian);
+            let eigs = sorted_eigs(&j);
+            let rho = eigs[0].norm();
+            let gap = rho - eigs[1].norm();
+            let gap_rel = if rho > 1e-15 { gap / rho } else { 0.0 };
+            gap_eps_data.push((eps, rho, gap_rel));
+        }
+    }
+    println!("  {:>8} {:>8} {:>8}", "ε", "|λ₁|", "gap/ρ");
+    for &(eps, rho, gap_rel) in &gap_eps_data {
+        println!("  {:>8.3} {:>8.5} {:>8.5}", eps, rho, gap_rel);
+    }
+
+    // ── Phase 9: Trace/determinant structure ──
+    println!("\n--- Phase 9: Trace/Determinant structure ---");
+    println!("  Testing: det(J) ≈ 0? (from v2.28 det(J)=0 theorem)");
+    let mut det_data: Vec<(f64, f64, f64, f64, f64)> = Vec::new();
+    for &b1 in &[0.5, 1.0, 2.0, 5.0, 10.0] {
+        for &d1 in &[0.5, 1.0, 2.0, 5.0] {
+            for &eps in &[0.1, 1.0, 10.0] {
+                let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1).with_eps(eps);
+                let res = n_operator::run_iteration(
+                    &five_dim::make_state(0.5, 0.5, 0.5, 0.5, 0.5), 0.0, 0.0, &p, 5000, 1e-12,
+                );
+                if res.converged {
+                    let j = jac_from_arr(&res.jacobian);
+                    let tr: f64 = (0..5).map(|i| j[(i, i)]).sum();
+                    let det = j.determinant();
+                    let eigs = sorted_eigs(&j);
+                    let rho = eigs[0].norm();
+                    det_data.push((b1, d1, eps, det, tr));
+                }
+            }
+        }
+    }
+
+    let max_det: f64 = det_data.iter().map(|d| d.3.abs()).fold(0.0_f64, f64::max);
+    let mean_det: f64 = det_data.iter().map(|d| d.3.abs()).sum::<f64>() / det_data.len().max(1) as f64;
+    println!("  det(J) statistics: max|det|={:.2e}, mean|det|={:.2e}, N={}", max_det, mean_det, det_data.len());
+
+    println!("\n  Sample det(J) values:");
+    println!("  {:>6} {:>6} {:>6} {:>14} {:>10}", "β₁", "δ₁", "ε", "det(J)", "tr(J)");
+    for (i, &(b1, d1, eps, det, tr)) in det_data.iter().enumerate() {
+        if i % 4 == 0 {
+            println!("  {:>6.1} {:>6.1} {:>6.1} {:>14.6e} {:>10.6}", b1, d1, eps, det, tr);
+        }
+    }
+
+    // ── Phase 10: Summary ──
+    println!("\n  === JACOBIAN SPECTRAL STRUCTURE SUMMARY ===");
+    println!("  1. Full eigenvalue spectrum computed across parameter space");
+    println!("  2. Spectral gap quantified: gap = |λ₁| - |λ₂|");
+    println!("  3. Single-mode decay prediction vs universal 1.21 constant");
+    println!("  4. Eigenvalue type (real vs complex) distribution");
+    println!("  5. Dominant eigenvector alignment with trajectory");
+    println!("  6. Parameter sensitivity of spectral structure");
+    println!("  7. Trace/determinant structural constraints");
+}
