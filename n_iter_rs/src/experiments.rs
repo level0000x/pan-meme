@@ -12578,3 +12578,134 @@ pub fn run_max_rho_minimization() {
     println!("  Fine optimum:   ({:.2}, {:.2}, {:.2}) => {:.6}", fine_best_params.0, fine_best_params.1, fine_best_params.2, fine_best_rho);
     println!("  Strategy: small beta1, large delta1, large eps");
 }
+
+pub fn run_joint_bottleneck_optimization() {
+    println!("\n{}", "=".repeat(72));
+    println!("  JOINT BOTTLENECK OPTIMIZATION: min max(rho_J2D, max_rho)");
+    println!("  True global optimum over (beta1, delta1, eps)");
+    println!("{}", "=".repeat(72));
+
+    let b1_vals: Vec<f64> = (1..=80).map(|i| i as f64 * 0.5).collect();
+    let d1_vals: Vec<f64> = (1..=80).map(|i| i as f64 * 0.5).collect();
+    let eps_vals: Vec<f64> = vec![0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 50.0];
+
+    let mut best_bottleneck = 1.0_f64;
+    let mut best_params = (0.0, 0.0, 0.0);
+    let mut best_j2d = 0.0_f64;
+    let mut best_mr = 0.0_f64;
+    let mut best_dom = String::new();
+    let mut count = 0_u64;
+    let mut all: Vec<(f64, f64, f64, f64, f64, f64, String)> = Vec::new();
+
+    for &eps in &eps_vals {
+        for &b1 in &b1_vals {
+            for &d1 in &d1_vals {
+                let (_, max_rho) = top_concept_fixed_point(b1, d1, eps);
+                let rho_j2d = if let Some((dv, bv, rhov, rv, sv)) = find_physical_root(b1, d1, eps) {
+                    let (rj, _, _, _, _, _) = compute_j2d_analytical(dv, bv, rhov, rv, sv,
+                        &DynamicsParams::uniform().with_beta1(b1).with_delta1(d1).with_eps(eps));
+                    rj
+                } else {
+                    1.0
+                };
+                let bottleneck = rho_j2d.max(max_rho);
+                let dom = if max_rho > rho_j2d { "TOP" } else { "INT" };
+                count += 1;
+                if bottleneck < best_bottleneck {
+                    best_bottleneck = bottleneck;
+                    best_params = (b1, d1, eps);
+                    best_j2d = rho_j2d;
+                    best_mr = max_rho;
+                    best_dom = dom.to_string();
+                }
+                all.push((b1, d1, eps, rho_j2d, max_rho, bottleneck, dom.to_string()));
+            }
+        }
+    }
+
+    println!("\n  Scan: {} combinations", count);
+    println!("  GLOBAL OPTIMUM: b1={:.1}, d1={:.1}, eps={:.1}", best_params.0, best_params.1, best_params.2);
+    println!("    rho_J2D={:.6}, max_rho={:.6}, bottleneck={:.6}, dominant={}",
+             best_j2d, best_mr, best_bottleneck, best_dom);
+
+    all.sort_by(|a, b| a.5.partial_cmp(&b.5).unwrap());
+    println!("\n  Top 20 by bottleneck:");
+    println!("  {:>6} {:>6} {:>6} {:>10} {:>10} {:>10} {:>5}", "b1", "d1", "eps", "rho_J2D", "max_rho", "bottlneck", "dom");
+    for r in all.iter().take(20) {
+        println!("  {:>6.1} {:>6.1} {:>6.1} {:>10.6} {:>10.6} {:>10.6} {:>5}", r.0, r.1, r.2, r.3, r.4, r.5, r.6);
+    }
+
+    let dominated: Vec<&(f64, f64, f64, f64, f64, f64, String)> = all.iter()
+        .filter(|r| r.3 < 0.9 && r.4 < 0.9)
+        .collect();
+    println!("\n  Pareto analysis (rho_J2D vs max_rho, both < 0.9):");
+    println!("  Valid points: {}", dominated.len());
+    let mut pareto: Vec<&(f64, f64, f64, f64, f64, f64, String)> = Vec::new();
+    for p in &dominated {
+        let dominated_by_other = dominated.iter().any(|q| {
+            q.3 <= p.3 && q.4 <= p.4 && (q.3 < p.3 || q.4 < p.4)
+        });
+        if !dominated_by_other {
+            pareto.push(p);
+        }
+    }
+    pareto.sort_by(|a, b| a.3.partial_cmp(&b.3).unwrap());
+    println!("  Pareto-optimal points: {}", pareto.len());
+    println!("  {:>6} {:>6} {:>6} {:>10} {:>10} {:>10} {:>5}", "b1", "d1", "eps", "rho_J2D", "max_rho", "bottlneck", "dom");
+    for r in pareto.iter().take(30) {
+        println!("  {:>6.1} {:>6.1} {:>6.1} {:>10.6} {:>10.6} {:>10.6} {:>5}", r.0, r.1, r.2, r.3, r.4, r.5, r.6);
+    }
+
+    println!("\n  eps sensitivity at global optimum (b1={:.1}, d1={:.1}):", best_params.0, best_params.1);
+    println!("  {:>6} {:>10} {:>10} {:>10} {:>5}", "eps", "rho_J2D", "max_rho", "bottlneck", "dom");
+    for &eps in &[0.1, 0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 50.0, 100.0, 200.0, 500.0] {
+        let (_, max_rho) = top_concept_fixed_point(best_params.0, best_params.1, eps);
+        let rho_j2d = if let Some((dv, bv, rhov, rv, sv)) = find_physical_root(best_params.0, best_params.1, eps) {
+            let (rj, _, _, _, _, _) = compute_j2d_analytical(dv, bv, rhov, rv, sv,
+                &DynamicsParams::uniform().with_beta1(best_params.0).with_delta1(best_params.1).with_eps(eps));
+            rj
+        } else {
+            1.0
+        };
+        let bottleneck = rho_j2d.max(max_rho);
+        let dom = if max_rho > rho_j2d { "TOP" } else { "INT" };
+        println!("  {:>6.1} {:>10.6} {:>10.6} {:>10.6} {:>5}", eps, rho_j2d, max_rho, bottleneck, dom);
+    }
+
+    println!("\n  Previous optimum comparison:");
+    let prev: Vec<(&str, f64, f64, f64)> = vec![
+        ("default",     1.0,  1.0,  0.5),
+        ("v2.56_opt",   7.0,  5.0,  5.27),
+        ("global_opt",  15.0, 15.3, 5.17),
+        ("v2.63_min",   2.80, 0.30, 250.0),
+    ];
+    println!("  {:>12} {:>6} {:>6} {:>6} {:>10} {:>10} {:>10} {:>5}", "name", "b1", "d1", "eps", "rho_J2D", "max_rho", "bottlneck", "dom");
+    for &(name, b1, d1, eps) in &prev {
+        let (_, max_rho) = top_concept_fixed_point(b1, d1, eps);
+        let rho_j2d = if let Some((dv, bv, rhov, rv, sv)) = find_physical_root(b1, d1, eps) {
+            let (rj, _, _, _, _, _) = compute_j2d_analytical(dv, bv, rhov, rv, sv,
+                &DynamicsParams::uniform().with_beta1(b1).with_delta1(d1).with_eps(eps));
+            rj
+        } else {
+            1.0
+        };
+        let bottleneck = rho_j2d.max(max_rho);
+        let dom = if max_rho > rho_j2d { "TOP" } else { "INT" };
+        println!("  {:>12} {:>6.1} {:>6.1} {:>6.1} {:>10.6} {:>10.6} {:>10.6} {:>5}", name, b1, d1, eps, rho_j2d, max_rho, bottleneck, dom);
+    }
+
+    println!("\n  JOINT BOTTLENECK CONCLUSIONS:");
+    println!("  Global optimum: b1={:.1}, d1={:.1}, eps={:.1}", best_params.0, best_params.1, best_params.2);
+    println!("  bottleneck={:.6} (dominant: {})", best_bottleneck, best_dom);
+    println!("  vs v2.56_opt bottleneck improvement: {:.1}x", {
+        let v256_mr = top_concept_fixed_point(7.0, 5.0, 5.27).1;
+        let v256_j2d = find_physical_root(7.0, 5.0, 5.27)
+            .map(|(dv, bv, rhov, rv, sv)| {
+                let (rj, _, _, _, _, _) = compute_j2d_analytical(dv, bv, rhov, rv, sv,
+                    &DynamicsParams::uniform().with_beta1(7.0).with_delta1(5.0).with_eps(5.27));
+                rj
+            }).unwrap_or(1.0);
+        let v256_bn = v256_j2d.max(v256_mr);
+        v256_bn / best_bottleneck
+    });
+}
