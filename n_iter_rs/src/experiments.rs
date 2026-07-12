@@ -13802,7 +13802,7 @@ pub fn run_final_formula_validation() {
         "b1", "d1", "eps", "C", "n_pred", "n_act", "err%", "rho_pred", "rho_act", "status");
     println!("  {}", "-".repeat(85));
 
-    let mut results_phase1: Vec<(f64, f64, f64, f64, f64, u64, f64)> = Vec::new();
+    let mut results_phase1: Vec<(f64, f64, f64, f64, f64, f64, f64)> = Vec::new();
     let mut total_count = 0_u64;
     let mut valid_count = 0_u64;
     let mut excellent_count = 0_u64;
@@ -13930,7 +13930,7 @@ pub fn run_final_formula_validation() {
 
     for &tol in &tols {
         let a = -tol.ln();
-        let n_pred = a / (50.0 / (3.0 * 1.0)).ln();
+        let n_pred = a / (50.0_f64 / (3.0_f64 * 1.0_f64)).ln();
         let lat = fca::build_chain_lattice(10);
         let stats = pipeline::compute_lattice_stats(&lat);
         let results = pipeline::run_topological_iteration(&lat, &stats, &p_tol);
