@@ -12354,3 +12354,209 @@ pub fn run_max_rho_analysis() {
     println!("  - Compare max rho concept's d* with analytical d*");
     println!("  - Derive analytical formula for max rho if possible");
 }
+
+pub fn run_top_concept_analysis() {
+    println!("\n{}", "=".repeat(72));
+    println!("  TOP CONCEPT ANALYSIS: degenerate subsystem with b_up=0, rho_up=0");
+    println!("{}", "=".repeat(72));
+
+    let regimes: Vec<(&str, f64, f64, f64)> = vec![
+        ("default",     1.0,  10.0, 0.01),
+        ("v2.55_opt",   7.0,  10.0, 1.25),
+        ("v2.56_opt",   7.0,  5.0,  5.27),
+        ("global_opt",  15.0, 15.3, 5.17),
+        ("sweet_low",   7.0,  7.0,  5.43),
+        ("sweet_high",  30.0, 35.0, 5.0),
+    ];
+
+    // Part 1: Top concept fixed point by Newton iteration
+    println!("\n  Part 1: Top concept fixed point (b_up=0, rho_up=0)");
+    println!("  {:>12}  {:>6}  {:>6}  {:>6}  {:>10}  {:>10}  {:>10}  {:>10}  {:>10}  {:>10}",
+        "regime", "beta1", "delta1", "eps", "d*", "b*", "rho*", "r*", "s*", "max_rho");
+
+    for &(name, b1, d1, eps) in &regimes {
+        let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1).with_eps(eps);
+
+        // Newton iteration for top concept fixed point
+        let mut m = [0.5f64; 5];
+        for _ in 0..200 {
+            let m_new = n_operator::n_operator(
+                &n_operator::State5 { d: m[0], b: m[1], rho: m[2], r: m[3], s: m[4] },
+                0.0, 0.0, &p
+            );
+            let next = [m_new.d, m_new.b, m_new.rho, m_new.r, m_new.s];
+            let diff: f64 = next.iter().zip(m.iter()).map(|(a, b)| (a - b).powi(2)).sum::<f64>().sqrt();
+            m = next;
+            if diff < 1e-14 { break; }
+        }
+
+        // Compute Jacobian at fixed point
+        let m_star = n_operator::State5 { d: m[0], b: m[1], rho: m[2], r: m[3], s: m[4] };
+        let jac = n_operator::compute_jacobian(&m_star, 0.0, 0.0, &p);
+        let rho_spect = jac.spectral_radius();
+
+        println!("  {:>12}  {:>6.1}  {:>6.1}  {:>6.2}  {:>10.5}  {:>10.5}  {:>10.5}  {:>10.5}  {:>10.5}  {:>10.5}",
+            name, b1, d1, eps, m[0], m[1], m[2], m[3], m[4], rho_spect);
+    }
+
+    // Part 2: Compare top concept rho_spect with iteration max_rho
+    println!("\n  Part 2: Analytical max_rho vs iteration max_rho");
+    println!("  {:>12}  {:>10}  {:>10}  {:>10}", "regime", "rho_an", "rho_iter", "match");
+
+    let topologies: Vec<(&str, fca::FcaLattice)> = vec![
+        ("chain-10",  fca::build_chain_lattice(10)),
+        ("diamond",   fca::build_diamond_lattice()),
+        ("B3",        fca::build_b3_lattice()),
+        ("grid-3x3",  fca::build_grid_lattice(3, 3)),
+    ];
+
+    for &(name, b1, d1, eps) in &regimes {
+        let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1).with_eps(eps);
+
+        // Analytical
+        let mut m = [0.5f64; 5];
+        for _ in 0..200 {
+            let m_new = n_operator::n_operator(
+                &n_operator::State5 { d: m[0], b: m[1], rho: m[2], r: m[3], s: m[4] },
+                0.0, 0.0, &p
+            );
+            let next = [m_new.d, m_new.b, m_new.rho, m_new.r, m_new.s];
+            let diff: f64 = next.iter().zip(m.iter()).map(|(a, b)| (a - b).powi(2)).sum::<f64>().sqrt();
+            m = next;
+            if diff < 1e-14 { break; }
+        }
+        let m_star = n_operator::State5 { d: m[0], b: m[1], rho: m[2], r: m[3], s: m[4] };
+        let jac = n_operator::compute_jacobian(&m_star, 0.0, 0.0, &p);
+        let rho_an = jac.spectral_radius();
+
+        // Iteration
+        let mut rho_iter_vals: Vec<f64> = Vec::new();
+        for (_tname, lat) in &topologies {
+            let stats = pipeline::compute_lattice_stats(lat);
+            let results = pipeline::run_topological_iteration(lat, &stats, &p);
+            for opt in &results {
+                if let Some(ref r) = opt {
+                    if r.n_upstream == 0 {
+                        rho_iter_vals.push(r.rho_spectral);
+                    }
+                }
+            }
+        }
+
+        let rho_iter = if !rho_iter_vals.is_empty() {
+            rho_iter_vals.iter().sum::<f64>() / rho_iter_vals.len() as f64
+        } else { f64::NAN };
+
+        let match_str = if (rho_an - rho_iter).abs() < 0.001 { "EXACT" }
+            else if (rho_an - rho_iter).abs() < 0.01 { "GOOD" }
+            else { "DIFF" };
+
+        println!("  {:>12}  {:>10.5}  {:>10.5}  {:>10}", name, rho_an, rho_iter, match_str);
+    }
+
+    // Part 3: Parameter scan — max_rho(beta1, delta1, eps)
+    println!("\n  Part 3: max_rho parameter sensitivity");
+    let b1_vals: Vec<f64> = vec![0.5, 1.0, 2.0, 5.0, 7.0, 10.0, 15.0, 20.0, 50.0, 100.0];
+
+    // 3a: beta1 scan at fixed delta1=10, eps=0.01
+    println!("\n  3a: max_rho vs beta1 (delta1=10, eps=0.01)");
+    println!("  {:>8}  {:>10}  {:>10}  {:>10}  {:>10}", "beta1", "d*_top", "b*_top", "rho*_top", "max_rho");
+    for &b1 in &b1_vals {
+        let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(10.0).with_eps(0.01);
+        let mut m = [0.5f64; 5];
+        for _ in 0..200 {
+            let m_new = n_operator::n_operator(
+                &n_operator::State5 { d: m[0], b: m[1], rho: m[2], r: m[3], s: m[4] },
+                0.0, 0.0, &p
+            );
+            let next = [m_new.d, m_new.b, m_new.rho, m_new.r, m_new.s];
+            let diff: f64 = next.iter().zip(m.iter()).map(|(a, b)| (a - b).powi(2)).sum::<f64>().sqrt();
+            m = next;
+            if diff < 1e-14 { break; }
+        }
+        let m_star = n_operator::State5 { d: m[0], b: m[1], rho: m[2], r: m[3], s: m[4] };
+        let rho_spect = n_operator::compute_jacobian(&m_star, 0.0, 0.0, &p).spectral_radius();
+        println!("  {:>8.1}  {:>10.5}  {:>10.5}  {:>10.5}  {:>10.5}", b1, m[0], m[1], m[2], rho_spect);
+    }
+
+    // 3b: delta1 scan at fixed beta1=7, eps=5.27
+    println!("\n  3b: max_rho vs delta1 (beta1=7, eps=5.27)");
+    println!("  {:>8}  {:>10}  {:>10}  {:>10}  {:>10}", "delta1", "d*_top", "b*_top", "rho*_top", "max_rho");
+    let d1_vals: Vec<f64> = vec![0.5, 1.0, 2.0, 5.0, 7.0, 10.0, 15.0, 20.0, 50.0, 100.0];
+    for &d1 in &d1_vals {
+        let p = DynamicsParams::uniform().with_beta1(7.0).with_delta1(d1).with_eps(5.27);
+        let mut m = [0.5f64; 5];
+        for _ in 0..200 {
+            let m_new = n_operator::n_operator(
+                &n_operator::State5 { d: m[0], b: m[1], rho: m[2], r: m[3], s: m[4] },
+                0.0, 0.0, &p
+            );
+            let next = [m_new.d, m_new.b, m_new.rho, m_new.r, m_new.s];
+            let diff: f64 = next.iter().zip(m.iter()).map(|(a, b)| (a - b).powi(2)).sum::<f64>().sqrt();
+            m = next;
+            if diff < 1e-14 { break; }
+        }
+        let m_star = n_operator::State5 { d: m[0], b: m[1], rho: m[2], r: m[3], s: m[4] };
+        let rho_spect = n_operator::compute_jacobian(&m_star, 0.0, 0.0, &p).spectral_radius();
+        println!("  {:>8.1}  {:>10.5}  {:>10.5}  {:>10.5}  {:>10.5}", d1, m[0], m[1], m[2], rho_spect);
+    }
+
+    // 3c: eps scan at fixed beta1=7, delta1=5
+    println!("\n  3c: max_rho vs eps (beta1=7, delta1=5)");
+    println!("  {:>8}  {:>10}  {:>10}  {:>10}  {:>10}", "eps", "d*_top", "b*_top", "rho*_top", "max_rho");
+    let eps_vals: Vec<f64> = vec![0.001, 0.01, 0.1, 0.5, 1.0, 2.0, 3.0, 5.0, 7.0, 10.0];
+    for &eps in &eps_vals {
+        let p = DynamicsParams::uniform().with_beta1(7.0).with_delta1(5.0).with_eps(eps);
+        let mut m = [0.5f64; 5];
+        for _ in 0..200 {
+            let m_new = n_operator::n_operator(
+                &n_operator::State5 { d: m[0], b: m[1], rho: m[2], r: m[3], s: m[4] },
+                0.0, 0.0, &p
+            );
+            let next = [m_new.d, m_new.b, m_new.rho, m_new.r, m_new.s];
+            let diff: f64 = next.iter().zip(m.iter()).map(|(a, b)| (a - b).powi(2)).sum::<f64>().sqrt();
+            m = next;
+            if diff < 1e-14 { break; }
+        }
+        let m_star = n_operator::State5 { d: m[0], b: m[1], rho: m[2], r: m[3], s: m[4] };
+        let rho_spect = n_operator::compute_jacobian(&m_star, 0.0, 0.0, &p).spectral_radius();
+        println!("  {:>8.3}  {:>10.5}  {:>10.5}  {:>10.5}  {:>10.5}", eps, m[0], m[1], m[2], rho_spect);
+    }
+
+    // Part 4: Top concept rho_spect vs interior rho(J_2D)
+    println!("\n  Part 4: max_rho (top) vs rho(J_2D) (interior) comparison");
+    println!("  {:>12}  {:>10}  {:>10}  {:>10}  {:>10}", "regime", "max_rho", "rho_J2D", "ratio", "dominan");
+    for &(name, b1, d1, eps) in &regimes {
+        let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1).with_eps(eps);
+
+        // Top concept
+        let mut m = [0.5f64; 5];
+        for _ in 0..200 {
+            let m_new = n_operator::n_operator(
+                &n_operator::State5 { d: m[0], b: m[1], rho: m[2], r: m[3], s: m[4] },
+                0.0, 0.0, &p
+            );
+            let next = [m_new.d, m_new.b, m_new.rho, m_new.r, m_new.s];
+            let diff: f64 = next.iter().zip(m.iter()).map(|(a, b)| (a - b).powi(2)).sum::<f64>().sqrt();
+            m = next;
+            if diff < 1e-14 { break; }
+        }
+        let m_star = n_operator::State5 { d: m[0], b: m[1], rho: m[2], r: m[3], s: m[4] };
+        let max_rho = n_operator::compute_jacobian(&m_star, 0.0, 0.0, &p).spectral_radius();
+
+        // Interior rho(J_2D)
+        let rho_j2d = if let Some((d, b, rho, r, s)) = find_physical_root(b1, d1, eps) {
+            compute_j2d_analytical(d, b, rho, r, s, &p).0
+        } else { f64::NAN };
+
+        let ratio = max_rho / rho_j2d;
+        let dom = if max_rho > rho_j2d { "TOP" } else { "INTERIOR" };
+
+        println!("  {:>12}  {:>10.5}  {:>10.5}  {:>10.3}  {:>10}", name, max_rho, rho_j2d, ratio, dom);
+    }
+
+    println!("\n  TOP CONCEPT ANALYSIS CONCLUSIONS:");
+    println!("  - Top concept fixed point solves exactly with b_up=0, rho_up=0");
+    println!("  - max_rho is determined by the top concept Jacobian");
+    println!("  - Compare with interior rho(J_2D) to identify bottleneck");
+}

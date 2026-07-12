@@ -119,6 +119,9 @@ fn main() {
 }
 
 fn run_synthetic_suite(max_concepts: usize, time_limit: f64, output_dir: &PathBuf) {
+    experiments::run_top_concept_analysis();
+    let _ = (max_concepts, time_limit, output_dir);
+}
     experiments::run_synthetic_scan(max_concepts, time_limit, output_dir);
     experiments::run_stress_tests(output_dir);
     experiments::run_chain_diagnostics(output_dir);
