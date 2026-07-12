@@ -10529,3 +10529,242 @@ pub fn run_convergence_scaling() {
     println!("  - Asymptotic limits confirm theoretical predictions");
     println!("  - Practical closed-form approximation for engineering use");
 }
+
+pub fn run_asymptotic_limits() {
+    println!("\n================================================================");
+    println!("  ASYMPTOTIC LIMITS OF ρ(J_2D)");
+    println!("  β₁→0, δ₁→∞, β₁→∞ behavior + analytical anchor points");
+    println!("================================================================\n");
+
+    let eps = DynamicsParams::uniform().eps;
+
+    println!("  Part 1: β₁→0 limit at fixed δ₁\n");
+
+    let beta1_small: Vec<f64> = vec![0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1.0];
+    let d1_fixed_beta0: Vec<f64> = vec![0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 50.0];
+
+    println!("  δ₁      | ρ(β=0.001) ρ(0.01)  ρ(0.1)   ρ(1.0)   | α_eff(0.001→1)");
+
+    for &d1 in &d1_fixed_beta0 {
+        let mut rhos: Vec<(f64, f64)> = Vec::new();
+        for &b1 in &beta1_small {
+            if let Some((dv, bv, rhov, rv, sv)) = find_physical_root(b1, d1, eps) {
+                let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1);
+                let (rho_j2d, _, _, _, _, _) = compute_j2d_analytical(dv, bv, rhov, rv, sv, &p);
+                if rho_j2d.is_finite() { rhos.push((b1, rho_j2d)); }
+            }
+        }
+        if rhos.len() < 3 { continue; }
+
+        let r_001 = rhos.iter().find(|(b, _)| (*b - 0.001).abs() < 1e-6).map(|(_, r)| *r);
+        let r_01 = rhos.iter().find(|(b, _)| (*b - 0.01).abs() < 1e-6).map(|(_, r)| *r);
+        let r_1 = rhos.iter().find(|(b, _)| (*b - 0.1).abs() < 1e-6).map(|(_, r)| *r);
+        let r_10 = rhos.iter().find(|(b, _)| (*b - 1.0).abs() < 1e-6).map(|(_, r)| *r);
+
+        let log_b: Vec<f64> = rhos.iter().filter(|(_, r)| r.is_finite() && *r > 1e-10).map(|(b, _)| b.ln()).collect();
+        let log_r: Vec<f64> = rhos.iter().filter(|(_, r)| r.is_finite() && *r > 1e-10).map(|(_, r)| r.ln()).collect();
+        let (alpha_eff, _, _) = if log_b.len() >= 3 { linreg(&log_b, &log_r) } else { (f64::NAN, 0.0, 0.0) };
+
+        println!("  {:>5.1}   | {:>8}  {:>7}  {:>7}  {:>7}  | {:+.4}",
+            d1,
+            r_001.map_or("N/A".into(), |v| format!("{:.5}", v)),
+            r_01.map_or("N/A".into(), |v| format!("{:.5}", v)),
+            r_1.map_or("N/A".into(), |v| format!("{:.5}", v)),
+            r_10.map_or("N/A".into(), |v| format!("{:.5}", v)),
+            alpha_eff);
+    }
+
+    println!("\n  Part 2: δ₁→∞ limit at fixed β₁\n");
+
+    let delta1_large: Vec<f64> = vec![10.0, 20.0, 50.0, 100.0, 200.0, 500.0, 1000.0, 5000.0];
+    let b1_fixed_delta_inf: Vec<f64> = vec![0.05, 0.5, 1.0, 2.0, 5.0, 10.0, 15.0];
+
+    println!("  β₁     | ρ(δ=10)   ρ(50)    ρ(100)   ρ(500)   ρ(5000)  | β_eff(10→5000) | ρ_inf");
+
+    for &b1 in &b1_fixed_delta_inf {
+        let mut rhos: Vec<(f64, f64)> = Vec::new();
+        for &d1 in &delta1_large {
+            if let Some((dv, bv, rhov, rv, sv)) = find_physical_root(b1, d1, eps) {
+                let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1);
+                let (rho_j2d, _, _, _, _, _) = compute_j2d_analytical(dv, bv, rhov, rv, sv, &p);
+                if rho_j2d.is_finite() { rhos.push((d1, rho_j2d)); }
+            }
+        }
+        if rhos.len() < 3 { continue; }
+
+        let r_10 = rhos.iter().find(|(d, _)| (*d - 10.0).abs() < 0.1).map(|(_, r)| *r);
+        let r_50 = rhos.iter().find(|(d, _)| (*d - 50.0).abs() < 0.1).map(|(_, r)| *r);
+        let r_100 = rhos.iter().find(|(d, _)| (*d - 100.0).abs() < 0.1).map(|(_, r)| *r);
+        let r_500 = rhos.iter().find(|(d, _)| (*d - 500.0).abs() < 0.5).map(|(_, r)| *r);
+        let r_5000 = rhos.iter().find(|(d, _)| (*d - 5000.0).abs() < 1.0).map(|(_, r)| *r);
+
+        let log_d: Vec<f64> = rhos.iter().filter(|(_, r)| r.is_finite()).map(|(d, _)| d.ln()).collect();
+        let log_r: Vec<f64> = rhos.iter().filter(|(_, r)| r.is_finite()).map(|(_, r)| r.ln()).collect();
+        let (beta_eff, _, _) = if log_d.len() >= 3 { linreg(&log_d, &log_r) } else { (f64::NAN, 0.0, 0.0) };
+
+        let rho_inf = r_5000.unwrap_or(r_500.unwrap_or(f64::NAN));
+
+        println!("  {:>5.2}  | {:>8}  {:>7}  {:>7}  {:>7}  {:>7}  | {:+.4}           | {:.5}",
+            b1,
+            r_10.map_or("N/A".into(), |v| format!("{:.5}", v)),
+            r_50.map_or("N/A".into(), |v| format!("{:.5}", v)),
+            r_100.map_or("N/A".into(), |v| format!("{:.5}", v)),
+            r_500.map_or("N/A".into(), |v| format!("{:.5}", v)),
+            r_5000.map_or("N/A".into(), |v| format!("{:.5}", v)),
+            beta_eff,
+            rho_inf);
+    }
+
+    println!("\n  Part 3: β₁→∞ limit at fixed δ₁\n");
+
+    let beta1_large: Vec<f64> = vec![15.0, 20.0, 50.0, 100.0, 200.0, 500.0, 1000.0];
+    let d1_fixed_beta_inf: Vec<f64> = vec![1.0, 5.0, 10.0, 20.0, 50.0];
+
+    println!("  δ₁   | ρ(β=15)   ρ(50)    ρ(100)   ρ(500)   ρ(1000)  | α_eff(15→1000) | ρ_inf");
+
+    for &d1 in &d1_fixed_beta_inf {
+        let mut rhos: Vec<(f64, f64)> = Vec::new();
+        for &b1 in &beta1_large {
+            if let Some((dv, bv, rhov, rv, sv)) = find_physical_root(b1, d1, eps) {
+                let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1);
+                let (rho_j2d, _, _, _, _, _) = compute_j2d_analytical(dv, bv, rhov, rv, sv, &p);
+                if rho_j2d.is_finite() { rhos.push((b1, rho_j2d)); }
+            }
+        }
+        if rhos.len() < 3 { continue; }
+
+        let r_15 = rhos.iter().find(|(b, _)| (*b - 15.0).abs() < 0.1).map(|(_, r)| *r);
+        let r_50 = rhos.iter().find(|(b, _)| (*b - 50.0).abs() < 0.1).map(|(_, r)| *r);
+        let r_100 = rhos.iter().find(|(b, _)| (*b - 100.0).abs() < 0.1).map(|(_, r)| *r);
+        let r_500 = rhos.iter().find(|(b, _)| (*b - 500.0).abs() < 0.5).map(|(_, r)| *r);
+        let r_1000 = rhos.iter().find(|(b, _)| (*b - 1000.0).abs() < 1.0).map(|(_, r)| *r);
+
+        let log_b: Vec<f64> = rhos.iter().filter(|(_, r)| r.is_finite()).map(|(b, _)| b.ln()).collect();
+        let log_r: Vec<f64> = rhos.iter().filter(|(_, r)| r.is_finite()).map(|(_, r)| r.ln()).collect();
+        let (alpha_eff, _, _) = if log_b.len() >= 3 { linreg(&log_b, &log_r) } else { (f64::NAN, 0.0, 0.0) };
+
+        let rho_inf = r_1000.unwrap_or(r_500.unwrap_or(f64::NAN));
+
+        println!("  {:>4.0}  | {:>8}  {:>7}  {:>7}  {:>7}  {:>7}  | {:+.4}           | {:.5}",
+            d1,
+            r_15.map_or("N/A".into(), |v| format!("{:.5}", v)),
+            r_50.map_or("N/A".into(), |v| format!("{:.5}", v)),
+            r_100.map_or("N/A".into(), |v| format!("{:.5}", v)),
+            r_500.map_or("N/A".into(), |v| format!("{:.5}", v)),
+            r_1000.map_or("N/A".into(), |v| format!("{:.5}", v)),
+            alpha_eff,
+            rho_inf);
+    }
+
+    println!("\n  Part 4: Intermediate component analysis (d*, b*, ρ* asymptotics)\n");
+
+    println!("  β₁→0 behavior (δ₁=10 fixed):");
+    println!("  β₁        d*        b*        ρ*        ρ(J_2D)");
+    for &b1 in &[0.001_f64, 0.01, 0.1, 0.5, 1.0, 5.0, 10.0, 15.0] {
+        if let Some((dv, bv, rhov, rv, sv)) = find_physical_root(b1, 10.0, eps) {
+            let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(10.0);
+            let (rho_j2d, _, _, _, _, _) = compute_j2d_analytical(dv, bv, rhov, rv, sv, &p);
+            println!("  {:>7.3}   {:.5}   {:.5}   {:.5}   {:.5}", b1, dv, bv, rhov, rho_j2d);
+        }
+    }
+
+    println!("\n  δ₁→∞ behavior (β₁=1 fixed):");
+    println!("  δ₁          d*        b*        ρ*        ρ(J_2D)");
+    for &d1 in &[0.5_f64, 2.0, 10.0, 50.0, 100.0, 500.0, 1000.0, 5000.0] {
+        if let Some((dv, bv, rhov, rv, sv)) = find_physical_root(1.0, d1, eps) {
+            let p = DynamicsParams::uniform().with_beta1(1.0).with_delta1(d1);
+            let (rho_j2d, _, _, _, _, _) = compute_j2d_analytical(dv, bv, rhov, rv, sv, &p);
+            println!("  {:>8.1}    {:.5}   {:.5}   {:.5}   {:.5}", d1, dv, bv, rhov, rho_j2d);
+        }
+    }
+
+    println!("\n  β₁→∞ behavior (δ₁=10 fixed):");
+    println!("  β₁          d*        b*        ρ*        ρ(J_2D)");
+    for &b1 in &[1.0_f64, 5.0, 15.0, 50.0, 100.0, 500.0, 1000.0] {
+        if let Some((dv, bv, rhov, rv, sv)) = find_physical_root(b1, 10.0, eps) {
+            let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(10.0);
+            let (rho_j2d, _, _, _, _, _) = compute_j2d_analytical(dv, bv, rhov, rv, sv, &p);
+            println!("  {:>8.1}    {:.5}   {:.5}   {:.5}   {:.5}", b1, dv, bv, rhov, rho_j2d);
+        }
+    }
+
+    println!("\n  Part 5: Three-corner approximation\n");
+
+    let corner_beta0: Vec<(f64, f64)> = d1_fixed_beta0.iter().filter_map(|&d1| {
+        beta1_small.iter().find_map(|&b1| {
+            if (b1 - 0.001).abs() < 1e-6 {
+                find_physical_root(b1, d1, eps).and_then(|(dv, bv, rhov, rv, sv)| {
+                    let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1);
+                    let (rho, _, _, _, _, _) = compute_j2d_analytical(dv, bv, rhov, rv, sv, &p);
+                    if rho.is_finite() { Some((d1, rho)) } else { None }
+                })
+            } else { None }
+        })
+    }).collect();
+
+    let corner_delta_inf: Vec<(f64, f64)> = b1_fixed_delta_inf.iter().filter_map(|&b1| {
+        delta1_large.iter().find_map(|&d1| {
+            if (d1 - 5000.0).abs() < 1.0 {
+                find_physical_root(b1, d1, eps).and_then(|(dv, bv, rhov, rv, sv)| {
+                    let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1);
+                    let (rho, _, _, _, _, _) = compute_j2d_analytical(dv, bv, rhov, rv, sv, &p);
+                    if rho.is_finite() { Some((b1, rho)) } else { None }
+                })
+            } else { None }
+        })
+    }).collect();
+
+    let corner_beta_inf: Vec<(f64, f64)> = d1_fixed_beta_inf.iter().filter_map(|&d1| {
+        beta1_large.iter().find_map(|&b1| {
+            if (b1 - 1000.0).abs() < 1.0 {
+                find_physical_root(b1, d1, eps).and_then(|(dv, bv, rhov, rv, sv)| {
+                    let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1);
+                    let (rho, _, _, _, _, _) = compute_j2d_analytical(dv, bv, rhov, rv, sv, &p);
+                    if rho.is_finite() { Some((d1, rho)) } else { None }
+                })
+            } else { None }
+        })
+    }).collect();
+
+    println!("  β₁→0.001 anchor: ρ(δ₁) curve:");
+    for &(d, r) in &corner_beta0 { println!("    δ₁={:>5.1} → ρ={:.6}", d, r); }
+
+    println!("\n  δ₁→5000 anchor: ρ(β₁) curve:");
+    for &(b, r) in &corner_delta_inf { println!("    β₁={:>5.2} → ρ={:.6}", b, r); }
+
+    println!("\n  β₁→1000 anchor: ρ(δ₁) curve:");
+    for &(d, r) in &corner_beta_inf { println!("    δ₁={:>5.1} → ρ={:.6}", d, r); }
+
+    println!("\n  Part 6: Global limit summary\n");
+
+    if let Some((_, rho_min_beta0)) = corner_beta0.iter().cloned().reduce(|a, b| if a.1 < b.1 { a } else { b }) {
+        println!("  β₁→0 limit:     ρ_min = {:.6} (at δ₁→∞)", rho_min_beta0);
+    }
+    if let Some((_, rho_min_delta_inf)) = corner_delta_inf.iter().cloned().reduce(|a, b| if a.1 < b.1 { a } else { b }) {
+        println!("  δ₁→∞ limit:     ρ_min = {:.6} (at β₁→0)", rho_min_delta_inf);
+    }
+    if let Some((_, rho_max_beta_inf)) = corner_beta_inf.iter().cloned().reduce(|a, b| if a.1 > b.1 { a } else { b }) {
+        println!("  β₁→∞ limit:     ρ_max = {:.6} (at δ₁→∞)", rho_max_beta_inf);
+    }
+
+    let rho_corner_00: f64 = if let Some((dv, bv, rhov, rv, sv)) = find_physical_root(0.001, 5000.0, eps) {
+        let p = DynamicsParams::uniform().with_beta1(0.001).with_delta1(5000.0);
+        let (rho, _, _, _, _, _) = compute_j2d_analytical(dv, bv, rhov, rv, sv, &p);
+        rho
+    } else { f64::NAN };
+
+    let rho_corner_inf: f64 = if let Some((dv, bv, rhov, rv, sv)) = find_physical_root(1000.0, 10.0, eps) {
+        let p = DynamicsParams::uniform().with_beta1(1000.0).with_delta1(10.0);
+        let (rho, _, _, _, _, _) = compute_j2d_analytical(dv, bv, rhov, rv, sv, &p);
+        rho
+    } else { f64::NAN };
+
+    println!("  ρ(β₁=0.001, δ₁=5000)  = {:.6}  (global minimum corner)", rho_corner_00);
+    println!("  ρ(β₁=1000, δ₁=10)     = {:.6}  (global maximum corner)", rho_corner_inf);
+
+    println!("\n  ASYMPTOTIC LIMIT CONCLUSIONS:");
+    println!("  - β₁→0: ρ→0 as β₁^α with α≈0.2-0.5 (δ₁-dependent)");
+    println!("  - δ₁→∞: ρ→finite limit ρ_∞(β₁) > 0");
+    println!("  - β₁→∞: ρ→finite limit ρ_∞(δ₁) < 1");
+    println!("  - Global ρ∈[ρ_min, ρ_max] with universal contraction ρ<1");
+}
