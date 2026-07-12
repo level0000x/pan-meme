@@ -109,6 +109,37 @@ pub fn compute_jacobian(m_star: &State5, b_up: f64, rho_up: f64, p: &DynamicsPar
     j
 }
 
+pub type Hessian5 = [[[f64; 5]; 5]; 5];
+
+pub fn compute_hessian_fd(m_star: &State5, b_up: f64, rho_up: f64, p: &DynamicsParams) -> Hessian5 {
+    let h = 1e-6_f64;
+    let mut hess = [[[0.0_f64; 5]; 5]; 5];
+
+    for j in 0..5 {
+        for k in 0..5 {
+            let mut m_pp = *m_star;
+            let mut m_pm = *m_star;
+            let mut m_mp = *m_star;
+            let mut m_mm = *m_star;
+            m_pp[j] += h; m_pp[k] += h;
+            m_pm[j] += h; m_pm[k] -= h;
+            m_mp[j] -= h; m_mp[k] += h;
+            m_mm[j] -= h; m_mm[k] -= h;
+
+            let f_pp = n_operator(&m_pp, b_up, rho_up, p);
+            let f_pm = n_operator(&m_pm, b_up, rho_up, p);
+            let f_mp = n_operator(&m_mp, b_up, rho_up, p);
+            let f_mm = n_operator(&m_mm, b_up, rho_up, p);
+
+            for i in 0..5 {
+                hess[i][j][k] = (f_pp[i] - f_pm[i] - f_mp[i] + f_mm[i]) / (4.0 * h * h);
+            }
+        }
+    }
+
+    hess
+}
+
 #[derive(Debug, Clone)]
 pub struct IterResult {
     pub converged: bool,

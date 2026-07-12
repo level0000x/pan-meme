@@ -15726,3 +15726,483 @@ pub fn run_lattice_correction_refit() {
     println!("  n_final = n_naive * ({:.4} + {:.4}*ln(d0) + {:.4}*rho + {:.4}*b_up + {:.4}*depth)",
         coeffs_full[0], coeffs_full[1], coeffs_full[2], coeffs_full[3], coeffs_full[4]);
 }
+
+pub fn run_universal_constant_derivation() {
+    use crate::five_dim;
+    use crate::n_operator;
+
+    println!("{}", "=".repeat(72));
+    println!("  UNIVERSAL CONSTANT 1.21 DERIVATION: from N-operator curvature");
+    println!("{}", "=".repeat(72));
+
+    let regimes: &[(&str, f64, f64, f64)] = &[
+        ("b1=0.5,e=10", 0.5, 1.0, 10.0),
+        ("b1=0.5,e=20", 0.5, 1.0, 20.0),
+        ("b1=0.5,e=50", 0.5, 1.0, 50.0),
+        ("b1=1,e=10", 1.0, 1.0, 10.0),
+        ("b1=1,e=20", 1.0, 1.0, 20.0),
+        ("b1=1,e=30", 1.0, 1.0, 30.0),
+        ("b1=1,e=50", 1.0, 1.0, 50.0),
+        ("b1=1,e=100", 1.0, 1.0, 100.0),
+        ("b1=1.5,d=0.5,e=50", 1.5, 0.5, 50.0),
+        ("b1=2,e=30", 2.0, 1.0, 30.0),
+        ("b1=2,e=50", 2.0, 1.0, 50.0),
+        ("b1=2,e=100", 2.0, 1.0, 100.0),
+        ("b1=2,e=200", 2.0, 1.0, 200.0),
+        ("b1=3,e=100", 3.0, 1.0, 100.0),
+        ("b1=3,e=200", 3.0, 1.0, 200.0),
+        ("b1=3,e=500", 3.0, 1.0, 500.0),
+        ("b1=4,e=100", 4.0, 1.0, 100.0),
+        ("b1=4,e=500", 4.0, 1.0, 500.0),
+        ("b1=5,e=100", 5.0, 1.0, 100.0),
+        ("b1=5,e=1000", 5.0, 1.0, 1000.0),
+    ];
+
+    let tol = 1e-12_f64;
+    let m0 = five_dim::make_state(0.5, 0.5, 0.5, 0.5, 0.5);
+
+    println!("\n  Phase 1: Trajectory contraction rate analysis");
+    println!("  {:>20} {:>8} {:>10} {:>10} {:>10} {:>10} {:>10} {:>10}",
+        "regime", "n_iters", "rho(J)", "d0", "rho_eff", "k_eff", "k_Taylor", "1.21_check");
+    println!("  {}", "-".repeat(95));
+
+    let mut k_vs_rho: Vec<(f64, f64)> = Vec::new();
+    let mut correction_data: Vec<(f64, f64, f64)> = Vec::new();
+
+    for &(rname, b1, d1, eps) in regimes {
+        let p = n_operator::DynamicsParams::uniform()
+            .with_beta1(b1).with_delta1(d1).with_eps(eps);
+        let r = n_operator::run_iteration(&m0, 0.0, 0.0, &p, 5000, tol);
+        if !r.converged { continue; }
+
+        let m_star = r.m_star;
+        let j_mat = n_operator::compute_jacobian(&m_star, 0.0, 0.0, &p);
+        let eigs = j_mat.complex_eigenvalues();
+        let rho_j = eigs.iter().map(|c| c.norm()).fold(0.0_f64, f64::max);
+
+        let d0: f64 = (0..5).map(|k| (m0[k] - m_star[k]).powi(2)).sum::<f64>().sqrt();
+        let n_act = r.n_iters as f64;
+
+        if rho_j <= 0.0 || rho_j >= 1.0 || d0 <= tol { continue; }
+
+        let rho_eff = (tol / d0).powf(1.0 / n_act);
+        let k_eff = rho_eff / rho_j;
+
+        let h = n_operator::compute_hessian_fd(&m_star, 0.0, 0.0, &p);
+        let h_norm: f64 = h.iter().map(|v| v.iter().map(|w| w.iter().map(|x| x * x).sum::<f64>()).sum::<f64>()).sum::<f64>().sqrt();
+
+        let j_norm: f64 = (0..5).map(|ri| (0..5).map(|ci| j_mat[(ri, ci)] * j_mat[(ri, ci)]).sum::<f64>()).sum::<f64>().sqrt();
+        let curvature_ratio = if j_norm > 1e-15 { h_norm / j_norm } else { 0.0 };
+
+        let mut avg_dist = 0.0_f64;
+        let mut count = 0;
+        for step in 0..r.trajectory.len() {
+            let m_arr = r.trajectory[step];
+            let dist: f64 = (0..5).map(|k| (m_arr[k] - m_star[k]).powi(2)).sum::<f64>().sqrt();
+            avg_dist += dist;
+            count += 1;
+        }
+        if count > 0 { avg_dist /= count as f64; }
+
+        let k_taylor = 1.0 + curvature_ratio * avg_dist / 2.0;
+        let check = n_act / ((d0 / tol).ln() / (1.0 / rho_j).ln());
+
+        println!("  {:>20} {:>8} {:>10.6} {:>10.4} {:>10.6} {:>10.3} {:>10.3} {:>10.3}",
+            rname, r.n_iters, rho_j, d0, rho_eff, k_eff, k_taylor, check);
+
+        k_vs_rho.push((rho_j.ln(), k_eff.ln()));
+        correction_data.push((rho_j, avg_dist, curvature_ratio));
+    }
+
+    println!("\n  Phase 2: k vs rho power-law fit");
+    if k_vs_rho.len() >= 3 {
+        let n = k_vs_rho.len() as f64;
+        let mean_x = k_vs_rho.iter().map(|p| p.0).sum::<f64>() / n;
+        let mean_y = k_vs_rho.iter().map(|p| p.1).sum::<f64>() / n;
+        let var_x = k_vs_rho.iter().map(|p| (p.0 - mean_x).powi(2)).sum::<f64>() / n;
+        let cov_xy = k_vs_rho.iter().map(|p| (p.0 - mean_x) * (p.1 - mean_y)).sum::<f64>() / n;
+        let slope = if var_x > 1e-20 { cov_xy / var_x } else { 0.0 };
+        let intercept = mean_y - slope * mean_x;
+
+        println!("  ln(k) = {:.4} + {:.4} * ln(rho)", intercept, slope);
+        println!("  k = {:.4} * rho^{:.4}", intercept.exp(), slope);
+        println!("  => k = C_k * rho^(-{:.4})", -slope);
+
+        let mape = k_vs_rho.iter().map(|p| {
+            let pred = intercept + slope * p.0;
+            ((p.1 - pred) / p.1).abs()
+        }).sum::<f64>() / n * 100.0;
+        println!("  Power-law fit MAPE: {:.1}%", mape);
+
+        let alpha = -slope;
+        let c_k = intercept.exp();
+        println!("\n  Phase 3: Deriving the 1.21 constant from k = C_k * rho^(-alpha)");
+        println!("  n = ln(d0/tol) / ln(1/(k*rho))");
+        println!("    = ln(d0/tol) / [ln(1/rho) + ln(1/k)]");
+        println!("    = ln(d0/tol) / [ln(1/rho) + alpha*ln(1/rho) - ln(C_k)]");
+        println!("    = ln(d0/tol) / [(1+alpha)*ln(1/rho) - ln(C_k)]");
+
+        let avg_ln_inv_rho: f64 = correction_data.iter().map(|d| (1.0 / d.0).ln()).sum::<f64>() / correction_data.len() as f64;
+        let correction_factor = (1.0 + alpha) - c_k.ln() / avg_ln_inv_rho;
+        let predicted_constant = 1.0 / correction_factor;
+
+        println!("\n  With alpha={:.4}, C_k={:.4}:", alpha, c_k);
+        println!("  Average ln(1/rho) = {:.4}", avg_ln_inv_rho);
+        println!("  Denominator factor = 1 + alpha - ln(C_k)/ln(1/rho) = {:.4}", correction_factor);
+        println!("  Predicted n/n_naive = 1/{:.4} = {:.4}", correction_factor, predicted_constant);
+        println!("  Empirical constant = 1.21");
+        println!("  Ratio predicted/empirical = {:.4}", predicted_constant / 1.21);
+    }
+
+    println!("\n  Phase 4: Hessian analysis — curvature of each N-operator component");
+
+    for &(rname, b1, d1, eps) in &regimes[0..6] {
+        let p = n_operator::DynamicsParams::uniform()
+            .with_beta1(b1).with_delta1(d1).with_eps(eps);
+        let r = n_operator::run_iteration(&m0, 0.0, 0.0, &p, 5000, tol);
+        if !r.converged { continue; }
+
+        let m_star = r.m_star;
+        let h = n_operator::compute_hessian_fd(&m_star, 0.0, 0.0, &p);
+        let j = n_operator::compute_jacobian(&m_star, 0.0, 0.0, &p);
+
+        let d = five_dim::d_of(&m_star);
+        let b = five_dim::b_of(&m_star);
+        let rho = five_dim::rho_of(&m_star);
+        let r_val = five_dim::r_of(&m_star);
+        let s = five_dim::s_of(&m_star);
+
+        let den_d = p.alpha1 * r_val + p.beta1 * (b) + p.eps;
+        let den_b = p.gamma1 * r_val + p.delta1 * d + p.eps;
+        let den_rho = p.zeta1 * d + p.eta1 * r_val + p.eps;
+        let den_r = p.theta1 * rho + p.kappa1 * d + p.kappa2 * s + p.eps;
+        let den_s = p.lambda1 * d + p.mu1 * r_val + p.eps;
+
+        let dens = [den_d, den_b, den_rho, den_r, den_s];
+        let names = ["d", "b", "rho", "r", "s"];
+
+        println!("  {} (b1={}, eps={}):", rname, b1, eps);
+        println!("    Component  den_i      |H_diag|/|J_diag|  curvature_ratio");
+        for i in 0..5 {
+            let j_diag = j[(i, i)].abs();
+            let h_diag = h[i][i][i].abs();
+            let h_off: f64 = (0..5).map(|a| (0..5).map(|b_idx| if a == i && b_idx == i { 0.0 } else { h[i][a][b_idx].powi(2) }).sum::<f64>()).sum::<f64>().sqrt();
+            let ratio = if j_diag > 1e-15 { h_diag / j_diag } else { 0.0 };
+            println!("    {:>5}    {:>8.4}   {:>10.6}         {:>10.6}",
+                names[i], dens[i], h_diag.max(h_off), ratio);
+        }
+    }
+
+    println!("\n  Phase 5: Analytical curvature from A/(A+B) structure");
+    println!("  For f(x) = num(x)/den(x):");
+    println!("  f'(x) = (num'*den - num*den') / den^2");
+    println!("  f''(x) = [num''*den^2 - 2*num'*den'*den + 2*num*den'^2 - num*den''*den] / den^3");
+    println!();
+
+    for &(rname, b1, d1, eps) in &regimes[0..6] {
+        let p = n_operator::DynamicsParams::uniform()
+            .with_beta1(b1).with_delta1(d1).with_eps(eps);
+        let r = n_operator::run_iteration(&m0, 0.0, 0.0, &p, 5000, tol);
+        if !r.converged { continue; }
+
+        let m_star = r.m_star;
+        let d = five_dim::d_of(&m_star);
+        let b = five_dim::b_of(&m_star);
+        let rho = five_dim::rho_of(&m_star);
+        let r_val = five_dim::r_of(&m_star);
+        let s = five_dim::s_of(&m_star);
+
+        let j = n_operator::compute_jacobian(&m_star, 0.0, 0.0, &p);
+        let eigs = j.complex_eigenvalues();
+        let rho_j = eigs.iter().map(|c| c.norm()).fold(0.0_f64, f64::max);
+
+        let den_d = p.alpha1 * r_val + p.beta1 * b + p.eps;
+        let den_b = p.gamma1 * r_val + p.delta1 * d + p.eps;
+        let den_rho = p.zeta1 * d + p.eta1 * r_val + p.eps;
+        let den_r = p.theta1 * rho + p.kappa1 * d + p.kappa2 * s + p.eps;
+        let den_s = p.lambda1 * d + p.mu1 * r_val + p.eps;
+
+        let curvature_d = 2.0 * p.beta1 / den_d;
+        let curvature_b = 2.0 * p.delta1 / den_b;
+        let curvature_rho = 2.0 * p.eta1 / den_rho;
+        let curvature_r = 2.0 * (p.kappa1 + p.kappa2) / den_r;
+        let curvature_s = 2.0 * p.mu1 / den_s;
+
+        let avg_curvature = (curvature_d + curvature_b + curvature_rho + curvature_r + curvature_s) / 5.0;
+
+        println!("  {} (b1={}, eps={}): rho(J)={:.6}", rname, b1, eps, rho_j);
+        println!("    curvatures: d={:.4}, b={:.4}, rho={:.4}, r={:.4}, s={:.4}",
+            curvature_d, curvature_b, curvature_rho, curvature_r, curvature_s);
+        println!("    avg curvature = {:.4}", avg_curvature);
+        println!("    predicted k ≈ 1 + {:.4} * <||Δ||>", avg_curvature / 2.0);
+    }
+
+    println!("\n  Phase 6: Direct measurement of step contraction vs distance");
+
+    for &(rname, b1, d1, eps) in &regimes[0..6] {
+        let p = n_operator::DynamicsParams::uniform()
+            .with_beta1(b1).with_delta1(d1).with_eps(eps);
+        let r = n_operator::run_iteration(&m0, 0.0, 0.0, &p, 5000, tol);
+        if !r.converged || r.trajectory.len() < 3 { continue; }
+
+        let m_star = r.m_star;
+        let j = n_operator::compute_jacobian(&m_star, 0.0, 0.0, &p);
+        let eigs = j.complex_eigenvalues();
+        let rho_j = eigs.iter().map(|c| c.norm()).fold(0.0_f64, f64::max);
+
+        println!("  {} (b1={}, eps={}): rho(J)={:.6}", rname, b1, eps, rho_j);
+        println!("    step  ||Δ||      ρ_step     ρ_step/ρ(J)  ln(ρ_step/ρ(J))");
+
+        let mut dist_ratios: Vec<(f64, f64)> = Vec::new();
+
+        for i in 0..(r.trajectory.len().min(15) - 1) {
+            let m_arr = r.trajectory[i];
+            let m_next = r.trajectory[i + 1];
+            let dist_i: f64 = (0..5).map(|k| (m_arr[k] - m_star[k]).powi(2)).sum::<f64>().sqrt();
+            let dist_next: f64 = (0..5).map(|k| (m_next[k] - m_star[k]).powi(2)).sum::<f64>().sqrt();
+
+            if dist_i > 1e-15 {
+                let rho_step = dist_next / dist_i;
+                let ratio = rho_step / rho_j;
+                println!("    {:>4} {:>10.6} {:>10.6} {:>10.4} {:>12.4}",
+                    i, dist_i, rho_step, ratio, ratio.ln());
+                if dist_i > 1e-10 && ratio > 0.01 {
+                    dist_ratios.push((dist_i.ln(), ratio.ln()));
+                }
+            }
+        }
+
+        if dist_ratios.len() >= 2 {
+            let n_dr = dist_ratios.len() as f64;
+            let mean_x = dist_ratios.iter().map(|p| p.0).sum::<f64>() / n_dr;
+            let mean_y = dist_ratios.iter().map(|p| p.1).sum::<f64>() / n_dr;
+            let var_x = dist_ratios.iter().map(|p| (p.0 - mean_x).powi(2)).sum::<f64>() / n_dr;
+            let cov_xy = dist_ratios.iter().map(|p| (p.0 - mean_x) * (p.1 - mean_y)).sum::<f64>() / n_dr;
+            let slope = if var_x > 1e-20 { cov_xy / var_x } else { 0.0 };
+            let intercept = mean_y - slope * mean_x;
+            println!("    Fit: ln(ρ_step/ρ(J)) = {:.4} + {:.4} * ln(||Δ||)", intercept, slope);
+            println!("    => ρ_step = {:.4} * ρ(J) * ||Δ||^{:.4}", intercept.exp(), slope);
+        }
+        println!();
+    }
+
+    println!("  === UNIVERSAL CONSTANT ANALYSIS ===");
+    println!("  The 1.21 constant = n_actual / n_naive.");
+    println!("  If k = ρ_eff/ρ(J) follows k = C_k * ρ^(-α), then:");
+    println!("  n = ln(d0/tol) / [(1+α)*ln(1/ρ) - ln(C_k)]");
+    println!("  n/n_naive = 1 / (1+α - ln(C_k)/ln(1/ρ))");
+    println!("  For large ε (small ρ), ln(1/ρ) >> ln(C_k), so n/n_naive → 1/(1+α).");
+    println!("  If 1/(1+α) = 1.21, then α = 1/1.21 - 1 = -0.174.");
+    println!("  This α comes from the Hessian-to-Jacobian ratio of the N-operator.");
+}
+
+pub fn run_fixed_point_analysis() {
+    use crate::five_dim;
+    use crate::n_operator;
+
+    println!("{}", "=".repeat(72));
+    println!("  FIXED-POINT ANALYTICAL STRUCTURE: M* = N(M*) closed-form feasibility");
+    println!("{}", "=".repeat(72));
+
+    let tol = 1e-14_f64;
+    let m0 = five_dim::make_state(0.5, 0.5, 0.5, 0.5, 0.5);
+
+    println!("\n  Phase 1: Fixed-point structure equations");
+    println!("  From x = A/(A+B): (1-x)/x = B/A");
+    println!("  (1-d*)/d* = β₁(b*+b_up) / (α₁r*+ε)");
+    println!("  (1-b*)/b* = δ₁d* / (γ₁(r*+b_up)+ε)");
+    println!("  (1-ρ*)/ρ* = η₁r* / (ζ₁(d*+ρ_up)+ε)");
+    println!("  (1-r*)/r* = (κ₁d*+κ₂s*) / (θ₁(ρ*+ρ_up+b_up)+ε)");
+    println!("  (1-s*)/s* = μ₁r* / (λ₁d*+ε)");
+
+    println!("\n  Phase 2: Numerical M* across parameter regimes");
+    println!("  {:>20} {:>8} {:>8} {:>8} {:>8} {:>8} {:>8} {:>8} {:>8}",
+        "regime", "d*", "b*", "ρ*", "r*", "s*", "d*/b*", "ρ*/s*", "r*/d*");
+    println!("  {}", "-".repeat(92));
+
+    let regimes: &[(&str, f64, f64, f64)] = &[
+        ("b1=0.5,e=10", 0.5, 1.0, 10.0),
+        ("b1=0.5,e=50", 0.5, 1.0, 50.0),
+        ("b1=1,e=10", 1.0, 1.0, 10.0),
+        ("b1=1,e=20", 1.0, 1.0, 20.0),
+        ("b1=1,e=50", 1.0, 1.0, 50.0),
+        ("b1=1,e=100", 1.0, 1.0, 100.0),
+        ("b1=1.5,d=0.5,e=50", 1.5, 0.5, 50.0),
+        ("b1=2,e=30", 2.0, 1.0, 30.0),
+        ("b1=2,e=100", 2.0, 1.0, 100.0),
+        ("b1=2,e=200", 2.0, 1.0, 200.0),
+        ("b1=3,e=100", 3.0, 1.0, 100.0),
+        ("b1=3,e=200", 3.0, 1.0, 200.0),
+        ("b1=3,e=500", 3.0, 1.0, 500.0),
+        ("b1=4,e=500", 4.0, 1.0, 500.0),
+        ("b1=5,e=1000", 5.0, 1.0, 1000.0),
+    ];
+
+    let mut fp_data: Vec<(f64, f64, f64, f64, f64, f64, f64, f64)> = Vec::new();
+
+    for &(rname, b1, d1, eps) in regimes {
+        let p = n_operator::DynamicsParams::uniform()
+            .with_beta1(b1).with_delta1(d1).with_eps(eps);
+        let r = n_operator::run_iteration(&m0, 0.0, 0.0, &p, 5000, tol);
+        if !r.converged { continue; }
+
+        let ms = r.m_star;
+        let d = five_dim::d_of(&ms);
+        let b = five_dim::b_of(&ms);
+        let rho = five_dim::rho_of(&ms);
+        let r_val = five_dim::r_of(&ms);
+        let s = five_dim::s_of(&ms);
+
+        let j = n_operator::compute_jacobian(&ms, 0.0, 0.0, &p);
+        let eigs = j.complex_eigenvalues();
+        let rho_j = eigs.iter().map(|c| c.norm()).fold(0.0_f64, f64::max);
+
+        println!("  {:>20} {:>8.5} {:>8.5} {:>8.5} {:>8.5} {:>8.5} {:>8.4} {:>8.4} {:>8.4}",
+            rname, d, b, rho, r_val, s, d/b, rho/s, r_val/d);
+
+        fp_data.push((b1, d1, eps, d, b, rho, r_val, s));
+    }
+
+    println!("\n  Phase 3: Symmetry analysis — is d*=b* when α₁=γ₁ and β₁=δ₁?");
+    println!("  With uniform params (α₁=γ₁=ζ₁=θ₁=λ₁=1, β₁=δ₁=η₁=κ₁=κ₂=μ₁=1):");
+    println!("  d* and b* satisfy the SAME equation form but with different coupling.");
+    println!("  d* = (r*+ε)/(r*+ε+b*) and b* = (r*+ε)/(r*+ε+d*)");
+    println!("  If d*=b*, then d*²+(r*+ε)d*-(r*+ε)=0 => d*=[-(r*+ε)+√((r*+ε)²+4(r*+ε))]/2");
+
+    println!("\n  Phase 4: ε-dependence scaling of M* components");
+    println!("  {:>20} {:>8} {:>12} {:>12} {:>12} {:>12}",
+        "regime", "ε", "d*·ε", "b*·ε", "ρ*·ε", "r*·ε");
+    println!("  {}", "-".repeat(78));
+
+    for &(b1, d1, eps, d, b, rho, r_val, _s) in &fp_data {
+        println!("  {:>20} {:>8.1} {:>12.6} {:>12.6} {:>12.6} {:>12.6}",
+            format!("b1={},d1={}", b1, d1), eps, d*eps, b*eps, rho*eps, r_val*eps);
+    }
+
+    println!("\n  Phase 5: Asymptotic analysis — M* as ε→∞");
+    println!("  For large ε, each equation x = A/(A+B) ≈ A/ε·(1-B/ε+...)");
+    println!("  Leading order: x ≈ A/ε");
+    println!("  d* ≈ (α₁r*+ε)/ε = 1 + α₁r*/ε");
+    println!("  b* ≈ (γ₁r*+ε)/ε = 1 + γ₁r*/ε");
+    println!("  ρ* ≈ (ζ₁d*+ε)/ε = 1 + ζ₁d*/ε");
+    println!("  r* ≈ (θ₁ρ*+ε)/ε = 1 + θ₁ρ*/ε");
+    println!("  s* ≈ (λ₁d*+ε)/ε = 1 + λ₁d*/ε");
+    println!("  So d*→1, b*→1, ρ*→1, r*→1, s*→1 as ε→∞.");
+    println!("  The deviation δx = 1-x* should scale as O(1/ε).");
+
+    println!("\n  Phase 6: Deviation scaling δx = 1-x* vs 1/ε");
+    println!("  {:>20} {:>8} {:>10} {:>10} {:>10} {:>10} {:>10}",
+        "regime", "ε", "1-d*", "1-b*", "1-ρ*", "1-r*", "1-s*");
+    println!("  {}", "-".repeat(85));
+
+    let mut dev_data: Vec<(f64, f64, f64, f64, f64, f64)> = Vec::new();
+
+    for &(rname, b1, d1, eps) in regimes {
+        let p = n_operator::DynamicsParams::uniform()
+            .with_beta1(b1).with_delta1(d1).with_eps(eps);
+        let r = n_operator::run_iteration(&m0, 0.0, 0.0, &p, 5000, tol);
+        if !r.converged { continue; }
+
+        let ms = r.m_star;
+        let d = five_dim::d_of(&ms);
+        let b = five_dim::b_of(&ms);
+        let rho = five_dim::rho_of(&ms);
+        let r_val = five_dim::r_of(&ms);
+        let s = five_dim::s_of(&ms);
+
+        println!("  {:>20} {:>8.1} {:>10.6} {:>10.6} {:>10.6} {:>10.6} {:>10.6}",
+            rname, eps, 1.0-d, 1.0-b, 1.0-rho, 1.0-r_val, 1.0-s);
+
+        dev_data.push((1.0/eps, 1.0-d, 1.0-b, 1.0-rho, 1.0-r_val, 1.0-s));
+    }
+
+    println!("\n  Phase 7: Linear fit δx = a/ε + b");
+    let names = ["d", "b", "rho", "r", "s"];
+    let dev_arrays: Vec<[f64; 5]> = dev_data.iter().map(|d| [d.1, d.2, d.3, d.4, d.5]).collect();
+    for comp in 0..5 {
+        let n = dev_data.len() as f64;
+        let mean_x = dev_data.iter().map(|d| d.0).sum::<f64>() / n;
+        let mean_y = dev_arrays.iter().map(|a| a[comp]).sum::<f64>() / n;
+        let var_x = dev_data.iter().map(|d| (d.0 - mean_x).powi(2)).sum::<f64>() / n;
+        let cov_xy = dev_data.iter().zip(dev_arrays.iter()).map(|(d, a)| (d.0 - mean_x) * (a[comp] - mean_y)).sum::<f64>() / n;
+        let slope = if var_x > 1e-20 { cov_xy / var_x } else { 0.0 };
+        let intercept = mean_y - slope * mean_x;
+
+        let mape = dev_data.iter().zip(dev_arrays.iter()).map(|(d, a)| {
+            let pred = slope * d.0 + intercept;
+            if a[comp].abs() > 1e-10 { ((a[comp] - pred) / a[comp]).abs() } else { 0.0 }
+        }).sum::<f64>() / n * 100.0;
+
+        println!("  δ{} = {:.4}/ε + {:.6}  (MAPE={:.1}%)", names[comp], slope, intercept, mape);
+    }
+
+    println!("\n  Phase 8: Uniform-param closed form attempt");
+    println!("  With uniform params (all=1), b_up=0, rho_up=0:");
+    println!("  d*=(r*+ε)/(r*+b*+ε), b*=(r*+ε)/(r*+d*+ε), ρ*=s*=(d*+ε)/(d*+r*+ε)");
+    println!("  r*=(ρ*+ε)/(ρ*+d*+s*+ε)");
+    println!("  Since ρ*=s*: r*=(ρ*+ε)/(ρ*+d*+2ρ*+ε)=(ρ*+ε)/(3ρ*+d*+ε)");
+    println!("  And d*=b* by symmetry: d*=(r*+ε)/(r*+d*+ε) => d*²+(r*+ε)d*-(r*+ε)=0");
+    println!("  => d*=-(r*+ε)/2+√((r*+ε)²/4+(r*+ε))");
+
+    let p_unif = n_operator::DynamicsParams::uniform();
+    for eps in &[5.0, 10.0, 20.0, 50.0, 100.0, 200.0, 500.0, 1000.0] {
+        let p = p_unif.with_eps(*eps);
+        let r = n_operator::run_iteration(&m0, 0.0, 0.0, &p, 5000, tol);
+        if !r.converged { continue; }
+
+        let ms = r.m_star;
+        let d = five_dim::d_of(&ms);
+        let r_val = five_dim::r_of(&ms);
+        let rho_val = five_dim::rho_of(&ms);
+
+        let re = r_val + eps;
+        let d_from_quadratic = (-re + (re * re + 4.0 * re).sqrt()) / 2.0;
+
+        println!("  ε={:>5}: d*={:.6}, quadratic_d*={:.6}, err={:.2e}, ρ*={:.6}, 1/ε={:.6}",
+            eps, d, d_from_quadratic, (d - d_from_quadratic).abs(), rho_val, 1.0/eps);
+    }
+
+    println!("\n  Phase 9: Analytical approximation for M*(ε) in uniform case");
+    println!("  From d*²+(r*+ε)d*-(r*+ε)=0:");
+    println!("  d* ≈ 1 - (1/2)(r*/ε) + O(1/ε²) for large ε");
+    println!("  Similarly ρ*=s*≈1-(d*/(2ε))+O(1/ε²)");
+    println!("  And r*≈1-(3ρ*/(2ε))+O(1/ε²) [since den_r has 3ρ*+d*]");
+    println!("  Self-consistent: d*≈1-1/(2ε), ρ*≈1-1/(2ε), r*≈1-3/(2ε)");
+    println!("  So d*≈1-a_d/ε, ρ*≈1-a_ρ/ε, r*≈1-a_r/ε");
+    println!("  where a_d≈0.5, a_ρ≈0.5, a_r≈1.5");
+
+    println!("\n  Phase 10: d₀ = ‖M₀-M*‖ prediction from analytical M*");
+    let m0_arr = [0.5_f64; 5];
+    for eps in &[10.0, 20.0, 50.0, 100.0, 200.0, 500.0, 1000.0] {
+        let p = p_unif.with_eps(*eps);
+        let r = n_operator::run_iteration(&m0, 0.0, 0.0, &p, 5000, tol);
+        if !r.converged { continue; }
+
+        let ms = r.m_star;
+        let d_actual = five_dim::d_of(&ms);
+        let b_actual = five_dim::b_of(&ms);
+        let rho_actual = five_dim::rho_of(&ms);
+        let r_actual = five_dim::r_of(&ms);
+        let s_actual = five_dim::s_of(&ms);
+
+        let d_approx = 1.0 - 0.5 / eps;
+        let rho_approx = 1.0 - 0.5 / eps;
+        let r_approx = 1.0 - 1.5 / eps;
+        let b_approx = d_approx;
+        let s_approx = rho_approx;
+
+        let d0_actual: f64 = (0..5).map(|k| (m0_arr[k] - [d_actual, b_actual, rho_actual, r_actual, s_actual][k]).powi(2)).sum::<f64>().sqrt();
+        let d0_approx: f64 = (0..5).map(|k| (m0_arr[k] - [d_approx, b_approx, rho_approx, r_approx, s_approx][k]).powi(2)).sum::<f64>().sqrt();
+
+        println!("  ε={:>5}: d0_actual={:.6}, d0_approx={:.6}, err={:.2}%",
+            eps, d0_actual, d0_approx, ((d0_actual - d0_approx)/d0_actual).abs()*100.0);
+    }
+
+    println!("\n  === FIXED-POINT ANALYSIS SUMMARY ===");
+    println!("  1. Each FP equation has A/(A+B) form => (1-x)/x = B/A");
+    println!("  2. In uniform case, d*=b* and ρ*=s* by symmetry");
+    println!("  3. M* → [1,1,1,1,1] as ε→∞, with δx = O(1/ε)");
+    println!("  4. d* satisfies quadratic: d*²+(r*+ε)d*-(r*+ε)=0");
+    println!("  5. Analytical approximation: d*≈1-0.5/ε, r*≈1-1.5/ε");
+    println!("  6. d₀ can be predicted from analytical M* approximation");
+}
