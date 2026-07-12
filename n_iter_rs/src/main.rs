@@ -146,4 +146,6 @@ fn run_synthetic_suite(max_concepts: usize, time_limit: f64, output_dir: &PathBu
     experiments::run_characteristic_polynomial();
     experiments::run_predictive_validation();
     experiments::run_rho_propagation();
+    experiments::run_gamma_analysis();
+    experiments::run_dstar_equation();
 }
