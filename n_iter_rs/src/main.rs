@@ -190,5 +190,8 @@ fn run_synthetic_suite(max_concepts: usize, time_limit: f64, output_dir: &PathBu
     experiments::run_full_iteration_prediction();
     experiments::run_root_top_rho_ratio();
     experiments::run_final_formula_validation();
+    experiments::run_convergence_proof();
+    experiments::run_full_sensitivity_analysis();
+    experiments::run_lattice_convergence_rate();
     let _ = (max_concepts, time_limit, output_dir);
 }
