@@ -140,4 +140,5 @@ fn run_synthetic_suite(max_concepts: usize, time_limit: f64, output_dir: &PathBu
     experiments::run_dstar_dvalue_analysis();
     experiments::run_analytical_dstar();
     experiments::run_bup_propagation();
+    experiments::run_rho_analytical();
 }
