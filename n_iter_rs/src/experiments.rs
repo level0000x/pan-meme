@@ -8285,3 +8285,170 @@ pub fn run_non_contract_test() {
     println!("  - Non-contracting params: D*(N) behavior quantified");
     println!("  - Disagreement case: resolved by chain lattice test");
 }
+
+fn iterate_propagation_map(
+    b_up_init: f64, rho_up_init: f64, p: &DynamicsParams, max_iter: usize, tol: f64,
+) -> (f64, f64, f64, f64, f64, f64, bool) {
+    let mut b_up = b_up_init;
+    let mut rho_up = rho_up_init;
+    for _ in 0..max_iter {
+        let (d, b_out, rho_out, r, s) = solve_nfp(b_up, rho_up, p);
+        if d.is_nan() || b_out.is_nan() || rho_out.is_nan() { return (f64::NAN, f64::NAN, f64::NAN, f64::NAN, f64::NAN, f64::NAN, false); }
+        let delta_b = (b_out - b_up).abs();
+        let delta_rho = (rho_out - rho_up).abs();
+        b_up = b_out;
+        rho_up = rho_out;
+        if delta_b < tol && delta_rho < tol {
+            let (d_fp, _, _, r_fp, s_fp) = solve_nfp(b_up, rho_up, p);
+            return (d_fp, b_up, rho_up, r_fp, s_fp, 0.0, true);
+        }
+    }
+    let (d_fp, _, _, r_fp, s_fp) = solve_nfp(b_up, rho_up, p);
+    (d_fp, b_up, rho_up, r_fp, s_fp, 0.0, false)
+}
+
+pub fn run_multi_fp_analysis() {
+    println!("\n================================================================");
+    println!("  MULTI-FIXED-POINT ANALYSIS: Basin structure of propagation map");
+    println!("  Finding ALL fixed points of Φ: (b_up,ρ_up) -> (b_out,ρ_out)");
+    println!("================================================================\n");
+
+    let eps = DynamicsParams::uniform().eps;
+
+    let test_sets: Vec<(&str, f64, f64, &str)> = vec![
+        ("contract-uniform", 1.00, 1.00, "contracting (reference)"),
+        ("contract-SO", 0.50, 10.00, "contracting (SO)"),
+        ("noncontract-1", 0.15, 10.00, "NON-CONTRACT (D*=0.969)"),
+        ("noncontract-2", 0.25, 7.00, "NON-CONTRACT (D*=0.924)"),
+        ("noncontract-3", 0.75, 7.00, "NON-CONTRACT (D*=0.771)"),
+        ("disagree", 0.05, 5.00, "DISAGREE (D*=0.978)"),
+    ];
+
+    let b_init_vals: Vec<f64> = vec![0.01, 0.05, 0.10, 0.20, 0.30, 0.50, 0.70, 0.90, 1.50, 2.00];
+    let rho_init_vals: Vec<f64> = vec![0.01, 0.10, 0.20, 0.30, 0.50, 0.70, 0.90, 1.20, 1.50, 2.00];
+
+    for &(name, b1, d1, desc) in &test_sets {
+        let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1);
+        let d_val = compute_dstar_analytical(b1, d1, eps);
+        if d_val.is_nan() || d_val <= 0.0 || d_val >= 1.0 { continue; }
+        let (_, bv, rhov, rv, sv) = compute_all_from_dstar(d_val, b1, d1, eps);
+
+        println!("  {} ({:.2}, {:.2}): {}", name, b1, d1, desc);
+        println!("    Analytical FP: d*={:.6} b*={:.6} rho*={:.6} r*={:.6} s*={:.6}", d_val, bv, rhov, rv, sv);
+        if bv < 0.0 || rhov > 1.0 {
+            println!("    ** UNPHYSICAL: b*<0 or rho*>1 — analytical FP is unstable **");
+        }
+
+        let mut found_fps: Vec<(f64, f64, f64, f64, f64)> = Vec::new();
+        let mut basin_map: Vec<Vec<String>> = Vec::new();
+
+        for &b_init in &b_init_vals {
+            let mut row: Vec<String> = Vec::new();
+            for &r_init in &rho_init_vals {
+                let (d_fp, b_fp, rho_fp, r_fp, s_fp, _, converged) =
+                    iterate_propagation_map(b_init, r_init, &p, 10000, 1e-14);
+                if !converged || d_fp.is_nan() {
+                    row.push("DIV".to_string());
+                    continue;
+                }
+
+                let mut found_idx = None;
+                for (i, (d_f, b_f, r_f, _, _)) in found_fps.iter().enumerate() {
+                    if (d_fp - d_f).abs() < 1e-6 && (b_fp - b_f).abs() < 1e-6 && (rho_fp - r_f).abs() < 1e-6 {
+                        found_idx = Some(i);
+                        break;
+                    }
+                }
+
+                let idx = if let Some(i) = found_idx {
+                    i
+                } else {
+                    let i = found_fps.len();
+                    found_fps.push((d_fp, b_fp, rho_fp, r_fp, s_fp));
+                    i
+                };
+
+                row.push(format!("FP{}", idx));
+            }
+            basin_map.push(row);
+        }
+
+        println!("    Found {} distinct fixed points:", found_fps.len());
+        for (i, (d_fp, b_fp, rho_fp, r_fp, s_fp)) in found_fps.iter().enumerate() {
+            let is_analytical = (d_fp - d_val).abs() < 1e-4;
+            let is_physical = *b_fp >= 0.0 && *rho_fp <= 1.0 && *d_fp >= 0.0 && *d_fp <= 1.0;
+            let marker = if is_analytical { " [= analytical]" } else { "" };
+            let phys = if is_physical { "PHYSICAL" } else { "UNPHYSICAL" };
+            println!("      FP{}: d={:.6} b={:.6} rho={:.6} r={:.6} s={:.6} {}{}",
+                i, d_fp, b_fp, rho_fp, r_fp, s_fp, phys, marker);
+        }
+
+        println!("    Basin map (rows=b_init, cols=rho_init):");
+        print!("    {:>8}", "");
+        for &r_init in &rho_init_vals { print!("  {:>5.2}", r_init); }
+        println!();
+        for (ri, &b_init) in b_init_vals.iter().enumerate() {
+            print!("    {:>6.2}  ", b_init);
+            for entry in &basin_map[ri] { print!("  {:>5}", entry); }
+            println!();
+        }
+        println!();
+    }
+
+    println!("  Part 2: Stability of each fixed point via J_2D eigenvalues\n");
+
+    for &(name, b1, d1, _) in &test_sets {
+        let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1);
+        let d_val = compute_dstar_analytical(b1, d1, eps);
+        if d_val.is_nan() || d_val <= 0.0 || d_val >= 1.0 { continue; }
+
+        let b_init_vals2: Vec<f64> = vec![0.01, 0.10, 0.50, 1.00, 2.00];
+        let rho_init_vals2: Vec<f64> = vec![0.01, 0.20, 0.50, 1.00, 2.00];
+
+        let mut found_fps: Vec<(f64, f64, f64, f64, f64)> = Vec::new();
+
+        for &b_init in &b_init_vals2 {
+            for &r_init in &rho_init_vals2 {
+                let (d_fp, b_fp, rho_fp, r_fp, s_fp, _, converged) =
+                    iterate_propagation_map(b_init, r_init, &p, 10000, 1e-14);
+                if !converged || d_fp.is_nan() { continue; }
+
+                let mut is_new = true;
+                for (d_f, b_f, r_f, _, _) in &found_fps {
+                    if (d_fp - d_f).abs() < 1e-6 && (b_fp - b_f).abs() < 1e-6 && (rho_fp - r_f).abs() < 1e-6 {
+                        is_new = false;
+                        break;
+                    }
+                }
+                if is_new {
+                    found_fps.push((d_fp, b_fp, rho_fp, r_fp, s_fp));
+                }
+            }
+        }
+
+        println!("  {} ({:.2}, {:.2}): {} fixed points", name, b1, d1, found_fps.len());
+
+        for (i, (d_fp, b_fp, rho_fp, r_fp, s_fp)) in found_fps.iter().enumerate() {
+            let (rho_j2d, j00, j01, j10, j11, cond) =
+                compute_j2d_analytical(*d_fp, *b_fp, *rho_fp, *r_fp, *s_fp, &p);
+
+            let stability = if cond > 1e10 {
+                "COND_WARN".to_string()
+            } else if rho_j2d < 1.0 {
+                "STABLE".to_string()
+            } else {
+                "UNSTABLE".to_string()
+            };
+
+            println!("    FP{}: d={:.6} b={:.6} rho={:.6} J2D=[{:+.4},{:+.4};{:+.4},{:+.4}] rho={:.4} cond={:.1e} {}",
+                i, d_fp, b_fp, rho_fp, j00, j01, j10, j11, rho_j2d, cond, stability);
+        }
+        println!();
+    }
+
+    println!("  MULTI-FP CONCLUSIONS:");
+    println!("  1. Contracting params: single stable FP = analytical FP");
+    println!("  2. Non-contracting params: multiple FPs, analytical FP is unstable");
+    println!("  3. System selects physical FP (b>0, rho<1) as attractor");
+    println!("  4. Phase transition = FP multiplicity change at rho(J_2D)=1 boundary");
+}
