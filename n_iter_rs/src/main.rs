@@ -118,7 +118,12 @@ fn main() {
     run_synthetic_suite(max_concepts, time_limit, &output_dir);
 }
 
-fn run_synthetic_suite(max_concepts: usize, time_limit: f64, output_dir: &PathBuf) {
+fn run_synthetic_suite(_max_concepts: usize, _time_limit: f64, _output_dir: &PathBuf) {
+    experiments::run_convergence_scaling();
+}
+
+#[allow(dead_code)]
+fn run_synthetic_suite_full(max_concepts: usize, time_limit: f64, output_dir: &PathBuf) {
     experiments::run_synthetic_scan(max_concepts, time_limit, output_dir);
     experiments::run_stress_tests(output_dir);
     experiments::run_chain_diagnostics(output_dir);
@@ -164,4 +169,6 @@ fn run_synthetic_suite(max_concepts: usize, time_limit: f64, output_dir: &PathBu
     experiments::run_tau_predictive_validation();
     experiments::run_propagation_map_validation();
     experiments::run_bifurcation_curve_fit();
+    experiments::run_convergence_landscape();
+    experiments::run_convergence_scaling();
 }

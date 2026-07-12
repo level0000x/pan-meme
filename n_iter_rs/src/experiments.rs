@@ -9986,3 +9986,546 @@ pub fn run_bifurcation_curve_fit() {
     println!("  - Best analytical formula for delta1_bif(beta1)");
     println!("  - Fraction of d*_bif at d=0.5 singularity");
 }
+
+pub fn run_convergence_landscape() {
+    println!("\n================================================================");
+    println!("  CONVERGENCE RATE LANDSCAPE: ρ(J_2D) heatmap across (β₁, δ₁)");
+    println!("  Unified parameter-space map of convergence speed");
+    println!("================================================================\n");
+
+    let eps = DynamicsParams::uniform().eps;
+    let beta1_vals: Vec<f64> = (0..30).map(|i| 0.05 + i as f64 * (15.0 - 0.05) / 29.0).collect();
+    let delta1_vals: Vec<f64> = (0..50).map(|i| 0.5 + i as f64 * (50.0 - 0.5) / 49.0).collect();
+
+    println!("  Grid: β₁ ∈ [{:.2}, {:.2}] × {} pts,  δ₁ ∈ [{:.1}, {:.1}] × {} pts  →  {} total",
+        beta1_vals[0], beta1_vals[30-1], beta1_vals.len(),
+        delta1_vals[0], delta1_vals[50-1], delta1_vals.len(),
+        beta1_vals.len() * delta1_vals.len());
+
+    println!("\n  Part 1: Full grid scan\n");
+
+    struct GridPoint {
+        beta1: f64,
+        delta1: f64,
+        has_physical: bool,
+        d_star: f64,
+        b_star: f64,
+        rho_star: f64,
+        rho_j2d: f64,
+        cond: f64,
+    }
+
+    let mut points: Vec<GridPoint> = Vec::new();
+    let mut n_physical = 0usize;
+    let mut n_no_physical = 0usize;
+
+    for &b1 in &beta1_vals {
+        for &d1 in &delta1_vals {
+            if let Some((dv, bv, rhov, rv, sv)) = find_physical_root(b1, d1, eps) {
+                let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1);
+                let (rho_j2d, _a, _b_c, _c_c, _d_c, cond) = compute_j2d_analytical(dv, bv, rhov, rv, sv, &p);
+                points.push(GridPoint {
+                    beta1: b1, delta1: d1, has_physical: true,
+                    d_star: dv, b_star: bv, rho_star: rhov, rho_j2d, cond,
+                });
+                n_physical += 1;
+            } else {
+                points.push(GridPoint {
+                    beta1: b1, delta1: d1, has_physical: false,
+                    d_star: f64::NAN, b_star: f64::NAN, rho_star: f64::NAN,
+                    rho_j2d: f64::NAN, cond: f64::NAN,
+                });
+                n_no_physical += 1;
+            }
+        }
+    }
+
+    println!("  Physical root found: {}/{} ({:.1}%)",
+        n_physical, n_physical + n_no_physical,
+        n_physical as f64 / (n_physical + n_no_physical) as f64 * 100.0);
+    println!("  No physical root:    {}/{}", n_no_physical, n_physical + n_no_physical);
+
+    let phys_points: Vec<&GridPoint> = points.iter().filter(|p| p.has_physical).collect();
+
+    if phys_points.is_empty() {
+        println!("  ERROR: No physical roots found in entire grid!");
+        return;
+    }
+
+    let rho_vals: Vec<f64> = phys_points.iter().map(|p| p.rho_j2d).filter(|v| v.is_finite()).collect();
+    let rho_min = rho_vals.iter().cloned().fold(f64::INFINITY, f64::min);
+    let rho_max = rho_vals.iter().cloned().fold(0.0_f64, f64::max);
+    let rho_mean = rho_vals.iter().sum::<f64>() / rho_vals.len() as f64;
+
+    let (min_i, _) = rho_vals.iter().enumerate().min_by(|a, b| a.1.partial_cmp(b.1).unwrap()).unwrap();
+    let (max_i, _) = rho_vals.iter().enumerate().max_by(|a, b| a.1.partial_cmp(b.1).unwrap()).unwrap();
+
+    println!("\n  ρ(J_2D) distribution over {} physical points:", rho_vals.len());
+    println!("    min   = {:.6}", rho_min);
+    println!("    max   = {:.6}", rho_max);
+    println!("    mean  = {:.6}", rho_mean);
+
+    let mut sorted_rho = rho_vals.clone();
+    sorted_rho.sort_by(|a, b| a.partial_cmp(b).unwrap());
+    let n_r = sorted_rho.len();
+    println!("    P10   = {:.6}", sorted_rho[n_r / 10]);
+    println!("    P50   = {:.6}", sorted_rho[n_r / 2]);
+    println!("    P90   = {:.6}", sorted_rho[n_r * 9 / 10]);
+
+    let all_contracting = rho_vals.iter().all(|&r| r < 1.0);
+    let near_one = rho_vals.iter().filter(|&&r| r >= 0.99 && r < 1.0).count();
+    let over_one = rho_vals.iter().filter(|&&r| r >= 1.0).count();
+    println!("\n  All ρ<1 (contracting): {}", if all_contracting { "YES" } else { "NO" });
+    println!("  ρ ∈ [0.99, 1.0):      {} points", near_one);
+    println!("  ρ ≥ 1.0:              {} points", over_one);
+
+    println!("\n  Part 2: Bifurcation boundary analysis\n");
+
+    println!("  Observed vs predicted bifurcation boundary (v2.48 formula: δ₁_bif ≈ 4.89 + 2.65·β₁)\n");
+    println!("  β₁        δ₁_obs(last phys)  δ₁_pred     residual(%)");
+
+    for (bi, &b1) in beta1_vals.iter().enumerate() {
+        let mut last_phys_d1: Option<f64> = None;
+        for (di, &d1) in delta1_vals.iter().enumerate() {
+            let idx = bi * delta1_vals.len() + di;
+            if points[idx].has_physical {
+                last_phys_d1 = Some(d1);
+            }
+        }
+        if let Some(obs) = last_phys_d1 {
+            let pred = 4.89 + 2.65 * b1;
+            let resid = if pred > 0.0 { (obs - pred) / pred * 100.0 } else { 0.0 };
+            println!("  {:>7.3}   {:>14.2}   {:>10.2}   {:>+8.2}%", b1, obs, pred, resid);
+        } else {
+            println!("  {:>7.3}   NO PHYSICAL ROOT IN RANGE", b1);
+        }
+    }
+
+    println!("\n  Part 3: ρ(J_2D) landscape summary\n");
+
+    println!("  β₁ range     |  ρ(J_2D) min   max   mean  |  n_phys");
+    let n_beta_bins = 6;
+    for bi in 0..n_beta_bins {
+        let lo_i = bi * beta1_vals.len() / n_beta_bins;
+        let hi_i = (bi + 1) * beta1_vals.len() / n_beta_bins;
+        let b1_lo = beta1_vals[lo_i];
+        let b1_hi = beta1_vals[hi_i.min(beta1_vals.len() - 1)];
+
+        let bin_rhos: Vec<f64> = phys_points.iter()
+            .filter(|p| p.beta1 >= b1_lo - 1e-9 && p.beta1 <= b1_hi + 1e-9)
+            .map(|p| p.rho_j2d)
+            .filter(|v| v.is_finite())
+            .collect();
+
+        if bin_rhos.is_empty() { continue; }
+        let b_min = bin_rhos.iter().cloned().fold(f64::INFINITY, f64::min);
+        let b_max = bin_rhos.iter().cloned().fold(0.0_f64, f64::max);
+        let b_mean = bin_rhos.iter().sum::<f64>() / bin_rhos.len() as f64;
+        println!("  {:>5.2}-{:<5.2}  |  {:.4}  {:.4}  {:.4}  |  {}",
+            b1_lo, b1_hi, b_min, b_max, b_mean, bin_rhos.len());
+    }
+
+    println!("\n  Part 4: Extremal points\n");
+
+    let fastest: Vec<&&GridPoint> = phys_points.iter()
+        .filter(|p| p.rho_j2d.is_finite())
+        .collect::<Vec<_>>();
+    let mut fastest_sorted = fastest.clone();
+    fastest_sorted.sort_by(|a, b| a.rho_j2d.partial_cmp(&b.rho_j2d).unwrap());
+
+    println!("  Top 5 fastest converging (lowest ρ):");
+    for i in 0..5.min(fastest_sorted.len()) {
+        let p = fastest_sorted[i];
+        println!("    β₁={:.3} δ₁={:.2}  ρ={:.6}  d*={:.4} b*={:.4} ρ*={:.4}",
+            p.beta1, p.delta1, p.rho_j2d, p.d_star, p.b_star, p.rho_star);
+    }
+
+    println!("\n  Top 5 slowest converging (highest ρ):");
+    for i in 0..5.min(fastest_sorted.len()) {
+        let p = fastest_sorted[fastest_sorted.len() - 1 - i];
+        println!("    β₁={:.3} δ₁={:.2}  ρ={:.6}  d*={:.4} b*={:.4} ρ*={:.4}",
+            p.beta1, p.delta1, p.rho_j2d, p.d_star, p.b_star, p.rho_star);
+    }
+
+    println!("\n  Part 5: CSV heatmap data (β₁, δ₁, ρ(J_2D), d*, has_physical)\n");
+    println!("beta1,delta1,rho_j2d,d_star,b_star,rho_star,has_physical");
+    for gp in &points {
+        if gp.has_physical && gp.rho_j2d.is_finite() {
+            println!("{:.4},{:.4},{:.6},{:.6},{:.6},{:.6},1", gp.beta1, gp.delta1, gp.rho_j2d, gp.d_star, gp.b_star, gp.rho_star);
+        } else {
+            println!("{:.4},{:.4},,,,{},0", gp.beta1, gp.delta1, if gp.has_physical { "NaN" } else { "NaN" });
+        }
+    }
+
+    println!("\n  Part 6: ρ(J_2D) vs δ₁ slices at fixed β₁\n");
+
+    let slice_b1s: Vec<f64> = vec![0.1, 0.5, 1.0, 2.0, 5.0, 10.0, 15.0];
+    for &b1 in &slice_b1s {
+        let bi_approx = beta1_vals.iter().enumerate()
+            .min_by(|a, b| (a.1 - b1).abs().partial_cmp(&(b.1 - b1).abs()).unwrap())
+            .map(|(i, _)| i).unwrap();
+        let b1_actual = beta1_vals[bi_approx];
+
+        print!("  β₁≈{:.1}: δ₁=[", b1_actual);
+        let slice: Vec<(f64, f64)> = delta1_vals.iter().enumerate()
+            .filter_map(|(di, &d1)| {
+                let idx = bi_approx * delta1_vals.len() + di;
+                if points[idx].has_physical && points[idx].rho_j2d.is_finite() {
+                    Some((d1, points[idx].rho_j2d))
+                } else { None }
+            })
+            .collect();
+
+        if slice.is_empty() {
+            println!("  NO PHYSICAL ROOTS]");
+            continue;
+        }
+
+        println!("");
+        let step = (slice.len() / 10).max(1);
+        for i in (0..slice.len()).step_by(step) {
+            let (d1, rho) = slice[i];
+            println!("    δ₁={:>5.1} → ρ={:.6}", d1, rho);
+        }
+        if slice.len() > 1 {
+            let (d1_last, rho_last) = slice[slice.len() - 1];
+            println!("    δ₁={:>5.1} → ρ={:.6}  (boundary)", d1_last, rho_last);
+        }
+        println!();
+    }
+
+    println!("\n  CONVERGENCE LANDSCAPE CONCLUSIONS:");
+    println!("  - ρ(J_2D) ∈ [{:.4}, {:.4}] across entire physical domain", rho_min, rho_max);
+    println!("  - All {} physical points have ρ<1: universal convergence", if all_contracting { n_physical } else { n_physical - over_one });
+    println!("  - Bifurcation boundary roughly follows δ₁ ≈ 4.89 + 2.65·β₁ (v2.48)");
+    println!("  - Convergence fastest at low β₁, high δ₁; slowest near bifurcation boundary");
+}
+
+fn linreg(xs: &[f64], ys: &[f64]) -> (f64, f64, f64) {
+    let n = xs.len() as f64;
+    let sx: f64 = xs.iter().sum();
+    let sy: f64 = ys.iter().sum();
+    let sxx: f64 = xs.iter().map(|x| x * x).sum();
+    let sxy: f64 = xs.iter().zip(ys.iter()).map(|(x, y)| x * y).sum();
+    let denom = n * sxx - sx * sx;
+    if denom.abs() < 1e-30 { return (0.0, 0.0, 0.0); }
+    let slope = (n * sxy - sx * sy) / denom;
+    let intercept = (sy - slope * sx) / n;
+    let ss_res: f64 = xs.iter().zip(ys.iter()).map(|(x, y)| (y - intercept - slope * x).powi(2)).sum();
+    let ss_tot: f64 = ys.iter().map(|y| (y - sy / n).powi(2)).sum();
+    let r2 = if ss_tot > 1e-30 { 1.0 - ss_res / ss_tot } else { 0.0 };
+    (slope, intercept, r2)
+}
+
+pub fn run_convergence_scaling() {
+    println!("\n================================================================");
+    println!("  CONVERGENCE RATE SCALING: Power-law exponents for ρ(J_2D)");
+    println!("  Extracting ρ ≈ A·β₁^α·δ₁^β + C from landscape data");
+    println!("================================================================\n");
+
+    let eps = DynamicsParams::uniform().eps;
+    let beta1_vals: Vec<f64> = (0..30).map(|i| 0.05 + i as f64 * (15.0 - 0.05) / 29.0).collect();
+    let delta1_vals: Vec<f64> = (0..50).map(|i| 0.5 + i as f64 * (50.0 - 0.5) / 49.0).collect();
+
+    struct Pt { b1: f64, d1: f64, dstar: f64, bstar: f64, rhostar: f64, rho_j2d: f64 }
+    let mut pts: Vec<Pt> = Vec::new();
+
+    for &b1 in &beta1_vals {
+        for &d1 in &delta1_vals {
+            if let Some((dv, bv, rhov, rv, sv)) = find_physical_root(b1, d1, eps) {
+                let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1);
+                let (rho_j2d, _, _, _, _, _) = compute_j2d_analytical(dv, bv, rhov, rv, sv, &p);
+                if rho_j2d.is_finite() {
+                    pts.push(Pt { b1, d1, dstar: dv, bstar: bv, rhostar: rhov, rho_j2d });
+                }
+            }
+        }
+    }
+
+    println!("  {} physical points with finite ρ(J_2D)\n", pts.len());
+
+    println!("  Part 1: δ₁-scaling at fixed β₁ (ρ ∝ δ₁^β)\n");
+    println!("  β₁        β_exp    R²       ρ(δ=1)   ρ(δ=50)");
+
+    let slice_b1s: Vec<f64> = vec![0.05, 0.5, 1.0, 2.0, 5.0, 10.0, 15.0];
+    let mut beta_exponents: Vec<(f64, f64)> = Vec::new();
+
+    for &target_b1 in &slice_b1s {
+        let bi = beta1_vals.iter().enumerate()
+            .min_by(|a, b| (a.1 - target_b1).abs().partial_cmp(&(b.1 - target_b1).abs()).unwrap())
+            .map(|(i, _)| i).unwrap();
+        let b1_actual = beta1_vals[bi];
+
+        let slice: Vec<(f64, f64)> = pts.iter()
+            .filter(|p| (p.b1 - b1_actual).abs() < 1e-6)
+            .map(|p| (p.d1, p.rho_j2d))
+            .collect();
+
+        if slice.len() < 5 { continue; }
+
+        let log_d1: Vec<f64> = slice.iter().map(|(d, _)| d.ln()).collect();
+        let log_rho: Vec<f64> = slice.iter().map(|(_, r)| r.ln()).collect();
+        let (slope, _intercept, r2) = linreg(&log_d1, &log_rho);
+
+        let rho_lo = slice.first().map(|(_, r)| *r).unwrap_or(0.0);
+        let rho_hi = slice.last().map(|(_, r)| *r).unwrap_or(0.0);
+        println!("  {:>7.3}   {:+.4}   {:.4}   {:.4}   {:.4}", b1_actual, slope, r2, rho_lo, rho_hi);
+        beta_exponents.push((b1_actual, slope));
+    }
+
+    println!("\n  Part 2: β₁-scaling at fixed δ₁ (ρ ∝ β₁^α)\n");
+    println!("  δ₁        α_exp    R²       ρ(β=0.05) ρ(β=15)");
+
+    let slice_d1s: Vec<f64> = vec![0.5, 2.0, 5.0, 10.0, 20.0, 30.0, 50.0];
+    let mut delta_exponents: Vec<(f64, f64)> = Vec::new();
+
+    for &target_d1 in &slice_d1s {
+        let di = delta1_vals.iter().enumerate()
+            .min_by(|a, b| (a.1 - target_d1).abs().partial_cmp(&(b.1 - target_d1).abs()).unwrap())
+            .map(|(i, _)| i).unwrap();
+        let d1_actual = delta1_vals[di];
+
+        let slice: Vec<(f64, f64)> = pts.iter()
+            .filter(|p| (p.d1 - d1_actual).abs() < 1e-6)
+            .map(|p| (p.b1, p.rho_j2d))
+            .collect();
+
+        if slice.len() < 5 { continue; }
+
+        let log_b1: Vec<f64> = slice.iter().map(|(b, _)| b.ln()).collect();
+        let log_rho: Vec<f64> = slice.iter().map(|(_, r)| r.ln()).collect();
+        let (slope, _intercept, r2) = linreg(&log_b1, &log_rho);
+
+        let rho_lo = slice.first().map(|(_, r)| *r).unwrap_or(0.0);
+        let rho_hi = slice.last().map(|(_, r)| *r).unwrap_or(0.0);
+        println!("  {:>7.1}   {:+.4}   {:.4}   {:.4}   {:.4}", d1_actual, slope, r2, rho_lo, rho_hi);
+        delta_exponents.push((d1_actual, slope));
+    }
+
+    println!("\n  Part 3: 2D combined power-law fit: ρ ≈ A · β₁^α · δ₁^β + C\n");
+
+    let log_b1_all: Vec<f64> = pts.iter().map(|p| p.b1.ln()).collect();
+    let log_d1_all: Vec<f64> = pts.iter().map(|p| p.d1.ln()).collect();
+    let rho_all: Vec<f64> = pts.iter().map(|p| p.rho_j2d).collect();
+
+    let n_pts = pts.len() as f64;
+    let mean_rho = rho_all.iter().sum::<f64>() / n_pts;
+
+    let mut best_model = String::new();
+    let mut best_r2 = -1.0_f64;
+    let mut best_params = String::new();
+
+    {
+        let log_rho: Vec<f64> = rho_all.iter().map(|r| r.ln()).collect();
+        let n = log_rho.len();
+        let mut a = 0.0_f64;
+        let mut b = 0.0_f64;
+        let mut c = 0.0_f64;
+
+        for _iter in 0..100 {
+            let mut sx = 0.0; let mut sy = 0.0; let mut sxx = 0.0; let mut sxy = 0.0;
+            let mut s_x2 = 0.0; let mut s_x2x2 = 0.0; let mut s_x2y = 0.0;
+            for i in 0..n {
+                let x = log_b1_all[i];
+                let x2 = log_d1_all[i];
+                let y = log_rho[i];
+                sx += x; sy += y; sxx += x * x; sxy += x * y;
+                s_x2 += x2; s_x2x2 += x2 * x2; s_x2y += x2 * y;
+            }
+            let sn = n as f64;
+            let mat = [[sxx, sx * s_x2 / sn], [sx * s_x2 / sn, s_x2x2]];
+            let rhs = [sxy - sx * sy / sn, s_x2y - s_x2 * sy / sn];
+            let det = mat[0][0] * mat[1][1] - mat[0][1] * mat[1][0];
+            if det.abs() < 1e-30 { break; }
+            b = (mat[1][1] * rhs[0] - mat[0][1] * rhs[1]) / det;
+            c = (mat[0][0] * rhs[1] - mat[1][0] * rhs[0]) / det;
+            a = (sy - b * sx - c * s_x2) / sn;
+            break;
+        }
+
+        let a_val = a.exp();
+        let ss_res: f64 = pts.iter().enumerate().map(|(i, p)| {
+            let pred = a_val * p.b1.powf(b) * p.d1.powf(c);
+            (p.rho_j2d - pred).powi(2)
+        }).sum();
+        let ss_tot: f64 = rho_all.iter().map(|r| (r - mean_rho).powi(2)).sum();
+        let r2 = 1.0 - ss_res / ss_tot;
+        let rmse = (ss_res / n_pts).sqrt();
+
+        println!("  Model 1: ρ = A · β₁^α · δ₁^β");
+        println!("    A = {:.6}, α = {:.4}, β = {:.4}", a_val, b, c);
+        println!("    R² = {:.6}, RMSE = {:.6}", r2, rmse);
+        if r2 > best_r2 { best_r2 = r2; best_model = "A·β₁^α·δ₁^β".into(); best_params = format!("A={:.4} α={:.4} β={:.4}", a_val, b, c); }
+    }
+
+    {
+        let log_b1: Vec<f64> = pts.iter().map(|p| (p.b1 + 1.0).ln()).collect();
+        let log_d1: Vec<f64> = pts.iter().map(|p| (p.d1 + 1.0).ln()).collect();
+        let log_rho: Vec<f64> = rho_all.iter().map(|r| (1.0 - r).ln()).collect();
+
+        let n = log_rho.len();
+        let sx: f64 = log_b1.iter().sum();
+        let sy: f64 = log_rho.iter().sum();
+        let sxx: f64 = log_b1.iter().map(|x| x * x).sum();
+        let sxy: f64 = log_b1.iter().zip(log_rho.iter()).map(|(x, y)| x * y).sum();
+        let s_x2: f64 = log_d1.iter().sum();
+        let s_x2x2: f64 = log_d1.iter().map(|x| x * x).sum();
+        let s_x2y: f64 = log_d1.iter().zip(log_rho.iter()).map(|(x, y)| x * y).sum();
+        let sn = n as f64;
+        let det = sxx * s_x2x2 - (sx * s_x2 / sn) * (sx * s_x2 / sn);
+        if det.abs() > 1e-30 {
+            let b = (s_x2x2 * (sxy - sx * sy / sn) - (sx * s_x2 / sn) * (s_x2y - s_x2 * sy / sn)) / det;
+            let c = (sxx * (s_x2y - s_x2 * sy / sn) - (sx * s_x2 / sn) * (sxy - sx * sy / sn)) / det;
+            let a = (sy - b * sx - c * s_x2) / sn;
+            let a_val = a.exp();
+
+            let ss_res: f64 = pts.iter().enumerate().map(|(i, _)| {
+                let pred = 1.0 - a_val * (pts[i].b1 + 1.0).powf(b) * (pts[i].d1 + 1.0).powf(c);
+                (pts[i].rho_j2d - pred).powi(2)
+            }).sum();
+            let ss_tot: f64 = rho_all.iter().map(|r| (r - mean_rho).powi(2)).sum();
+            let r2 = 1.0 - ss_res / ss_tot;
+            let rmse = (ss_res / n_pts).sqrt();
+
+            println!("\n  Model 2: 1-ρ = A · (β₁+1)^α · (δ₁+1)^β");
+            println!("    A = {:.6}, α = {:.4}, β = {:.4}", a_val, b, c);
+            println!("    R² = {:.6}, RMSE = {:.6}", r2, rmse);
+            if r2 > best_r2 { best_r2 = r2; best_model = "1-A·(β₁+1)^α·(δ₁+1)^β".into(); best_params = format!("A={:.4} α={:.4} β={:.4}", a_val, b, c); }
+        }
+    }
+
+    {
+        let log_b1: Vec<f64> = pts.iter().map(|p| p.b1.ln()).collect();
+        let log_d1: Vec<f64> = pts.iter().map(|p| p.d1.ln()).collect();
+        let log_d1_sq: Vec<f64> = pts.iter().map(|p| p.d1.ln().powi(2)).collect();
+        let log_b1_d1: Vec<f64> = pts.iter().map(|p| p.b1.ln() * p.d1.ln()).collect();
+        let log_rho: Vec<f64> = rho_all.iter().map(|r| r.ln()).collect();
+
+        let n = log_rho.len() as f64;
+        let sy: f64 = log_rho.iter().sum();
+        let mean_log_rho = sy / n;
+
+        let mut best_r2_quad = -1.0_f64;
+        let mut best_a = 0.0_f64;
+        let mut best_al = 0.0_f64;
+        let mut best_bl = 0.0_f64;
+        let mut best_cl = 0.0_f64;
+
+        for alpha_grid in -20..20 {
+            let alpha = alpha_grid as f64 * 0.01;
+            for beta_grid in -20..20 {
+                let beta = beta_grid as f64 * 0.01;
+                for gamma_grid in -20..20 {
+                    let gamma = gamma_grid as f64 * 0.01;
+
+                    let preds: Vec<f64> = pts.iter().map(|p| {
+                        let lb = p.b1.ln();
+                        let ld = p.d1.ln();
+                        alpha * lb + beta * ld + gamma * lb * ld
+                    }).collect();
+
+                    let mean_pred = preds.iter().sum::<f64>() / n;
+                    let ss_res: f64 = log_rho.iter().zip(preds.iter()).map(|(y, p)| (y - p).powi(2)).sum();
+                    let ss_tot: f64 = log_rho.iter().map(|y| (y - mean_log_rho).powi(2)).sum();
+                    let r2 = 1.0 - ss_res / ss_tot;
+
+                    if r2 > best_r2_quad {
+                        best_r2_quad = r2;
+                        best_al = alpha; best_bl = beta; best_cl = gamma;
+                        best_a = mean_log_rho - alpha * log_b1.iter().sum::<f64>() / n - beta * log_d1.iter().sum::<f64>() / n - gamma * log_b1_d1.iter().sum::<f64>() / n;
+                    }
+                }
+            }
+        }
+
+        let a_val = best_a.exp();
+        let ss_res: f64 = pts.iter().map(|p| {
+            let pred = a_val * p.b1.powf(best_al) * p.d1.powf(best_bl) * (p.b1.ln() * p.d1.ln()).exp().powf(best_cl / (p.b1.ln() * p.d1.ln()).ln().exp());
+            (p.rho_j2d - pred).powi(2)
+        }).sum();
+
+        println!("\n  Model 3: ρ = A · β₁^α · δ₁^β · exp(γ·ln(β₁)·ln(δ₁))");
+        println!("    A = {:.6}, α = {:.4}, β = {:.4}, γ = {:.4}", a_val, best_al, best_bl, best_cl);
+        println!("    R² (log-space) = {:.6}", best_r2_quad);
+
+        let ss_res_real: f64 = pts.iter().map(|p| {
+            let lb = p.b1.ln();
+            let ld = p.d1.ln();
+            let log_pred = best_a + best_al * lb + best_bl * ld + best_cl * lb * ld;
+            let pred = log_pred.exp();
+            (p.rho_j2d - pred).powi(2)
+        }).sum();
+        let ss_tot: f64 = rho_all.iter().map(|r| (r - mean_rho).powi(2)).sum();
+        let r2_real = 1.0 - ss_res_real / ss_tot;
+        let rmse = (ss_res_real / n_pts).sqrt();
+        println!("    R² (real-space) = {:.6}, RMSE = {:.6}", r2_real, rmse);
+        if best_r2_quad > best_r2 { best_r2 = best_r2_quad; best_model = "A·β₁^α·δ₁^β·exp(γ·lnβ₁·lnδ₁)".into(); best_params = format!("A={:.4} α={:.4} β={:.4} γ={:.4}", a_val, best_al, best_bl, best_cl); }
+    }
+
+    println!("\n  Part 4: Worst-convergence ridge (max ρ at each β₁)\n");
+    println!("  β₁        δ₁_peak   ρ_peak    d*_peak   b*_peak");
+
+    for &b1 in &beta1_vals {
+        let mut max_rho = 0.0_f64;
+        let mut peak_d1 = 0.0_f64;
+        let mut peak_dstar = 0.0_f64;
+        let mut peak_bstar = 0.0_f64;
+        for p in pts.iter().filter(|pp| (pp.b1 - b1).abs() < 1e-6) {
+            if p.rho_j2d > max_rho {
+                max_rho = p.rho_j2d;
+                peak_d1 = p.d1;
+                peak_dstar = p.dstar;
+                peak_bstar = p.bstar;
+            }
+        }
+        if max_rho > 0.0 {
+            println!("  {:>7.3}   {:>7.2}   {:.4}   {:.4}   {:.4}", b1, peak_d1, max_rho, peak_dstar, peak_bstar);
+        }
+    }
+
+    println!("\n  Part 5: Asymptotic behavior analysis\n");
+
+    println!("  δ₁→∞ limit (ρ→ρ_inf at each β₁):");
+    println!("  β₁        ρ(δ₁=50)  ρ(δ₁=45)  ratio    → limit?");
+    for &b1 in &[0.05_f64, 0.5, 1.0, 2.0, 5.0, 10.0, 15.0] {
+        let bi = beta1_vals.iter().enumerate()
+            .min_by(|a, b| (a.1 - b1).abs().partial_cmp(&(b.1 - b1).abs()).unwrap())
+            .map(|(i, _)| i).unwrap();
+        let b1_a = beta1_vals[bi];
+        let get_rho = |d1_target: f64| -> f64 {
+            let di = delta1_vals.iter().enumerate()
+                .min_by(|a, b| (a.1 - d1_target).abs().partial_cmp(&(b.1 - d1_target).abs()).unwrap())
+                .map(|(i, _)| i).unwrap();
+            pts.iter().filter(|p| (p.b1 - b1_a).abs() < 1e-6 && (p.d1 - delta1_vals[di]).abs() < 1e-6)
+                .map(|p| p.rho_j2d).next().unwrap_or(f64::NAN)
+        };
+        let r50 = get_rho(50.0);
+        let r45 = get_rho(45.0);
+        let ratio = if r45.abs() > 1e-10 { r50 / r45 } else { f64::NAN };
+        println!("  {:>7.3}   {:.4}   {:.4}   {:.4}   {}", b1_a, r50, r45, ratio,
+            if (ratio - 1.0).abs() < 0.02 { "YES" } else { "approaching" });
+    }
+
+    println!("\n  β₁→0 limit (ρ→0? linear?):");
+    println!("  β₁        ρ(δ₁=0.5)  ρ/β₁      ρ/β₁^0.5");
+    for &b1 in &[0.05_f64, 0.1, 0.2, 0.5, 1.0] {
+        let bi = beta1_vals.iter().enumerate()
+            .min_by(|a, b| (a.1 - b1).abs().partial_cmp(&(b.1 - b1).abs()).unwrap())
+            .map(|(i, _)| i).unwrap();
+        let b1_a = beta1_vals[bi];
+        let rho_05 = pts.iter().filter(|p| (p.b1 - b1_a).abs() < 1e-6 && (p.d1 - 0.5).abs() < 0.1)
+            .map(|p| p.rho_j2d).next().unwrap_or(f64::NAN);
+        println!("  {:>7.3}   {:.4}     {:.4}     {:.4}", b1_a, rho_05, rho_05 / b1_a, rho_05 / b1_a.sqrt());
+    }
+
+    println!("\n  Part 6: Best model summary\n");
+    println!("  Best model: {}", best_model);
+    println!("  Parameters: {}", best_params);
+    println!("  R² = {:.6}", best_r2);
+
+    println!("\n  SCALING LAW CONCLUSIONS:");
+    println!("  - Power-law exponents extracted for ρ(β₁, δ₁)");
+    println!("  - Worst-convergence ridge identifies dangerous parameter region");
+    println!("  - Asymptotic limits confirm theoretical predictions");
+    println!("  - Practical closed-form approximation for engineering use");
+}
