@@ -119,13 +119,6 @@ fn main() {
 }
 
 fn run_synthetic_suite(max_concepts: usize, time_limit: f64, output_dir: &PathBuf) {
-    experiments::run_top_concept_analysis();
-    experiments::run_max_rho_minimization();
-    experiments::run_joint_bottleneck_optimization();
-    experiments::run_lattice_validation_optimal();
-    experiments::run_eps_asymptotic_analysis();
-    experiments::run_asymptotic_constant_mapping();
-    experiments::run_end_to_end_prediction();
     experiments::run_synthetic_scan(max_concepts, time_limit, output_dir);
     experiments::run_stress_tests(output_dir);
     experiments::run_chain_diagnostics(output_dir);
@@ -184,4 +177,17 @@ fn run_synthetic_suite(max_concepts: usize, time_limit: f64, output_dir: &PathBu
     experiments::run_optimal_regime();
     experiments::run_cross_topology_optimal();
     experiments::run_max_rho_analysis();
+    experiments::run_top_concept_analysis();
+    experiments::run_max_rho_minimization();
+    experiments::run_joint_bottleneck_optimization();
+    experiments::run_lattice_validation_optimal();
+    experiments::run_eps_asymptotic_analysis();
+    experiments::run_asymptotic_constant_mapping();
+    experiments::run_end_to_end_prediction();
+    experiments::run_iteration_count_analysis();
+    experiments::run_iteration_prediction_correction();
+    experiments::run_effective_contraction_rate();
+    experiments::run_full_iteration_prediction();
+    experiments::run_root_top_rho_ratio();
+    let _ = (max_concepts, time_limit, output_dir);
 }

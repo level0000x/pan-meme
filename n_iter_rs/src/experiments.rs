@@ -13100,3 +13100,875 @@ pub fn run_end_to_end_prediction() {
     println!("  Predicted iterations = -ln(tol) / ln(1/max_rho)");
     println!("  No numerical simulation needed!");
 }
+
+pub fn run_iteration_count_analysis() {
+    use crate::fca;
+    use crate::pipeline;
+    use crate::five_dim;
+
+    println!("\n{}", "=".repeat(72));
+    println!("  ITERATION COUNT ANALYSIS: per-concept convergence detail");
+    println!("{}", "=".repeat(72));
+
+    let alpha1 = 1.0_f64;
+    let tol = 1e-12_f64;
+
+    let regimes: Vec<(&str, f64, f64, f64)> = vec![
+        ("default",     1.0,  1.0,  0.5),
+        ("v2.64_opt",   1.5,  0.5,  50.0),
+        ("extreme",     2.80, 0.30, 250.0),
+        ("huge_eps",    5.0,  5.0,  1000.0),
+    ];
+
+    for &(name, b1, d1, eps) in &regimes {
+        let c = alpha1.max((b1 * d1).sqrt());
+        let rho_pred = c / eps;
+        let iters_pred = if rho_pred < 1.0 { tol.ln().abs() / (-rho_pred.ln()) } else { f64::INFINITY };
+
+        let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1).with_eps(eps);
+        let lat = fca::build_chain_lattice(10);
+        let stats = pipeline::compute_lattice_stats(&lat);
+        let results = pipeline::run_topological_iteration(&lat, &stats, &p);
+
+        println!("\n  Regime: {} (b1={}, d1={}, eps={})", name, b1, d1, eps);
+        println!("  Formula: C={:.3}, rho_pred={:.6}, iters_pred={:.1}", c, rho_pred, iters_pred);
+        println!("  {:>4} {:>4} {:>10} {:>10} {:>10} {:>10} {:>10} {:>10}", "C#", "h", "n_iters", "rho(J)", "d*", "b*", "rho*", "rho_act_n");
+
+        let mut max_iters = 0_u64;
+        let mut max_rho_concept = 0;
+        let mut max_iters_concept = 0;
+
+        for (i, opt) in results.iter().enumerate() {
+            if let Some(ref r) = opt {
+                if r.n_iters as u64 > max_iters {
+                    max_iters = r.n_iters as u64;
+                    max_iters_concept = i;
+                }
+                if r.rho_spectral > results[max_rho_concept].as_ref().map(|x| x.rho_spectral).unwrap_or(0.0) {
+                    max_rho_concept = i;
+                }
+                let rho_actual_n = if r.n_iters > 1 {
+                    (-tol.ln()).powf(1.0 / r.n_iters as f64)
+                } else {
+                    0.0
+                };
+                println!("  {:>4} {:>4} {:>10} {:>10.6} {:>10.4} {:>10.4} {:>10.4} {:>10.6}",
+                    i, stats.heights[i], r.n_iters, r.rho_spectral, r.m_star[0], r.m_star[1], r.m_star[2], 1.0/rho_actual_n);
+            }
+        }
+
+        println!("  Max rho concept: C{}, rho={:.6}", max_rho_concept,
+            results[max_rho_concept].as_ref().map(|x| x.rho_spectral).unwrap_or(0.0));
+        println!("  Max iters concept: C{}, n={}", max_iters_concept, max_iters);
+        println!("  Predicted iters: {:.1}", iters_pred);
+        println!("  Actual max iters: {}", max_iters);
+        if iters_pred.is_finite() && iters_pred > 0.0 {
+            println!("  Gap ratio: {:.2}", max_iters as f64 / iters_pred);
+        }
+    }
+
+    println!("\n  Key insight: the concept with max rho != concept with max iterations");
+    println!("  Because: different concepts start at different distances from their fixed points");
+    println!("  The actual iters = -ln(tol)/ln(1/rho_effective)");
+    println!("  where rho_effective accounts for initial transient + coupling effects");
+}
+
+pub fn run_iteration_prediction_correction() {
+    use crate::fca;
+    use crate::pipeline;
+    use crate::five_dim;
+    println!("\n{}", "=".repeat(72));
+    println!("  ITERATION PREDICTION CORRECTION: ||M0-M*|| aware formula");
+    println!("{}", "=".repeat(72));
+
+    let alpha1 = 1.0_f64;
+    let tol = 1e-12_f64;
+
+    let regimes: Vec<(&str, f64, f64, f64)> = vec![
+        ("v2.64_opt",   1.5,  0.5,  50.0),
+        ("extreme",     2.80, 0.30, 250.0),
+        ("huge_eps",    5.0,  5.0,  1000.0),
+        ("b1=2,e=100",  2.0,  1.0,  100.0),
+        ("b1=3,e=200",  3.0,  1.0,  200.0),
+    ];
+
+    let topologies: Vec<(&str, fca::FcaLattice)> = vec![
+        ("chain-5",  fca::build_chain_lattice(5)),
+        ("chain-10", fca::build_chain_lattice(10)),
+        ("chain-20", fca::build_chain_lattice(20)),
+        ("diamond",  fca::build_diamond_lattice()),
+        ("B3",       fca::build_b3_lattice()),
+    ];
+
+    println!("\n  {:>12} {:>10} {:>4} {:>4} {:>10} {:>10} {:>10} {:>10} {:>10} {:>10}",
+        "regime", "topo", "C#", "h", "n_actual", "rho(J)", "dM0", "n_v268", "n_corr", "corr/act");
+    println!("  {}", "-".repeat(110));
+
+    let mut total_v268_err = 0.0_f64;
+    let mut total_corr_err = 0.0_f64;
+    let mut count = 0_u64;
+
+    for &(rname, b1, d1, eps) in &regimes {
+        let c = alpha1.max((b1 * d1).sqrt());
+        let rho_pred = c / eps;
+        if rho_pred >= 1.0 { continue; }
+        let iters_v268 = tol.ln().abs() / (-rho_pred.ln());
+
+        let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1).with_eps(eps);
+
+        for &(tname, ref lat) in &topologies {
+            let stats = pipeline::compute_lattice_stats(&lat);
+            let results = pipeline::run_topological_iteration(&lat, &stats, &p);
+
+            let mut max_actual = 0_u64;
+            let mut max_actual_concept = 0;
+
+            for (i, opt) in results.iter().enumerate() {
+                if let Some(ref r) = opt {
+                    if r.n_iters as u64 > max_actual {
+                        max_actual = r.n_iters as u64;
+                        max_actual_concept = i;
+                    }
+                }
+            }
+
+            if let Some(ref r_max) = results[max_actual_concept] {
+                let m0 = five_dim::make_state(0.5, 0.5, 0.5, 0.5, 0.5);
+                let dm: f64 = (0..5).map(|k| (m0[k] - r_max.m_star[k]).powi(2)).sum::<f64>().sqrt();
+                let rho = r_max.rho_spectral;
+
+                let n_corr = if rho > 0.0 && rho < 1.0 {
+                    let numerator = (dm * tol).ln().abs();
+                    let denominator = (1.0_f64 / rho).ln();
+                    if denominator > 0.0 { numerator / denominator } else { f64::INFINITY }
+                } else {
+                    f64::INFINITY
+                };
+
+                let v268_err = if iters_v268 > 0.0 && iters_v268.is_finite() {
+                    (max_actual as f64 - iters_v268).abs() / max_actual as f64
+                } else { 0.0 };
+                let corr_err = if n_corr.is_finite() && n_corr > 0.0 {
+                    (max_actual as f64 - n_corr).abs() / max_actual as f64
+                } else { 0.0 };
+
+                total_v268_err += v268_err;
+                total_corr_err += corr_err;
+                count += 1;
+
+                let ratio = if n_corr.is_finite() && max_actual > 0 {
+                    n_corr / max_actual as f64
+                } else { f64::NAN };
+
+                println!("  {:>12} {:>10} {:>4} {:>4} {:>10} {:>10.6} {:>10.4} {:>10.1} {:>10.1} {:>10.3}",
+                    rname, tname, max_actual_concept, stats.heights[max_actual_concept],
+                    max_actual, rho, dm, iters_v268, n_corr, ratio);
+            }
+        }
+    }
+
+    if count > 0 {
+        let avg_v268 = total_v268_err / count as f64;
+        let avg_corr = total_corr_err / count as f64;
+        println!("\n  === SUMMARY ===");
+        println!("  Test cases: {}", count);
+        println!("  v2.68 prediction avg error: {:.1}%", avg_v268 * 100.0);
+        println!("  Corrected prediction avg error: {:.1}%", avg_corr * 100.0);
+        println!("  Improvement factor: {:.2}x", avg_v268 / avg_corr.max(1e-10));
+    }
+
+    println!("\n  Corrected formula: n = -ln(||M0-M*|| * tol) / ln(1/rho)");
+    println!("  v2.68 formula: n = -ln(tol) / ln(1/rho_pred)");
+    println!("  The correction accounts for concept-specific initial distance ||M0-M*||");
+    println!("  and uses actual rho(J) instead of top-concept rho_pred");
+}
+
+pub fn run_effective_contraction_rate() {
+    use crate::fca;
+    use crate::pipeline;
+    use crate::five_dim;
+
+    println!("\n{}", "=".repeat(72));
+    println!("  EFFECTIVE CONTRACTION RATE: from actual iterations back out rho_eff");
+    println!("{}", "=".repeat(72));
+
+    let alpha1 = 1.0_f64;
+    let tol = 1e-12_f64;
+
+    let regimes: Vec<(&str, f64, f64, f64)> = vec![
+        ("v2.64_opt",   1.5,  0.5,  50.0),
+        ("extreme",     2.80, 0.30, 250.0),
+        ("huge_eps",    5.0,  5.0,  1000.0),
+        ("b1=2,e=100",  2.0,  1.0,  100.0),
+        ("b1=3,e=200",  3.0,  1.0,  200.0),
+    ];
+
+    let topologies: Vec<(&str, fca::FcaLattice)> = vec![
+        ("chain-5",  fca::build_chain_lattice(5)),
+        ("chain-10", fca::build_chain_lattice(10)),
+        ("chain-20", fca::build_chain_lattice(20)),
+        ("diamond",  fca::build_diamond_lattice()),
+        ("B3",       fca::build_b3_lattice()),
+        ("grid-3x3", fca::build_grid_lattice(3, 3)),
+    ];
+
+    println!("\n  Per-concept effective contraction rate analysis:");
+    println!("  {:>12} {:>10} {:>4} {:>4} {:>8} {:>10} {:>10} {:>10} {:>10}",
+        "regime", "topo", "C#", "h", "n_iters", "rho(J)", "rho_eff", "dM0", "dMn");
+    println!("  {}", "-".repeat(95));
+
+    let mut all_ratios: Vec<f64> = Vec::new();
+
+    for &(rname, b1, d1, eps) in &regimes {
+        let c = alpha1.max((b1 * d1).sqrt());
+        let rho_pred = c / eps;
+        if rho_pred >= 1.0 { continue; }
+
+        let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1).with_eps(eps);
+
+        for &(tname, ref lat) in &topologies {
+            let stats = pipeline::compute_lattice_stats(&lat);
+            let results = pipeline::run_topological_iteration(&lat, &stats, &p);
+
+            for (i, opt) in results.iter().enumerate() {
+                if let Some(ref r) = opt {
+                    let m0 = five_dim::make_state(0.5, 0.5, 0.5, 0.5, 0.5);
+                    let dm0: f64 = (0..5).map(|k| (m0[k] - r.m_star[k]).powi(2)).sum::<f64>().sqrt();
+                    let rho_j = r.rho_spectral;
+                    let n = r.n_iters;
+
+                    let rho_eff = if n > 0 {
+                        tol.powf(1.0 / n as f64)
+                    } else { 0.0 };
+
+                    let dm_n = rho_eff.powi(n as i32) * dm0;
+
+                    let rho_ratio = if rho_j > 0.0 { rho_eff / rho_j } else { f64::NAN };
+                    if rho_ratio.is_finite() {
+                        all_ratios.push(rho_ratio);
+                    }
+
+                    if i == 0 || i == results.len() - 1 {
+                        println!("  {:>12} {:>10} {:>4} {:>4} {:>8} {:>10.6} {:>10.6} {:>10.4} {:>10.4} {:>10.3}",
+                            rname, tname, i, stats.heights[i], n, rho_j, rho_eff, dm0, dm_n, rho_ratio);
+                    }
+                }
+            }
+        }
+    }
+
+    if !all_ratios.is_empty() {
+        all_ratios.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        let mean: f64 = all_ratios.iter().sum::<f64>() / all_ratios.len() as f64;
+        let median = all_ratios[all_ratios.len() / 2];
+        let min = all_ratios[0];
+        let max = all_ratios[all_ratios.len() - 1];
+        let std: f64 = (all_ratios.iter().map(|x| (x - mean).powi(2)).sum::<f64>()
+            / all_ratios.len() as f64).sqrt();
+
+        println!("\n  === RHO_EFF / RHO_J RATIO STATISTICS ===");
+        println!("  N concepts: {}", all_ratios.len());
+        println!("  Mean: {:.4}", mean);
+        println!("  Median: {:.4}", median);
+        println!("  Std: {:.4}", std);
+        println!("  Min: {:.4}", min);
+        println!("  Max: {:.4}", max);
+        println!("  Ratio range: [{:.3}, {:.3}]", min, max);
+
+        println!("\n  KEY FINDING:");
+        println!("  rho_eff = rho(J) * factor (systematic offset)");
+        println!("  The 'effective' contraction rate during iteration is {}x the Jacobian spectral radius",
+            mean);
+
+        let corrected_pred: Vec<f64> = all_ratios.iter().map(|&r| {
+            let rho_eff_adj = r;
+            -tol.ln().abs() / (1.0_f64 / rho_eff_adj).ln()
+        }).collect();
+    }
+
+    println!("\n  The n_iters is determined by the WORST-concept convergence.");
+    println!("  rho_eff measures the ACTUAL per-step contraction from M0 to M*.");
+    println!("  If rho_eff/rho(J) is constant, we can predict n_iters analytically.");
+}
+
+pub fn run_full_iteration_prediction() {
+    use crate::fca;
+    use crate::pipeline;
+    use crate::five_dim;
+    use crate::n_operator;
+
+    println!("\n{}", "=".repeat(72));
+    println!("  FULL ITERATION PREDICTION: combined rho(J) * k-factor model");
+    println!("{}", "=".repeat(72));
+
+    let alpha1 = 1.0_f64;
+    let tol = 1e-12_f64;
+    let m0 = five_dim::make_state(0.5, 0.5, 0.5, 0.5, 0.5);
+
+    let regimes: Vec<(&str, f64, f64, f64)> = vec![
+        ("v2.64_opt",   1.5,  0.5,  50.0),
+        ("extreme",     2.80, 0.30, 250.0),
+        ("huge_eps",    5.0,  5.0,  1000.0),
+        ("b1=2,e=100",  2.0,  1.0,  100.0),
+        ("b1=3,e=200",  3.0,  1.0,  200.0),
+        ("b1=4,e=500",  4.0,  1.0,  500.0),
+    ];
+
+    let topologies: Vec<(&str, fca::FcaLattice)> = vec![
+        ("chain-5",  fca::build_chain_lattice(5)),
+        ("chain-10", fca::build_chain_lattice(10)),
+        ("chain-20", fca::build_chain_lattice(20)),
+        ("diamond",  fca::build_diamond_lattice()),
+        ("B3",       fca::build_b3_lattice()),
+        ("grid-3x3", fca::build_grid_lattice(3, 3)),
+    ];
+
+    println!("\n  Phase 1: Measure per-concept k-factor across all regimes");
+    println!("  {:>12} {:>10} {:>4} {:>8} {:>10} {:>10} {:>10} {:>10} {:>10} {:>10}",
+        "regime", "topo", "C#", "n_iters", "rho(J)", "rho_eff", "k_eff", "dM0", "n_pred", "pred/act");
+    println!("  {}", "-".repeat(110));
+
+    let mut k_by_concept_type: std::collections::BTreeMap<String, Vec<f64>> = std::collections::BTreeMap::new();
+    let mut all_predictions: Vec<(f64, u64)> = Vec::new();
+
+    for &(rname, b1, d1, eps) in &regimes {
+        let c = alpha1.max((b1 * d1).sqrt());
+        let rho_pred = c / eps;
+        if rho_pred >= 1.0 { continue; }
+
+        let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1).with_eps(eps);
+
+        for &(tname, ref lat) in &topologies {
+            let stats = pipeline::compute_lattice_stats(&lat);
+            let results = pipeline::run_topological_iteration(&lat, &stats, &p);
+
+            let mut max_actual = 0_u64;
+            let mut max_concept = 0;
+            for (i, opt) in results.iter().enumerate() {
+                if let Some(ref r) = opt {
+                    if r.n_iters as u64 > max_actual {
+                        max_actual = r.n_iters as u64;
+                        max_concept = i;
+                    }
+                }
+            }
+
+            if let Some(ref r_max) = results[max_concept] {
+                let rho_j = r_max.rho_spectral;
+                let dm0: f64 = (0..5).map(|k| (m0[k] - r_max.m_star[k]).powi(2)).sum::<f64>().sqrt();
+                let rho_eff = tol.powf(1.0 / max_actual as f64);
+                let k_eff = rho_eff / rho_j;
+
+                let key = format!("h{}", stats.heights[max_concept]);
+                k_by_concept_type.entry(key.clone()).or_default().push(k_eff);
+
+                let n_pred_k = if k_eff * rho_j < 1.0 && k_eff * rho_j > 0.0 {
+                    (tol / dm0).ln() / (k_eff * rho_j).ln()
+                } else { f64::INFINITY };
+
+                all_predictions.push((n_pred_k, max_actual));
+
+                println!("  {:>12} {:>10} {:>4} {:>8} {:>10.6} {:>10.6} {:>10.3} {:>10.4} {:>10.1} {:>10.3}",
+                    rname, tname, max_concept, max_actual, rho_j, rho_eff, k_eff, dm0, n_pred_k,
+                    n_pred_k / max_actual as f64);
+            }
+        }
+    }
+
+    println!("\n  Phase 2: k-factor statistics by concept type (height)");
+    for (key, vals) in &k_by_concept_type {
+        if vals.is_empty() { continue; }
+        let mean: f64 = vals.iter().sum::<f64>() / vals.len() as f64;
+        let std: f64 = (vals.iter().map(|x| (x - mean).powi(2)).sum::<f64>() / vals.len() as f64).sqrt();
+        println!("  {:>8}: n={:>3}, k_mean={:.4}, k_std={:.4}, k_range=[{:.3}, {:.3}]",
+            key, vals.len(), mean, std, vals.iter().cloned().fold(f64::INFINITY, f64::min),
+            vals.iter().cloned().fold(f64::NEG_INFINITY, f64::max));
+    }
+
+    println!("\n  Phase 3: Prediction accuracy summary");
+    let mut errors: Vec<f64> = Vec::new();
+    for &(n_pred, n_actual) in &all_predictions {
+        if n_pred.is_finite() && n_pred > 0.0 && n_actual > 0 {
+            errors.push((n_pred - n_actual as f64).abs() / n_actual as f64);
+        }
+    }
+    if !errors.is_empty() {
+        let mean_err = errors.iter().sum::<f64>() / errors.len() as f64;
+        let max_err = errors.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
+        let within_10 = errors.iter().filter(|&&e| e < 0.10).count();
+        let within_20 = errors.iter().filter(|&&e| e < 0.20).count();
+        println!("  Cases: {}", errors.len());
+        println!("  Mean error: {:.1}%", mean_err * 100.0);
+        println!("  Max error: {:.1}%", max_err * 100.0);
+        println!("  Within 10%: {}/{} ({:.0}%)", within_10, errors.len(), 100.0 * within_10 as f64 / errors.len() as f64);
+        println!("  Within 20%: {}/{} ({:.0}%)", within_20, errors.len(), 100.0 * within_20 as f64 / errors.len() as f64);
+    }
+
+    println!("\n  Phase 4: Simple k=3 prediction (universal constant)");
+    let mut simple_errors: Vec<f64> = Vec::new();
+    for &(rname, b1, d1, eps) in &regimes {
+        let c = alpha1.max((b1 * d1).sqrt());
+        let rho_pred = c / eps;
+        if rho_pred >= 1.0 { continue; }
+
+        let k_universal = 3.0_f64;
+        let rho_j_max = rho_pred * k_universal;
+        let p_simple = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1).with_eps(eps);
+
+        for &(tname, ref lat) in &topologies {
+            let stats = pipeline::compute_lattice_stats(&lat);
+            let results = pipeline::run_topological_iteration(&lat, &stats, &p_simple);
+
+            let mut max_actual = 0_u64;
+            for opt in results.iter() {
+                if let Some(ref r) = opt {
+                    if r.n_iters as u64 > max_actual { max_actual = r.n_iters as u64; }
+                }
+            }
+
+            if rho_j_max < 1.0 && max_actual > 0 {
+                let n_simple = tol.ln() / rho_j_max.ln();
+                simple_errors.push((n_simple - max_actual as f64).abs() / max_actual as f64);
+            }
+        }
+    }
+
+    if !simple_errors.is_empty() {
+        let mean_err = simple_errors.iter().sum::<f64>() / simple_errors.len() as f64;
+        println!("  k=3 universal prediction mean error: {:.1}%", mean_err * 100.0);
+    }
+
+    println!("\n  Phase 5: k-factor dependence on regime parameters");
+    println!("  {:>12} {:>6} {:>6} {:>8} {:>10} {:>10} {:>10}",
+        "regime", "b1", "d1", "eps", "rho_J", "k_eff", "k_formula");
+    println!("  {}", "-".repeat(75));
+
+    let mut regime_data: Vec<(f64, f64, f64, f64, f64)> = Vec::new();
+    for &(rname, b1, d1, eps) in &regimes {
+        let c = alpha1.max((b1 * d1).sqrt());
+        let rho_pred = c / eps;
+        if rho_pred >= 1.0 { continue; }
+        let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1).with_eps(eps);
+        let lat = fca::build_chain_lattice(10);
+        let stats = pipeline::compute_lattice_stats(&lat);
+        let results = pipeline::run_topological_iteration(&lat, &stats, &p);
+
+        let mut max_actual = 0_u64;
+        let mut max_concept = 0;
+        for (i, opt) in results.iter().enumerate() {
+            if let Some(ref r) = opt {
+                if r.n_iters as u64 > max_actual {
+                    max_actual = r.n_iters as u64;
+                    max_concept = i;
+                }
+            }
+        }
+        if let Some(ref r_max) = results[max_concept] {
+            let rho_j = r_max.rho_spectral;
+            let rho_eff = tol.powf(1.0 / max_actual as f64);
+            let k = rho_eff / rho_j;
+            let k_formula = 2.0 + (1.0_f64 / rho_j).ln() * 0.65;
+            regime_data.push((b1, d1, eps, rho_j, k));
+            println!("  {:>12} {:>6.1} {:>6.1} {:>8.0} {:>10.6} {:>10.3} {:>10.3}",
+                rname, b1, d1, eps, rho_j, k, k_formula);
+        }
+    }
+
+    println!("\n  Phase 6: Regime-dependent formula validation");
+    println!("  Using k(rho_J) = 2.0 + 0.65 * ln(1/rho_J)");
+    let mut formula_errors: Vec<f64> = Vec::new();
+    for &(rname, b1, d1, eps) in &regimes {
+        let c = alpha1.max((b1 * d1).sqrt());
+        let rho_pred = c / eps;
+        if rho_pred >= 1.0 { continue; }
+        let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1).with_eps(eps);
+        let lat = fca::build_chain_lattice(10);
+        let stats = pipeline::compute_lattice_stats(&lat);
+        let results = pipeline::run_topological_iteration(&lat, &stats, &p);
+
+        let mut max_actual = 0_u64;
+        for opt in results.iter() {
+            if let Some(ref r) = opt {
+                if r.n_iters as u64 > max_actual { max_actual = r.n_iters as u64; }
+            }
+        }
+        if max_actual > 0 {
+            let rho_j_top = rho_pred;
+            let rho_j_root = rho_j_top * 0.88_f64;
+            let k_formula = 2.0 + 0.65 * (1.0_f64 / rho_j_root).ln();
+            let rho_eff_formula = k_formula * rho_j_root;
+            let n_formula = if rho_eff_formula < 1.0 && rho_eff_formula > 0.0 {
+                tol.ln() / rho_eff_formula.ln()
+            } else { f64::INFINITY };
+            let err = (n_formula - max_actual as f64).abs() / max_actual as f64;
+            formula_errors.push(err);
+            println!("  {:>12}: n_actual={}, n_formula={:.1}, err={:.1}%",
+                rname, max_actual, n_formula, err * 100.0);
+        }
+    }
+
+    if !formula_errors.is_empty() {
+        let mean_err = formula_errors.iter().sum::<f64>() / formula_errors.len() as f64;
+        println!("\n  Formula k(rho_J) = 2.0 + 0.65*ln(1/rho_J) mean error: {:.1}%", mean_err * 100.0);
+    }
+
+    println!("\n  === FINAL RESULT ===");
+    println!("  Complete iteration prediction pipeline:");
+    println!("  1. C = max(alpha1, sqrt(beta1*delta1))");
+    println!("  2. rho_top = C / eps  (top concept spectral radius)");
+    println!("  3. rho_root ≈ 0.88 * rho_top  (root concept spectral radius)");
+    println!("  4. k(rho) = 2.0 + 0.65 * ln(1/rho)  (nonlinear amplification factor)");
+    println!("  5. rho_eff = k * rho_root  (effective contraction rate)");
+    println!("  6. n = ln(tol) / ln(rho_eff)  (predicted iterations)");
+}
+
+pub fn run_root_top_rho_ratio() {
+    use crate::fca;
+    use crate::pipeline;
+
+    println!("\n{}", "=".repeat(72));
+    println!("  ROOT/TOP RHO RATIO ANALYSIS");
+    println!("{}", "=".repeat(72));
+
+    let alpha1 = 1.0_f64;
+
+    println!("\n  Phase 1: Ratio vs chain length (fixed params)");
+    let (b1, d1, eps) = (1.5_f64, 0.5_f64, 50.0_f64);
+    let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1).with_eps(eps);
+    let chain_lens: Vec<usize> = vec![3, 5, 8, 10, 15, 20, 30, 50];
+
+    println!("  {:>6} {:>10} {:>10} {:>10} {:>10} {:>10} {:>10}",
+        "chain", "rho_root", "rho_top", "ratio", "d*_root", "d*_top", "b*_root");
+    println!("  {}", "-".repeat(70));
+
+    for &n in &chain_lens {
+        let lat = fca::build_chain_lattice(n);
+        let stats = pipeline::compute_lattice_stats(&lat);
+        let results = pipeline::run_topological_iteration(&lat, &stats, &p);
+
+        let root_idx = 0;
+        let top_idx = n - 1;
+
+        if let (Some(ref r_root), Some(ref r_top)) = (&results[root_idx], &results[top_idx]) {
+            let rho_root = r_root.rho_spectral;
+            let rho_top = r_top.rho_spectral;
+            let ratio = rho_root / rho_top;
+            println!("  {:>6} {:>10.6} {:>10.6} {:>10.4} {:>10.4} {:>10.4} {:>10.4}",
+                n, rho_root, rho_top, ratio, r_root.m_star[0], r_top.m_star[0], r_root.m_star[1]);
+        }
+    }
+
+    println!("\n  Phase 2: Ratio vs beta1 (fixed delta1=0.5, eps=50)");
+    let beta1s: Vec<f64> = vec![0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0];
+
+    println!("  {:>6} {:>10} {:>10} {:>10} {:>10} {:>10} {:>10} {:>10}",
+        "b1", "rho_root", "rho_top", "ratio", "d*_root", "d*_top", "C", "C/eps");
+    println!("  {}", "-".repeat(80));
+
+    for &b1 in &beta1s {
+        let c = alpha1.max((b1 * 0.5_f64).sqrt());
+        let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(0.5).with_eps(50.0);
+        let lat = fca::build_chain_lattice(10);
+        let stats = pipeline::compute_lattice_stats(&lat);
+        let results = pipeline::run_topological_iteration(&lat, &stats, &p);
+
+        if let (Some(ref r_root), Some(ref r_top)) = (&results[0], &results[9]) {
+            let rho_root = r_root.rho_spectral;
+            let rho_top = r_top.rho_spectral;
+            let ratio = rho_root / rho_top;
+            println!("  {:>6.1} {:>10.6} {:>10.6} {:>10.4} {:>10.4} {:>10.4} {:>10.4} {:>10.6}",
+                b1, rho_root, rho_top, ratio, r_root.m_star[0], r_top.m_star[0], c, c / 50.0);
+        }
+    }
+
+    println!("\n  Phase 3: Ratio vs eps (fixed beta1=1.5, delta1=0.5)");
+    let epss: Vec<f64> = vec![10.0, 20.0, 50.0, 100.0, 200.0, 500.0, 1000.0, 5000.0];
+
+    println!("  {:>8} {:>10} {:>10} {:>10} {:>10} {:>10}",
+        "eps", "rho_root", "rho_top", "ratio", "d*_root", "d*_top");
+    println!("  {}", "-".repeat(60));
+
+    for &eps in &epss {
+        let p = DynamicsParams::uniform().with_beta1(1.5).with_delta1(0.5).with_eps(eps);
+        let lat = fca::build_chain_lattice(10);
+        let stats = pipeline::compute_lattice_stats(&lat);
+        let results = pipeline::run_topological_iteration(&lat, &stats, &p);
+
+        if let (Some(ref r_root), Some(ref r_top)) = (&results[0], &results[9]) {
+            let rho_root = r_root.rho_spectral;
+            let rho_top = r_top.rho_spectral;
+            let ratio = rho_root / rho_top;
+            println!("  {:>8.0} {:>10.6} {:>10.6} {:>10.4} {:>10.4} {:>10.4}",
+                eps, rho_root, rho_top, ratio, r_root.m_star[0], r_top.m_star[0]);
+        }
+    }
+
+    println!("\n  Phase 4: Full grid scan for ratio statistics");
+    let beta1s2: Vec<f64> = vec![0.5, 1.0, 1.5, 2.0, 3.0, 5.0];
+    let delta1s2: Vec<f64> = vec![0.2, 0.5, 1.0, 2.0, 3.0];
+    let epss2: Vec<f64> = vec![20.0, 50.0, 100.0, 200.0, 500.0];
+
+    let mut ratios: Vec<(f64, f64, f64, f64)> = Vec::new();
+
+    for &b1 in &beta1s2 {
+        for &d1 in &delta1s2 {
+            for &eps in &epss2 {
+                let c = alpha1.max((b1 * d1).sqrt());
+                let rho_pred = c / eps;
+                if rho_pred >= 1.0 { continue; }
+
+                let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1).with_eps(eps);
+                let lat = fca::build_chain_lattice(10);
+                let stats = pipeline::compute_lattice_stats(&lat);
+                let results = pipeline::run_topological_iteration(&lat, &stats, &p);
+
+                if let (Some(ref r_root), Some(ref r_top)) = (&results[0], &results[9]) {
+                    let rho_root = r_root.rho_spectral;
+                    let rho_top = r_top.rho_spectral;
+                    if rho_top > 0.0 {
+                        let ratio = rho_root / rho_top;
+                        ratios.push((b1, d1, eps, ratio));
+                    }
+                }
+            }
+        }
+    }
+
+    if !ratios.is_empty() {
+        let ratio_vals: Vec<f64> = ratios.iter().map(|&(_, _, _, r)| r).collect();
+        let mean: f64 = ratio_vals.iter().sum::<f64>() / ratio_vals.len() as f64;
+        let std_dev: f64 = (ratio_vals.iter().map(|r| (r - mean).powi(2)).sum::<f64>()
+            / ratio_vals.len() as f64).sqrt();
+        let min = ratio_vals.iter().cloned().fold(f64::INFINITY, f64::min);
+        let max = ratio_vals.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
+
+        println!("  N test cases: {}", ratios.len());
+        println!("  Ratio mean: {:.4}", mean);
+        println!("  Ratio std: {:.4}", std_dev);
+        println!("  Ratio range: [{:.4}, {:.4}]", min, max);
+        println!("  Coefficient of variation: {:.2}%", std_dev / mean * 100.0);
+
+        println!("\n  Phase 5: Ratio vs d*_root (analytical insight)");
+        println!("  {:>6} {:>6} {:>8} {:>10} {:>10} {:>10} {:>10}",
+            "b1", "d1", "eps", "ratio", "d*_root", "d*_top", "1-d*_root");
+        println!("  {}", "-".repeat(70));
+
+        for &(b1, d1, eps, ratio) in ratios.iter().take(20) {
+            let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1).with_eps(eps);
+            let lat = fca::build_chain_lattice(10);
+            let stats = pipeline::compute_lattice_stats(&lat);
+            let results = pipeline::run_topological_iteration(&lat, &stats, &p);
+
+            if let (Some(ref r_root), Some(ref r_top)) = (&results[0], &results[9]) {
+                println!("  {:>6.1} {:>6.1} {:>8.0} {:>10.4} {:>10.4} {:>10.4} {:>10.4}",
+                    b1, d1, eps, ratio, r_root.m_star[0], r_top.m_star[0], 1.0 - r_root.m_star[0]);
+            }
+        }
+    }
+
+    println!("\n  === ANALYSIS ===");
+    println!("  The ratio rho_root/rho_top measures the spectral radius gradient");
+    println!("  across the lattice hierarchy.");
+    println!("  If ratio ≈ const, the gradient is uniform → simple scaling.");
+    println!("  If ratio depends on (b1,d1,eps), need regime-dependent formula.");
+}
+
+pub fn run_final_formula_validation() {
+    use crate::fca;
+    use crate::pipeline;
+
+    println!("\n{}", "=".repeat(72));
+    println!("  FINAL FORMULA VALIDATION: n = 27.6 / ln(eps/(3*C))");
+    println!("{}", "=".repeat(72));
+
+    let alpha1 = 1.0_f64;
+
+    let beta1s: Vec<f64> = vec![0.5, 0.8, 1.0, 1.2, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 7.0, 10.0];
+    let delta1s: Vec<f64> = vec![0.2, 0.3, 0.5, 0.8, 1.0, 1.5, 2.0, 3.0, 5.0];
+    let epss: Vec<f64> = vec![10.0, 20.0, 30.0, 50.0, 75.0, 100.0, 150.0, 200.0, 300.0, 500.0, 1000.0, 2000.0, 5000.0];
+
+    let topologies: Vec<(&str, fca::FcaLattice)> = vec![
+        ("chain-5",  fca::build_chain_lattice(5)),
+        ("chain-10", fca::build_chain_lattice(10)),
+        ("chain-20", fca::build_chain_lattice(20)),
+        ("diamond",  fca::build_diamond_lattice()),
+        ("B3",       fca::build_b3_lattice()),
+        ("grid-3x3", fca::build_grid_lattice(3, 3)),
+        ("grid-2x4", fca::build_grid_lattice(2, 4)),
+    ];
+
+    println!("\n  Phase 1: Large-scale grid validation (chain-10)");
+    println!("  {:>6} {:>6} {:>8} {:>6} {:>8} {:>8} {:>8} {:>8} {:>8} {:>8}",
+        "b1", "d1", "eps", "C", "n_pred", "n_act", "err%", "rho_pred", "rho_act", "status");
+    println!("  {}", "-".repeat(85));
+
+    let mut results_phase1: Vec<(f64, f64, f64, f64, f64, u64, f64)> = Vec::new();
+    let mut total_count = 0_u64;
+    let mut valid_count = 0_u64;
+    let mut excellent_count = 0_u64;
+    let mut good_count = 0_u64;
+    let mut fair_count = 0_u64;
+    let mut poor_count = 0_u64;
+
+    for &b1 in &beta1s {
+        for &d1 in &delta1s {
+            for &eps in &epss {
+                let c = alpha1.max((b1 * d1).sqrt());
+                let rho_pred = c / eps;
+                if rho_pred >= 1.0 { continue; }
+
+                let n_pred = 27.6_f64 / (eps / (3.0 * c)).ln();
+                if n_pred <= 0.0 || !n_pred.is_finite() { continue; }
+
+                let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1).with_eps(eps);
+                let lat = fca::build_chain_lattice(10);
+                let stats = pipeline::compute_lattice_stats(&lat);
+                let results = pipeline::run_topological_iteration(&lat, &stats, &p);
+
+                let mut max_actual = 0_u64;
+                let mut all_converged = true;
+                let mut max_rho = 0.0_f64;
+                for opt in results.iter() {
+                    if let Some(ref r) = opt {
+                        if !r.converged { all_converged = false; }
+                        if r.n_iters as u64 > max_actual { max_actual = r.n_iters as u64; }
+                        if r.rho_spectral > max_rho { max_rho = r.rho_spectral; }
+                    } else {
+                        all_converged = false;
+                    }
+                }
+
+                total_count += 1;
+                if !all_converged || max_actual == 0 { continue; }
+                valid_count += 1;
+
+                let err = (n_pred - max_actual as f64).abs() / max_actual as f64;
+                results_phase1.push((b1, d1, eps, c, n_pred, max_actual as f64, err));
+
+                let status = if err < 0.05 { excellent_count += 1; "EXCELLENT" }
+                    else if err < 0.15 { good_count += 1; "GOOD" }
+                    else if err < 0.30 { fair_count += 1; "FAIR" }
+                    else { poor_count += 1; "POOR" };
+
+                if err > 0.20 || b1 == 1.5 && d1 == 0.5 {
+                    println!("  {:>6.1} {:>6.1} {:>8.0} {:>6.2} {:>8.1} {:>8} {:>8.1} {:>8.5} {:>8.5} {:>8}",
+                        b1, d1, eps, c, n_pred, max_actual, err * 100.0, rho_pred, max_rho, status);
+                }
+            }
+        }
+    }
+
+    println!("\n  === PHASE 1 SUMMARY ===");
+    println!("  Total cases: {}", total_count);
+    println!("  Valid (converged): {} ({:.0}%)", valid_count, 100.0 * valid_count as f64 / total_count as f64);
+    println!("  EXCELLENT (<5%):  {} ({:.0}%)", excellent_count, 100.0 * excellent_count as f64 / valid_count as f64);
+    println!("  GOOD (<15%):      {} ({:.0}%)", good_count, 100.0 * good_count as f64 / valid_count as f64);
+    println!("  FAIR (<30%):      {} ({:.0}%)", fair_count, 100.0 * fair_count as f64 / valid_count as f64);
+    println!("  POOR (>=30%):     {} ({:.0}%)", poor_count, 100.0 * poor_count as f64 / valid_count as f64);
+
+    if !results_phase1.is_empty() {
+        let errors: Vec<f64> = results_phase1.iter().map(|&(_, _, _, _, _, _, e)| e).collect();
+        let mean_err = errors.iter().sum::<f64>() / errors.len() as f64;
+        let median = {
+            let mut sorted = errors.clone();
+            sorted.sort_by(|a, b| a.partial_cmp(b).unwrap());
+            sorted[sorted.len() / 2]
+        };
+        let max_err = errors.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
+        let within_10 = errors.iter().filter(|&&e| e < 0.10).count();
+        let within_20 = errors.iter().filter(|&&e| e < 0.20).count();
+        println!("  Mean error: {:.1}%", mean_err * 100.0);
+        println!("  Median error: {:.1}%", median * 100.0);
+        println!("  Max error: {:.1}%", max_err * 100.0);
+        println!("  Within 10%: {}/{} ({:.0}%)", within_10, errors.len(), 100.0 * within_10 as f64 / errors.len() as f64);
+        println!("  Within 20%: {}/{} ({:.0}%)", within_20, errors.len(), 100.0 * within_20 as f64 / errors.len() as f64);
+    }
+
+    println!("\n  Phase 2: Cross-topology validation (v2.64_opt regime)");
+    let (b1_opt, d1_opt, eps_opt) = (1.5_f64, 0.5_f64, 50.0_f64);
+    let c_opt = alpha1.max((b1_opt * d1_opt).sqrt());
+    let n_pred_opt = 27.6_f64 / (eps_opt / (3.0 * c_opt)).ln();
+    let p_opt = DynamicsParams::uniform().with_beta1(b1_opt).with_delta1(d1_opt).with_eps(eps_opt);
+
+    println!("  n_pred = {:.1}", n_pred_opt);
+    println!("  {:>12} {:>8} {:>8} {:>8} {:>8} {:>10}",
+        "topology", "n_act", "err%", "max_rho", "converged", "status");
+    println!("  {}", "-".repeat(60));
+
+    for &(tname, ref lat) in &topologies {
+        let stats = pipeline::compute_lattice_stats(&lat);
+        let results = pipeline::run_topological_iteration(&lat, &stats, &p_opt);
+
+        let mut max_actual = 0_u64;
+        let mut all_conv = true;
+        let mut max_rho = 0.0_f64;
+        let n_concepts = results.len();
+        let n_ok = results.iter().filter(|r| r.is_some()).count();
+        for opt in results.iter() {
+            if let Some(ref r) = opt {
+                if !r.converged { all_conv = false; }
+                if r.n_iters as u64 > max_actual { max_actual = r.n_iters as u64; }
+                if r.rho_spectral > max_rho { max_rho = r.rho_spectral; }
+            } else { all_conv = false; }
+        }
+
+        let err = (n_pred_opt - max_actual as f64).abs() / max_actual as f64;
+        let status = if err < 0.05 { "EXCELLENT" } else if err < 0.15 { "GOOD" } else if err < 0.30 { "FAIR" } else { "POOR" };
+        println!("  {:>12} {:>8} {:>8.1} {:>8.5} {:>8}/{} {:>10}",
+            tname, max_actual, err * 100.0, max_rho, n_ok, n_concepts, status);
+    }
+
+    println!("\n  Phase 3: Tolerance sensitivity (different tol values)");
+    println!("  Testing how formula accuracy depends on convergence tolerance.");
+    println!("  Formula n = A / ln(eps/(3*C)) where A = -ln(tol)");
+    println!("  {:>8} {:>8} {:>8} {:>8} {:>8} {:>10}",
+        "tol", "A", "n_pred", "n_act", "err%", "status");
+    println!("  {}", "-".repeat(55));
+
+    let tols: Vec<f64> = vec![1e-6, 1e-8, 1e-10, 1e-12, 1e-14, 1e-16];
+    let p_tol = DynamicsParams::uniform().with_beta1(1.5).with_delta1(0.5).with_eps(50.0);
+
+    for &tol in &tols {
+        let a = -tol.ln();
+        let n_pred = a / (50.0 / (3.0 * 1.0)).ln();
+        let lat = fca::build_chain_lattice(10);
+        let stats = pipeline::compute_lattice_stats(&lat);
+        let results = pipeline::run_topological_iteration(&lat, &stats, &p_tol);
+
+        let mut max_actual = 0_u64;
+        for opt in results.iter() {
+            if let Some(ref r) = opt {
+                if r.n_iters as u64 > max_actual { max_actual = r.n_iters as u64; }
+            }
+        }
+
+        let err = if max_actual > 0 { (n_pred - max_actual as f64).abs() / max_actual as f64 } else { 0.0 };
+        let status = if err < 0.05 { "EXCELLENT" } else if err < 0.15 { "GOOD" } else { "FAIR" };
+        println!("  {:>8.0e} {:>8.1} {:>8.1} {:>8} {:>8.1} {:>10}",
+            tol, a, n_pred, max_actual, err * 100.0, status);
+    }
+
+    println!("\n  Phase 4: Bias analysis (systematic over/under-prediction)");
+    let mut signed_errors: Vec<f64> = Vec::new();
+    for &(b1, d1, eps, _, n_pred, n_act, _) in &results_phase1 {
+        if n_act > 0.0 {
+            signed_errors.push((n_pred - n_act) / n_act);
+        }
+    }
+    if !signed_errors.is_empty() {
+        let mean_signed = signed_errors.iter().sum::<f64>() / signed_errors.len() as f64;
+        let over = signed_errors.iter().filter(|&&e| e > 0.05).count();
+        let under = signed_errors.iter().filter(|&&e| e < -0.05).count();
+        let accurate = signed_errors.iter().filter(|&&e| e.abs() <= 0.05).count();
+        println!("  Mean signed error: {:+.1}% (positive = over-prediction)", mean_signed * 100.0);
+        println!("  Over-predicted (>+5%): {} ({:.0}%)", over, 100.0 * over as f64 / signed_errors.len() as f64);
+        println!("  Under-predicted (<-5%): {} ({:.0}%)", under, 100.0 * under as f64 / signed_errors.len() as f64);
+        println!("  Accurate (within 5%): {} ({:.0}%)", accurate, 100.0 * accurate as f64 / signed_errors.len() as f64);
+    }
+
+    println!("\n  === FINAL ASSESSMENT ===");
+    println!("  Formula: n ≈ 27.6 / ln(ε / (3·max(α₁, √(β₁δ₁))))");
+    println!("  Valid when: ε > 3·C (i.e., ρ_eff < 1)");
+    println!("  The '27.6' constant encodes tol=1e-12 and k≈3");
+    println!("  For general tol: n = -ln(tol) / ln(3C/ε)");
+}
