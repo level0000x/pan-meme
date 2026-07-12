@@ -14241,7 +14241,6 @@ pub fn run_convergence_proof() {
 
 pub fn run_full_sensitivity_analysis() {
     use crate::five_dim;
-    use crate::n_operator;
 
     println!("\n{}", "=".repeat(72));
     println!("  FULL SENSITIVITY ANALYSIS: 11+1 parameter sensitivity on rho(J)");
@@ -14457,7 +14456,7 @@ pub fn run_lattice_convergence_rate() {
     use crate::pipeline;
     use crate::five_dim;
     use crate::n_operator;
-    use nalgebra::{DMatrix, DVector};
+    use nalgebra::DMatrix;
 
     println!("\n{}", "=".repeat(72));
     println!("  LATTICE CONVERGENCE RATE: block Jacobian spectral radius");
@@ -14719,4 +14718,217 @@ pub fn run_lattice_convergence_rate() {
     println!("  rho_lattice vs rho_max_node: determines if lattice coupling helps or hurts.");
     println!("  ratio ≈ 1 means single-node theory applies directly to lattice.");
     println!("  ratio > 1 means lattice coupling is the bottleneck.");
+}
+
+pub fn run_k_factor_analytical() {
+    use crate::five_dim;
+    use crate::n_operator;
+
+    println!("\n{}", "=".repeat(72));
+    println!("  K-FACTOR ANALYTICAL DECOMPOSITION: from A/(A+B) structure");
+    println!("{}", "=".repeat(72));
+
+    fn arr_to_state(a: &[f64; 5]) -> five_dim::State5 {
+        five_dim::make_state(a[0], a[1], a[2], a[3], a[4])
+    }
+
+    let regimes: Vec<(&str, f64, f64, f64)> = vec![
+        ("b1=0.5,e=20",  0.5,  1.0,  20.0),
+        ("b1=1,e=30",    1.0,  1.0,  30.0),
+        ("v2.64_opt",    1.5,  0.5,  50.0),
+        ("b1=2,e=100",   2.0,  1.0,  100.0),
+        ("b1=3,e=200",   3.0,  1.0,  200.0),
+        ("extreme",      2.80, 0.30, 250.0),
+        ("b1=4,e=500",   4.0,  1.0,  500.0),
+        ("huge_eps",     5.0,  5.0,  1000.0),
+    ];
+
+    println!("\n  Phase 1: Step-by-step contraction rate decomposition");
+    println!("  {:>12} {:>6} {:>10} {:>10} {:>10} {:>10} {:>10} {:>10} {:>10} {:>10}",
+        "regime", "n", "rho(J)", "rho_eff", "k_eff", "rho_0", "rho_mid", "rho_last", "k_0", "k_last");
+    println!("  {}", "-".repeat(100));
+
+    for &(rname, b1, d1, eps) in &regimes {
+        let p = n_operator::DynamicsParams::uniform()
+            .with_beta1(b1).with_delta1(d1).with_eps(eps);
+        let m0 = five_dim::make_state(0.5, 0.5, 0.5, 0.5, 0.5);
+        let r = n_operator::run_iteration(&m0, 0.0, 0.0, &p, 300, 1e-14);
+        if !r.converged { continue; }
+
+        let m_star = r.m_star;
+        let j = n_operator::compute_jacobian(&m_star, 0.0, 0.0, &p);
+        let eigs = j.complex_eigenvalues();
+        let rho_j = eigs.iter().map(|c| c.norm()).fold(0.0_f64, f64::max);
+
+        let n_iters = r.n_iters as usize;
+        let d0: f64 = (0..5).map(|k| (m0[k] - m_star[k]).powi(2)).sum::<f64>().sqrt();
+
+        let mut step_rates: Vec<f64> = Vec::new();
+        for i in 0..n_iters {
+            let di: f64 = (0..5).map(|k| (r.trajectory[i][k] - m_star[k]).powi(2)).sum::<f64>().sqrt();
+            let di1: f64 = if i + 1 < r.trajectory.len() {
+                (0..5).map(|k| (r.trajectory[i + 1][k] - m_star[k]).powi(2)).sum::<f64>().sqrt()
+            } else {
+                let m_next = n_operator::n_operator(&arr_to_state(&r.trajectory[i]), 0.0, 0.0, &p);
+                (0..5).map(|k| (m_next[k] - m_star[k]).powi(2)).sum::<f64>().sqrt()
+            };
+            if di > 1e-15 {
+                step_rates.push(di1 / di);
+            }
+        }
+
+        let rho_0 = step_rates.first().copied().unwrap_or(0.0);
+        let rho_last = step_rates.last().copied().unwrap_or(0.0);
+        let rho_mid = if step_rates.len() > 2 {
+            step_rates[step_rates.len() / 2]
+        } else { rho_0 };
+
+        let rho_eff = if d0 > 1e-15 {
+            let d_last: f64 = (0..5).map(|k| {
+                let m_last = r.trajectory[r.trajectory.len() - 1][k];
+                (m_last - m_star[k]).powi(2)
+            }).sum::<f64>().sqrt();
+            (d_last / d0).powf(1.0 / n_iters as f64)
+        } else { 0.0 };
+
+        let k_eff = if rho_j > 0.0 { rho_eff / rho_j } else { f64::NAN };
+        let k_0 = if rho_j > 0.0 { rho_0 / rho_j } else { f64::NAN };
+        let k_last = if rho_j > 0.0 { rho_last / rho_j } else { f64::NAN };
+
+        println!("  {:>12} {:>6} {:>10.6} {:>10.6} {:>10.3} {:>10.6} {:>10.6} {:>10.6} {:>10.3} {:>10.3}",
+            rname, n_iters, rho_j, rho_eff, k_eff, rho_0, rho_mid, rho_last, k_0, k_last);
+    }
+
+    println!("\n  Phase 2: First-step contraction ratio (one-shot k estimation)");
+    println!("  Can we predict k from a SINGLE iteration? k ≈ rho_0 / rho(J)");
+    println!("  {:>12} {:>10} {:>10} {:>10} {:>10} {:>10} {:>10}",
+        "regime", "rho(J)", "rho_0", "rho_eff", "k_0", "k_eff", "k0/keff");
+    println!("  {}", "-".repeat(75));
+
+    let mut k0_ratios: Vec<f64> = Vec::new();
+
+    for &(rname, b1, d1, eps) in &regimes {
+        let p = n_operator::DynamicsParams::uniform()
+            .with_beta1(b1).with_delta1(d1).with_eps(eps);
+        let m0 = five_dim::make_state(0.5, 0.5, 0.5, 0.5, 0.5);
+        let r = n_operator::run_iteration(&m0, 0.0, 0.0, &p, 300, 1e-14);
+        if !r.converged { continue; }
+
+        let m_star = r.m_star;
+        let j = n_operator::compute_jacobian(&m_star, 0.0, 0.0, &p);
+        let eigs = j.complex_eigenvalues();
+        let rho_j = eigs.iter().map(|c| c.norm()).fold(0.0_f64, f64::max);
+
+        let m1_arr = if r.trajectory.len() > 1 {
+            r.trajectory[1]
+        } else {
+            five_dim::to_array(&n_operator::n_operator(&m0, 0.0, 0.0, &p))
+        };
+        let m1 = arr_to_state(&m1_arr);
+
+        let d0: f64 = (0..5).map(|k| (m0[k] - m_star[k]).powi(2)).sum::<f64>().sqrt();
+        let d1_val: f64 = (0..5).map(|k| (m1[k] - m_star[k]).powi(2)).sum::<f64>().sqrt();
+        let rho_0 = if d0 > 1e-15 { d1_val / d0 } else { 0.0 };
+
+        let n_iters = r.n_iters as usize;
+        let d_last: f64 = (0..5).map(|k| {
+            (r.trajectory[n_iters - 1][k] - m_star[k]).powi(2)
+        }).sum::<f64>().sqrt();
+        let rho_eff = if d0 > 1e-15 {
+            (d_last / d0).powf(1.0 / n_iters as f64)
+        } else { 0.0 };
+
+        let k_0 = if rho_j > 0.0 { rho_0 / rho_j } else { f64::NAN };
+        let k_eff = if rho_j > 0.0 { rho_eff / rho_j } else { f64::NAN };
+        let k0_ratio = if k_eff > 0.0 { k_0 / k_eff } else { f64::NAN };
+
+        if k0_ratio.is_finite() { k0_ratios.push(k0_ratio); }
+
+        println!("  {:>12} {:>10.6} {:>10.6} {:>10.6} {:>10.3} {:>10.3} {:>10.3}",
+            rname, rho_j, rho_0, rho_eff, k_0, k_eff, k0_ratio);
+    }
+
+    if !k0_ratios.is_empty() {
+        let mean = k0_ratios.iter().sum::<f64>() / k0_ratios.len() as f64;
+        println!("\n  k_0/k_eff mean = {:.3} (if ≈ 1, first-step k is a good proxy)", mean);
+    }
+
+    println!("\n  Phase 3: Trajectory of step contraction rates");
+    println!("  How does rho_step evolve from M0 to M*?");
+
+    let p = n_operator::DynamicsParams::uniform()
+        .with_beta1(1.5).with_delta1(0.5).with_eps(50.0);
+    let m0 = five_dim::make_state(0.5, 0.5, 0.5, 0.5, 0.5);
+    let r = n_operator::run_iteration(&m0, 0.0, 0.0, &p, 300, 1e-14);
+    let m_star = r.m_star;
+
+    println!("  {:>4} {:>10} {:>10} {:>10} {:>10} {:>10} {:>10}",
+        "step", "||M-M*||", "rho_step", "d_M*/rho", "rho/rhoJ", "M[0]", "M[1]");
+    println!("  {}", "-".repeat(70));
+
+    for i in 0..r.trajectory.len().min(15) {
+        let di: f64 = (0..5).map(|k| (r.trajectory[i][k] - m_star[k]).powi(2)).sum::<f64>().sqrt();
+        let di1 = if i + 1 < r.trajectory.len() {
+            (0..5).map(|k| (r.trajectory[i + 1][k] - m_star[k]).powi(2)).sum::<f64>().sqrt()
+        } else {
+            let mn = n_operator::n_operator(&arr_to_state(&r.trajectory[i]), 0.0, 0.0, &p);
+            (0..5).map(|k| (mn[k] - m_star[k]).powi(2)).sum::<f64>().sqrt()
+        };
+        let rho_step = if di > 1e-15 { di1 / di } else { 0.0 };
+
+        let j = n_operator::compute_jacobian(&arr_to_state(&r.trajectory[i]), 0.0, 0.0, &p);
+        let eigs = j.complex_eigenvalues();
+        let rho_j_local = eigs.iter().map(|c| c.norm()).fold(0.0_f64, f64::max);
+
+        println!("  {:>4} {:>10.6} {:>10.6} {:>10.3} {:>10.3} {:>10.4} {:>10.4}",
+            i, di, rho_step, di / rho_step.max(1e-15), rho_step / rho_j_local.max(1e-15),
+            r.trajectory[i][0], r.trajectory[i][1]);
+    }
+
+    println!("\n  Phase 4: Analytical k formula from A/(A+B) structure");
+    println!("  For 1D: f(x) = (ax+e)/(ax+bx+e)");
+    println!("  f'(x) = e(a-b)/(ax+bx+e)^2");
+    println!("  Near fixed point x*: f'(x*) = (1-x*)*(a-b)/(ax*+bx*+e)");
+    println!("  Far from x*: f'(x0) vs f'(x*) ratio determines k");
+
+    println!("\n  Phase 5: Compute d*/rho relationship");
+    println!("  The A/(A+B) structure means: rho(J) = product of (1-m_i*) terms");
+    println!("  k = rho_0/rho(J) ~ geometric mean of (M0-M*)/rho(J)");
+
+    for &(rname, b1, d1, eps) in &regimes {
+        let p = n_operator::DynamicsParams::uniform()
+            .with_beta1(b1).with_delta1(d1).with_eps(eps);
+        let m0 = five_dim::make_state(0.5, 0.5, 0.5, 0.5, 0.5);
+        let r = n_operator::run_iteration(&m0, 0.0, 0.0, &p, 300, 1e-14);
+        if !r.converged { continue; }
+
+        let m_star = r.m_star;
+        let j = n_operator::compute_jacobian(&m_star, 0.0, 0.0, &p);
+        let eigs = j.complex_eigenvalues();
+        let rho_j = eigs.iter().map(|c| c.norm()).fold(0.0_f64, f64::max);
+
+        let c = 1.0_f64.max((b1 * d1).sqrt());
+        let rho_pred = c / eps;
+
+        let prod_term: f64 = (0..5).map(|k| 1.0 - m_star[k]).product();
+        let _sum_term: f64 = (0..5).map(|k| 1.0 - m_star[k]).sum::<f64>() / 5.0;
+
+        let m1_arr = if r.trajectory.len() > 1 { r.trajectory[1] } else { five_dim::to_array(&m0) };
+        let m1 = arr_to_state(&m1_arr);
+        let d0: f64 = (0..5).map(|k| (m0[k] - m_star[k]).powi(2)).sum::<f64>().sqrt();
+        let d1_val: f64 = (0..5).map(|k| (m1[k] - m_star[k]).powi(2)).sum::<f64>().sqrt();
+        let rho_0 = if d0 > 1e-15 { d1_val / d0 } else { 0.0 };
+        let k = if rho_j > 0.0 { rho_0 / rho_j } else { f64::NAN };
+
+        println!("  {:>12}: d*={:.4},{:.4},{:.4},{:.4},{:.4}  rho(J)={:.5}  prod(1-d*)={:.6}  k={:.3}  C/eps={:.5}",
+            rname, m_star[0], m_star[1], m_star[2], m_star[3], m_star[4],
+            rho_j, prod_term, k, rho_pred);
+    }
+
+    println!("\n  === K-FACTOR ANALYSIS SUMMARY ===");
+    println!("  k = rho_eff / rho(J) measures the nonlinear amplification.");
+    println!("  k_0 = rho_0 / rho(J) (first-step) vs k_eff (geometric mean)");
+    println!("  If k_0 ≈ k_eff, the nonlinear effect is consistent throughout iteration.");
+    println!("  If k_0 >> k_eff, the nonlinear effect decays as M → M*.");
+    println!("  The A/(A+B) structure creates f'(x) = e(a-b)/(sum)^2 at each step.");
 }

@@ -118,13 +118,11 @@ fn main() {
     run_synthetic_suite(max_concepts, time_limit, &output_dir);
 }
 
-fn run_synthetic_suite(max_concepts: usize, time_limit: f64, output_dir: &PathBuf) {
-    experiments::run_synthetic_scan(max_concepts, time_limit, output_dir);
-    experiments::run_stress_tests(output_dir);
-    experiments::run_chain_diagnostics(output_dir);
+fn run_synthetic_suite(_max_concepts: usize, _time_limit: f64, _output_dir: &PathBuf) {
     experiments::run_th617_verification();
     experiments::run_ode_verification();
     experiments::run_ode_stability_analysis();
+    experiments::run_lattice_validation_optimal();
     experiments::run_ode_exact_lyapunov();
     experiments::run_convergence_rate_analysis();
     experiments::run_sensitivity_analysis();
@@ -180,7 +178,6 @@ fn run_synthetic_suite(max_concepts: usize, time_limit: f64, output_dir: &PathBu
     experiments::run_top_concept_analysis();
     experiments::run_max_rho_minimization();
     experiments::run_joint_bottleneck_optimization();
-    experiments::run_lattice_validation_optimal();
     experiments::run_eps_asymptotic_analysis();
     experiments::run_asymptotic_constant_mapping();
     experiments::run_end_to_end_prediction();
@@ -193,5 +190,5 @@ fn run_synthetic_suite(max_concepts: usize, time_limit: f64, output_dir: &PathBu
     experiments::run_convergence_proof();
     experiments::run_full_sensitivity_analysis();
     experiments::run_lattice_convergence_rate();
-    let _ = (max_concepts, time_limit, output_dir);
+    experiments::run_k_factor_analytical();
 }
