@@ -16872,3 +16872,270 @@ pub fn run_eigendecomposition_dynamics() {
     println!("  4. Effective ρ vs spectral ρ(J) quantified");
     println!("  5. Eigenmode energy evolution tracked");
 }
+
+fn run_iso_concept(b1: f64, d1: f64, eps: f64, m0_arr: [f64; 5]) -> n_operator::IterResult {
+    let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1).with_eps(eps);
+    let m0 = five_dim::make_state(m0_arr[0], m0_arr[1], m0_arr[2], m0_arr[3], m0_arr[4]);
+    n_operator::run_iteration(&m0, 0.0, 0.0, &p, 5000, 1e-12)
+}
+
+fn n_pred_from_rho(d0: f64, rho: f64, tol: f64) -> f64 {
+    if rho > 1e-15 && rho < 1.0 {
+        (d0 / tol).ln() / (1.0 / rho).ln()
+    } else { 0.0 }
+}
+
+pub fn run_lattice_coupling_model() {
+    println!("\n=== v2.84 LATTICE COUPLING MODEL ===");
+
+    let p = DynamicsParams::uniform();
+    let b1 = p.beta1;
+    let d1 = p.delta1;
+    let eps = p.eps;
+
+    // ── Phase 1: Chain lattice cascade analysis ──
+    println!("\n--- Phase 1: Chain lattice cascade ---");
+    for chain_len in &[2, 3, 4, 5, 7, 10] {
+        let lat = fca::build_chain_lattice(*chain_len);
+        let stats = pipeline::compute_lattice_stats(&lat);
+        let results = pipeline::run_topological_iteration(&lat, &stats, &p);
+
+        let mut total_ratio = 0.0_f64;
+        let mut count = 0usize;
+        let mut topo_data: Vec<(usize, f64, f64, f64, f64, f64)> = Vec::new();
+
+        for ci in 0..lat.concepts.len() {
+            if let Some(Some(ref res)) = results.get(ci) {
+                if !res.converged { continue; }
+                let rho = res.rho_spectral;
+                let m_star_arr = five_dim::to_array(&res.m_star);
+                let m0 = pipeline::init_state(ci, &lat, &stats);
+                let m0_arr = five_dim::to_array(&m0);
+                let d0: f64 = (0..5).map(|k| (m0_arr[k] - m_star_arr[k]).powi(2)).sum::<f64>().sqrt();
+                let n_actual = res.n_iters as f64;
+                let n_pred = n_pred_from_rho(d0, rho, 1e-12);
+                let ratio = if n_pred > 1.0 { n_actual / n_pred } else { 0.0 };
+
+                // Isolated concept comparison
+                let iso = run_iso_concept(b1, d1, eps, m0_arr);
+                let iso_n = iso.n_iters as f64;
+                let lattice_overhead = if iso_n > 1.0 { n_actual / iso_n } else { 0.0 };
+
+                topo_data.push((ci, rho, d0, n_actual, ratio, lattice_overhead));
+                total_ratio += ratio;
+                count += 1;
+            }
+        }
+
+        let mean_ratio = if count > 0 { total_ratio / count as f64 } else { 0.0 };
+        let mean_overhead: f64 = topo_data.iter().map(|d| d.5).sum::<f64>() / count.max(1) as f64;
+
+        println!("  chain({}): {} concepts, mean_ratio={:.4}, mean_overhead={:.4}",
+            chain_len, count, mean_ratio, mean_overhead);
+        for &(ci, rho, d0, n, ratio, overhead) in &topo_data {
+            println!("    [{}]: ρ={:.4}, d₀={:.4}, n={}, ratio={:.4}, overhead={:.4}",
+                ci, rho, d0, n as usize, ratio, overhead);
+        }
+    }
+
+    // ── Phase 2: Multiple topologies ──
+    println!("\n--- Phase 2: Topology comparison ---");
+    let topologies: Vec<(&str, fca::FcaLattice)> = vec![
+        ("chain(3)", fca::build_chain_lattice(3)),
+        ("chain(5)", fca::build_chain_lattice(5)),
+        ("diamond", fca::build_diamond_lattice()),
+        ("M3", fca::build_m3_lattice()),
+        ("B3", fca::build_b3_lattice()),
+        ("grid(2,2)", fca::build_grid_lattice(2, 2)),
+        ("grid(3,2)", fca::build_grid_lattice(3, 2)),
+        ("antichain(4)", fca::build_antichain_lattice(4)),
+    ];
+
+    println!("  {:<15} {:>5} {:>8} {:>8} {:>8} {:>10}", "topo", "N", "mean_r", "std_r", "mean_ov", "max_ov");
+    for (name, ref lat) in &topologies {
+        let stats = pipeline::compute_lattice_stats(lat);
+        let results = pipeline::run_topological_iteration(lat, &stats, &p);
+
+        let mut ratios: Vec<f64> = Vec::new();
+        let mut overheads: Vec<f64> = Vec::new();
+
+        for ci in 0..lat.concepts.len() {
+            if let Some(Some(ref res)) = results.get(ci) {
+                if !res.converged { continue; }
+                let rho = res.rho_spectral;
+                let m_star_arr = five_dim::to_array(&res.m_star);
+                let m0 = pipeline::init_state(ci, lat, &stats);
+                let m0_arr = five_dim::to_array(&m0);
+                let d0: f64 = (0..5).map(|k| (m0_arr[k] - m_star_arr[k]).powi(2)).sum::<f64>().sqrt();
+                let n_actual = res.n_iters as f64;
+                let n_pred = n_pred_from_rho(d0, rho, 1e-12);
+                if n_pred > 1.0 {
+                    ratios.push(n_actual / n_pred);
+                }
+                let iso = run_iso_concept(b1, d1, eps, m0_arr);
+                if iso.n_iters > 1 {
+                    overheads.push(n_actual / iso.n_iters as f64);
+                }
+            }
+        }
+
+        let mr = pipeline::mean(&ratios);
+        let sr = pipeline::std_dev(&ratios);
+        let mo = pipeline::mean(&overheads);
+        let max_ov = overheads.iter().cloned().fold(0.0_f64, f64::max);
+        println!("  {:<15} {:>5} {:>8.4} {:>8.4} {:>8.4} {:>10.4}", name, ratios.len(), mr, sr, mo, max_ov);
+    }
+
+    // ── Phase 3: Per-concept coupling perturbation ──
+    println!("\n--- Phase 3: Coupling perturbation analysis ---");
+    println!("  How does b_up/rho_up change the Jacobian and ρ(J)?");
+
+    let b_up_vals: Vec<f64> = vec![0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9];
+    let rho_up_vals: Vec<f64> = vec![0.0, 0.1, 0.2, 0.3, 0.4, 0.5];
+
+    println!("  {:>6} {:>6} {:>8} {:>8} {:>8} {:>6}", "b_up", "ρ_up", "|λ₁|", "d*", "b*", "n");
+    for &b_up in &[0.0, 0.2, 0.5, 0.8] {
+        for &rho_up in &[0.0, 0.1, 0.3, 0.5] {
+            let m0 = five_dim::make_state(0.5, 0.5, 0.5, 0.5, 0.5);
+            let res = n_operator::run_iteration(&m0, b_up, rho_up, &p, 5000, 1e-12);
+            if res.converged {
+                let j = jac_from_arr(&res.jacobian);
+                let eigs = sorted_eigs(&j);
+                let rho = eigs[0].norm();
+                let m_star_arr = five_dim::to_array(&res.m_star);
+                println!("  {:>6.1} {:>6.1} {:>8.5} {:>8.5} {:>8.5} {:>6}",
+                    b_up, rho_up, rho, m_star_arr[0], m_star_arr[1], res.n_iters);
+            }
+        }
+    }
+
+    // ── Phase 4: b_up gradient effect on convergence ──
+    println!("\n--- Phase 4: b_up gradient on convergence ---");
+    println!("  Scanning b_up ∈ [0, 0.9], rho_up=0:");
+
+    let mut bup_data: Vec<(f64, f64, f64, f64, f64)> = Vec::new();
+    for i in 0..19 {
+        let b_up = i as f64 * 0.05;
+        let m0 = five_dim::make_state(0.5, 0.5, 0.5, 0.5, 0.5);
+        let res = n_operator::run_iteration(&m0, b_up, 0.0, &p, 5000, 1e-12);
+        if res.converged {
+            let j = jac_from_arr(&res.jacobian);
+            let eigs = sorted_eigs(&j);
+            let rho = eigs[0].norm();
+            let m_star_arr = five_dim::to_array(&res.m_star);
+            let d0: f64 = (0..5).map(|k| (0.5 - m_star_arr[k]).powi(2)).sum::<f64>().sqrt();
+            bup_data.push((b_up, rho, d0, res.n_iters as f64, n_pred_from_rho(d0, rho, 1e-12)));
+        }
+    }
+
+    println!("  {:>6} {:>8} {:>8} {:>6} {:>8} {:>8}", "b_up", "|λ₁|", "d₀", "n", "n_pred", "ratio");
+    for &(bu, rho, d0, n, np) in &bup_data {
+        let ratio = if np > 1.0 { n / np } else { 0.0 };
+        println!("  {:>6.2} {:>8.5} {:>8.5} {:>6} {:>8.1} {:>8.4}", bu, rho, d0, n as usize, np, ratio);
+    }
+
+    // ── Phase 5: rho_up gradient effect ──
+    println!("\n--- Phase 5: rho_up gradient on convergence ---");
+    println!("  Scanning rho_up ∈ [0, 0.9], b_up=0.3:");
+
+    let mut rup_data: Vec<(f64, f64, f64, f64, f64)> = Vec::new();
+    for i in 0..19 {
+        let rho_up = i as f64 * 0.05;
+        let m0 = five_dim::make_state(0.5, 0.5, 0.5, 0.5, 0.5);
+        let res = n_operator::run_iteration(&m0, 0.3, rho_up, &p, 5000, 1e-12);
+        if res.converged {
+            let j = jac_from_arr(&res.jacobian);
+            let eigs = sorted_eigs(&j);
+            let rho = eigs[0].norm();
+            let m_star_arr = five_dim::to_array(&res.m_star);
+            let d0: f64 = (0..5).map(|k| (0.5 - m_star_arr[k]).powi(2)).sum::<f64>().sqrt();
+            rup_data.push((rho_up, rho, d0, res.n_iters as f64, n_pred_from_rho(d0, rho, 1e-12)));
+        }
+    }
+
+    println!("  {:>6} {:>8} {:>8} {:>6} {:>8} {:>8}", "ρ_up", "|λ₁|", "d₀", "n", "n_pred", "ratio");
+    for &(ru, rho, d0, n, np) in &rup_data {
+        let ratio = if np > 1.0 { n / np } else { 0.0 };
+        println!("  {:>6.2} {:>8.5} {:>8.5} {:>6} {:>8.1} {:>8.4}", ru, rho, d0, n as usize, np, ratio);
+    }
+
+    // ── Phase 6: Cascade correction model ──
+    println!("\n--- Phase 6: Cascade correction model ---");
+    println!("  Testing: n_lattice/n_iso = f(b_up, rho_up, depth)?");
+
+    // For chain(5), measure per-depth overhead
+    let lat5 = fca::build_chain_lattice(5);
+    let stats5 = pipeline::compute_lattice_stats(&lat5);
+    let results5 = pipeline::run_topological_iteration(&lat5, &stats5, &p);
+
+    println!("  chain(5) depth analysis:");
+    for ci in 0..lat5.concepts.len() {
+        if let Some(Some(ref res)) = results5.get(ci) {
+            if !res.converged { continue; }
+            let (b_up, rho_up) = pipeline::get_upstream(ci, &stats5.feeders, &results5);
+            let rho = res.rho_spectral;
+            let m_star_arr = five_dim::to_array(&res.m_star);
+            let m0 = pipeline::init_state(ci, &lat5, &stats5);
+            let m0_arr = five_dim::to_array(&m0);
+            let d0: f64 = (0..5).map(|k| (m0_arr[k] - m_star_arr[k]).powi(2)).sum::<f64>().sqrt();
+            let iso = run_iso_concept(b1, d1, eps, m0_arr);
+            let overhead = if iso.n_iters > 1 { res.n_iters as f64 / iso.n_iters as f64 } else { 0.0 };
+            let depth = stats5.heights[ci];
+            println!("    ci={} depth={}: b_up={:.4}, rho_up={:.4}, ρ={:.5}, n={}, iso_n={}, overhead={:.4}",
+                ci, depth, b_up, rho_up, rho, res.n_iters, iso.n_iters, overhead);
+        }
+    }
+
+    // ── Phase 7: Perturbation expansion ──
+    println!("\n--- Phase 7: Perturbation expansion ---");
+    println!("  ρ(b_up) ≈ ρ(0) + α·b_up + β·b_up² ?");
+    println!("  ρ(rho_up) ≈ ρ(0) + γ·rho_up + δ·rho_up² ?");
+
+    // Fit quadratic: ρ = a + b·x + c·x²
+    let fit_quad = |data: &Vec<(f64, f64, f64, f64, f64)>| -> (f64, f64, f64) {
+        let n = data.len() as f64;
+        let (mut sx, mut sx2, mut sx4) = (0.0, 0.0, 0.0);
+        let (mut sy, mut sxy, mut sx2y) = (0.0, 0.0, 0.0);
+        for d in data {
+            let x = d.0;
+            let y = d.1;
+            let x2 = x * x;
+            sx += x; sx2 += x2; sx4 += x2 * x2;
+            sy += y; sxy += x * y; sx2y += x2 * y;
+        }
+        // Solve 3x3 normal equations
+        let mat = [[n, sx, sx2], [sx, sx2, sx4], [sx2, sx4, sx4 * sx / n.max(1.0)]];
+        let rhs = [sy, sxy, sx2y];
+        // Simple 3x3 solve (Cramer's rule)
+        let det = mat[0][0] * (mat[1][1] * mat[2][2] - mat[1][2] * mat[2][1])
+            - mat[0][1] * (mat[1][0] * mat[2][2] - mat[1][2] * mat[2][0])
+            + mat[0][2] * (mat[1][0] * mat[2][1] - mat[1][1] * mat[2][0]);
+        if det.abs() < 1e-30 { return (0.0, 0.0, 0.0); }
+        let a = (rhs[0] * (mat[1][1] * mat[2][2] - mat[1][2] * mat[2][1])
+            - mat[0][1] * (rhs[1] * mat[2][2] - mat[1][2] * rhs[2])
+            + mat[0][2] * (rhs[1] * mat[2][1] - mat[1][1] * rhs[2])) / det;
+        let b = (mat[0][0] * (rhs[1] * mat[2][2] - mat[1][2] * rhs[2])
+            - rhs[0] * (mat[1][0] * mat[2][2] - mat[1][2] * mat[2][0])
+            + mat[0][2] * (mat[1][0] * rhs[2] - rhs[1] * mat[2][0])) / det;
+        let c = (mat[0][0] * (mat[1][1] * rhs[2] - rhs[1] * mat[2][1])
+            - mat[0][1] * (mat[1][0] * rhs[2] - rhs[1] * mat[2][0])
+            + rhs[0] * (mat[1][0] * mat[2][1] - mat[1][1] * mat[2][0])) / det;
+        (a, b, c)
+    };
+
+    let (a_bup, b_bup, c_bup) = fit_quad(&bup_data);
+    println!("  ρ(b_up) ≈ {:.5} + {:.5}·b_up + {:.5}·b_up²", a_bup, b_bup, c_bup);
+    println!("  → dρ/db_up|₀ = {:.5}", b_bup);
+
+    let (a_rup, b_rup, c_rup) = fit_quad(&rup_data);
+    println!("  ρ(rho_up) ≈ {:.5} + {:.5}·rho_up + {:.5}·rho_up²", a_rup, b_rup, c_rup);
+    println!("  → dρ/drho_up|₀ = {:.5}", b_rup);
+
+    // ── Phase 8: Summary ──
+    println!("\n  === LATTICE COUPLING MODEL SUMMARY ===");
+    println!("  1. Chain lattice: per-concept overhead quantified");
+    println!("  2. Topology comparison: overhead varies by structure");
+    println!("  3. b_up/rho_up perturbation: ρ(J) depends on upstream");
+    println!("  4. Cascade correction: depth-dependent overhead");
+    println!("  5. Perturbation expansion: ρ(b_up) quadratic fit");
+}
