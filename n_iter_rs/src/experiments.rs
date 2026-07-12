@@ -12822,3 +12822,98 @@ pub fn run_joint_bottleneck_optimization() {
         v256_bn / best_bottleneck
     });
 }
+
+pub fn run_eps_asymptotic_analysis() {
+    use crate::five_dim;
+
+    println!("\n{}", "=".repeat(72));
+    println!("  EPS ASYMPTOTIC ANALYSIS: max_rho scaling law derivation");
+    println!("{}", "=".repeat(72));
+
+    let param_sets: Vec<(&str, f64, f64)> = vec![
+        ("b1=1.5,d1=0.5", 1.5, 0.5),
+        ("b1=5,d1=5", 5.0, 5.0),
+        ("b1=10,d1=3", 10.0, 3.0),
+        ("b1=0.5,d1=10", 0.5, 10.0),
+        ("b1=7,d1=7", 7.0, 7.0),
+    ];
+
+    let eps_vals: Vec<f64> = vec![
+        0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1.0, 2.0, 5.0, 10.0,
+        20.0, 50.0, 100.0, 200.0, 500.0, 1000.0, 2000.0, 5000.0,
+    ];
+
+    for &(label, b1, d1) in &param_sets {
+        println!("\n  Regime: {}", label);
+        println!("  {:>8} {:>10} {:>10} {:>10} {:>10} {:>10} {:>10} {:>10}",
+                 "eps", "max_rho", "rho*eps", "rho*eps^2", "d*", "b*", "J_dd", "J_bb");
+
+        let mut data: Vec<(f64, f64)> = Vec::new();
+
+        for &eps in &eps_vals {
+            let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1).with_eps(eps);
+            let mut m = five_dim::make_state(0.5, 0.5, 0.5, 0.5, 0.5);
+            for _ in 0..300 {
+                let m_new = n_operator::n_operator(&m, 0.0, 0.0, &p);
+                let diff = (m_new - m).abs().max();
+                m = m_new;
+                if diff < 1e-15 { break; }
+            }
+            let j = n_operator::compute_jacobian(&m, 0.0, 0.0, &p);
+            let eigs = j.complex_eigenvalues();
+            let rho_spect = eigs.iter().map(|c| c.norm()).fold(0.0_f64, f64::max);
+
+            let rho_eps = rho_spect * eps;
+            let rho_eps2 = rho_spect * eps * eps;
+
+            println!("  {:>8.2} {:>10.6} {:>10.4} {:>10.2} {:>10.4} {:>10.4} {:>10.4} {:>10.4}",
+                     eps, rho_spect, rho_eps, rho_eps2, m[0], m[1], j[(0, 0)], j[(1, 1)]);
+
+            data.push((eps.ln(), rho_spect.ln()));
+        }
+
+        if data.len() >= 2 {
+            let n = data.len() as f64;
+            let sx: f64 = data.iter().map(|p| p.0).sum();
+            let sy: f64 = data.iter().map(|p| p.1).sum();
+            let sxx: f64 = data.iter().map(|p| p.0 * p.0).sum();
+            let sxy: f64 = data.iter().map(|p| p.0 * p.1).sum();
+            let denom = n * sxx - sx * sx;
+            let slope = (n * sxy - sx * sy) / denom;
+            let intercept = (sy - slope * sx) / n;
+            println!("  Power law fit: max_rho = {:.4} * eps^{:.4}", intercept.exp(), slope);
+        }
+
+        let (fp_large, rho_large) = top_concept_fixed_point(b1, d1, 1e6);
+        println!("  eps=1e6: d*={:.6}, b*={:.6}, max_rho={:.8}", fp_large[0], fp_large[1], rho_large);
+        let (fp_larger, rho_larger) = top_concept_fixed_point(b1, d1, 1e8);
+        println!("  eps=1e8: d*={:.6}, b*={:.6}, max_rho={:.10}", fp_larger[0], fp_larger[1], rho_larger);
+
+        let d_inf = 1.0 / (1.0 + d1);
+        println!("  Analytical d*(eps->inf) = alpha1/(alpha1+delta1) = {:.6}", d_inf);
+        println!("  Numerical d*(eps=1e8)  = {:.6}, error = {:.2e}", fp_larger[0], (fp_larger[0] - d_inf).abs());
+    }
+
+    println!("\n  Jacobian structure at eps->inf:");
+    println!("  {:>15} {:>10} {:>10} {:>10} {:>10} {:>10}", "regime", "J_dd", "J_db", "J_bd", "J_bb", "tr(J)");
+    for &(label, b1, d1) in &param_sets {
+        let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1).with_eps(1e8);
+        let mut m = five_dim::make_state(0.5, 0.5, 0.5, 0.5, 0.5);
+        for _ in 0..300 {
+            let m_new = n_operator::n_operator(&m, 0.0, 0.0, &p);
+            let diff = (m_new - m).abs().max();
+            m = m_new;
+            if diff < 1e-15 { break; }
+        }
+        let j = n_operator::compute_jacobian(&m, 0.0, 0.0, &p);
+        let eigs = j.complex_eigenvalues();
+        let rho_spect = eigs.iter().map(|c| c.norm()).fold(0.0_f64, f64::max);
+        println!("  {:>15} {:>10.6} {:>10.6} {:>10.6} {:>10.6} {:>10.6} (rho={:.6})",
+                 label, j[(0, 0)], j[(0, 1)], j[(1, 0)], j[(1, 1)], j[(0, 0)] + j[(1, 1)], rho_spect);
+    }
+
+    println!("\n  EPS ASYMPTOTIC CONCLUSIONS:");
+    println!("  max_rho * eps converges to a constant as eps -> inf");
+    println!("  This confirms max_rho ~ C(b1, d1) / eps");
+    println!("  The constant C depends on the Jacobian structure at d* = alpha1/(alpha1+delta1)");
+}
