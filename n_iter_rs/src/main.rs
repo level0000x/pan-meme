@@ -119,5 +119,5 @@ fn main() {
 }
 
 fn run_synthetic_suite(_max_concepts: usize, _time_limit: f64, _output_dir: &PathBuf) {
-    experiments::run_nonuniform_robustness();
+    experiments::run_tau_predictive_validation();
 }

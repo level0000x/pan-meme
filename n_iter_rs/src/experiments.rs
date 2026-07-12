@@ -8815,3 +8815,823 @@ pub fn run_nonuniform_robustness() {
     println!("  - Which parameters have the strongest effect on d_sc?");
     println!("  - Is the phase transition mechanism robust?");
 }
+
+fn compute_d1_boundary(beta1: f64, eps: f64) -> f64 {
+    let mut prev_b = f64::NAN;
+    let mut prev_d1 = f64::NAN;
+    let n_scan = 5000;
+    for i in 0..n_scan {
+        let d1 = 0.50 + 49.50 * (i as f64) / (n_scan as f64);
+        let d_val = compute_dstar_analytical(beta1, d1, eps);
+        if d_val.is_nan() || d_val <= 0.0 || d_val >= 1.0 { continue; }
+        let (_, bv, _, _, _) = compute_all_from_dstar(d_val, beta1, d1, eps);
+        if !prev_b.is_nan() && prev_b >= 0.0 && bv < 0.0 {
+            let mut lo = prev_d1;
+            let mut hi = d1;
+            for _ in 0..200 {
+                let mid = (lo + hi) / 2.0;
+                let dv = compute_dstar_analytical(beta1, mid, eps);
+                if dv.is_nan() || dv <= 0.0 || dv >= 1.0 { lo = mid; continue; }
+                let (_, bv2, _, _, _) = compute_all_from_dstar(dv, beta1, mid, eps);
+                if bv2 < 0.0 { hi = mid; } else { lo = mid; }
+                if (hi - lo) < 1e-12 { break; }
+            }
+            return (lo + hi) / 2.0;
+        }
+        prev_b = bv;
+        prev_d1 = d1;
+    }
+    50.0
+}
+
+fn d_c_at_boundary(beta1: f64, eps: f64) -> f64 {
+    let d1c = compute_d1_boundary(beta1, eps);
+    let dc = compute_dstar_analytical(beta1, d1c, eps);
+    if dc.is_nan() || dc <= 0.0 || dc >= 1.0 { 1.0 } else { dc }
+}
+
+fn lin_slope(x: &[f64], y: &[f64]) -> f64 {
+    let n = x.len() as f64;
+    if n < 3.0 { return f64::NAN; }
+    let sx: f64 = x.iter().sum();
+    let sy: f64 = y.iter().sum();
+    let sxx: f64 = x.iter().map(|v| v * v).sum();
+    let sxy: f64 = x.iter().zip(y.iter()).map(|(a, b)| a * b).sum();
+    let denom = n * sxx - sx * sx;
+    if denom.abs() < 1e-30 { f64::NAN } else { (n * sxy - sx * sy) / denom }
+}
+
+fn lin_r2(x: &[f64], y: &[f64], slope: f64) -> f64 {
+    let n = x.len() as f64;
+    let y_mean: f64 = y.iter().sum::<f64>() / n;
+    let intercept = y_mean - slope * x.iter().sum::<f64>() / n;
+    let ss_tot: f64 = y.iter().map(|v| (v - y_mean).powi(2)).sum();
+    let ss_res: f64 = x.iter().zip(y.iter()).map(|(xi, yi)| (yi - slope * xi - intercept).powi(2)).sum();
+    if ss_tot < 1e-30 { 0.0 } else { 1.0 - ss_res / ss_tot }
+}
+
+pub fn run_critical_behavior() {
+    println!("\n================================================================");
+    println!("  CRITICAL BEHAVIOR: Phase transition scaling analysis");
+    println!("  How D*, b*, rho*, rho(J_2D) behave near b*=0 boundary");
+    println!("================================================================\n");
+
+    let eps = DynamicsParams::uniform().eps;
+
+    let beta1_values: Vec<f64> = vec![0.50, 1.00, 2.00, 5.00];
+
+    println!("  Part 1: Boundary locations\n");
+    println!("  beta1   delta1_c    d_c         b*@boundary rho*@bdry");
+
+    let mut boundaries: Vec<(f64, f64, f64)> = Vec::new();
+    for &b1 in &beta1_values {
+        let d1c = compute_d1_boundary(b1, eps);
+        let dc = d_c_at_boundary(b1, eps);
+        let (_, bv, rhov, _, _) = compute_all_from_dstar(dc, b1, d1c, eps);
+        boundaries.push((b1, d1c, dc));
+        println!("  {:>5.2}   {:>8.4}    {:.6}   {:+.2e}    {:.6}", b1, d1c, dc, bv, rhov);
+    }
+
+    println!("\n  Part 2: Near-boundary scaling curves\n");
+
+    for &(b1, d1c, dc) in &boundaries {
+        println!("  --- beta1={:.2} delta1_c={:.4} d_c={:.6} ---", b1, d1c, dc);
+        println!("  gap=d1c-d1  d*          b*          1-rho*      r*+eps      rho(J2D)    tau^-1");
+
+        let n_pts = 50;
+        for i in 0..n_pts {
+            let frac = (i as f64 + 1.0) / (n_pts as f64 + 1.0);
+            let d1 = d1c * (1.0 - frac * 0.7);
+            let d_val = compute_dstar_analytical(b1, d1, eps);
+            if d_val.is_nan() || d_val <= 0.0 || d_val >= 1.0 { continue; }
+            let (dv, bv, rhov, rv, sv) = compute_all_from_dstar(d_val, b1, d1, eps);
+            let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1);
+            let (rho_j2d, _, _, _, _, cond) = compute_j2d_analytical(dv, bv, rhov, rv, sv, &p);
+            let rho_use = if cond < 1e10 { rho_j2d } else { f64::NAN };
+            let tau_inv = if rho_use > 0.0 && rho_use < 1.0 { -1.0 / rho_use.ln() } else { f64::NAN };
+            let gap = d1c - d1;
+            println!("  {:>9.5}   {:.6}   {:+.6}   {:.6}   {:+.6}   {:>9.4}   {:>7.4}",
+                gap, dv, bv, 1.0 - rhov, rv + eps, rho_use, tau_inv);
+        }
+        println!();
+    }
+
+    println!("  Part 3: Critical exponent estimation (log-log linear regression)\n");
+
+    println!("  beta1   alpha(b*)   R^2       beta(1-rho) R^2       gamma(dc-d) R^2       delta(r+e) R^2");
+
+    for &(b1, d1c, dc) in &boundaries {
+        let mut log_gap: Vec<f64> = Vec::new();
+        let mut log_b: Vec<f64> = Vec::new();
+        let mut log_1mr: Vec<f64> = Vec::new();
+        let mut log_dcd: Vec<f64> = Vec::new();
+        let mut log_rpe: Vec<f64> = Vec::new();
+
+        let n_pts = 200;
+        for i in 0..n_pts {
+            let frac = 0.80 + 0.199 * (i as f64) / (n_pts as f64);
+            let d1 = d1c * frac;
+            let d_val = compute_dstar_analytical(b1, d1, eps);
+            if d_val.is_nan() || d_val <= 0.0 || d_val >= 1.0 { continue; }
+            let (dv, bv, rhov, rv, _) = compute_all_from_dstar(d_val, b1, d1, eps);
+            let gap = d1c - d1;
+            if gap > 1e-10 && bv > 1e-10 && (1.0 - rhov) > 1e-10 && (dc - dv) > 1e-10 && (rv + eps) > 1e-10 {
+                log_gap.push(gap.ln());
+                log_b.push(bv.ln());
+                log_1mr.push((1.0 - rhov).ln());
+                log_dcd.push((dc - dv).ln());
+                log_rpe.push((rv + eps).ln());
+            }
+        }
+
+        let s_b = lin_slope(&log_gap, &log_b);
+        let r2_b = lin_r2(&log_gap, &log_b, s_b);
+        let s_rho = lin_slope(&log_gap, &log_1mr);
+        let r2_rho = lin_r2(&log_gap, &log_1mr, s_rho);
+        let s_d = lin_slope(&log_gap, &log_dcd);
+        let r2_d = lin_r2(&log_gap, &log_dcd, s_d);
+        let s_r = lin_slope(&log_gap, &log_rpe);
+        let r2_r = lin_r2(&log_gap, &log_rpe, s_r);
+
+        println!("  {:>5.2}   {:>9.4}   {:.4}    {:>9.4}   {:.4}    {:>9.4}   {:.4}    {:>9.4}   {:.4}",
+            b1, s_b, r2_b, s_rho, r2_rho, s_d, r2_d, s_r, r2_r);
+    }
+
+    println!("\n  Part 4: rho(J_2D) behavior near boundary (approaching rho(J_2D)->1?)\n");
+
+    println!("  beta1   closest_gap    rho(J2D)     rho_approaches");
+
+    for &(b1, d1c, _dc) in &boundaries {
+        let mut last_rho = f64::NAN;
+        let mut last_gap = f64::NAN;
+        let n_pts = 200;
+        for i in 0..n_pts {
+            let frac = (i as f64 + 1.0) / (n_pts as f64 + 1.0);
+            let d1 = d1c * (1.0 - frac * 0.999);
+            let d_val = compute_dstar_analytical(b1, d1, eps);
+            if d_val.is_nan() || d_val <= 0.0 || d_val >= 1.0 { continue; }
+            let (dv, bv, rhov, rv, sv) = compute_all_from_dstar(d_val, b1, d1, eps);
+            let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1);
+            let (rho_j2d, _, _, _, _, cond) = compute_j2d_analytical(dv, bv, rhov, rv, sv, &p);
+            if cond < 1e10 && rho_j2d > 0.0 && rho_j2d < 10.0 {
+                last_rho = rho_j2d;
+                last_gap = d1c - d1;
+            }
+        }
+        println!("  {:>5.2}   {:>12.6}    {:.6}     {}", b1, last_gap, last_rho,
+            if last_rho > 0.95 { "NEAR 1" } else if last_rho > 0.80 { "approaching" } else { "bounded" });
+    }
+
+    println!("\n  Part 5: Non-continuity test — does D* jump at boundary?\n");
+
+    println!("  Testing: does the analytical FP become unphysical right at boundary?");
+    println!("  On contracting side: D*=d* (exact). At boundary: b*=0, rho*=1.\n");
+
+    for &(b1, d1c, dc) in &boundaries {
+        let gap_values = [0.001, 0.0001, 0.00001, 0.000001];
+        println!("  beta1={:.2}  d_c={:.6}:", b1, dc);
+        println!("    gap         d*          b*          rho*        D*=d*?");
+
+        for &gap in &gap_values {
+            let d1 = d1c - gap;
+            let d_val = compute_dstar_analytical(b1, d1, eps);
+            if d_val.is_nan() || d_val <= 0.0 || d_val >= 1.0 {
+                println!("    {:>9.6}   INVALID", gap);
+                continue;
+            }
+            let (dv, bv, rhov, _, _) = compute_all_from_dstar(d_val, b1, d1, eps);
+            let physical = bv > 0.0 && rhov < 1.0;
+            println!("    {:>9.6}   {:.6}   {:+.6}   {:.6}   {}", gap, dv, bv, rhov, if physical { "YES" } else { "NO" });
+        }
+
+        let d1_just_above = d1c + 0.001;
+        let d_above = compute_dstar_analytical(b1, d1_just_above, eps);
+        if !d_above.is_nan() && d_above > 0.0 && d_above < 1.0 {
+            let (_, bv_a, rhov_a, _, _) = compute_all_from_dstar(d_above, b1, d1_just_above, eps);
+            println!("    (above)     {:.6}   {:+.6}   {:.6}   {}", d_above, bv_a, rhov_a, if bv_a > 0.0 && rhov_a < 1.0 { "YES" } else { "NO" });
+        }
+        println!();
+    }
+
+    println!("  CRITICAL BEHAVIOR CONCLUSIONS:");
+    println!("  - Transition type (continuous/discontinuous) from exponent analysis");
+    println!("  - Universality of exponents across beta1");
+    println!("  - rho(J_2D) divergence behavior at boundary");
+}
+
+fn closing_f(d: f64, beta1: f64, delta1: f64, eps: f64) -> f64 {
+    if d <= 0.0 || d >= 1.0 { return f64::NAN; }
+    let b = (1.0 + (2.0*beta1 - 1.0 - delta1)*d + delta1*d*d) / (1.0 + (2.0*beta1 - 1.0)*d);
+    let r = 2.0*beta1*b*d/(1.0 - d) - eps;
+    let a_coeff = r - 1.0 + d + eps;
+    let c_coeff = d + eps;
+    let disc = a_coeff * a_coeff + 4.0 * c_coeff;
+    if disc < 0.0 { return f64::NAN; }
+    let rho = (-a_coeff + disc.sqrt()) / 2.0;
+    let s = (d + eps) / (d + eps + r);
+    let num = 2.0*rho + b + eps;
+    let den = num + d + s;
+    r - num / den
+}
+
+fn find_all_roots(beta1: f64, delta1: f64, eps: f64) -> Vec<(f64, f64, f64, f64, f64, bool)> {
+    let n = 2000;
+    let mut roots: Vec<(f64, f64, f64, f64, f64, bool)> = Vec::new();
+    let mut prev_f = f64::NAN;
+    let mut prev_d = f64::NAN;
+    for i in 1..n {
+        let d = i as f64 / n as f64;
+        let fv = closing_f(d, beta1, delta1, eps);
+        if fv.is_nan() { prev_f = f64::NAN; prev_d = f64::NAN; continue; }
+        if !prev_f.is_nan() && prev_f * fv < 0.0 {
+            let mut lo = prev_d;
+            let mut hi_d = d;
+            for _ in 0..200 {
+                let mid = (lo + hi_d) / 2.0;
+                let fm = closing_f(mid, beta1, delta1, eps);
+                if fm.is_nan() { break; }
+                if fm * closing_f(lo, beta1, delta1, eps) > 0.0 { lo = mid; } else { hi_d = mid; }
+                if (hi_d - lo) < 1e-14 { break; }
+            }
+            let root = (lo + hi_d) / 2.0;
+            let (dv, bv, rhov, rv, sv) = compute_all_from_dstar(root, beta1, delta1, eps);
+            let physical = bv > 0.0 && rhov < 1.0 && rhov > 0.0 && rv > -eps;
+            roots.push((dv, bv, rhov, rv, sv, physical));
+        }
+        prev_f = fv;
+        prev_d = d;
+    }
+    roots
+}
+
+pub fn run_multiroot_landscape() {
+    println!("\n================================================================");
+    println!("  MULTI-ROOT LANDSCAPE: All fixed points of closing equation");
+    println!("  Complete phase diagram with root tracking");
+    println!("================================================================\n");
+
+    let eps = DynamicsParams::uniform().eps;
+
+    println!("  Part 1: Multi-root scan at selected (beta1, delta1)\n");
+
+    let test_cases: Vec<(&str, f64, f64)> = vec![
+        ("b1=1,d1=1", 1.00, 1.00),
+        ("b1=1,d1=4", 1.00, 4.00),
+        ("b1=1,d1=7.7", 1.00, 7.703),
+        ("b1=1,d1=10", 1.00, 10.00),
+        ("b1=1,d1=20", 1.00, 20.00),
+        ("b1=1,d1=30", 1.00, 30.00),
+        ("b1=0.5,d1=3", 0.50, 3.00),
+        ("b1=0.5,d1=6.3", 0.50, 6.304),
+        ("b1=0.5,d1=10", 0.50, 10.00),
+        ("b1=5,d1=10", 5.00, 10.00),
+        ("b1=5,d1=18.8", 5.00, 18.755),
+        ("b1=5,d1=30", 5.00, 30.00),
+    ];
+
+    for &(name, b1, d1) in &test_cases {
+        let roots = find_all_roots(b1, d1, eps);
+        println!("  {} -> {} roots:", name, roots.len());
+        for (j, &(dv, bv, rhov, rv, sv, phys)) in roots.iter().enumerate() {
+            let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1);
+            let (rho_j2d, _, _, _, _, cond) = compute_j2d_analytical(dv, bv, rhov, rv, sv, &p);
+            let rho_use = if cond < 1e10 { rho_j2d } else { f64::NAN };
+            println!("    root{}: d*={:.6} b*={:+.6} rho*={:.6} r*={:+.6} rho(J2D)={:.4} physical={}",
+                j, dv, bv, rhov, rv, rho_use, phys);
+        }
+    }
+
+    println!("\n  Part 2: Root tracking along beta1=1.00, delta1 from 1 to 50\n");
+
+    let b1 = 1.00_f64;
+    println!("  delta1  n_roots  physical_d*      physical_b*      physical_rho*    rho(J2D)");
+
+    let n_scan = 100;
+    for i in 0..n_scan {
+        let d1 = 1.0 + 49.0 * (i as f64) / (n_scan as f64);
+        let roots = find_all_roots(b1, d1, eps);
+        let phys_roots: Vec<_> = roots.iter().filter(|r| r.5).collect();
+        if let Some(r) = phys_roots.first() {
+            let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1);
+            let (rho_j2d, _, _, _, _, cond) = compute_j2d_analytical(r.0, r.1, r.2, r.3, r.4, &p);
+            let rho_use = if cond < 1e10 { rho_j2d } else { f64::NAN };
+            println!("  {:>6.1}  {:>5}    {:.6}   {:+.6}   {:.6}   {:.4}",
+                d1, roots.len(), r.0, r.1, r.2, rho_use);
+        } else {
+            println!("  {:>6.1}  {:>5}    NO PHYSICAL ROOT", d1, roots.len());
+        }
+    }
+
+    println!("\n  Part 3: Root tracking along beta1=0.50, delta1 from 1 to 40\n");
+
+    let b1 = 0.50_f64;
+    println!("  delta1  n_roots  physical_d*      physical_b*      physical_rho*    rho(J2D)");
+
+    for i in 0..n_scan {
+        let d1 = 1.0 + 39.0 * (i as f64) / (n_scan as f64);
+        let roots = find_all_roots(b1, d1, eps);
+        let phys_roots: Vec<_> = roots.iter().filter(|r| r.5).collect();
+        if let Some(r) = phys_roots.first() {
+            let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1);
+            let (rho_j2d, _, _, _, _, cond) = compute_j2d_analytical(r.0, r.1, r.2, r.3, r.4, &p);
+            let rho_use = if cond < 1e10 { rho_j2d } else { f64::NAN };
+            println!("  {:>6.1}  {:>5}    {:.6}   {:+.6}   {:.6}   {:.4}",
+                d1, roots.len(), r.0, r.1, r.2, rho_use);
+        } else {
+            println!("  {:>6.1}  {:>5}    NO PHYSICAL ROOT", d1, roots.len());
+        }
+    }
+
+    println!("\n  Part 4: Root count phase diagram (beta1 x delta1)\n");
+
+    println!("  beta1\\d1  1     2     5     10    15    20    30    40    50");
+    for &b1 in &[0.10_f64, 0.25, 0.50, 1.00, 2.00, 5.00] {
+        print!("  {:>6.2}  ", b1);
+        for &d1 in &[1.0_f64, 2.0, 5.0, 10.0, 15.0, 20.0, 30.0, 40.0, 50.0] {
+            let roots = find_all_roots(b1, d1, eps);
+            let n_phys = roots.iter().filter(|r| r.5).count();
+            print!("  {}({})", roots.len(), n_phys);
+        }
+        println!();
+    }
+
+    println!("\n  MULTI-ROOT LANDSCAPE CONCLUSIONS:");
+    println!("  - How many roots does f(d*)=0 have?");
+    println!("  - Which root is the physical one?");
+    println!("  - Root bifurcation structure across parameter space");
+}
+
+fn find_physical_root(beta1: f64, delta1: f64, eps: f64) -> Option<(f64, f64, f64, f64, f64)> {
+    let roots = find_all_roots(beta1, delta1, eps);
+    for &(dv, bv, rhov, rv, sv, physical) in roots.iter() {
+        if physical {
+            return Some((dv, bv, rhov, rv, sv));
+        }
+    }
+    None
+}
+
+pub fn run_noncontract_reconciliation() {
+    println!("\n================================================================");
+    println!("  NON-CONTRACT RECONCILIATION: Physical root vs lattice D*");
+    println!("  Re-examine v2.38 non-contracting params with correct root");
+    println!("================================================================\n");
+
+    let eps = DynamicsParams::uniform().eps;
+
+    let test_sets: Vec<(&str, f64, f64)> = vec![
+        ("ref-uniform", 1.00, 1.00),
+        ("ref-SO", 0.50, 10.00),
+        ("v238-nc1", 0.15, 10.00),
+        ("v238-nc2", 0.25, 7.00),
+        ("v238-nc3", 0.75, 7.00),
+        ("v238-nc4", 5.00, 20.00),
+        ("v238-disagree", 0.05, 5.00),
+        ("v238-condwarn", 0.50, 15.00),
+    ];
+
+    println!("  Part 1: All roots + physical root identification\n");
+    println!("  name              b1     d1     n_roots  phys_d*     phys_b*     phys_rho*   old_d*");
+
+    for &(name, b1, d1) in &test_sets {
+        let roots = find_all_roots(b1, d1, eps);
+        let old_d = compute_dstar_analytical(b1, d1, eps);
+        let phys = find_physical_root(b1, d1, eps);
+        if let Some((dv, bv, rhov, _rv, _sv)) = phys {
+            println!("  {:<16}  {:>5.2}  {:>5.2}  {:>5}    {:.6}   {:+.6}   {:.6}   {:.6}",
+                name, b1, d1, roots.len(), dv, bv, rhov, old_d);
+        } else {
+            println!("  {:<16}  {:>5.2}  {:>5.2}  {:>5}    NO PHYSICAL ROOT     {:.6}",
+                name, b1, d1, roots.len(), old_d);
+        }
+    }
+
+    println!("\n  Part 2: Lattice D* vs physical root d*\n");
+
+    let chain_sizes: Vec<usize> = vec![5, 10, 20, 50];
+
+    for &(name, b1, d1) in &test_sets {
+        let phys = find_physical_root(b1, d1, eps);
+        let old_d = compute_dstar_analytical(b1, d1, eps);
+
+        let phys_d = match phys {
+            Some((dv, _, _, _, _)) => dv,
+            None => {
+                println!("  {}: no physical root, skipping", name);
+                continue;
+            }
+        };
+
+        println!("  {} ({:.2}, {:.2}): phys_d*={:.6}, old_d*={:.6}, diff={:.4}%",
+            name, b1, d1, phys_d, old_d, (phys_d - old_d).abs() / phys_d * 100.0);
+        println!("    chain   D*(mid)     phys_d*     err_phys(%)  old_d*      err_old(%)");
+
+        let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1);
+
+        for &n in &chain_sizes {
+            let lattice = fca::build_chain_lattice(n);
+            let stats = pipeline::compute_lattice_stats(&lattice);
+            let results = pipeline::run_topological_iteration(&lattice, &stats, &p);
+
+            let mid = n / 2;
+            if let Some(ref r) = results[mid] {
+                let d_star = r.m_star[0];
+                let err_phys = (d_star - phys_d).abs() / phys_d * 100.0;
+                let err_old = (d_star - old_d).abs() / old_d * 100.0;
+                println!("    {:>5}   {:.6}   {:.6}   {:>9.3}%    {:.6}   {:>9.3}%",
+                    n, d_star, phys_d, err_phys, old_d, err_old);
+            } else {
+                println!("    {:>5}   NO RESULT", n);
+            }
+        }
+        println!();
+    }
+
+    println!("  Part 3: Summary — does physical root explain lattice D*?\n");
+
+    println!("  name              phys_d*     old_d*      D*(50)      err_phys    err_old     reconciled?");
+
+    for &(name, b1, d1) in &test_sets {
+        let phys = find_physical_root(b1, d1, eps);
+        let old_d = compute_dstar_analytical(b1, d1, eps);
+        let phys_d = match phys {
+            Some((dv, _, _, _, _)) => dv,
+            None => continue,
+        };
+
+        let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1);
+        let lattice = fca::build_chain_lattice(50);
+        let stats = pipeline::compute_lattice_stats(&lattice);
+        let results = pipeline::run_topological_iteration(&lattice, &stats, &p);
+        let mid = 25;
+        if let Some(ref r) = results[mid] {
+            let d_star = r.m_star[0];
+            let err_phys = (d_star - phys_d).abs() / phys_d * 100.0;
+            let err_old = (d_star - old_d).abs() / old_d * 100.0;
+            let reconciled = if err_phys < 1.0 { "YES" } else { "NO" };
+            println!("  {:<16}  {:.6}   {:.6}   {:.6}   {:>8.3}%    {:>8.3}%    {}",
+                name, phys_d, old_d, d_star, err_phys, err_old, reconciled);
+        }
+    }
+
+    println!("\n  NON-CONTRACT RECONCILIATION CONCLUSIONS:");
+    println!("  - Does the physical root explain all lattice D* values?");
+    println!("  - Is the v2.38 non-contracting domain an artifact of wrong root?");
+}
+
+fn closing_f_prime(d: f64, beta1: f64, delta1: f64, eps: f64) -> f64 {
+    let h = 1e-8;
+    let f_plus = closing_f(d + h, beta1, delta1, eps);
+    let f_minus = closing_f(d - h, beta1, delta1, eps);
+    if f_plus.is_nan() || f_minus.is_nan() { return f64::NAN; }
+    (f_plus - f_minus) / (2.0 * h)
+}
+
+fn find_extrema_touching_zero(beta1: f64, delta1: f64, eps: f64) -> Vec<f64> {
+    let n = 2000;
+    let mut touched: Vec<f64> = Vec::new();
+    let mut prev_fp = f64::NAN;
+    let mut prev_d = f64::NAN;
+    for i in 1..n {
+        let d = i as f64 / n as f64;
+        let fp = closing_f_prime(d, beta1, delta1, eps);
+        if fp.is_nan() { prev_fp = f64::NAN; prev_d = f64::NAN; continue; }
+        if !prev_fp.is_nan() && prev_fp * fp < 0.0 {
+            let mut lo = prev_d;
+            let mut hi_d = d;
+            for _ in 0..100 {
+                let mid = (lo + hi_d) / 2.0;
+                let fm = closing_f_prime(mid, beta1, delta1, eps);
+                if fm.is_nan() { break; }
+                if fm * closing_f_prime(lo, beta1, delta1, eps) > 0.0 { lo = mid; } else { hi_d = mid; }
+                if (hi_d - lo) < 1e-14 { break; }
+            }
+            let extremum_d = (lo + hi_d) / 2.0;
+            let f_at_extremum = closing_f(extremum_d, beta1, delta1, eps);
+            if !f_at_extremum.is_nan() && f_at_extremum.abs() < 0.01 {
+                touched.push(extremum_d);
+            }
+        }
+        prev_fp = fp;
+        prev_d = d;
+    }
+    touched
+}
+
+fn find_d1_bifurcation(beta1: f64, d_extremum: f64, eps: f64) -> f64 {
+    let mut lo = 0.50_f64;
+    let mut hi = 50.0_f64;
+    for _ in 0..200 {
+        let mid = (lo + hi) / 2.0;
+        let f_val = closing_f(d_extremum, beta1, mid, eps);
+        if f_val.is_nan() { break; }
+        let f_lo = closing_f(d_extremum, beta1, lo, eps);
+        if f_val * f_lo > 0.0 { lo = mid; } else { hi = mid; }
+        if (hi - lo) < 1e-12 { break; }
+    }
+    (lo + hi) / 2.0
+}
+
+pub fn run_bifurcation_analysis() {
+    println!("\n================================================================");
+    println!("  BIFURCATION ANALYSIS: Saddle-node bifurcations of f(d*)=0");
+    println!("  Where do non-physical roots appear/disappear?");
+    println!("================================================================\n");
+
+    let eps = DynamicsParams::uniform().eps;
+
+    println!("  Part 1: Root count transitions along beta1=1.00\n");
+
+    let b1 = 1.00_f64;
+    let mut prev_count = 0usize;
+    println!("  delta1   n_roots  transition?");
+
+    let n_scan = 200;
+    for i in 0..n_scan {
+        let d1 = 1.0 + 49.0 * (i as f64) / (n_scan as f64);
+        let roots = find_all_roots(b1, d1, eps);
+        let cnt = roots.len();
+        let trans = if cnt != prev_count && prev_count > 0 {
+            format!("{} -> {}", prev_count, cnt)
+        } else {
+            String::new()
+        };
+        if cnt != prev_count {
+            println!("  {:>6.1}   {:>5}    {}", d1, cnt, trans);
+        }
+        prev_count = cnt;
+    }
+
+    println!("\n  Part 2: Bifurcation points — where f=f'=0\n");
+
+    for &b1 in &[0.10_f64, 0.25, 0.50, 1.00, 2.00, 5.00] {
+        println!("  --- beta1={:.2} ---", b1);
+        println!("  Scanning delta1 for root count transitions...");
+
+        let mut transitions: Vec<(f64, usize, usize)> = Vec::new();
+        let mut prev_cnt = 0usize;
+        for i in 0..500 {
+            let d1 = 0.50 + 49.50 * (i as f64) / (500.0);
+            let roots = find_all_roots(b1, d1, eps);
+            let cnt = roots.len();
+            if cnt != prev_cnt && prev_cnt > 0 {
+                transitions.push((d1, prev_cnt, cnt));
+            }
+            prev_cnt = cnt;
+        }
+
+        if transitions.is_empty() {
+            println!("  No transitions found in [0.50, 50.00]");
+        } else {
+            for &(d1_approx, from, to) in &transitions {
+                println!("  Transition {}->{} near delta1={:.2}", from, to, d1_approx);
+
+                let d1_lo = (d1_approx - 0.5).max(0.50);
+                let d1_hi = (d1_approx + 0.5).min(50.0);
+
+                let mut best_d1 = d1_approx;
+                let mut best_d = 0.5_f64;
+                let mut best_f = f64::INFINITY;
+
+                for j in 0..100 {
+                    let d1_try = d1_lo + (d1_hi - d1_lo) * (j as f64) / 100.0;
+                    let extrema = find_extrema_touching_zero(b1, d1_try, eps);
+                    for &d_ext in &extrema {
+                        let f_val = closing_f(d_ext, b1, d1_try, eps).abs();
+                        if f_val < best_f.abs() {
+                            best_f = f_val;
+                            best_d1 = d1_try;
+                            best_d = d_ext;
+                        }
+                    }
+                }
+
+                let (dv, bv, rhov, rv, _sv) = compute_all_from_dstar(best_d, b1, best_d1, eps);
+                println!("    Bifurcation: d*={:.6}, delta1={:.4}, f={:.2e}", best_d, best_d1, best_f);
+                println!("    At bifurcation: b*={:+.6}, rho*={:.6}, r*={:+.6}", bv, rhov, rv);
+            }
+        }
+        println!();
+    }
+
+    println!("  Part 3: Bifurcation curve — (beta1, delta1) pairs\n");
+
+    println!("  beta1   delta1_bif   d*_bif      n_roots_before  n_roots_after");
+
+    for &b1 in &[0.05_f64, 0.10, 0.15, 0.20, 0.25, 0.30, 0.40, 0.50, 0.75, 1.00, 1.50, 2.00, 3.00, 5.00] {
+        let mut found_any = false;
+        let mut prev_cnt = 0usize;
+        for i in 0..500 {
+            let d1 = 0.50 + 49.50 * (i as f64) / (500.0);
+            let roots = find_all_roots(b1, d1, eps);
+            let cnt = roots.len();
+            if cnt > prev_cnt && prev_cnt > 0 {
+                let d1_approx = d1;
+                let d1_lo = (d1_approx - 0.3).max(0.50);
+                let d1_hi = (d1_approx + 0.3).min(50.0);
+                let mut best_d1 = d1_approx;
+                let mut best_d = 0.5_f64;
+                let mut best_f = f64::INFINITY;
+                for j in 0..50 {
+                    let d1_try = d1_lo + (d1_hi - d1_lo) * (j as f64) / 50.0;
+                    let extrema = find_extrema_touching_zero(b1, d1_try, eps);
+                    for &d_ext in &extrema {
+                        let f_val = closing_f(d_ext, b1, d1_try, eps).abs();
+                        if f_val < best_f.abs() {
+                            best_f = f_val;
+                            best_d1 = d1_try;
+                            best_d = d_ext;
+                        }
+                    }
+                }
+                println!("  {:>5.2}   {:>10.4}   {:.6}   {:>10}       {:>10}",
+                    b1, best_d1, best_d, prev_cnt, cnt);
+                found_any = true;
+                break;
+            }
+            prev_cnt = cnt;
+        }
+        if !found_any {
+            println!("  {:>5.2}   (no transition in range)", b1);
+        }
+    }
+
+    println!("\n  Part 4: Non-physical root origin — at what delta1 do they first appear?\n");
+
+    println!("  For each beta1, the first bifurcation creates roots 2,3 (from 1->3)");
+    println!("  These are the non-physical roots that v2.37-40 mistakenly tracked.\n");
+
+    println!("  BIFURCATION ANALYSIS CONCLUSIONS:");
+    println!("  - When do non-physical roots appear?");
+    println!("  - What is the bifurcation structure of f(d*)=0?");
+    println!("  - Are the non-physical roots always created in pairs?");
+}
+
+pub fn run_tau_predictive_validation() {
+    use crate::n_operator::n_operator;
+    use crate::five_dim;
+
+    println!("\n================================================================");
+    println!("  TAU PREDICTIVE VALIDATION: Analytical tau^-1 vs N-operator tau^-1");
+    println!("  Final link: parameter -> rho(J_2D) -> tau^-1 -> convergence rate");
+    println!("================================================================\n");
+
+    let eps = DynamicsParams::uniform().eps;
+
+    let param_sets: Vec<(&str, f64, f64)> = vec![
+        ("SO-peak", 0.50, 10.00),
+        ("uniform", 1.00, 1.00),
+        ("high-b1", 2.00, 3.00),
+        ("low-b1", 0.25, 2.00),
+        ("asym-1", 0.75, 5.00),
+        ("asym-2", 1.50, 2.00),
+        ("wide-range", 3.00, 1.00),
+        ("extreme", 5.00, 1.00),
+        ("low-d1", 1.00, 0.50),
+        ("med-d1", 1.00, 5.00),
+    ];
+
+    println!("  Part 1: Analytical prediction pipeline\n");
+
+    println!("  name              b1     d1     d*        b*        rho*      rho(J2D)  tau_ana");
+
+    for &(name, b1, d1) in &param_sets {
+        let phys = find_physical_root(b1, d1, eps);
+        if let Some((dv, bv, rhov, rv, sv)) = phys {
+            let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1);
+            let (rho_j2d, _, _, _, _, cond) = compute_j2d_analytical(dv, bv, rhov, rv, sv, &p);
+            let rho_use = if cond < 1e10 { rho_j2d } else { f64::NAN };
+            let tau_ana = if rho_use > 0.0 && rho_use < 1.0 { -1.0 / rho_use.ln() } else { f64::NAN };
+            println!("  {:<16}  {:>5.2}  {:>5.2}  {:.6}  {:+.6}  {:.6}  {:>7.4}   {:>7.3}",
+                name, b1, d1, dv, bv, rhov, rho_use, tau_ana);
+        } else {
+            println!("  {:<16}  {:>5.2}  {:>5.2}  NO PHYSICAL ROOT", name, b1, d1);
+        }
+    }
+
+    println!("\n  Part 2: N-operator iteration convergence\n");
+
+    println!("  Iterating M^(k+1) = N(M^(k)) from initial M^(0)=(0.5,0.5,0.5,0.5,0.5)");
+    println!("  rho_emp = avg |d^(k+1)-d*|/|d^(k)-d*| over last 10 iterations\n");
+
+    println!("  name              d*        iters   rho_emp     tau_emp     tau_ana     ratio");
+
+    for &(name, b1, d1) in &param_sets {
+        let phys = find_physical_root(b1, d1, eps);
+        let (dv, bv, rhov, rv, sv) = match phys {
+            Some(v) => v,
+            None => continue,
+        };
+
+        let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1);
+        let (rho_j2d, _, _, _, _, cond) = compute_j2d_analytical(dv, bv, rhov, rv, sv, &p);
+        let rho_ana = if cond < 1e10 { rho_j2d } else { f64::NAN };
+        let tau_ana = if rho_ana > 0.0 && rho_ana < 1.0 { -1.0 / rho_ana.ln() } else { f64::NAN };
+
+        let d_fp = dv;
+        let mut m = five_dim::from_array(&[0.5_f64, 0.5, 0.5, 0.5, 0.5]);
+        let max_iter = 200;
+        let mut d_hist: Vec<f64> = Vec::new();
+        let mut converged = false;
+
+        for _k in 0..max_iter {
+            m = n_operator(&m, &p);
+            let d_curr = m[0];
+            d_hist.push(d_curr);
+
+            if d_hist.len() > 10 {
+                let recent_diff = (d_curr - d_hist[d_hist.len() - 2]).abs();
+                if recent_diff < 1e-14 {
+                    converged = true;
+                    break;
+                }
+            }
+        }
+
+        let n_hist = d_hist.len();
+        if n_hist >= 20 {
+            let tail_start = n_hist - 10;
+            let mut rho_vals: Vec<f64> = Vec::new();
+            for k in (tail_start + 1)..n_hist {
+                let diff_k = (d_hist[k] - d_fp).abs();
+                let diff_km1 = (d_hist[k - 1] - d_fp).abs();
+                if diff_km1 > 1e-15 && diff_k > 1e-15 {
+                    rho_vals.push(diff_k / diff_km1);
+                }
+            }
+            if !rho_vals.is_empty() {
+                let rho_emp: f64 = rho_vals.iter().sum::<f64>() / rho_vals.len() as f64;
+                let tau_emp = if rho_emp > 0.0 && rho_emp < 1.0 { -1.0 / rho_emp.ln() } else { f64::NAN };
+                let ratio = if !tau_ana.is_nan() && !tau_emp.is_nan() && tau_emp > 0.0 {
+                    tau_ana / tau_emp
+                } else {
+                    f64::NAN
+                };
+                println!("  {:<16}  {:.6}  {:>5}   {:>7.4}    {:>7.3}    {:>7.3}    {:>6.3}",
+                    name, d_fp, n_hist, rho_emp, tau_emp, tau_ana, ratio);
+            } else {
+                println!("  {:<16}  {:.6}  {:>5}   (converged to machine precision)", name, d_fp, n_hist);
+            }
+        } else {
+            println!("  {:<16}  {:.6}  {:>5}   (insufficient iterations, converged={})", name, d_fp, n_hist, converged);
+        }
+    }
+
+    println!("\n  Part 3: Spectral radius validation\n");
+
+    println!("  rho(J_2D)_ana vs rho(J_5)_ana vs rho_emp comparison\n");
+    println!("  name              rho(J2D)_ana  rho(J5)_ana   rho_emp     J2D/J5    J2D/emp");
+
+    for &(name, b1, d1) in &param_sets {
+        let phys = find_physical_root(b1, d1, eps);
+        let (dv, bv, rhov, rv, sv) = match phys {
+            Some(v) => v,
+            None => continue,
+        };
+
+        let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1);
+        let (rho_j2d, _, _, _, _, cond) = compute_j2d_analytical(dv, bv, rhov, rv, sv, &p);
+
+        let m_fp = five_dim::from_array(&[dv, bv, rhov, rv, sv]);
+        let jac = crate::n_operator::compute_jacobian(&m_fp, &p);
+        let eigenvalues = jac.eigenvalues();
+        let rho_j5: f64 = eigenvalues.iter().map(|c| c.norm()).fold(0.0_f64, f64::max);
+
+        let mut m = five_dim::from_array(&[0.5_f64, 0.5, 0.5, 0.5, 0.5]);
+        let mut d_hist: Vec<f64> = Vec::new();
+        for _k in 0..200 {
+            m = n_operator(&m, &p);
+            d_hist.push(m[0]);
+            if d_hist.len() > 10 {
+                let recent_diff = (m[0] - d_hist[d_hist.len() - 2]).abs();
+                if recent_diff < 1e-14 { break; }
+            }
+        }
+        let n_hist = d_hist.len();
+        let mut rho_emp = f64::NAN;
+        if n_hist >= 20 {
+            let tail_start = n_hist - 10;
+            let mut rho_vals: Vec<f64> = Vec::new();
+            for k in (tail_start + 1)..n_hist {
+                let diff_k = (d_hist[k] - dv).abs();
+                let diff_km1 = (d_hist[k - 1] - dv).abs();
+                if diff_km1 > 1e-15 && diff_k > 1e-15 {
+                    rho_vals.push(diff_k / diff_km1);
+                }
+            }
+            if !rho_vals.is_empty() {
+                rho_emp = rho_vals.iter().sum::<f64>() / rho_vals.len() as f64;
+            }
+        }
+
+        let j2d_j5 = if rho_j5 > 0.0 { rho_j2d / rho_j5 } else { f64::NAN };
+        let j2d_emp = if rho_emp.is_finite() && rho_emp > 0.0 { rho_j2d / rho_emp } else { f64::NAN };
+        println!("  {:<16}  {:>10.4}    {:>9.4}    {:>7.4}    {:>6.3}    {:>6.3}",
+            name, rho_j2d, rho_j5, rho_emp, j2d_j5, j2d_emp);
+    }
+
+    println!("\n  TAU PREDICTIVE VALIDATION CONCLUSIONS:");
+    println!("  - Does rho(J_2D) predict convergence rate?");
+    println!("  - What is the tau_ana/tau_emp ratio?");
+    println!("  - Is the complete parameter->metric pipeline validated?");
+}
