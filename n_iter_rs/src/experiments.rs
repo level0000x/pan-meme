@@ -8452,3 +8452,172 @@ pub fn run_multi_fp_analysis() {
     println!("  3. System selects physical FP (b>0, rho<1) as attractor");
     println!("  4. Phase transition = FP multiplicity change at rho(J_2D)=1 boundary");
 }
+
+pub fn run_boundary_conditions() {
+    println!("\n================================================================");
+    println!("  BOUNDARY CONDITIONS: Analytical phase transition criteria");
+    println!("  Testing b*=0 vs r*=0 vs rho(J_2D)=1 boundary coincidence");
+    println!("================================================================\n");
+
+    let eps = DynamicsParams::uniform().eps;
+
+    println!("  Part 1: Near-boundary analysis — which condition matches rho(J_2D)=1?\n");
+
+    let boundary_cases: Vec<(&str, f64, f64)> = vec![
+        ("well-in-1", 1.00, 1.00),
+        ("well-in-2", 0.50, 10.00),
+        ("well-in-3", 2.00, 5.00),
+        ("near-1", 0.20, 5.00),
+        ("near-2", 0.30, 7.00),
+        ("near-3", 0.40, 7.00),
+        ("near-4", 0.50, 7.00),
+        ("noncon-1", 0.15, 10.00),
+        ("noncon-2", 0.25, 7.00),
+        ("noncon-3", 0.75, 7.00),
+        ("noncon-4", 5.00, 20.00),
+        ("disagree", 0.05, 5.00),
+    ];
+
+    println!("  name            b1     d1      d*        b*        rho*      r*        b*=0?  r*=0?  rho*=1? rho(J2D)");
+
+    for &(name, b1, d1) in &boundary_cases {
+        let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1);
+        let d_val = compute_dstar_analytical(b1, d1, eps);
+        if d_val.is_nan() || d_val <= 0.0 || d_val >= 1.0 {
+            println!("  {:>14}  {:>5.2}  {:>5.2}  INVALID d*", name, b1, d1);
+            continue;
+        }
+        let (dv, bv, rhov, rv, sv) = compute_all_from_dstar(d_val, b1, d1, eps);
+        let (rho_j2d, _, _, _, _, cond) = compute_j2d_analytical(dv, bv, rhov, rv, sv, &p);
+        let rho_use = if cond < 1e10 { rho_j2d } else { f64::NAN };
+
+        let b_zero = if bv.abs() < 0.01 { "YES" } else { "no" };
+        let r_zero = if rv.abs() < 0.01 { "YES" } else { "no" };
+        let rho_one = if (rhov - 1.0).abs() < 0.01 { "YES" } else { "no" };
+
+        println!("  {:>14}  {:>5.2}  {:>5.2}  {:.6}  {:+.6}  {:.6}  {:+.6}  {:>5}  {:>5}  {:>6}  {:.4}",
+            name, b1, d1, dv, bv, rhov, rv, b_zero, r_zero, rho_one, rho_use);
+    }
+
+    println!("\n  Part 2: Boundary curve search — find (b1,d1) where b*=0\n");
+
+    for &b1 in &[0.05_f64, 0.10, 0.15, 0.20, 0.25, 0.30, 0.40, 0.50, 0.75, 1.00, 1.50, 2.00, 3.00, 5.00] {
+        let mut lo = 0.50_f64;
+        let mut hi = 30.0_f64;
+        let mut found = false;
+        for _ in 0..200 {
+            let mid = (lo + hi) / 2.0;
+            let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(mid);
+            let d_val = compute_dstar_analytical(b1, mid, eps);
+            if d_val.is_nan() || d_val <= 0.0 || d_val >= 1.0 { lo = mid; continue; }
+            let (_, bv, _, _, _) = compute_all_from_dstar(d_val, b1, mid, eps);
+            if bv < 0.0 { hi = mid; } else { lo = mid; }
+            if (hi - lo) < 1e-10 { found = true; break; }
+        }
+        if found {
+            let d1_boundary = (lo + hi) / 2.0;
+            let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1_boundary);
+            let d_val = compute_dstar_analytical(b1, d1_boundary, eps);
+            let (dv, bv, rhov, rv, sv) = compute_all_from_dstar(d_val, b1, d1_boundary, eps);
+            let (rho_j2d, _, _, _, _, cond) = compute_j2d_analytical(dv, bv, rhov, rv, sv, &p);
+            let rho_use = if cond < 1e10 { rho_j2d } else { f64::NAN };
+            println!("  b1={:.2}: b*=0 at d1={:.6}  d*={:.6}  b*={:+.2e}  rho*={:.6}  r*={:+.6}  rho(J2D)={:.4}",
+                b1, d1_boundary, dv, bv, rhov, rv, rho_use);
+        } else {
+            println!("  b1={:.2}: b*=0 boundary NOT FOUND in d1 range", b1);
+        }
+    }
+
+    println!("\n  Part 3: Boundary curve search — find (b1,d1) where r*=0\n");
+
+    for &b1 in &[0.05_f64, 0.10, 0.15, 0.20, 0.25, 0.30, 0.40, 0.50, 0.75, 1.00, 1.50, 2.00, 3.00, 5.00] {
+        let mut lo = 0.50_f64;
+        let mut hi = 30.0_f64;
+        let mut found = false;
+        for _ in 0..200 {
+            let mid = (lo + hi) / 2.0;
+            let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(mid);
+            let d_val = compute_dstar_analytical(b1, mid, eps);
+            if d_val.is_nan() || d_val <= 0.0 || d_val >= 1.0 { lo = mid; continue; }
+            let (_, _, _, rv, _) = compute_all_from_dstar(d_val, b1, mid, eps);
+            if rv < 0.0 { hi = mid; } else { lo = mid; }
+            if (hi - lo) < 1e-10 { found = true; break; }
+        }
+        if found {
+            let d1_boundary = (lo + hi) / 2.0;
+            let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1_boundary);
+            let d_val = compute_dstar_analytical(b1, d1_boundary, eps);
+            let (dv, bv, rhov, rv, sv) = compute_all_from_dstar(d_val, b1, d1_boundary, eps);
+            let (rho_j2d, _, _, _, _, cond) = compute_j2d_analytical(dv, bv, rhov, rv, sv, &p);
+            let rho_use = if cond < 1e10 { rho_j2d } else { f64::NAN };
+            println!("  b1={:.2}: r*=0 at d1={:.6}  d*={:.6}  b*={:+.6}  rho*={:.6}  r*={:+.2e}  rho(J2D)={:.4}",
+                b1, d1_boundary, dv, bv, rhov, rv, rho_use);
+        } else {
+            println!("  b1={:.2}: r*=0 boundary NOT FOUND in d1 range", b1);
+        }
+    }
+
+    println!("\n  Part 4: Boundary curve search — find (b1,d1) where rho*=1\n");
+
+    for &b1 in &[0.05_f64, 0.10, 0.15, 0.20, 0.25, 0.30, 0.40, 0.50, 0.75, 1.00, 1.50, 2.00, 3.00, 5.00] {
+        let mut lo = 0.50_f64;
+        let mut hi = 30.0_f64;
+        let mut found = false;
+        for _ in 0..200 {
+            let mid = (lo + hi) / 2.0;
+            let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(mid);
+            let d_val = compute_dstar_analytical(b1, mid, eps);
+            if d_val.is_nan() || d_val <= 0.0 || d_val >= 1.0 { lo = mid; continue; }
+            let (_, _, rhov, _, _) = compute_all_from_dstar(d_val, b1, mid, eps);
+            if rhov > 1.0 { hi = mid; } else { lo = mid; }
+            if (hi - lo) < 1e-10 { found = true; break; }
+        }
+        if found {
+            let d1_boundary = (lo + hi) / 2.0;
+            let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1_boundary);
+            let d_val = compute_dstar_analytical(b1, d1_boundary, eps);
+            let (dv, bv, rhov, rv, sv) = compute_all_from_dstar(d_val, b1, d1_boundary, eps);
+            let (rho_j2d, _, _, _, _, cond) = compute_j2d_analytical(dv, bv, rhov, rv, sv, &p);
+            let rho_use = if cond < 1e10 { rho_j2d } else { f64::NAN };
+            println!("  b1={:.2}: rho*=1 at d1={:.6}  d*={:.6}  b*={:+.6}  rho*={:.6}  r*={:+.6}  rho(J2D)={:.4}",
+                b1, d1_boundary, dv, bv, rhov, rv, rho_use);
+        } else {
+            println!("  b1={:.2}: rho*=1 boundary NOT FOUND in d1 range", b1);
+        }
+    }
+
+    println!("\n  Part 5: Verification — does rho(J_2D)=1 coincide with b*=0 or rho*=1?\n");
+
+    for &b1 in &[0.10_f64, 0.20, 0.30, 0.50, 0.75, 1.00, 2.00, 5.00] {
+        let mut lo = 0.50_f64;
+        let mut hi = 30.0_f64;
+        let mut found = false;
+        for _ in 0..200 {
+            let mid = (lo + hi) / 2.0;
+            let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(mid);
+            let d_val = compute_dstar_analytical(b1, mid, eps);
+            if d_val.is_nan() || d_val <= 0.0 || d_val >= 1.0 { lo = mid; continue; }
+            let (dv, bv, rhov, rv, sv) = compute_all_from_dstar(d_val, b1, mid, eps);
+            let (rho_j2d, _, _, _, _, cond) = compute_j2d_analytical(dv, bv, rhov, rv, sv, &p);
+            let rho_use = if cond < 1e10 { rho_j2d } else { 0.0 };
+            if rho_use < 1.0 { lo = mid; } else { hi = mid; }
+            if (hi - lo) < 1e-10 { found = true; break; }
+        }
+        if found {
+            let d1_boundary = (lo + hi) / 2.0;
+            let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1_boundary);
+            let d_val = compute_dstar_analytical(b1, d1_boundary, eps);
+            let (dv, bv, rhov, rv, sv) = compute_all_from_dstar(d_val, b1, d1_boundary, eps);
+            println!("  b1={:.2}: rho(J2D)=1 at d1={:.6}  d*={:.6}  b*={:+.6}  rho*={:.6}  r*={:+.6}",
+                b1, d1_boundary, dv, bv, rhov, rv);
+            println!("           b*=0 dist={:+.2e}  rho*=1 dist={:+.2e}  r*=0 dist={:+.2e}",
+                bv, rhov - 1.0, rv);
+        } else {
+            println!("  b1={:.2}: rho(J2D)=1 boundary NOT FOUND", b1);
+        }
+    }
+
+    println!("\n  BOUNDARY CONDITIONS CONCLUSIONS:");
+    println!("  - Which analytical condition (b*=0, r*=0, rho*=1) matches rho(J_2D)=1?");
+    println!("  - Phase diagram: contracting region in (b1, d1) space");
+}

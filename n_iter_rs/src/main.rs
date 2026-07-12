@@ -155,4 +155,5 @@ fn run_synthetic_suite(max_concepts: usize, time_limit: f64, output_dir: &PathBu
     experiments::run_contraction_boundary();
     experiments::run_non_contract_test();
     experiments::run_multi_fp_analysis();
+    experiments::run_boundary_conditions();
 }
