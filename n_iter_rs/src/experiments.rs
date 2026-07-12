@@ -9637,3 +9637,352 @@ pub fn run_tau_predictive_validation() {
     println!("  - What is the tau_ana/tau_emp ratio?");
     println!("  - Is the complete parameter->metric pipeline validated?");
 }
+
+pub fn run_propagation_map_validation() {
+    println!("\n================================================================");
+    println!("  PROPAGATION MAP VALIDATION: rho(J_2D) predicts Phi convergence");
+    println!("  Iterate Phi: (b_up,rho_up) -> (b_out,rho_out) directly");
+    println!("================================================================\n");
+
+    let eps = DynamicsParams::uniform().eps;
+
+    let param_sets: Vec<(&str, f64, f64)> = vec![
+        ("SO-peak", 0.50, 10.00),
+        ("uniform", 1.00, 1.00),
+        ("high-b1", 2.00, 3.00),
+        ("low-b1", 0.25, 2.00),
+        ("asym-1", 0.75, 5.00),
+        ("asym-2", 1.50, 2.00),
+        ("wide-range", 3.00, 1.00),
+        ("extreme", 5.00, 1.00),
+        ("low-d1", 1.00, 0.50),
+        ("med-d1", 1.00, 5.00),
+    ];
+
+    println!("  Part 1: Analytical rho(J_2D) prediction\n");
+    println!("  name              b1     d1     d*        b*        rho*      rho(J2D)  tau_ana");
+
+    for &(name, b1, d1) in &param_sets {
+        let phys = find_physical_root(b1, d1, eps);
+        if let Some((dv, bv, rhov, rv, sv)) = phys {
+            let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1);
+            let (rho_j2d, _, _, _, _, cond) = compute_j2d_analytical(dv, bv, rhov, rv, sv, &p);
+            let rho_use = if cond < 1e10 { rho_j2d } else { f64::NAN };
+            let tau_ana = if rho_use > 0.0 && rho_use < 1.0 { -1.0 / rho_use.ln() } else { f64::NAN };
+            println!("  {:<16}  {:>5.2}  {:>5.2}  {:.6}  {:+.6}  {:.6}  {:>7.4}   {:>7.3}",
+                name, b1, d1, dv, bv, rhov, rho_use, tau_ana);
+        }
+    }
+
+    println!("\n  Part 2: Propagation map Phi iteration\n");
+    println!("  Starting from (b_up=0.1, rho_up=0.1), iterate until convergence");
+    println!("  Measure rho_emp = ||v_{{k+1}} - v*|| / ||v_k - v*|| over last 10 steps\n");
+
+    println!("  name              iters   b*        rho*      rho_emp    tau_emp    tau_ana    ratio");
+
+    for &(name, b1, d1) in &param_sets {
+        let phys = find_physical_root(b1, d1, eps);
+        let (dv, bv, rhov, rv, sv) = match phys {
+            Some(v) => v,
+            None => continue,
+        };
+
+        let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1);
+        let (rho_j2d, _, _, _, _, cond) = compute_j2d_analytical(dv, bv, rhov, rv, sv, &p);
+        let rho_ana = if cond < 1e10 { rho_j2d } else { f64::NAN };
+        let tau_ana = if rho_ana > 0.0 && rho_ana < 1.0 { -1.0 / rho_ana.ln() } else { f64::NAN };
+
+        let mut b_up = 0.1_f64;
+        let mut rho_up = 0.1_f64;
+        let max_iter = 300;
+        let tol = 1e-14;
+        let mut b_hist: Vec<f64> = Vec::new();
+        let mut rho_hist: Vec<f64> = Vec::new();
+
+        for _ in 0..max_iter {
+            let (d_out, b_out, rho_out, _r, _s) = solve_nfp(b_up, rho_up, &p);
+            if d_out.is_nan() || b_out.is_nan() || rho_out.is_nan() { break; }
+            b_hist.push(b_up);
+            rho_hist.push(rho_up);
+            let delta_b = (b_out - b_up).abs();
+            let delta_rho = (rho_out - rho_up).abs();
+            b_up = b_out;
+            rho_up = rho_out;
+            if delta_b < tol && delta_rho < tol { break; }
+        }
+
+        b_hist.push(b_up);
+        rho_hist.push(rho_up);
+        let n = b_hist.len();
+
+        if n >= 20 {
+            let tail_start = n - 10;
+            let mut rho_vals: Vec<f64> = Vec::new();
+            for k in (tail_start + 1)..n {
+                let dk = ((b_hist[k] - bv).powi(2) + (rho_hist[k] - rhov).powi(2)).sqrt();
+                let dkm1 = ((b_hist[k - 1] - bv).powi(2) + (rho_hist[k - 1] - rhov).powi(2)).sqrt();
+                if dkm1 > 1e-15 && dk > 1e-15 {
+                    rho_vals.push(dk / dkm1);
+                }
+            }
+            if !rho_vals.is_empty() {
+                let rho_emp: f64 = rho_vals.iter().sum::<f64>() / rho_vals.len() as f64;
+                let tau_emp = if rho_emp > 0.0 && rho_emp < 1.0 { -1.0 / rho_emp.ln() } else { f64::NAN };
+                let ratio = if !tau_ana.is_nan() && !tau_emp.is_nan() && tau_emp > 0.0 {
+                    tau_ana / tau_emp
+                } else {
+                    f64::NAN
+                };
+                println!("  {:<16}  {:>5}   {:.6}  {:.6}  {:>7.4}    {:>7.3}    {:>7.3}    {:>6.3}",
+                    name, n, b_up, rho_up, rho_emp, tau_emp, tau_ana, ratio);
+            } else {
+                println!("  {:<16}  {:>5}   {:.6}  {:.6}  (converged to machine precision)", name, n, b_up, rho_up);
+            }
+        } else {
+            println!("  {:<16}  {:>5}   {:.6}  {:.6}  (too few iterations)", name, n, b_up, rho_up);
+        }
+    }
+
+    println!("\n  Part 3: Summary — rho(J_2D) prediction quality for propagation map\n");
+
+    println!("  name              rho(J2D)_ana  rho_Phi_emp  ratio     quality");
+
+    for &(name, b1, d1) in &param_sets {
+        let phys = find_physical_root(b1, d1, eps);
+        let (dv, bv, rhov, rv, sv) = match phys {
+            Some(v) => v,
+            None => continue,
+        };
+
+        let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1);
+        let (rho_j2d, _, _, _, _, cond) = compute_j2d_analytical(dv, bv, rhov, rv, sv, &p);
+        let rho_ana = if cond < 1e10 { rho_j2d } else { f64::NAN };
+
+        let mut b_up = 0.1_f64;
+        let mut rho_up = 0.1_f64;
+        let mut b_hist: Vec<f64> = Vec::new();
+        let mut rho_hist: Vec<f64> = Vec::new();
+
+        for _ in 0..300 {
+            let (d_out, b_out, rho_out, _, _) = solve_nfp(b_up, rho_up, &p);
+            if d_out.is_nan() || b_out.is_nan() || rho_out.is_nan() { break; }
+            b_hist.push(b_up);
+            rho_hist.push(rho_up);
+            let delta_b = (b_out - b_up).abs();
+            let delta_rho = (rho_out - rho_up).abs();
+            b_up = b_out;
+            rho_up = rho_out;
+            if delta_b < 1e-14 && delta_rho < 1e-14 { break; }
+        }
+        b_hist.push(b_up);
+        rho_hist.push(rho_up);
+        let n = b_hist.len();
+
+        if n >= 20 {
+            let tail_start = n - 10;
+            let mut rho_vals: Vec<f64> = Vec::new();
+            for k in (tail_start + 1)..n {
+                let dk = ((b_hist[k] - bv).powi(2) + (rho_hist[k] - rhov).powi(2)).sqrt();
+                let dkm1 = ((b_hist[k - 1] - bv).powi(2) + (rho_hist[k - 1] - rhov).powi(2)).sqrt();
+                if dkm1 > 1e-15 && dk > 1e-15 {
+                    rho_vals.push(dk / dkm1);
+                }
+            }
+            if !rho_vals.is_empty() {
+                let rho_emp: f64 = rho_vals.iter().sum::<f64>() / rho_vals.len() as f64;
+                let ratio = if rho_emp > 0.0 { rho_ana / rho_emp } else { f64::NAN };
+                let quality = if !ratio.is_nan() {
+                    if (ratio - 1.0).abs() < 0.15 { "EXCELLENT" }
+                    else if (ratio - 1.0).abs() < 0.30 { "GOOD" }
+                    else if (ratio - 1.0).abs() < 0.50 { "FAIR" }
+                    else { "POOR" }
+                } else { "N/A" };
+                println!("  {:<16}  {:>10.4}    {:>10.4}    {:>6.3}   {}",
+                    name, rho_ana, rho_emp, ratio, quality);
+            }
+        }
+    }
+
+    println!("\n  PROPAGATION MAP VALIDATION CONCLUSIONS:");
+    println!("  - Does rho(J_2D) predict Phi convergence rate?");
+    println!("  - Complete pipeline: param -> d* -> (b*,rho*) -> rho(J_2D) -> tau^-1");
+}
+
+fn find_first_bifurcation(beta1: f64, eps: f64) -> Option<(f64, f64)> {
+    let mut prev_cnt = 0usize;
+    for i in 0..2000 {
+        let d1 = 0.50 + 49.50 * (i as f64) / 2000.0;
+        let roots = find_all_roots(beta1, d1, eps);
+        let cnt = roots.len();
+        if cnt > prev_cnt && prev_cnt > 0 {
+            let d1_lo = (d1 - 0.10).max(0.50);
+            let d1_hi = (d1 + 0.02).min(50.0);
+            let mut best_d1 = d1;
+            let mut best_gap = f64::INFINITY;
+            for j in 0..200 {
+                let d1_try = d1_lo + (d1_hi - d1_lo) * (j as f64) / 200.0;
+                let roots_try = find_all_roots(beta1, d1_try, eps);
+                let cnt_try = roots_try.len();
+                if cnt_try > 1 {
+                    let non_phys: Vec<_> = roots_try.iter().filter(|r| !r.5).collect();
+                    if let Some(np) = non_phys.first() {
+                        let gap = (np.1).abs();
+                        if gap < best_gap {
+                            best_gap = gap;
+                            best_d1 = d1_try;
+                        }
+                    }
+                }
+            }
+            let roots_at_bif = find_all_roots(beta1, best_d1, eps);
+            let non_phys: Vec<_> = roots_at_bif.iter().filter(|r| !r.5).collect();
+            if let Some(np) = non_phys.first() {
+                return Some((best_d1, np.0));
+            }
+            return Some((best_d1, 0.5));
+        }
+        prev_cnt = cnt;
+    }
+    None
+}
+
+fn lin_reg(x: &[f64], y: &[f64]) -> (f64, f64, f64) {
+    let n = x.len() as f64;
+    let sx: f64 = x.iter().sum();
+    let sy: f64 = y.iter().sum();
+    let sxx: f64 = x.iter().map(|v| v * v).sum();
+    let sxy: f64 = x.iter().zip(y.iter()).map(|(a, b)| a * b).sum();
+    let denom = n * sxx - sx * sx;
+    if denom.abs() < 1e-30 { return (f64::NAN, f64::NAN, f64::NAN); }
+    let slope = (n * sxy - sx * sy) / denom;
+    let intercept = (sy - slope * sx) / n;
+    let y_mean = sy / n;
+    let ss_tot: f64 = y.iter().map(|v| (v - y_mean).powi(2)).sum();
+    let ss_res: f64 = x.iter().zip(y.iter()).map(|(xi, yi)| (yi - slope * xi - intercept).powi(2)).sum();
+    let r2 = if ss_tot < 1e-30 { 0.0 } else { 1.0 - ss_res / ss_tot };
+    (slope, intercept, r2)
+}
+
+pub fn run_bifurcation_curve_fit() {
+    println!("\n================================================================");
+    println!("  BIFURCATION CURVE FIT: Analytical formula for delta1_bif(beta1)");
+    println!("  High-precision bifurcation points + regression analysis");
+    println!("================================================================\n");
+
+    let eps = DynamicsParams::uniform().eps;
+
+    let beta1_values: Vec<f64> = vec![
+        0.02, 0.05, 0.08, 0.10, 0.12, 0.15, 0.18, 0.20, 0.25, 0.30,
+        0.35, 0.40, 0.45, 0.50, 0.60, 0.70, 0.75, 0.80, 0.90, 1.00,
+        1.20, 1.50, 1.80, 2.00, 2.50, 3.00, 3.50, 4.00, 4.50, 5.00,
+        6.00, 7.00, 8.00, 9.00, 10.00, 15.00, 20.00, 30.00, 50.00,
+    ];
+
+    println!("  Part 1: High-precision bifurcation points\n");
+    println!("  beta1     delta1_bif   d*_bif");
+
+    let mut data: Vec<(f64, f64, f64)> = Vec::new();
+
+    for &b1 in &beta1_values {
+        if let Some((d1_bif, d_bif)) = find_first_bifurcation(b1, eps) {
+            println!("  {:>7.3}   {:>10.4}   {:.6}", b1, d1_bif, d_bif);
+            data.push((b1, d1_bif, d_bif));
+        } else {
+            println!("  {:>7.3}   (no bifurcation found)", b1);
+        }
+    }
+
+    println!("\n  Part 2: Curve fitting — delta1_bif vs beta1\n");
+
+    let b1_arr: Vec<f64> = data.iter().map(|d| d.0).collect();
+    let d1_arr: Vec<f64> = data.iter().map(|d| d.1).collect();
+    let n = data.len();
+
+    let log_b1: Vec<f64> = b1_arr.iter().map(|v| v.ln()).collect();
+    let log_d1: Vec<f64> = d1_arr.iter().map(|v| v.ln()).collect();
+
+    let (s1, i1, r2_1) = lin_reg(&b1_arr, &d1_arr);
+    println!("  Model 1: d1 = a + b*b1");
+    println!("    a={:.4}, b={:.4}, R^2={:.6}", i1, s1, r2_1);
+
+    let (s2, i2, r2_2) = lin_reg(&log_b1, &log_d1);
+    println!("  Model 2: d1 = a * b1^b  (log-log)");
+    println!("    a=exp({:.4})={:.4}, b={:.4}, R^2={:.6}", i2, i2.exp(), s2, r2_2);
+
+    let log_b1_plus_c: Vec<f64> = b1_arr.iter().map(|v| (v + 0.5).ln()).collect();
+    let (s3, i3, r2_3) = lin_reg(&log_b1_plus_c, &log_d1);
+    println!("  Model 3: d1 = a * (b1+c)^b  (c=0.5)");
+    println!("    a=exp({:.4})={:.4}, b={:.4}, R^2={:.6}", i3, i3.exp(), s3, r2_3);
+
+    let sqrt_b1: Vec<f64> = b1_arr.iter().map(|v| v.sqrt()).collect();
+    let (s4, i4, r2_4) = lin_reg(&sqrt_b1, &d1_arr);
+    println!("  Model 4: d1 = a + b*sqrt(b1)");
+    println!("    a={:.4}, b={:.4}, R^2={:.6}", i4, s4, r2_4);
+
+    let inv_b1: Vec<f64> = b1_arr.iter().map(|v| 1.0 / v).collect();
+    let (s5, i5, r2_5) = lin_reg(&inv_b1, &d1_arr);
+    println!("  Model 5: d1 = a + b/b1");
+    println!("    a={:.4}, b={:.4}, R^2={:.6}", i5, s5, r2_5);
+
+    let log_d1_minus_log_b1: Vec<f64> = log_d1.iter().zip(log_b1.iter()).map(|(a, b)| a - b).collect();
+    let (s6, i6, r2_6) = lin_reg(&log_b1, &log_d1_minus_log_b1);
+    println!("  Model 6: d1 = a * b1^(1+b)  (d1/b1 ~ b1^b)");
+    println!("    a=exp({:.4})={:.4}, b={:.4}, R^2={:.6}", i6, i6.exp(), s6, r2_6);
+
+    println!("\n  Part 3: Best model selection\n");
+
+    let models: Vec<(&str, f64)> = vec![
+        ("a + b*b1", r2_1),
+        ("a * b1^b", r2_2),
+        ("a * (b1+0.5)^b", r2_3),
+        ("a + b*sqrt(b1)", r2_4),
+        ("a + b/b1", r2_5),
+        ("a * b1^(1+b)", r2_6),
+    ];
+
+    let best = models.iter().max_by(|a, b| a.1.partial_cmp(&b.1).unwrap()).unwrap();
+    println!("  Best model: {} (R^2 = {:.6})", best.0, best.1);
+
+    println!("\n  Part 4: Residual analysis for best model\n");
+
+    if (best.1 - r2_2).abs() < 1e-10 {
+        println!("  Using log-log model: d1 = {:.4} * b1^{:.4}", i2.exp(), s2);
+        println!("  beta1     delta1_obs   delta1_pred   residual(%)");
+        for &(b1, d1_obs, _) in &data {
+            let d1_pred = i2.exp() * b1.powf(s2);
+            let resid = (d1_obs - d1_pred) / d1_obs * 100.0;
+            println!("  {:>7.3}   {:>10.4}   {:>10.4}   {:>+8.3}%", b1, d1_obs, d1_pred, resid);
+        }
+    } else if (best.1 - r2_4).abs() < 1e-10 {
+        println!("  Using sqrt model: d1 = {:.4} + {:.4}*sqrt(b1)", i4, s4);
+        println!("  beta1     delta1_obs   delta1_pred   residual(%)");
+        for &(b1, d1_obs, _) in &data {
+            let d1_pred = i4 + s4 * b1.sqrt();
+            let resid = (d1_obs - d1_pred) / d1_obs * 100.0;
+            println!("  {:>7.3}   {:>10.4}   {:>10.4}   {:>+8.3}%", b1, d1_obs, d1_pred, resid);
+        }
+    } else {
+        println!("  Using linear model: d1 = {:.4} + {:.4}*b1", i1, s1);
+        println!("  beta1     delta1_obs   delta1_pred   residual(%)");
+        for &(b1, d1_obs, _) in &data {
+            let d1_pred = i1 + s1 * b1;
+            let resid = (d1_obs - d1_pred) / d1_obs * 100.0;
+            println!("  {:>7.3}   {:>10.4}   {:>10.4}   {:>+8.3}%", b1, d1_obs, d1_pred, resid);
+        }
+    }
+
+    println!("\n  Part 5: d*_bif behavior\n");
+    println!("  beta1     d*_bif     near 0.5?");
+
+    for &(b1, _d1, d_bif) in &data {
+        let near_half = if (d_bif - 0.5).abs() < 0.01 { "YES" } else { "NO" };
+        println!("  {:>7.3}   {:.6}   {}", b1, d_bif, near_half);
+    }
+
+    let n_half = data.iter().filter(|d| (d.2 - 0.5).abs() < 0.01).count();
+    println!("\n  {}/{} bifurcation points have d* near 0.5", n_half, data.len());
+
+    println!("\n  BIFURCATION CURVE FIT CONCLUSIONS:");
+    println!("  - Best analytical formula for delta1_bif(beta1)");
+    println!("  - Fraction of d*_bif at d=0.5 singularity");
+}

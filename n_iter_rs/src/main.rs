@@ -162,4 +162,6 @@ fn run_synthetic_suite(max_concepts: usize, time_limit: f64, output_dir: &PathBu
     experiments::run_noncontract_reconciliation();
     experiments::run_bifurcation_analysis();
     experiments::run_tau_predictive_validation();
+    experiments::run_propagation_map_validation();
+    experiments::run_bifurcation_curve_fit();
 }
