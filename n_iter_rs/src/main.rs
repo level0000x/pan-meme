@@ -142,4 +142,6 @@ fn run_synthetic_suite(max_concepts: usize, time_limit: f64, output_dir: &PathBu
     experiments::run_bup_propagation();
     experiments::run_rho_analytical();
     experiments::run_jacobian_coupling();
+    experiments::run_super_optimal_analytical();
+    experiments::run_characteristic_polynomial();
 }
