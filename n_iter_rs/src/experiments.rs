@@ -15393,3 +15393,336 @@ pub fn run_lattice_prediction_validation() {
     println!("  If MAPE stays < 10% for b_up > 0, the formula generalizes.");
     println!("  If not, a b_up-dependent correction term is needed.");
 }
+
+pub fn run_lattice_correction_refit() {
+    use crate::five_dim;
+    use crate::n_operator;
+    use crate::pipeline;
+
+    println!("{}", "=".repeat(72));
+    println!("  LATTICE CORRECTION REFIT: multi-variable regression on lattice data");
+    println!("  Target: n/n_pred = f(d0, rho, b_up, depth)");
+    println!("{}", "=".repeat(72));
+
+    let topologies: Vec<(&str, fca::FcaLattice)> = vec![
+        ("chain-3", fca::build_chain_lattice(3)),
+        ("chain-4", fca::build_chain_lattice(4)),
+        ("chain-5", fca::build_chain_lattice(5)),
+        ("chain-8", fca::build_chain_lattice(8)),
+        ("diamond", fca::build_diamond_lattice()),
+        ("M3", fca::build_m3_lattice()),
+        ("B3", fca::build_b3_lattice()),
+        ("grid-3x3", fca::build_grid_lattice(3, 3)),
+        ("grid-4x3", fca::build_grid_lattice(4, 3)),
+        ("anti-3", fca::build_antichain_lattice(3)),
+        ("anti-5", fca::build_antichain_lattice(5)),
+    ];
+
+    let regimes: &[(&str, f64, f64, f64)] = &[
+        ("b1=0.5,e=10", 0.5, 1.0, 10.0),
+        ("b1=0.5,e=20", 0.5, 1.0, 20.0),
+        ("b1=1,e=10", 1.0, 1.0, 10.0),
+        ("b1=1,e=20", 1.0, 1.0, 20.0),
+        ("b1=1,e=50", 1.0, 1.0, 50.0),
+        ("b1=1.5,d=0.5,e=50", 1.5, 0.5, 50.0),
+        ("b1=2,e=30", 2.0, 1.0, 30.0),
+        ("b1=2,e=100", 2.0, 1.0, 100.0),
+        ("b1=2,e=200", 2.0, 1.0, 200.0),
+        ("b1=3,e=100", 3.0, 1.0, 100.0),
+        ("b1=3,e=200", 3.0, 1.0, 200.0),
+        ("b1=3,e=500", 3.0, 1.0, 500.0),
+        ("b1=4,e=500", 4.0, 1.0, 500.0),
+        ("b1=5,e=1000", 5.0, 1.0, 1000.0),
+    ];
+
+    let tol = 1e-12_f64;
+
+    let mut data: Vec<(f64, f64, f64, f64, f64, f64)> = Vec::new();
+
+    for (tname, lat) in &topologies {
+        let stats = pipeline::compute_lattice_stats(lat);
+        for &(rname, b1, d1, eps) in regimes {
+            let p = n_operator::DynamicsParams::uniform()
+                .with_beta1(b1).with_delta1(d1).with_eps(eps);
+            let results = pipeline::run_topological_iteration(lat, &stats, &p);
+            let n = lat.concepts.len();
+            for ci in 0..n {
+                let ref res = match &results[ci] {
+                    Some(ref r) => r,
+                    None => continue,
+                };
+                if !res.converged { continue; }
+                let (b_up, rho_up) = pipeline::get_upstream(ci, &stats.feeders, &results);
+                let m0 = pipeline::init_state(ci, lat, &stats);
+                let m_star = res.m_star;
+                let j = n_operator::compute_jacobian(&m_star, b_up, rho_up, &p);
+                let eigs = j.complex_eigenvalues();
+                let rho_j = eigs.iter().map(|c| c.norm()).fold(0.0_f64, f64::max);
+                let d0: f64 = (0..5).map(|k| (m0[k] - m_star[k]).powi(2)).sum::<f64>().sqrt();
+                let n_act = res.n_iters as f64;
+                if rho_j <= 0.0 || rho_j >= 1.0 || d0 <= tol { continue; }
+                let n_naive = (d0 / tol).ln() / (1.0 / rho_j).ln();
+                if n_naive <= 0.0 { continue; }
+                let ratio = n_act / n_naive;
+                let depth = stats.heights[ci] as f64;
+                let _ = (tname, rname, rho_up);
+                data.push((d0.ln(), rho_j, b_up, depth, ratio, n_act));
+            }
+        }
+    }
+
+    println!("\n  Collected {} data points from {} topologies × {} regimes",
+        data.len(), topologies.len(), regimes.len());
+
+    let n_pts = data.len() as f64;
+    let mean_ratio = data.iter().map(|d| d.4).sum::<f64>() / n_pts;
+
+    println!("\n  Phase 1: Baseline models");
+    println!("  {:>6} {:>55} {:>10}", "Model", "Formula", "MAPE");
+    println!("  {}", "-".repeat(75));
+
+    let mape_baseline = data.iter().map(|d| ((d.4 - 1.0) / d.4).abs()).sum::<f64>() / n_pts * 100.0;
+    println!("  {:>6} {:>55} {:>9.1}%", "M0", "n/n_pred = 1.0 (no correction)", mape_baseline);
+
+    let mape_v277 = data.iter().map(|d| {
+        let pred = 1.221 + 0.690 * d.0 - 1.988 * d.1;
+        ((d.4 - pred) / d.4).abs()
+    }).sum::<f64>() / n_pts * 100.0;
+    println!("  {:>6} {:>55} {:>9.1}%", "M1", "1.221 + 0.690*ln(d0) - 1.988*rho [v2.77]", mape_v277);
+
+    fn compute_mape(data: &[(f64, f64, f64, f64, f64, f64)], coeffs: &[f64]) -> f64 {
+        let n = data.len() as f64;
+        data.iter().map(|d| {
+            let pred = coeffs[0] + coeffs[1]*d.0 + coeffs[2]*d.1 + coeffs[3]*d.2 + coeffs[4]*d.3;
+            ((d.4 - pred) / d.4).abs()
+        }).sum::<f64>() / n * 100.0
+    }
+
+    fn normal_equation(data: &[(f64, f64, f64, f64, f64, f64)]) -> [f64; 5] {
+        let n = data.len();
+        let mut ata = [[0.0_f64; 5]; 5];
+        let mut atb = [0.0_f64; 5];
+        for d in data {
+            let x = [1.0, d.0, d.1, d.2, d.3];
+            let y = d.4;
+            for i in 0..5 {
+                atb[i] += x[i] * y;
+                for j in 0..5 {
+                    ata[i][j] += x[i] * x[j];
+                }
+            }
+        }
+        let mut aug = [[0.0_f64; 10]; 5];
+        for i in 0..5 {
+            for j in 0..5 { aug[i][j] = ata[i][j]; }
+            aug[i][5 + i] = 1.0;
+        }
+        for col in 0..5 {
+            let mut max_val = aug[col][col].abs();
+            let mut max_row = col;
+            for row in (col + 1)..5 {
+                if aug[row][col].abs() > max_val {
+                    max_val = aug[row][col].abs();
+                    max_row = row;
+                }
+            }
+            aug.swap(col, max_row);
+            let pivot = aug[col][col];
+            if pivot.abs() < 1e-30 { return [data.iter().map(|d| d.4).sum::<f64>() / data.len() as f64, 0.0, 0.0, 0.0, 0.0]; }
+            for j in 0..10 { aug[col][j] /= pivot; }
+            for row in 0..5 {
+                if row == col { continue; }
+                let factor = aug[row][col];
+                for j in 0..10 { aug[row][j] -= factor * aug[col][j]; }
+            }
+        }
+        let mut coeffs = [0.0_f64; 5];
+        for i in 0..5 { coeffs[i] = aug[i][5 + i]; }
+        coeffs
+    }
+
+    println!("\n  Phase 2: OLS regression (full dataset)");
+
+    let coeffs_full = normal_equation(&data);
+    let mape_full = compute_mape(&data, &coeffs_full);
+    println!("  M2 (full): {:.4} + {:.4}*ln(d0) + {:.4}*rho + {:.4}*b_up + {:.4}*depth",
+        coeffs_full[0], coeffs_full[1], coeffs_full[2], coeffs_full[3], coeffs_full[4]);
+    println!("  MAPE = {:.1}%", mape_full);
+
+    let mut data_no_depth: Vec<(f64, f64, f64, f64, f64, f64)> = data.iter()
+        .map(|d| (d.0, d.1, d.2, 0.0, d.4, d.5))
+        .collect();
+    let coeffs_3var = normal_equation(&data_no_depth);
+    let mape_3var = compute_mape(&data_no_depth, &coeffs_3var);
+    println!("  M3 (no depth): {:.4} + {:.4}*ln(d0) + {:.4}*rho + {:.4}*b_up",
+        coeffs_3var[0], coeffs_3var[1], coeffs_3var[2], coeffs_3var[3]);
+    println!("  MAPE = {:.1}%", mape_3var);
+
+    let mut data_rho_only: Vec<(f64, f64, f64, f64, f64, f64)> = data.iter()
+        .map(|d| (d.0, d.1, 0.0, 0.0, d.4, d.5))
+        .collect();
+    let coeffs_2var = normal_equation(&data_rho_only);
+    let mape_2var = compute_mape(&data_rho_only, &coeffs_2var);
+    println!("  M2 (ln_d0+rho): {:.4} + {:.4}*ln(d0) + {:.4}*rho",
+        coeffs_2var[0], coeffs_2var[1], coeffs_2var[2]);
+    println!("  MAPE = {:.1}%", mape_2var);
+
+    println!("\n  Phase 3: Leave-one-topology-out cross-validation");
+    println!("  {:>12} {:>8} {:>8} {:>8} {:>8}", "held_out", "M0", "M1", "M2full", "M3var");
+    println!("  {}", "-".repeat(52));
+
+    let mut cv_mape_m0 = Vec::new();
+    let mut cv_mape_m1 = Vec::new();
+    let mut cv_mape_m2 = Vec::new();
+    let mut cv_mape_m3 = Vec::new();
+
+    for (hi, (hname, _)) in topologies.iter().enumerate() {
+        let train: Vec<_> = data.iter().enumerate()
+            .filter(|(i, _)| {
+                let mut cum = 0;
+                for (ti, (_, lat)) in topologies.iter().enumerate() {
+                    let cnt = lat.concepts.len() * regimes.len();
+                    if ti == hi { return *i < cum || *i >= cum + cnt; }
+                    cum += cnt;
+                }
+                true
+            })
+            .map(|(_, d)| *d)
+            .collect();
+
+        let test: Vec<_> = data.iter().enumerate()
+            .filter(|(i, _)| {
+                let mut cum = 0;
+                for (ti, (_, lat)) in topologies.iter().enumerate() {
+                    let cnt = lat.concepts.len() * regimes.len();
+                    if ti == hi { return *i >= cum && *i < cum + cnt; }
+                    cum += cnt;
+                }
+                false
+            })
+            .map(|(_, d)| *d)
+            .collect();
+
+        if train.len() < 10 || test.is_empty() { continue; }
+
+        let c = normal_equation(&train);
+
+        let test_m0 = test.iter().map(|d| ((d.4 - 1.0) / d.4).abs()).sum::<f64>() / test.len() as f64 * 100.0;
+        let test_m1 = test.iter().map(|d| {
+            let pred = 1.221 + 0.690*d.0 - 1.988*d.1;
+            ((d.4 - pred) / d.4).abs()
+        }).sum::<f64>() / test.len() as f64 * 100.0;
+        let test_m2 = compute_mape(&test, &c);
+
+        let mut train_nd = train.clone();
+        for d in &mut train_nd { d.3 = 0.0; }
+        let c_nd = normal_equation(&train_nd);
+        let mut test_nd = test.clone();
+        for d in &mut test_nd { d.3 = 0.0; }
+        let test_m3 = compute_mape(&test_nd, &c_nd);
+
+        println!("  {:>12} {:>7.1}% {:>7.1}% {:>7.1}% {:>7.1}%",
+            hname, test_m0, test_m1, test_m2, test_m3);
+
+        cv_mape_m0.push(test_m0);
+        cv_mape_m1.push(test_m1);
+        cv_mape_m2.push(test_m2);
+        cv_mape_m3.push(test_m3);
+    }
+
+    if !cv_mape_m0.is_empty() {
+        println!("  {:>12} {:>7.1}% {:>7.1}% {:>7.1}% {:>7.1}%",
+            "MEAN",
+            cv_mape_m0.iter().sum::<f64>() / cv_mape_m0.len() as f64,
+            cv_mape_m1.iter().sum::<f64>() / cv_mape_m1.len() as f64,
+            cv_mape_m2.iter().sum::<f64>() / cv_mape_m2.len() as f64,
+            cv_mape_m3.iter().sum::<f64>() / cv_mape_m3.len() as f64);
+    }
+
+    println!("\n  Phase 4: k-factor regression (direct k = rho_eff/rho)");
+    let k_data: Vec<(f64, f64, f64, f64, f64)> = data.iter()
+        .filter(|d| d.1 > 1e-15 && d.5 > 0.0)
+        .map(|d| {
+            let rho_eff = if d.5 > 0.0 && d.0.exp() > tol {
+                (tol / d.0.exp()).powf(1.0 / d.5)
+            } else { 0.0 };
+            let k = rho_eff / d.1;
+            (d.0, d.1, d.2, d.3, k)
+        })
+        .filter(|d| d.4 > 0.0 && d.4 < 10.0 && d.4.is_finite())
+        .collect();
+
+    if k_data.len() >= 10 {
+        let nk = k_data.len() as f64;
+        let mean_k = k_data.iter().map(|d| d.4).sum::<f64>() / nk;
+        let mut sorted_k: Vec<f64> = k_data.iter().map(|d| d.4).collect();
+        sorted_k.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        let median_k = sorted_k[sorted_k.len() / 2];
+
+        let mut ata = [[0.0_f64; 4]; 4];
+        let mut atb = [0.0_f64; 4];
+        for d in &k_data {
+            let x = [1.0, d.0, d.1, d.2];
+            let y = d.4;
+            for i in 0..4 {
+                atb[i] += x[i] * y;
+                for j in 0..4 { ata[i][j] += x[i] * x[j]; }
+            }
+        }
+        let mut aug = [[0.0_f64; 8]; 4];
+        for i in 0..4 {
+            for j in 0..4 { aug[i][j] = ata[i][j]; }
+            aug[i][4 + i] = 1.0;
+        }
+        for col in 0..4 {
+            let mut max_val = aug[col][col].abs();
+            let mut max_row = col;
+            for row in (col + 1)..4 {
+                if aug[row][col].abs() > max_val {
+                    max_val = aug[row][col].abs();
+                    max_row = row;
+                }
+            }
+            aug.swap(col, max_row);
+            let pivot = aug[col][col];
+            if pivot.abs() < 1e-30 { continue; }
+            for j in 0..8 { aug[col][j] /= pivot; }
+            for row in 0..4 {
+                if row == col { continue; }
+                let factor = aug[row][col];
+                for j in 0..8 { aug[row][j] -= factor * aug[col][j]; }
+            }
+        }
+        let kc = [aug[0][4], aug[1][5], aug[2][6], aug[3][7]];
+
+        let k_mape = k_data.iter().map(|d| {
+            let pred = kc[0] + kc[1]*d.0 + kc[2]*d.1 + kc[3]*d.2;
+            ((d.4 - pred) / d.4).abs()
+        }).sum::<f64>() / nk * 100.0;
+
+        println!("  k = {:.3} + {:.3}*ln(d0) + {:.3}*rho + {:.3}*b_up  (MAPE={:.1}%)",
+            kc[0], kc[1], kc[2], kc[3], k_mape);
+        println!("  k stats: mean={:.3}, median={:.3}, n={}", mean_k, median_k, k_data.len());
+    }
+
+    println!("\n  Phase 5: Best model summary");
+    let best_model = [
+        ("M0 (no correction)", mape_baseline),
+        ("M1 (v2.77)", mape_v277),
+        ("M2 (full 4-var)", mape_full),
+        ("M3 (3-var no depth)", mape_3var),
+        ("M2b (ln_d0+rho)", mape_2var),
+    ];
+    let best = best_model.iter().min_by(|a, b| a.1.partial_cmp(&b.1).unwrap()).unwrap();
+    println!("  Best model: {} with MAPE={:.1}%", best.0, best.1);
+
+    if best.1 < 10.0 {
+        println!("  ✅ Target MAPE < 10% achieved!");
+    } else {
+        println!("  ✗ MAPE still > 10%, further refinement needed.");
+    }
+
+    println!("\n  Recommended lattice correction formula:");
+    println!("  n_final = n_naive * ({:.4} + {:.4}*ln(d0) + {:.4}*rho + {:.4}*b_up + {:.4}*depth)",
+        coeffs_full[0], coeffs_full[1], coeffs_full[2], coeffs_full[3], coeffs_full[4]);
+}

@@ -193,4 +193,5 @@ fn run_synthetic_suite(_max_concepts: usize, _time_limit: f64, _output_dir: &Pat
     experiments::run_k_factor_analytical();
     experiments::run_distance_correction();
     experiments::run_lattice_prediction_validation();
+    experiments::run_lattice_correction_refit();
 }
