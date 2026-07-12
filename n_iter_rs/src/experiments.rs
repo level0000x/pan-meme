@@ -17391,3 +17391,201 @@ pub fn run_full_lattice_prediction() {
     println!("  4. Ratio distribution: histogram across all cases");
     println!("  5. Old 1.21 vs new lattice-aware comparison");
 }
+
+pub fn run_error_decomposition() {
+    println!("\n=== v2.86 ERROR DECOMPOSITION ===");
+
+    let test_lats: Vec<(&str, fca::FcaLattice)> = vec![
+        ("chain(5)", fca::build_chain_lattice(5)),
+        ("diamond", fca::build_diamond_lattice()),
+        ("B3", fca::build_b3_lattice()),
+        ("grid(3,2)", fca::build_grid_lattice(3, 2)),
+    ];
+
+    let b1_vals: Vec<f64> = vec![0.3, 0.5, 1.0, 1.5, 2.0, 3.0, 5.0, 7.0, 10.0, 15.0];
+    let d1_vals: Vec<f64> = vec![0.3, 0.5, 1.0, 2.0, 3.0, 5.0, 7.0, 10.0];
+    let eps_vals: Vec<f64> = vec![0.01, 0.05, 0.1, 0.5, 1.0, 2.0, 5.0, 10.0, 50.0];
+
+    struct DataPoint {
+        b1: f64, d1: f64, eps: f64, topo: usize,
+        rho: f64, d0: f64, n_actual: f64, n_pred: f64, ratio: f64,
+        b_up: f64, rho_up: f64,
+    }
+
+    let mut data: Vec<DataPoint> = Vec::new();
+
+    for &b1 in &b1_vals {
+        for &d1 in &d1_vals {
+            for &eps in &eps_vals {
+                let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1).with_eps(eps);
+                for (ti, (_, lat)) in test_lats.iter().enumerate() {
+                    let stats = pipeline::compute_lattice_stats(lat);
+                    let results = pipeline::run_topological_iteration(lat, &stats, &p);
+                    for ci in 0..lat.concepts.len() {
+                        if let Some(Some(ref res)) = results.get(ci) {
+                            if !res.converged { continue; }
+                            let rho = res.rho_spectral;
+                            let m_star_arr = five_dim::to_array(&res.m_star);
+                            let m0 = pipeline::init_state(ci, lat, &stats);
+                            let m0_arr = five_dim::to_array(&m0);
+                            let d0: f64 = (0..5).map(|k| (m0_arr[k] - m_star_arr[k]).powi(2)).sum::<f64>().sqrt();
+                            let n_pred = n_pred_from_rho(d0, rho, 1e-12);
+                            if n_pred < 1.0 { continue; }
+                            let (b_up, rho_up) = pipeline::get_upstream(ci, &stats.feeders, &results);
+                            data.push(DataPoint {
+                                b1, d1, eps, topo: ti,
+                                rho, d0, n_actual: res.n_iters as f64, n_pred, ratio: res.n_iters as f64 / n_pred,
+                                b_up, rho_up,
+                            });
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // ── Phase 1: Error by ε ──
+    println!("\n--- Phase 1: Ratio by ε ---");
+    for &eps in &eps_vals {
+        let subset: Vec<f64> = data.iter().filter(|d| (d.eps - eps).abs() < 0.001).map(|d| d.ratio).collect();
+        if subset.is_empty() { continue; }
+        let m = mean_f64(&subset);
+        let s = std_f64(&subset);
+        let med = median_f64(&subset);
+        println!("  ε={:>6.2}: N={:>5}, mean={:.4}, std={:.4}, median={:.4}", eps, subset.len(), m, s, med);
+    }
+
+    // ── Phase 2: Error by ρ(J) ──
+    println!("\n--- Phase 2: Ratio by ρ(J) ---");
+    let rho_bins: Vec<(f64, f64)> = vec![
+        (0.0, 0.05), (0.05, 0.1), (0.1, 0.15), (0.15, 0.2), (0.2, 0.3),
+        (0.3, 0.4), (0.4, 0.5), (0.5, 0.6), (0.6, 0.7), (0.7, 1.0),
+    ];
+    for &(lo, hi) in &rho_bins {
+        let subset: Vec<f64> = data.iter().filter(|d| d.rho >= lo && d.rho < hi).map(|d| d.ratio).collect();
+        if subset.is_empty() { continue; }
+        let m = mean_f64(&subset);
+        println!("  ρ∈[{:.2},{:.2}): N={:>5}, mean_ratio={:.4}", lo, hi, subset.len(), m);
+    }
+
+    // ── Phase 3: Error by topology ──
+    println!("\n--- Phase 3: Ratio by topology ---");
+    let topo_names = ["chain(5)", "diamond", "B3", "grid(3,2)"];
+    for ti in 0..4 {
+        let subset: Vec<f64> = data.iter().filter(|d| d.topo == ti).map(|d| d.ratio).collect();
+        if subset.is_empty() { continue; }
+        let m = mean_f64(&subset);
+        let med = median_f64(&subset);
+        println!("  {:<12}: N={:>5}, mean={:.4}, median={:.4}", topo_names[ti], subset.len(), m, med);
+    }
+
+    // ── Phase 4: Error by b_up ──
+    println!("\n--- Phase 4: Ratio by b_up ---");
+    let bup_bins: Vec<(f64, f64)> = vec![
+        (0.0, 0.1), (0.1, 0.3), (0.3, 0.5), (0.5, 0.7), (0.7, 0.9), (0.9, 1.0),
+    ];
+    for &(lo, hi) in &bup_bins {
+        let subset: Vec<f64> = data.iter().filter(|d| d.b_up >= lo && d.b_up < hi).map(|d| d.ratio).collect();
+        if subset.is_empty() { continue; }
+        let m = mean_f64(&subset);
+        println!("  b_up∈[{:.1},{:.1}): N={:>5}, mean_ratio={:.4}", lo, hi, subset.len(), m);
+    }
+
+    // ── Phase 5: Multi-variable regression ──
+    println!("\n--- Phase 5: Multi-variable regression ---");
+    println!("  Attempting: ratio = a + b·ln(ρ) + c·ln(d₀) + d·ln(ε) + e·b_up");
+
+    let n = data.len() as f64;
+    let mut xtx = [[0.0_f64; 5]; 5];
+    let mut xty = [0.0_f64; 5];
+
+    for d in &data {
+        let x = [1.0, d.rho.ln(), d.d0.ln(), d.eps.ln(), d.b_up];
+        let y = d.ratio;
+        for i in 0..5 {
+            xty[i] += x[i] * y;
+            for j in 0..5 { xtx[i][j] += x[i] * x[j]; }
+        }
+    }
+
+    // Solve via Gauss elimination
+    let mut aug = [[0.0_f64; 6]; 5];
+    for i in 0..5 {
+        for j in 0..5 { aug[i][j] = xtx[i][j]; }
+        aug[i][5] = xty[i];
+    }
+    for col in 0..5 {
+        let mut max_row = col;
+        for row in col + 1..5 {
+            if aug[row][col].abs() > aug[max_row][col].abs() { max_row = row; }
+        }
+        aug.swap(col, max_row);
+        let pivot = aug[col][col];
+        if pivot.abs() < 1e-30 { continue; }
+        for j in col..6 { aug[col][j] /= pivot; }
+        for row in 0..5 {
+            if row == col { continue; }
+            let factor = aug[row][col];
+            for j in col..6 { aug[row][j] -= factor * aug[col][j]; }
+        }
+    }
+    let beta = [aug[0][5], aug[1][5], aug[2][5], aug[3][5], aug[4][5]];
+    println!("  ratio ≈ {:.4} + {:.4}·ln(ρ) + {:.4}·ln(d₀) + {:.4}·ln(ε) + {:.4}·b_up",
+        beta[0], beta[1], beta[2], beta[3], beta[4]);
+
+    // Compute R² and MAPE with correction
+    let y_mean = mean_f64(&data.iter().map(|d| d.ratio).collect::<Vec<_>>());
+    let (mut ss_res, mut ss_tot) = (0.0_f64, 0.0_f64);
+    let mut corrected_ratios: Vec<f64> = Vec::new();
+    for d in &data {
+        let x = [1.0, d.rho.ln(), d.d0.ln(), d.eps.ln(), d.b_up];
+        let pred: f64 = beta.iter().zip(x.iter()).map(|(b, xi)| b * xi).sum();
+        let corrected = d.ratio / pred;
+        corrected_ratios.push(corrected);
+        ss_res += (d.ratio - pred).powi(2);
+        ss_tot += (d.ratio - y_mean).powi(2);
+    }
+    let r2 = if ss_tot > 1e-30 { 1.0 - ss_res / ss_tot } else { 0.0 };
+    let mape_corrected = mean_f64(&corrected_ratios.iter().map(|r| (r - 1.0).abs()).collect::<Vec<_>>()) * 100.0;
+    let mape_raw = mean_f64(&data.iter().map(|d| (d.ratio - 1.0).abs()).collect::<Vec<_>>()) * 100.0;
+    println!("  R² = {:.6}", r2);
+    println!("  Raw MAPE: {:.1}%", mape_raw);
+    println!("  Corrected MAPE: {:.1}%", mape_corrected);
+
+    // ── Phase 6: Simple constant correction ──
+    println!("\n--- Phase 6: Simple constant correction ---");
+    let mean_ratio = mean_f64(&data.iter().map(|d| d.ratio).collect::<Vec<_>>());
+    let const_corrected: Vec<f64> = data.iter().map(|d| d.ratio / mean_ratio).collect();
+    let mape_const = mean_f64(&const_corrected.iter().map(|r| (r - 1.0).abs()).collect::<Vec<_>>()) * 100.0;
+    println!("  Mean ratio = {:.4}", mean_ratio);
+    println!("  Using n = {:.4} × n_pred: MAPE = {:.1}%", mean_ratio, mape_const);
+
+    // ── Phase 7: Residual analysis ──
+    println!("\n--- Phase 7: Residual analysis ---");
+    let residuals: Vec<f64> = data.iter().map(|d| d.ratio - 1.0).collect();
+    let mean_res = mean_f64(&residuals);
+    let std_res = std_f64(&residuals);
+    println!("  Mean residual: {:.4} (systematic bias)", mean_res);
+    println!("  Std residual: {:.4} (random component)", std_res);
+    println!("  Bias/std ratio: {:.2} (signal/noise)", mean_res.abs() / std_res.max(1e-10));
+
+    // ── Phase 8: N_iters dependence ──
+    println!("\n--- Phase 8: Ratio vs n_iters ---");
+    let n_bins: Vec<(f64, f64)> = vec![
+        (1.0, 5.0), (5.0, 10.0), (10.0, 20.0), (20.0, 30.0), (30.0, 50.0), (50.0, 200.0),
+    ];
+    for &(lo, hi) in &n_bins {
+        let subset: Vec<f64> = data.iter().filter(|d| d.n_actual >= lo && d.n_actual < hi).map(|d| d.ratio).collect();
+        if subset.is_empty() { continue; }
+        let m = mean_f64(&subset);
+        println!("  n∈[{:.0},{:.0}): N={:>5}, mean_ratio={:.4}", lo, hi, subset.len(), m);
+    }
+
+    // ── Phase 9: Summary ──
+    println!("\n  === ERROR DECOMPOSITION SUMMARY ===");
+    println!("  Total data points: {}", data.len());
+    println!("  Systematic bias: +{:.2}% (ratio > 1.0)", mean_res * 100.0);
+    println!("  Random noise: {:.2}% (std)", std_res * 100.0);
+    println!("  Best constant correction: n = {:.4} × n_pred → MAPE {:.1}%", mean_ratio, mape_const);
+    println!("  Multi-var correction: MAPE {:.1}% → {:.1}%", mape_raw, mape_corrected);
+}

@@ -200,4 +200,5 @@ fn run_synthetic_suite(_max_concepts: usize, _time_limit: f64, _output_dir: &Pat
     experiments::run_eigendecomposition_dynamics();
     experiments::run_lattice_coupling_model();
     experiments::run_full_lattice_prediction();
+    experiments::run_error_decomposition();
 }
