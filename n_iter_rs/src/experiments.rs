@@ -12917,3 +12917,94 @@ pub fn run_eps_asymptotic_analysis() {
     println!("  This confirms max_rho ~ C(b1, d1) / eps");
     println!("  The constant C depends on the Jacobian structure at d* = alpha1/(alpha1+delta1)");
 }
+
+pub fn run_asymptotic_constant_mapping() {
+    use crate::five_dim;
+
+    println!("\n{}", "=".repeat(72));
+    println!("  ASYMPTOTIC CONSTANT C(b1, d1) MAPPING");
+    println!("  C = lim_{{eps->inf}} max_rho * eps");
+    println!("{}", "=".repeat(72));
+
+    let eps_ref = 1e8_f64;
+
+    let b1_vals: Vec<f64> = vec![0.1, 0.2, 0.5, 1.0, 1.5, 2.0, 3.0, 5.0, 7.0, 10.0, 15.0, 20.0, 30.0, 50.0];
+    let d1_vals: Vec<f64> = vec![0.1, 0.2, 0.5, 1.0, 1.5, 2.0, 3.0, 5.0, 7.0, 10.0, 15.0, 20.0, 30.0, 50.0];
+
+    println!("\n  C(b1, d1) table (eps = 1e8):");
+    print!("  {:>8}", "");
+    for &d1 in &d1_vals { print!(" {:>8.1}", d1); }
+    println!();
+    for &b1 in &b1_vals {
+        print!("  {:>8.1}", b1);
+        for &d1 in &d1_vals {
+            let (fp, rho) = top_concept_fixed_point(b1, d1, eps_ref);
+            let c = rho * eps_ref;
+            print!(" {:>8.3}", c);
+        }
+        println!();
+    }
+
+    println!("\n  sqrt(b1*d1) comparison:");
+    print!("  {:>8}", "");
+    for &d1 in &d1_vals { print!(" {:>8.1}", d1); }
+    println!();
+    for &b1 in &b1_vals {
+        print!("  {:>8.1}", b1);
+        for &d1 in &d1_vals {
+            let s = (b1 * d1).sqrt();
+            print!(" {:>8.3}", s);
+        }
+        println!();
+    }
+
+    println!("\n  Relative error (C - sqrt(b1*d1)) / C:");
+    print!("  {:>8}", "");
+    for &d1 in &d1_vals { print!(" {:>8.1}", d1); }
+    println!();
+    for &b1 in &b1_vals {
+        print!("  {:>8.1}", b1);
+        for &d1 in &d1_vals {
+            let (fp, rho) = top_concept_fixed_point(b1, d1, eps_ref);
+            let c = rho * eps_ref;
+            let s = (b1 * d1).sqrt();
+            let rel_err = (c - s) / c;
+            print!(" {:>6.1}%", rel_err * 100.0);
+        }
+        println!();
+    }
+
+    println!("\n  Other formula candidates:");
+    println!("  Testing: C = b1*d1/(b1+d1), C = 2*b1*d1/(b1+d1), C = min(b1,d1), C = max(b1,d1)");
+    println!("  {:>8} {:>8} {:>8} {:>8} {:>8} {:>8} {:>8} {:>8} {:>8}", "b1", "d1", "C", "sqrt", "bd/(b+d)", "2bd/(b+d)", "min", "max", "harmonic");
+
+    for &(b1, d1) in &[
+        (0.5, 0.5), (1.0, 1.0), (5.0, 5.0), (10.0, 10.0), (50.0, 50.0),
+        (1.0, 5.0), (1.0, 10.0), (1.0, 50.0),
+        (5.0, 1.0), (10.0, 1.0), (50.0, 1.0),
+        (2.0, 10.0), (10.0, 2.0), (5.0, 20.0), (20.0, 5.0),
+        (0.5, 10.0), (10.0, 0.5), (1.5, 0.5), (0.5, 1.5),
+        (3.0, 30.0), (30.0, 3.0), (7.0, 15.0), (15.0, 7.0),
+    ] {
+        let (_, rho) = top_concept_fixed_point(b1, d1, eps_ref);
+        let c = rho * eps_ref;
+        let s = (b1 * d1).sqrt();
+        let harm = 2.0 * b1 * d1 / (b1 + d1);
+        let bd_sum = b1 * d1 / (b1 + d1);
+        println!("  {:>8.1} {:>8.1} {:>8.3} {:>8.3} {:>8.3} {:>8.3} {:>8.3} {:>8.3} {:>8.3}",
+                 b1, d1, c, s, bd_sum, 2.0 * bd_sum, b1.min(d1), b1.max(d1), harm);
+    }
+
+    println!("\n  Symmetry test: C(b1, d1) vs C(d1, b1):");
+    for &(b1, d1) in &[(1.0, 5.0), (2.0, 10.0), (0.5, 10.0), (3.0, 30.0), (1.5, 0.5)] {
+        let (_, rho1) = top_concept_fixed_point(b1, d1, eps_ref);
+        let c1 = rho1 * eps_ref;
+        let (_, rho2) = top_concept_fixed_point(d1, b1, eps_ref);
+        let c2 = rho2 * eps_ref;
+        println!("  C({:.1},{:.1}) = {:.4}, C({:.1},{:.1}) = {:.4}, ratio = {:.6}",
+                 b1, d1, c1, d1, b1, c2, c1 / c2);
+    }
+
+    println!("\n  ASYMPTOTIC CONSTANT CONCLUSIONS:");
+    println!("  C(b1, d1) mapping complete");
+}
