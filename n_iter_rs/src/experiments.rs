@@ -20953,3 +20953,1507 @@ pub fn run_convergence_anisotropy() {
     println!("  Phase 9: Early dynamics (step-1 vs step-2)");
     println!("  Phase 10: Anisotropy vs iteration count");
 }
+
+pub fn run_nonlinear_linear_transition() {
+    use std::collections::BTreeMap;
+    println!("{}", "=".repeat(64));
+    println!("  v2.98: Nonlinear-to-Linear Transition & Eigenmode Decay");
+    println!("{}", "=".repeat(64));
+
+    let topo_builders: Vec<(&str, Box<dyn Fn() -> fca::FcaLattice>)> = vec![
+        ("chain-5", Box::new(|| fca::build_chain_lattice(5))),
+        ("chain-7", Box::new(|| fca::build_chain_lattice(7))),
+        ("diamond", Box::new(|| fca::build_diamond_lattice())),
+        ("M3", Box::new(|| fca::build_m3_lattice())),
+        ("B3", Box::new(|| fca::build_b3_lattice())),
+        ("grid-3x3", Box::new(|| fca::build_grid_lattice(3, 3))),
+    ];
+
+    let regimes: &[(&str, f64, f64, f64)] = &[
+        ("uniform", 0.5, 0.5, 0.5),
+        ("high-β", 0.9, 0.5, 0.5),
+        ("high-δ", 0.5, 0.9, 0.5),
+        ("low-ε", 0.5, 0.5, 0.1),
+        ("extreme", 0.9, 0.9, 0.1),
+    ];
+
+    struct TransData {
+        topo: String,
+        regime: String,
+        ci: usize,
+        rho_j: f64,
+        n_iters: usize,
+        spectral_gap: f64,
+        k_star: usize,
+        residual_at_kstar: f64,
+        mean_actual_early: f64,
+        mean_actual_late: f64,
+        mean_predicted_early: f64,
+        mean_predicted_late: f64,
+        late_alignment: f64,
+        residual_profile: Vec<f64>,
+        actual_contraction_profile: Vec<f64>,
+        predicted_contraction_profile: Vec<f64>,
+    }
+
+    let mut all_data: Vec<TransData> = Vec::new();
+
+    println!("\n  Phase 1: Collecting trajectories and computing residuals...");
+    for &(topo_name, ref builder) in &topo_builders {
+        let lattice = builder();
+        let stats = pipeline::compute_lattice_stats(&lattice);
+
+        for &(regime_name, b1, d1, eps) in regimes {
+            let params = DynamicsParams::uniform()
+                .with_beta1(b1)
+                .with_delta1(d1)
+                .with_eps(eps);
+
+            let results = pipeline::run_topological_iteration(&lattice, &stats, &params);
+
+            for (ci, opt) in results.iter().enumerate() {
+                if let Some(ref res) = opt {
+                    if res.trajectory.len() < 6 { continue; }
+                    let m_star = five_dim::to_array(&res.m_star);
+                    let traj = &res.trajectory;
+                    let n_steps = traj.len();
+                    let j = jac_from_arr(&res.jacobian);
+                    let eigs = sorted_eigs(&j);
+                    let rho_j = res.rho_spectral;
+                    let spectral_gap = if eigs.len() >= 2 {
+                        eigs[0].norm() - eigs[1].norm()
+                    } else { 0.0 };
+
+                    let mut actual_cp: Vec<f64> = Vec::new();
+                    let mut predicted_cp: Vec<f64> = Vec::new();
+                    let mut residual_profile: Vec<f64> = Vec::new();
+
+                    for k in 0..(n_steps - 1) {
+                        let delta_k: Vec<f64> = (0..5).map(|d| traj[k][d] - m_star[d]).collect();
+                        let dk_norm: f64 = delta_k.iter().map(|x| x * x).sum::<f64>().sqrt();
+
+                        let delta_k1: Vec<f64> = (0..5).map(|d| traj[k + 1][d] - m_star[d]).collect();
+                        let dk1_norm: f64 = delta_k1.iter().map(|x| x * x).sum::<f64>().sqrt();
+
+                        if dk_norm < 1e-15 { continue; }
+
+                        let actual_c = dk1_norm / dk_norm;
+                        actual_cp.push(actual_c);
+
+                        let mut j_delta = [0.0_f64; 5];
+                        for i in 0..5 {
+                            for jj in 0..5 {
+                                j_delta[i] += j[(i, jj)] * delta_k[jj];
+                            }
+                        }
+                        let j_delta_norm: f64 = j_delta.iter().map(|x| x * x).sum::<f64>().sqrt();
+                        let predicted_c = j_delta_norm / dk_norm;
+                        predicted_cp.push(predicted_c);
+
+                        let mut residual_vec = [0.0_f64; 5];
+                        for d in 0..5 {
+                            residual_vec[d] = delta_k1[d] - j_delta[d];
+                        }
+                        let residual_norm: f64 = residual_vec.iter().map(|x| x * x).sum::<f64>().sqrt();
+                        let relative_residual = residual_norm / dk_norm;
+                        residual_profile.push(relative_residual);
+                    }
+
+                    if residual_profile.is_empty() { continue; }
+
+                    let mut k_star = residual_profile.len();
+                    for (k, &r) in residual_profile.iter().enumerate() {
+                        if r < 0.1 {
+                            k_star = k;
+                            break;
+                        }
+                    }
+
+                    let residual_at_kstar = if k_star < residual_profile.len() {
+                        residual_profile[k_star]
+                    } else {
+                        *residual_profile.last().unwrap()
+                    };
+
+                    let n_early = (actual_cp.len() / 3).max(1);
+                    let n_late = (actual_cp.len() / 3).max(1);
+                    let late_start = actual_cp.len().saturating_sub(n_late);
+
+                    let mean_actual_early = mean_f64(&actual_cp[..n_early]);
+                    let mean_actual_late = mean_f64(&actual_cp[late_start..]);
+                    let mean_predicted_early = mean_f64(&predicted_cp[..n_early]);
+                    let mean_predicted_late = mean_f64(&predicted_cp[late_start..]);
+
+                    let late_actual = &actual_cp[late_start..];
+                    let late_predicted = &predicted_cp[late_start..];
+                    let late_alignment = pearson_corr(late_actual, late_predicted);
+
+                    all_data.push(TransData {
+                        topo: topo_name.to_string(),
+                        regime: regime_name.to_string(),
+                        ci,
+                        rho_j,
+                        n_iters: res.n_iters,
+                        spectral_gap,
+                        k_star,
+                        residual_at_kstar,
+                        mean_actual_early,
+                        mean_actual_late,
+                        mean_predicted_early,
+                        mean_predicted_late,
+                        late_alignment,
+                        residual_profile,
+                        actual_contraction_profile: actual_cp,
+                        predicted_contraction_profile: predicted_cp,
+                    });
+                }
+            }
+        }
+    }
+
+    println!("  Collected {} concept-level records", all_data.len());
+
+    println!("\n  Phase 2: Linearization step k* distribution");
+    let k_star_vals: Vec<f64> = all_data.iter().map(|d| d.k_star as f64).collect();
+    println!("  k* (where residual < 0.1): mean={:.2}  std={:.2}  median={:.1}  min={}  max={}",
+        mean_f64(&k_star_vals), std_f64(&k_star_vals), median_f64(&k_star_vals),
+        all_data.iter().map(|d| d.k_star).min().unwrap_or(0),
+        all_data.iter().map(|d| d.k_star).max().unwrap_or(0));
+
+    let pct_early = all_data.iter().filter(|d| d.k_star <= 2).count();
+    let pct_mid = all_data.iter().filter(|d| d.k_star > 2 && d.k_star <= 5).count();
+    let pct_late = all_data.iter().filter(|d| d.k_star > 5).count();
+    println!("  k*<=2 (immediate linear): {}/{} = {:.1}%",
+        pct_early, all_data.len(), 100.0 * pct_early as f64 / all_data.len() as f64);
+    println!("  k*∈(2,5] (quick transition): {}/{} = {:.1}%",
+        pct_mid, all_data.len(), 100.0 * pct_mid as f64 / all_data.len() as f64);
+    println!("  k*>5 (slow transition): {}/{} = {:.1}%",
+        pct_late, all_data.len(), 100.0 * pct_late as f64 / all_data.len() as f64);
+
+    println!("\n  Phase 3: Residual at linearization step");
+    let resid_vals: Vec<f64> = all_data.iter().map(|d| d.residual_at_kstar).collect();
+    println!("  Residual at k*: mean={:.4}  std={:.4}  median={:.4}",
+        mean_f64(&resid_vals), std_f64(&resid_vals), median_f64(&resid_vals));
+
+    println!("\n  Phase 4: Early vs late contraction rates");
+    let early_actual: Vec<f64> = all_data.iter().map(|d| d.mean_actual_early).collect();
+    let late_actual: Vec<f64> = all_data.iter().map(|d| d.mean_actual_late).collect();
+    let early_pred: Vec<f64> = all_data.iter().map(|d| d.mean_predicted_early).collect();
+    let late_pred: Vec<f64> = all_data.iter().map(|d| d.mean_predicted_late).collect();
+
+    println!("  {:>20}  {:>10}  {:>10}  {:>10}",
+        "metric", "mean", "std", "median");
+    println!("  {:>20}  {:>10.6}  {:>10.6}  {:>10.6}",
+        "actual_early", mean_f64(&early_actual), std_f64(&early_actual), median_f64(&early_actual));
+    println!("  {:>20}  {:>10.6}  {:>10.6}  {:>10.6}",
+        "actual_late", mean_f64(&late_actual), std_f64(&late_actual), median_f64(&late_actual));
+    println!("  {:>20}  {:>10.6}  {:>10.6}  {:>10.6}",
+        "predicted_early", mean_f64(&early_pred), std_f64(&early_pred), median_f64(&early_pred));
+    println!("  {:>20}  {:>10.6}  {:>10.6}  {:>10.6}",
+        "predicted_late", mean_f64(&late_pred), std_f64(&late_pred), median_f64(&late_pred));
+
+    let early_err: Vec<f64> = early_actual.iter().zip(early_pred.iter())
+        .map(|(a, p)| (a - p).abs()).collect();
+    let late_err: Vec<f64> = late_actual.iter().zip(late_pred.iter())
+        .map(|(a, p)| (a - p).abs()).collect();
+    println!("  |actual-predicted| early: mean={:.6}  late: mean={:.6}",
+        mean_f64(&early_err), mean_f64(&late_err));
+
+    println!("\n  Phase 5: Late-phase alignment (actual vs predicted contraction)");
+    let alignment_vals: Vec<f64> = all_data.iter().map(|d| d.late_alignment).collect();
+    println!("  Late-phase Pearson corr(actual, predicted): mean={:.4}  std={:.4}  median={:.4}",
+        mean_f64(&alignment_vals), std_f64(&alignment_vals), median_f64(&alignment_vals));
+
+    let n_high_align = alignment_vals.iter().filter(|&&a| a > 0.8).count();
+    println!("  Corr > 0.8 (well-predicted): {}/{} = {:.1}%",
+        n_high_align, alignment_vals.len(),
+        100.0 * n_high_align as f64 / alignment_vals.len() as f64);
+
+    println!("\n  Phase 6: k* vs spectral properties");
+    let gap_vals: Vec<f64> = all_data.iter().map(|d| d.spectral_gap).collect();
+    let rho_vals: Vec<f64> = all_data.iter().map(|d| d.rho_j).collect();
+
+    let kstar_gap_corr = pearson_corr(&k_star_vals, &gap_vals);
+    let kstar_rho_corr = pearson_corr(&k_star_vals, &rho_vals);
+    let kstar_align_corr = pearson_corr(&k_star_vals, &alignment_vals);
+    println!("  corr(k*, spectral_gap) = {:.4}", kstar_gap_corr);
+    println!("  corr(k*, ρ(J)) = {:.4}", kstar_rho_corr);
+    println!("  corr(k*, late_alignment) = {:.4}", kstar_align_corr);
+
+    println!("\n  Phase 7: Aggregated residual decay curve");
+    let max_profile_len = all_data.iter().map(|d| d.residual_profile.len()).max().unwrap_or(0);
+    let profile_len = max_profile_len.min(25);
+    let mut step_residuals: Vec<Vec<f64>> = vec![Vec::new(); profile_len];
+    let mut step_actual_c: Vec<Vec<f64>> = vec![Vec::new(); profile_len];
+    let mut step_predicted_c: Vec<Vec<f64>> = vec![Vec::new(); profile_len];
+
+    for d in &all_data {
+        for (k, &r) in d.residual_profile.iter().enumerate() {
+            if k < profile_len { step_residuals[k].push(r); }
+        }
+        for (k, &c) in d.actual_contraction_profile.iter().enumerate() {
+            if k < profile_len { step_actual_c[k].push(c); }
+        }
+        for (k, &c) in d.predicted_contraction_profile.iter().enumerate() {
+            if k < profile_len { step_predicted_c[k].push(c); }
+        }
+    }
+
+    println!("  {:>6}  {:>12}  {:>12}  {:>12}  {:>12}  {:>12}  {:>8}",
+        "step", "resid_mean", "resid_std", "actual_c", "pred_c", "|err|", "n");
+    for k in 0..profile_len {
+        if step_residuals[k].is_empty() { continue; }
+        let r_mean = mean_f64(&step_residuals[k]);
+        let r_std = std_f64(&step_residuals[k]);
+        let ac_mean = mean_f64(&step_actual_c[k]);
+        let pc_mean = mean_f64(&step_predicted_c[k]);
+        let err = (ac_mean - pc_mean).abs();
+        println!("  {:>6}  {:>12.6}  {:>12.6}  {:>12.6}  {:>12.6}  {:>12.6}  {:>8}",
+            k + 1, r_mean, r_std, ac_mean, pc_mean, err, step_residuals[k].len());
+    }
+
+    println!("\n  Phase 8: Regime-specific linearization");
+    let mut regime_kstar: BTreeMap<String, Vec<f64>> = BTreeMap::new();
+    let mut regime_align: BTreeMap<String, Vec<f64>> = BTreeMap::new();
+    for d in &all_data {
+        regime_kstar.entry(d.regime.clone()).or_default().push(d.k_star as f64);
+        regime_align.entry(d.regime.clone()).or_default().push(d.late_alignment);
+    }
+
+    println!("  {:>12}  {:>10}  {:>10}  {:>12}  {:>10}",
+        "regime", "k*_mean", "k*_std", "align_mean", "n");
+    for regime in regimes.iter().map(|r| r.0) {
+        if let (Some(ks), Some(al)) = (regime_kstar.get(regime), regime_align.get(regime)) {
+            println!("  {:>12}  {:>10.2}  {:>10.2}  {:>12.4}  {:>10}",
+                regime, mean_f64(ks), std_f64(ks), mean_f64(al), ks.len());
+        }
+    }
+
+    println!("\n  Phase 9: Predicted contraction vs ρ(J) in late phase");
+    let rho_late_diff: Vec<f64> = all_data.iter()
+        .map(|d| (d.mean_predicted_late - d.rho_j).abs())
+        .collect();
+    println!("  |predicted_late_c - ρ(J)|: mean={:.6}  std={:.6}  median={:.6}",
+        mean_f64(&rho_late_diff), std_f64(&rho_late_diff), median_f64(&rho_late_diff));
+
+    let n_close_rho = rho_late_diff.iter().filter(|&&d| d < 0.05).count();
+    println!("  |predicted_late_c - ρ(J)| < 0.05: {}/{} = {:.1}%",
+        n_close_rho, rho_late_diff.len(),
+        100.0 * n_close_rho as f64 / rho_late_diff.len() as f64);
+
+    let actual_late_rho_diff: Vec<f64> = all_data.iter()
+        .map(|d| (d.mean_actual_late - d.rho_j).abs())
+        .collect();
+    println!("  |actual_late_c - ρ(J)|: mean={:.6}  std={:.6}",
+        mean_f64(&actual_late_rho_diff), std_f64(&actual_late_rho_diff));
+
+    println!("\n  TRANSITION SUMMARY:");
+    let mean_kstar = mean_f64(&k_star_vals);
+    let mean_align = mean_f64(&alignment_vals);
+    let mean_resid = mean_f64(&resid_vals);
+    println!("  Mean linearization step k* = {:.2}", mean_kstar);
+    println!("  Mean late-phase alignment = {:.4}", mean_align);
+    println!("  Mean residual at k* = {:.4}", mean_resid);
+    println!("  Mean |predicted_late_c - ρ(J)| = {:.6}", mean_f64(&rho_late_diff));
+    if mean_kstar <= 3.0 {
+        println!("  → FAST linearization: Jacobian predicts trajectory within 3 steps");
+    } else if mean_kstar <= 6.0 {
+        println!("  → MODERATE linearization: ~5 steps needed for Jacobian prediction");
+    } else {
+        println!("  → SLOW linearization: nonlinear effects persist for many steps");
+    }
+    if mean_align > 0.8 {
+        println!("  → Jacobian accurately predicts late-phase contraction pattern");
+    } else {
+        println!("  → Jacobian prediction is moderate; nonlinear corrections needed");
+    }
+
+    println!("\n  Phase labels:");
+    println!("  Phase 1: Data collection");
+    println!("  Phase 2: Linearization step k* distribution");
+    println!("  Phase 3: Residual at k*");
+    println!("  Phase 4: Early vs late contraction rates");
+    println!("  Phase 5: Late-phase alignment");
+    println!("  Phase 6: k* vs spectral properties");
+    println!("  Phase 7: Aggregated residual decay curve");
+    println!("  Phase 8: Regime-specific linearization");
+    println!("  Phase 9: Predicted contraction vs ρ(J)");
+}
+
+pub fn run_trajectory_reconstruction() {
+    use std::collections::BTreeMap;
+    println!("{}", "=".repeat(64));
+    println!("  v2.99: Jacobian Trajectory Reconstruction Quality");
+    println!("{}", "=".repeat(64));
+
+    let topo_builders: Vec<(&str, Box<dyn Fn() -> fca::FcaLattice>)> = vec![
+        ("chain-5", Box::new(|| fca::build_chain_lattice(5))),
+        ("chain-7", Box::new(|| fca::build_chain_lattice(7))),
+        ("diamond", Box::new(|| fca::build_diamond_lattice())),
+        ("M3", Box::new(|| fca::build_m3_lattice())),
+        ("B3", Box::new(|| fca::build_b3_lattice())),
+        ("grid-3x3", Box::new(|| fca::build_grid_lattice(3, 3))),
+    ];
+
+    let regimes: &[(&str, f64, f64, f64)] = &[
+        ("uniform", 0.5, 0.5, 0.5),
+        ("high-β", 0.9, 0.5, 0.5),
+        ("high-δ", 0.5, 0.9, 0.5),
+        ("low-ε", 0.5, 0.5, 0.1),
+        ("extreme", 0.9, 0.9, 0.1),
+    ];
+
+    let dim_names = ["d", "b", "ρ", "r", "s"];
+
+    struct ReconData {
+        topo: String,
+        regime: String,
+        ci: usize,
+        rho_j: f64,
+        n_iters: usize,
+        spectral_gap: f64,
+        cumulative_r2: Vec<f64>,
+        cumulative_rel_err: Vec<f64>,
+        direction_cos_sim: Vec<f64>,
+        per_dim_rel_err: Vec<[f64; 5]>,
+        best_step_r2: f64,
+        worst_step_r2: f64,
+        mean_r2: f64,
+        final_cos_sim: f64,
+    }
+
+    let mut all_data: Vec<ReconData> = Vec::new();
+
+    println!("\n  Phase 1: Collecting trajectories and reconstructing...");
+    for &(topo_name, ref builder) in &topo_builders {
+        let lattice = builder();
+        let stats = pipeline::compute_lattice_stats(&lattice);
+
+        for &(regime_name, b1, d1, eps) in regimes {
+            let params = DynamicsParams::uniform()
+                .with_beta1(b1)
+                .with_delta1(d1)
+                .with_eps(eps);
+
+            let results = pipeline::run_topological_iteration(&lattice, &stats, &params);
+
+            for (ci, opt) in results.iter().enumerate() {
+                if let Some(ref res) = opt {
+                    if res.trajectory.len() < 6 { continue; }
+                    let m_star = five_dim::to_array(&res.m_star);
+                    let traj = &res.trajectory;
+                    let n_steps = traj.len();
+                    let j = jac_from_arr(&res.jacobian);
+                    let eigs = sorted_eigs(&j);
+                    let rho_j = res.rho_spectral;
+                    let spectral_gap = if eigs.len() >= 2 {
+                        eigs[0].norm() - eigs[1].norm()
+                    } else { 0.0 };
+
+                    let delta0: [f64; 5] = std::array::from_fn(|d| traj[0][d] - m_star[d]);
+
+                    let mut j_pow = nalgebra::SMatrix::<f64, 5, 5>::identity();
+                    let mut cumulative_r2: Vec<f64> = Vec::new();
+                    let mut cumulative_rel_err: Vec<f64> = Vec::new();
+                    let mut direction_cos_sim: Vec<f64> = Vec::new();
+                    let mut per_dim_rel_err: Vec<[f64; 5]> = Vec::new();
+
+                    for k in 1..n_steps {
+                        j_pow = j_pow * j;
+
+                        let mut delta_pred = [0.0_f64; 5];
+                        for i in 0..5 {
+                            for jj in 0..5 {
+                                delta_pred[i] += j_pow[(i, jj)] * delta0[jj];
+                            }
+                        }
+                        let m_pred: [f64; 5] = std::array::from_fn(|d| m_star[d] + delta_pred[d]);
+
+                        let actual: Vec<f64> = (0..5).map(|d| traj[k][d]).collect();
+                        let predicted: Vec<f64> = (0..5).map(|d| m_pred[d]).collect();
+
+                        let ss_res: f64 = actual.iter().zip(predicted.iter())
+                            .map(|(a, p)| (a - p).powi(2)).sum();
+                        let mean_actual: f64 = actual.iter().sum::<f64>() / 5.0;
+                        let ss_tot: f64 = actual.iter()
+                            .map(|a| (a - mean_actual).powi(2)).sum();
+                        let r2 = if ss_tot > 1e-30 { 1.0 - ss_res / ss_tot } else { 1.0 };
+                        cumulative_r2.push(r2);
+
+                        let delta_actual: [f64; 5] = std::array::from_fn(|d| traj[k][d] - m_star[d]);
+                        let norm_actual: f64 = delta_actual.iter().map(|x| x * x).sum::<f64>().sqrt();
+                        let norm_pred: f64 = delta_pred.iter().map(|x| x * x).sum::<f64>().sqrt();
+
+                        let rel_err = if norm_actual > 1e-15 {
+                            let diff: f64 = (0..5).map(|d| (delta_actual[d] - delta_pred[d]).powi(2)).sum::<f64>().sqrt();
+                            diff / norm_actual
+                        } else { 0.0 };
+                        cumulative_rel_err.push(rel_err);
+
+                        let cos = if norm_actual > 1e-15 && norm_pred > 1e-15 {
+                            let dot: f64 = (0..5).map(|d| delta_actual[d] * delta_pred[d]).sum();
+                            (dot / (norm_actual * norm_pred)).abs()
+                        } else { 1.0 };
+                        direction_cos_sim.push(cos);
+
+                        let mut dim_err = [0.0_f64; 5];
+                        for d in 0..5 {
+                            if delta_actual[d].abs() > 1e-15 {
+                                dim_err[d] = ((delta_actual[d] - delta_pred[d]) / delta_actual[d]).abs();
+                            }
+                        }
+                        per_dim_rel_err.push(dim_err);
+                    }
+
+                    let r2_vals: Vec<f64> = cumulative_r2.iter().copied()
+                        .filter(|x| x.is_finite()).collect();
+                    let mean_r2 = if !r2_vals.is_empty() { mean_f64(&r2_vals) } else { 0.0 };
+                    let best_step_r2 = r2_vals.iter().cloned()
+                        .fold(f64::NEG_INFINITY, f64::max);
+                    let worst_step_r2 = r2_vals.iter().cloned()
+                        .filter(|x| x.is_finite())
+                        .fold(f64::INFINITY, f64::min);
+                    let final_cos_sim = *direction_cos_sim.last().unwrap_or(&1.0);
+
+                    all_data.push(ReconData {
+                        topo: topo_name.to_string(),
+                        regime: regime_name.to_string(),
+                        ci,
+                        rho_j,
+                        n_iters: res.n_iters,
+                        spectral_gap,
+                        cumulative_r2,
+                        cumulative_rel_err,
+                        direction_cos_sim,
+                        per_dim_rel_err,
+                        best_step_r2,
+                        worst_step_r2,
+                        mean_r2,
+                        final_cos_sim,
+                    });
+                }
+            }
+        }
+    }
+
+    println!("  Collected {} concept-level records", all_data.len());
+
+    println!("\n  Phase 2: Overall reconstruction quality");
+    let mean_r2_vals: Vec<f64> = all_data.iter().map(|d| d.mean_r2).collect();
+    let best_r2_vals: Vec<f64> = all_data.iter().map(|d| d.best_step_r2).collect();
+    let worst_r2_vals: Vec<f64> = all_data.iter().map(|d| d.worst_step_r2).collect();
+    let final_cos: Vec<f64> = all_data.iter().map(|d| d.final_cos_sim).collect();
+
+    println!("  Mean R² across trajectory:   mean={:.4}  std={:.4}  median={:.4}",
+        mean_f64(&mean_r2_vals), std_f64(&mean_r2_vals), median_f64(&mean_r2_vals));
+    println!("  Best-step R²:                mean={:.4}  std={:.4}  median={:.4}",
+        mean_f64(&best_r2_vals), std_f64(&best_r2_vals), median_f64(&best_r2_vals));
+    println!("  Worst-step R²:               mean={:.4}  std={:.4}  median={:.4}",
+        mean_f64(&worst_r2_vals), std_f64(&worst_r2_vals), median_f64(&worst_r2_vals));
+    println!("  Final-step cos_sim:          mean={:.4}  std={:.4}",
+        mean_f64(&final_cos), std_f64(&final_cos));
+
+    let n_high_r2 = mean_r2_vals.iter().filter(|&&r| r > 0.9).count();
+    println!("  Records with mean R² > 0.9: {}/{} = {:.1}%",
+        n_high_r2, all_data.len(), 100.0 * n_high_r2 as f64 / all_data.len() as f64);
+    let n_neg_r2 = mean_r2_vals.iter().filter(|&&r| r < 0.0).count();
+    println!("  Records with mean R² < 0: {}/{} = {:.1}%",
+        n_neg_r2, all_data.len(), 100.0 * n_neg_r2 as f64 / all_data.len() as f64);
+
+    println!("\n  Phase 3: Aggregated reconstruction curve (R² vs step)");
+    let max_steps = all_data.iter().map(|d| d.cumulative_r2.len()).max().unwrap_or(0);
+    let profile_len = max_steps.min(25);
+    let mut step_r2: Vec<Vec<f64>> = vec![Vec::new(); profile_len];
+    let mut step_rel_err: Vec<Vec<f64>> = vec![Vec::new(); profile_len];
+    let mut step_cos: Vec<Vec<f64>> = vec![Vec::new(); profile_len];
+
+    for d in &all_data {
+        for (k, &r) in d.cumulative_r2.iter().enumerate() {
+            if k < profile_len && r.is_finite() { step_r2[k].push(r); }
+        }
+        for (k, &e) in d.cumulative_rel_err.iter().enumerate() {
+            if k < profile_len { step_rel_err[k].push(e); }
+        }
+        for (k, &c) in d.direction_cos_sim.iter().enumerate() {
+            if k < profile_len { step_cos[k].push(c); }
+        }
+    }
+
+    println!("  {:>6}  {:>10}  {:>10}  {:>10}  {:>10}  {:>10}  {:>8}",
+        "step", "R²_mean", "R²_std", "rel_err", "cos_sim", "cos_std", "n");
+    for k in 0..profile_len {
+        if step_r2[k].is_empty() { continue; }
+        let r2_m = mean_f64(&step_r2[k]);
+        let r2_s = std_f64(&step_r2[k]);
+        let re_m = mean_f64(&step_rel_err[k]);
+        let cs_m = mean_f64(&step_cos[k]);
+        let cs_s = std_f64(&step_cos[k]);
+        println!("  {:>6}  {:>10.6}  {:>10.6}  {:>10.6}  {:>10.6}  {:>10.6}  {:>8}",
+            k + 1, r2_m, r2_s, re_m, cs_m, cs_s, step_r2[k].len());
+    }
+
+    println!("\n  Phase 4: Regime-specific reconstruction quality");
+    let mut regime_r2: BTreeMap<String, Vec<f64>> = BTreeMap::new();
+    let mut regime_cos: BTreeMap<String, Vec<f64>> = BTreeMap::new();
+    for d in &all_data {
+        regime_r2.entry(d.regime.clone()).or_default().push(d.mean_r2);
+        regime_cos.entry(d.regime.clone()).or_default().push(d.final_cos_sim);
+    }
+
+    println!("  {:>12}  {:>10}  {:>10}  {:>10}  {:>10}",
+        "regime", "R²_mean", "R²_std", "cos_mean", "n");
+    for regime in regimes.iter().map(|r| r.0) {
+        if let (Some(r2), Some(cs)) = (regime_r2.get(regime), regime_cos.get(regime)) {
+            println!("  {:>12}  {:>10.4}  {:>10.4}  {:>10.4}  {:>10}",
+                regime, mean_f64(r2), std_f64(r2), mean_f64(cs), r2.len());
+        }
+    }
+
+    println!("\n  Phase 5: Topology-specific reconstruction quality");
+    let mut topo_r2: BTreeMap<String, Vec<f64>> = BTreeMap::new();
+    for d in &all_data {
+        topo_r2.entry(d.topo.clone()).or_default().push(d.mean_r2);
+    }
+
+    println!("  {:>12}  {:>10}  {:>10}  {:>10}",
+        "topo", "R²_mean", "R²_std", "n");
+    for (topo, r2) in &topo_r2 {
+        println!("  {:>12}  {:>10.4}  {:>10.4}  {:>10}",
+            topo, mean_f64(r2), std_f64(r2), r2.len());
+    }
+
+    println!("\n  Phase 6: Per-dimension reconstruction error");
+    let max_dim_steps = all_data.iter().map(|d| d.per_dim_rel_err.len()).max().unwrap_or(0);
+    let dim_profile_len = max_dim_steps.min(15);
+    let mut dim_errors: Vec<[Vec<f64>; 5]> = vec![std::array::from_fn(|_| Vec::new()); dim_profile_len];
+
+    for d in &all_data {
+        for (k, errs) in d.per_dim_rel_err.iter().enumerate() {
+            if k < dim_profile_len {
+                for dim in 0..5 {
+                    if errs[dim] > 1e-15 && errs[dim] < 10.0 {
+                        dim_errors[k][dim].push(errs[dim]);
+                    }
+                }
+            }
+        }
+    }
+
+    println!("  {:>6}  {:>10}  {:>10}  {:>10}  {:>10}  {:>10}",
+        "step", dim_names[0], dim_names[1], dim_names[2], dim_names[3], dim_names[4]);
+    for k in 0..dim_profile_len.min(10) {
+        let vals: Vec<String> = (0..5).map(|dim| {
+            if dim_errors[k][dim].is_empty() {
+                "    —".to_string()
+            } else {
+                format!("{:>10.6}", mean_f64(&dim_errors[k][dim]))
+            }
+        }).collect();
+        println!("  {:>6}  {}", k + 1, vals.join("  "));
+    }
+
+    println!("\n  Phase 7: Reconstruction quality vs spectral properties");
+    let rho_vals: Vec<f64> = all_data.iter().map(|d| d.rho_j).collect();
+    let gap_vals: Vec<f64> = all_data.iter().map(|d| d.spectral_gap).collect();
+    let n_iter_vals: Vec<f64> = all_data.iter().map(|d| d.n_iters as f64).collect();
+
+    let r2_rho_corr = pearson_corr(&mean_r2_vals, &rho_vals);
+    let r2_gap_corr = pearson_corr(&mean_r2_vals, &gap_vals);
+    let r2_n_corr = pearson_corr(&mean_r2_vals, &n_iter_vals);
+    let cos_rho_corr = pearson_corr(&final_cos, &rho_vals);
+    let cos_gap_corr = pearson_corr(&final_cos, &gap_vals);
+
+    println!("  corr(mean_R², ρ(J))         = {:.4}", r2_rho_corr);
+    println!("  corr(mean_R², gap)          = {:.4}", r2_gap_corr);
+    println!("  corr(mean_R², n_iters)      = {:.4}", r2_n_corr);
+    println!("  corr(final_cos, ρ(J))       = {:.4}", cos_rho_corr);
+    println!("  corr(final_cos, gap)        = {:.4}", cos_gap_corr);
+
+    println!("\n  Phase 8: R² distribution at key steps");
+    for &step_idx in &[0usize, 2, 4, 9, 14, 19] {
+        if step_idx >= profile_len { continue; }
+        let vals = &step_r2[step_idx];
+        if vals.is_empty() { continue; }
+        let p10 = {
+            let mut sorted = vals.clone();
+            sorted.sort_by(|a, b| a.partial_cmp(b).unwrap());
+            sorted[(sorted.len() as f64 * 0.1) as usize]
+        };
+        let p50 = median_f64(vals);
+        let p90 = {
+            let mut sorted = vals.clone();
+            sorted.sort_by(|a, b| a.partial_cmp(b).unwrap());
+            sorted[((sorted.len() as f64 * 0.9) as usize).min(sorted.len() - 1)]
+        };
+        println!("  step {:>2}: P10={:.4}  P50={:.4}  P90={:.4}  mean={:.4}  n={}",
+            step_idx + 1, p10, p50, p90, mean_f64(vals), vals.len());
+    }
+
+    println!("\n  Phase 9: Early-mid-late phase R² comparison");
+    let n_records = all_data.len();
+    let early_r2: Vec<f64> = all_data.iter()
+        .filter_map(|d| d.cumulative_r2.get(0).copied())
+        .filter(|x| x.is_finite()).collect();
+    let mid_r2: Vec<f64> = all_data.iter()
+        .filter_map(|d| {
+            let mid = d.cumulative_r2.len() / 2;
+            d.cumulative_r2.get(mid).copied()
+        })
+        .filter(|x| x.is_finite()).collect();
+    let late_r2: Vec<f64> = all_data.iter()
+        .filter_map(|d| d.cumulative_r2.last().copied())
+        .filter(|x| x.is_finite()).collect();
+
+    println!("  Phase      mean_R²     std_R²     median_R²    n");
+    if !early_r2.is_empty() {
+        println!("  early(1)   {:.6}   {:.6}   {:.6}   {}",
+            mean_f64(&early_r2), std_f64(&early_r2), median_f64(&early_r2), early_r2.len());
+    }
+    if !mid_r2.is_empty() {
+        println!("  mid        {:.6}   {:.6}   {:.6}   {}",
+            mean_f64(&mid_r2), std_f64(&mid_r2), median_f64(&mid_r2), mid_r2.len());
+    }
+    if !late_r2.is_empty() {
+        println!("  late       {:.6}   {:.6}   {:.6}   {}",
+            mean_f64(&late_r2), std_f64(&late_r2), median_f64(&late_r2), late_r2.len());
+    }
+
+    let early_cos: Vec<f64> = all_data.iter()
+        .filter_map(|d| d.direction_cos_sim.get(0).copied())
+        .collect();
+    let mid_cos: Vec<f64> = all_data.iter()
+        .filter_map(|d| {
+            let mid = d.direction_cos_sim.len() / 2;
+            d.direction_cos_sim.get(mid).copied()
+        })
+        .collect();
+    let late_cos: Vec<f64> = all_data.iter()
+        .filter_map(|d| d.direction_cos_sim.last().copied())
+        .collect();
+
+    println!("  Direction cos_sim:");
+    if !early_cos.is_empty() {
+        println!("  early(1)   {:.6}   {:.6}", mean_f64(&early_cos), std_f64(&early_cos));
+    }
+    if !mid_cos.is_empty() {
+        println!("  mid        {:.6}   {:.6}", mean_f64(&mid_cos), std_f64(&mid_cos));
+    }
+    if !late_cos.is_empty() {
+        println!("  late       {:.6}   {:.6}", mean_f64(&late_cos), std_f64(&late_cos));
+    }
+
+    println!("\n  TRAJECTORY RECONSTRUCTION SUMMARY:");
+    let overall_mean_r2 = mean_f64(&mean_r2_vals);
+    let overall_mean_cos = mean_f64(&final_cos);
+    println!("  Overall mean R² = {:.4}", overall_mean_r2);
+    println!("  Overall final cos_sim = {:.4}", overall_mean_cos);
+    println!("  R² > 0.9 records: {:.1}%", 100.0 * n_high_r2 as f64 / n_records as f64);
+    println!("  R² < 0 records: {:.1}%", 100.0 * n_neg_r2 as f64 / n_records as f64);
+    println!("  corr(R², ρ(J)) = {:.4}", r2_rho_corr);
+    println!("  corr(R², gap) = {:.4}", r2_gap_corr);
+
+    if overall_mean_r2 > 0.9 {
+        println!("  → EXCELLENT: J^k predicts trajectory with R²>0.9");
+        println!("    N-operator convergence is fully described by linear theory");
+    } else if overall_mean_r2 > 0.5 {
+        println!("  → GOOD: J^k captures main trend but nonlinear corrections needed");
+    } else if overall_mean_r2 > 0.0 {
+        println!("  → MODERATE: J^k prediction has limited accuracy");
+        println!("    Nonlinear effects or numerical accumulation significant");
+    } else {
+        println!("  → POOR: J^k prediction fails");
+        println!("    Trajectory divergence from linear model");
+    }
+
+    println!("\n  Phase labels:");
+    println!("  Phase 1: Data collection + reconstruction");
+    println!("  Phase 2: Overall reconstruction quality");
+    println!("  Phase 3: Aggregated R² curve");
+    println!("  Phase 4: Regime-specific quality");
+    println!("  Phase 5: Topology-specific quality");
+    println!("  Phase 6: Per-dimension reconstruction error");
+    println!("  Phase 7: Quality vs spectral properties");
+    println!("  Phase 8: R² distribution at key steps");
+    println!("  Phase 9: Early-mid-late phase comparison");
+}
+
+pub fn run_analytical_eigenvalues() {
+    use std::collections::BTreeMap;
+    println!("{}", "=".repeat(64));
+    println!("  v3.00: Analytical Eigenvalue Formula from Jacobian Structure");
+    println!("{}", "=".repeat(64));
+
+    let topo_builders: Vec<(&str, Box<dyn Fn() -> fca::FcaLattice>)> = vec![
+        ("chain-5", Box::new(|| fca::build_chain_lattice(5))),
+        ("chain-7", Box::new(|| fca::build_chain_lattice(7))),
+        ("diamond", Box::new(|| fca::build_diamond_lattice())),
+        ("M3", Box::new(|| fca::build_m3_lattice())),
+        ("B3", Box::new(|| fca::build_b3_lattice())),
+        ("grid-3x3", Box::new(|| fca::build_grid_lattice(3, 3))),
+    ];
+
+    let regimes: &[(&str, f64, f64, f64)] = &[
+        ("uniform", 0.5, 0.5, 0.5),
+        ("high-β", 0.9, 0.5, 0.5),
+        ("high-δ", 0.5, 0.9, 0.5),
+        ("low-ε", 0.5, 0.5, 0.1),
+        ("extreme", 0.9, 0.9, 0.1),
+    ];
+
+    fn principal_minor_2x2(j: &nalgebra::SMatrix<f64, 5, 5>, i: usize, k: usize) -> f64 {
+        j[(i, i)] * j[(k, k)] - j[(i, k)] * j[(k, i)]
+    }
+
+    fn sum_2x2_minors(j: &nalgebra::SMatrix<f64, 5, 5>) -> f64 {
+        let mut s = 0.0;
+        for i in 0..5 {
+            for k in (i + 1)..5 {
+                s += principal_minor_2x2(j, i, k);
+            }
+        }
+        s
+    }
+
+    fn sum_3x3_minors(j: &nalgebra::SMatrix<f64, 5, 5>) -> f64 {
+        let mut s = 0.0;
+        for i in 0..5 {
+            for k in (i + 1)..5 {
+                for l in (k + 1)..5 {
+                    let m = nalgebra::SMatrix::<f64, 3, 3>::new(
+                        j[(i, i)], j[(i, k)], j[(i, l)],
+                        j[(k, i)], j[(k, k)], j[(k, l)],
+                        j[(l, i)], j[(l, k)], j[(l, l)],
+                    );
+                    s += m.determinant();
+                }
+            }
+        }
+        s
+    }
+
+    fn sum_4x4_minors(j: &nalgebra::SMatrix<f64, 5, 5>) -> f64 {
+        let mut s = 0.0;
+        for skip in 0..5 {
+            let mut rows = Vec::new();
+            for i in 0..5 {
+                if i != skip { rows.push(i); }
+            }
+            let m = nalgebra::SMatrix::<f64, 4, 4>::new(
+                j[(rows[0], rows[0])], j[(rows[0], rows[1])], j[(rows[0], rows[2])], j[(rows[0], rows[3])],
+                j[(rows[1], rows[0])], j[(rows[1], rows[1])], j[(rows[1], rows[2])], j[(rows[1], rows[3])],
+                j[(rows[2], rows[0])], j[(rows[2], rows[1])], j[(rows[2], rows[2])], j[(rows[2], rows[3])],
+                j[(rows[3], rows[0])], j[(rows[3], rows[1])], j[(rows[3], rows[2])], j[(rows[3], rows[3])],
+            );
+            s += m.determinant();
+        }
+        s
+    }
+
+    struct EigData {
+        topo: String,
+        regime: String,
+        ci: usize,
+        rho_j: f64,
+        e1_trace: f64,
+        e2: f64,
+        e3: f64,
+        e4: f64,
+        e5_det: f64,
+        disc: f64,
+        analytical_eigs: Vec<(f64, f64)>,
+        numerical_eigs: Vec<(f64, f64)>,
+        max_eig_err: f64,
+        is_complex: bool,
+        jac_entries: [f64; 25],
+    }
+
+    let mut all_data: Vec<EigData> = Vec::new();
+
+    println!("\n  Phase 1: Computing characteristic polynomial coefficients...");
+    for &(topo_name, ref builder) in &topo_builders {
+        let lattice = builder();
+        let stats = pipeline::compute_lattice_stats(&lattice);
+
+        for &(regime_name, b1, d1, eps) in regimes {
+            let params = DynamicsParams::uniform()
+                .with_beta1(b1)
+                .with_delta1(d1)
+                .with_eps(eps);
+
+            let results = pipeline::run_topological_iteration(&lattice, &stats, &params);
+
+            for (ci, opt) in results.iter().enumerate() {
+                if let Some(ref res) = opt {
+                    let j = jac_from_arr(&res.jacobian);
+                    let rho_j = res.rho_spectral;
+
+                    let e1 = j.trace();
+                    let e2 = sum_2x2_minors(&j);
+                    let e3 = sum_3x3_minors(&j);
+                    let e4 = sum_4x4_minors(&j);
+                    let e5 = j.determinant();
+
+                    let disc = e2 * e2 - 4.0 * e4;
+
+                    let analytical_eigs = if disc >= 0.0 {
+                        let r1 = (-e2 + disc.sqrt()) / 2.0;
+                        let r2 = (-e2 - disc.sqrt()) / 2.0;
+                        let sqrt_r1 = if r1 >= 0.0 { r1.sqrt() } else { 0.0 };
+                        let sqrt_r2 = if r2 >= 0.0 { r2.sqrt() } else { 0.0 };
+                        vec![
+                            (0.0, 0.0),
+                            (sqrt_r1, 0.0), (-sqrt_r1, 0.0),
+                            (sqrt_r2, 0.0), (-sqrt_r2, 0.0),
+                        ]
+                    } else {
+                        let real_part = -e2 / 2.0;
+                        let imag_part = (-disc).sqrt() / 2.0;
+                        let r = (real_part * real_part + imag_part * imag_part).sqrt();
+                        let mag = r.sqrt();
+                        let angle = (imag_part / real_part).atan2(1.0) / 2.0;
+                        vec![
+                            (0.0, 0.0),
+                            (mag * angle.cos(), mag * angle.sin()),
+                            (mag * angle.cos(), -mag * angle.sin()),
+                            (-mag * angle.cos(), -mag * angle.sin()),
+                            (-mag * angle.cos(), mag * angle.sin()),
+                        ]
+                    };
+
+                    let numerical = sorted_eigs(&j);
+                    let numerical_eigs: Vec<(f64, f64)> = numerical.iter()
+                        .map(|e| (e.re, e.im)).collect();
+
+                    let mut max_err = 0.0_f64;
+                    let mut used = vec![false; 5];
+                    for ae in &analytical_eigs {
+                        let mut best_err = f64::INFINITY;
+                        let mut best_idx = 0;
+                        for (ni, ne) in numerical_eigs.iter().enumerate() {
+                            if used[ni] { continue; }
+                            let err = ((ae.0 - ne.0).powi(2) + (ae.1 - ne.1).powi(2)).sqrt();
+                            if err < best_err {
+                                best_err = err;
+                                best_idx = ni;
+                            }
+                        }
+                        used[best_idx] = true;
+                        if best_err > max_err { max_err = best_err; }
+                    }
+
+                    let is_complex = disc < 0.0;
+
+                    all_data.push(EigData {
+                        topo: topo_name.to_string(),
+                        regime: regime_name.to_string(),
+                        ci,
+                        rho_j,
+                        e1_trace: e1,
+                        e2,
+                        e3,
+                        e4,
+                        e5_det: e5,
+                        disc,
+                        analytical_eigs,
+                        numerical_eigs,
+                        max_eig_err: max_err,
+                        is_complex,
+                        jac_entries: res.jacobian,
+                    });
+                }
+            }
+        }
+    }
+
+    println!("  Collected {} concept-level records", all_data.len());
+
+    println!("\n  Phase 2: Structural zeros verification");
+    let e1_vals: Vec<f64> = all_data.iter().map(|d| d.e1_trace.abs()).collect();
+    let e3_vals: Vec<f64> = all_data.iter().map(|d| d.e3.abs()).collect();
+    let e5_vals: Vec<f64> = all_data.iter().map(|d| d.e5_det.abs()).collect();
+
+    println!("  |tr(J)|    = e₁: max={:.2e}  mean={:.2e}  median={:.2e}",
+        e1_vals.iter().cloned().fold(0.0_f64, f64::max),
+        mean_f64(&e1_vals), median_f64(&e1_vals));
+    println!("  |e₃|       =   : max={:.2e}  mean={:.2e}  median={:.2e}",
+        e3_vals.iter().cloned().fold(0.0_f64, f64::max),
+        mean_f64(&e3_vals), median_f64(&e3_vals));
+    println!("  |det(J)|   = e₅: max={:.2e}  mean={:.2e}  median={:.2e}",
+        e5_vals.iter().cloned().fold(0.0_f64, f64::max),
+        mean_f64(&e5_vals), median_f64(&e5_vals));
+
+    let e3_exact = e3_vals.iter().filter(|&&v| v < 1e-12).count();
+    println!("  |e₃| < 1e-12: {}/{} = {:.1}%",
+        e3_exact, all_data.len(), 100.0 * e3_exact as f64 / all_data.len() as f64);
+
+    println!("\n  Phase 3: Discriminant analysis (real vs complex eigenvalues)");
+    let disc_vals: Vec<f64> = all_data.iter().map(|d| d.disc).collect();
+    let n_complex = all_data.iter().filter(|d| d.is_complex).count();
+    let n_real = all_data.len() - n_complex;
+    println!("  Real eigenvalues (disc≥0):    {}/{} = {:.1}%",
+        n_real, all_data.len(), 100.0 * n_real as f64 / all_data.len() as f64);
+    println!("  Complex eigenvalues (disc<0): {}/{} = {:.1}%",
+        n_complex, all_data.len(), 100.0 * n_complex as f64 / all_data.len() as f64);
+    println!("  Discriminant: mean={:.6}  std={:.6}  min={:.6}  max={:.6}",
+        mean_f64(&disc_vals), std_f64(&disc_vals),
+        disc_vals.iter().cloned().fold(f64::INFINITY, f64::min),
+        disc_vals.iter().cloned().fold(f64::NEG_INFINITY, f64::max));
+
+    println!("\n  Phase 4: Analytical vs numerical eigenvalue comparison");
+    let err_vals: Vec<f64> = all_data.iter().map(|d| d.max_eig_err).collect();
+    println!("  Max eigenvalue error: mean={:.2e}  std={:.2e}  max={:.2e}  median={:.2e}",
+        mean_f64(&err_vals), std_f64(&err_vals),
+        err_vals.iter().cloned().fold(0.0_f64, f64::max),
+        median_f64(&err_vals));
+
+    let n_exact = err_vals.iter().filter(|&&e| e < 1e-10).count();
+    let n_good = err_vals.iter().filter(|&&e| e < 1e-6).count();
+    println!("  Error < 1e-10 (exact): {}/{} = {:.1}%",
+        n_exact, all_data.len(), 100.0 * n_exact as f64 / all_data.len() as f64);
+    println!("  Error < 1e-6 (good):   {}/{} = {:.1}%",
+        n_good, all_data.len(), 100.0 * n_good as f64 / all_data.len() as f64);
+
+    println!("\n  Phase 5: Coefficients e₂ and e₄ analysis");
+    let e2_vals: Vec<f64> = all_data.iter().map(|d| d.e2).collect();
+    let e4_vals: Vec<f64> = all_data.iter().map(|d| d.e4).collect();
+    println!("  e₂ (sum of 2×2 minors): mean={:.6}  std={:.6}  min={:.6}  max={:.6}",
+        mean_f64(&e2_vals), std_f64(&e2_vals),
+        e2_vals.iter().cloned().fold(f64::INFINITY, f64::min),
+        e2_vals.iter().cloned().fold(f64::NEG_INFINITY, f64::max));
+    println!("  e₄ (sum of 4×4 minors): mean={:.6}  std={:.6}  min={:.6}  max={:.6}",
+        mean_f64(&e4_vals), std_f64(&e4_vals),
+        e4_vals.iter().cloned().fold(f64::INFINITY, f64::min),
+        e4_vals.iter().cloned().fold(f64::NEG_INFINITY, f64::max));
+
+    let e2_sign = e2_vals.iter().filter(|&&v| v < 0.0).count();
+    let e4_sign = e4_vals.iter().filter(|&&v| v > 0.0).count();
+    println!("  e₂ < 0: {}/{} = {:.1}%", e2_sign, all_data.len(),
+        100.0 * e2_sign as f64 / all_data.len() as f64);
+    println!("  e₄ > 0: {}/{} = {:.1}%", e4_sign, all_data.len(),
+        100.0 * e4_sign as f64 / all_data.len() as f64);
+
+    println!("\n  Phase 6: Spectral radius from analytical formula");
+    let rho_vals: Vec<f64> = all_data.iter().map(|d| d.rho_j).collect();
+    let rho_analytical: Vec<f64> = all_data.iter().map(|d| {
+        let disc = d.disc;
+        if disc >= 0.0 {
+            let r1 = (-d.e2 + disc.sqrt()) / 2.0;
+            let r2 = (-d.e2 - disc.sqrt()) / 2.0;
+            r1.max(r2).max(0.0).sqrt()
+        } else {
+            let real_part = -d.e2 / 2.0;
+            let imag_part = (-disc).sqrt() / 2.0;
+            (real_part * real_part + imag_part * imag_part).sqrt().sqrt()
+        }
+    }).collect();
+
+    let rho_err: Vec<f64> = rho_vals.iter().zip(rho_analytical.iter())
+        .map(|(a, b)| (a - b).abs()).collect();
+    println!("  |ρ_numerical - ρ_analytical|: mean={:.2e}  max={:.2e}  median={:.2e}",
+        mean_f64(&rho_err), rho_err.iter().cloned().fold(0.0_f64, f64::max),
+        median_f64(&rho_err));
+
+    let rho_corr = pearson_corr(&rho_vals, &rho_analytical);
+    println!("  Pearson corr(ρ_num, ρ_ana) = {:.8}", rho_corr);
+
+    let rho_mape: Vec<f64> = rho_vals.iter().zip(rho_analytical.iter())
+        .filter(|(a, _)| **a > 1e-10)
+        .map(|(a, b)| ((a - b) / a).abs())
+        .collect();
+    println!("  MAPE(ρ_num, ρ_ana) = {:.4}%", mean_f64(&rho_mape) * 100.0);
+
+    println!("\n  Phase 7: Regime-specific analysis");
+    let mut regime_data: BTreeMap<String, Vec<&EigData>> = BTreeMap::new();
+    for d in &all_data {
+        regime_data.entry(d.regime.clone()).or_default().push(d);
+    }
+
+    println!("  {:>12}  {:>8}  {:>10}  {:>10}  {:>12}  {:>10}",
+        "regime", "complex%", "e₂_mean", "e₄_mean", "max_eig_err", "ρ_MAPE%");
+    for regime in regimes.iter().map(|r| r.0) {
+        if let Some(data) = regime_data.get(regime) {
+            let complex_pct = 100.0 * data.iter().filter(|d| d.is_complex).count() as f64 / data.len() as f64;
+            let e2_m = mean_f64(&data.iter().map(|d| d.e2).collect::<Vec<_>>());
+            let e4_m = mean_f64(&data.iter().map(|d| d.e4).collect::<Vec<_>>());
+            let max_err = data.iter().map(|d| d.max_eig_err).fold(0.0_f64, f64::max);
+            let mape = {
+                let errs: Vec<f64> = data.iter()
+                    .filter(|d| d.rho_j > 1e-10)
+                    .map(|d| {
+                        let rho_a = if d.disc >= 0.0 {
+                            let r1 = (-d.e2 + d.disc.sqrt()) / 2.0;
+                            let r2 = (-d.e2 - d.disc.sqrt()) / 2.0;
+                            r1.max(r2).max(0.0).sqrt()
+                        } else {
+                            let rp = -d.e2 / 2.0;
+                            let ip = (-d.disc).sqrt() / 2.0;
+                            (rp * rp + ip * ip).sqrt().sqrt()
+                        };
+                        ((d.rho_j - rho_a) / d.rho_j).abs()
+                    }).collect();
+                mean_f64(&errs) * 100.0
+            };
+            println!("  {:>12}  {:>7.1}%  {:>10.4}  {:>10.4}  {:>12.2e}  {:>9.4}%",
+                regime, complex_pct, e2_m, e4_m, max_err, mape);
+        }
+    }
+
+    println!("\n  Phase 8: Topology-specific analysis");
+    let mut topo_data: BTreeMap<String, Vec<&EigData>> = BTreeMap::new();
+    for d in &all_data {
+        topo_data.entry(d.topo.clone()).or_default().push(d);
+    }
+
+    println!("  {:>12}  {:>8}  {:>10}  {:>12}",
+        "topo", "complex%", "e₂_mean", "max_eig_err");
+    for (topo, data) in &topo_data {
+        let complex_pct = 100.0 * data.iter().filter(|d| d.is_complex).count() as f64 / data.len() as f64;
+        let e2_m = mean_f64(&data.iter().map(|d| d.e2).collect::<Vec<_>>());
+        let max_err = data.iter().map(|d| d.max_eig_err).fold(0.0_f64, f64::max);
+        println!("  {:>12}  {:>7.1}%  {:>10.4}  {:>12.2e}",
+            topo, complex_pct, e2_m, max_err);
+    }
+
+    println!("\n  Phase 9: e₂ and e₄ correlation with Jacobian entries");
+    let mut best_e2_corr = 0.0_f64;
+    let mut best_e2_idx = 0;
+    let mut best_e4_corr = 0.0_f64;
+    let mut best_e4_idx = 0;
+    for idx in 0..25 {
+        let j_col: Vec<f64> = all_data.iter().map(|d| d.jac_entries[idx]).collect();
+        let c2 = pearson_corr(&e2_vals, &j_col);
+        let c4 = pearson_corr(&e4_vals, &j_col);
+        if c2.abs() > best_e2_corr.abs() { best_e2_corr = c2; best_e2_idx = idx; }
+        if c4.abs() > best_e4_corr.abs() { best_e4_corr = c4; best_e4_idx = idx; }
+    }
+    println!("  Best e₂↔J[{},{}]: r={:.4}", best_e2_idx / 5, best_e2_idx % 5, best_e2_corr);
+    println!("  Best e₄↔J[{},{}]: r={:.4}", best_e4_idx / 5, best_e4_idx % 5, best_e4_corr);
+
+    let e2_rho_corr = pearson_corr(&e2_vals, &rho_vals);
+    let e4_rho_corr = pearson_corr(&e4_vals, &rho_vals);
+    let e2_e4_corr = pearson_corr(&e2_vals, &e4_vals);
+    let disc_rho_corr = pearson_corr(&disc_vals, &rho_vals);
+    println!("  corr(e₂, ρ(J))      = {:.4}", e2_rho_corr);
+    println!("  corr(e₄, ρ(J))      = {:.4}", e4_rho_corr);
+    println!("  corr(e₂, e₄)        = {:.4}", e2_e4_corr);
+    println!("  corr(disc, ρ(J))    = {:.4}", disc_rho_corr);
+
+    println!("\n  ANALYTICAL EIGENVALUE SUMMARY:");
+    println!("  Structural zeros: |tr(J)|<1e-12: {:.1}%  |e₃|<1e-12: {:.1}%  |det(J)|<1e-12: {:.1}%",
+        100.0 * e1_vals.iter().filter(|&&v| v < 1e-12).count() as f64 / all_data.len() as f64,
+        100.0 * e3_exact as f64 / all_data.len() as f64,
+        100.0 * e5_vals.iter().filter(|&&v| v < 1e-12).count() as f64 / all_data.len() as f64);
+    println!("  Characteristic polynomial: λ⁵ + e₂λ³ + e₄λ = 0");
+    println!("  Eigenvalue formula: λ = 0, ±√r₁, ±√r₂ where r₁₂ = (-e₂ ± √(e₂²-4e₄))/2");
+    println!("  Complex eigenvalues: {:.1}%", 100.0 * n_complex as f64 / all_data.len() as f64);
+    println!("  Analytical ρ MAPE: {:.4}%", mean_f64(&rho_mape) * 100.0);
+    println!("  Max eigenvalue error: mean={:.2e}", mean_f64(&err_vals));
+    println!("  corr(ρ_num, ρ_ana) = {:.8}", rho_corr);
+
+    if mean_f64(&err_vals) < 1e-10 {
+        println!("  → EXACT: Analytical formula matches numerical eigenvalues to machine precision");
+    } else if mean_f64(&err_vals) < 1e-6 {
+        println!("  → EXCELLENT: Analytical formula matches to 6+ digits");
+    } else {
+        println!("  → GOOD: Analytical formula captures main structure");
+    }
+
+    println!("\n  Phase labels:");
+    println!("  Phase 1: Characteristic polynomial coefficients");
+    println!("  Phase 2: Structural zeros verification");
+    println!("  Phase 3: Discriminant analysis");
+    println!("  Phase 4: Analytical vs numerical eigenvalue comparison");
+    println!("  Phase 5: Coefficients e₂ and e₄ analysis");
+    println!("  Phase 6: Spectral radius from analytical formula");
+    println!("  Phase 7: Regime-specific analysis");
+    println!("  Phase 8: Topology-specific analysis");
+    println!("  Phase 9: Correlation with Jacobian entries");
+}
+
+pub fn run_e3_structure_analysis() {
+    use std::collections::BTreeMap;
+    use crate::{pipeline, n_operator::DynamicsParams};
+
+    println!("\n{}", "=".repeat(64));
+    println!("  v3.01: e₃ Structure Decomposition & Predictability Analysis");
+    println!("{}", "=".repeat(64));
+
+    let topo_builders: Vec<(&str, fn() -> crate::fca::FcaLattice)> = vec![
+        ("chain-5", || crate::fca::build_chain_lattice(5)),
+        ("chain-7", || crate::fca::build_chain_lattice(7)),
+        ("diamond", || crate::fca::build_diamond_lattice()),
+        ("M3", || crate::fca::build_m3_lattice()),
+        ("B3", || crate::fca::build_b3_lattice()),
+        ("grid-3x3", || crate::fca::build_grid_lattice(3, 3)),
+    ];
+
+    let regimes: &[(&str, f64, f64, f64)] = &[
+        ("uniform", 1.0, 1.0, 0.01),
+        ("high-β", 3.0, 1.0, 0.01),
+        ("high-δ", 1.0, 3.0, 0.01),
+        ("low-ε", 1.0, 1.0, 0.001),
+        ("extreme", 3.0, 3.0, 0.001),
+    ];
+
+    fn sum_2x2_minors(j: &nalgebra::SMatrix<f64, 5, 5>) -> f64 {
+        let mut s = 0.0;
+        for i in 0..5 { for k in (i + 1)..5 { s += j[(i,i)] * j[(k,k)] - j[(i,k)] * j[(k,i)]; } }
+        s
+    }
+
+    fn sum_3x3_minors(j: &nalgebra::SMatrix<f64, 5, 5>) -> f64 {
+        let mut s = 0.0;
+        for i in 0..5 { for k in (i+1)..5 { for l in (k+1)..5 {
+            let m = nalgebra::SMatrix::<f64, 3, 3>::new(
+                j[(i,i)], j[(i,k)], j[(i,l)],
+                j[(k,i)], j[(k,k)], j[(k,l)],
+                j[(l,i)], j[(l,k)], j[(l,l)],
+            );
+            s += m.determinant();
+        }}}
+        s
+    }
+
+    fn sum_4x4_minors(j: &nalgebra::SMatrix<f64, 5, 5>) -> f64 {
+        let mut s = 0.0;
+        for skip in 0..5 {
+            let mut rows = Vec::new();
+            for i in 0..5 { if i != skip { rows.push(i); } }
+            let m = nalgebra::SMatrix::<f64, 4, 4>::new(
+                j[(rows[0], rows[0])], j[(rows[0], rows[1])], j[(rows[0], rows[2])], j[(rows[0], rows[3])],
+                j[(rows[1], rows[0])], j[(rows[1], rows[1])], j[(rows[1], rows[2])], j[(rows[1], rows[3])],
+                j[(rows[2], rows[0])], j[(rows[2], rows[1])], j[(rows[2], rows[2])], j[(rows[2], rows[3])],
+                j[(rows[3], rows[0])], j[(rows[3], rows[1])], j[(rows[3], rows[2])], j[(rows[3], rows[3])],
+            );
+            s += m.determinant();
+        }
+        s
+    }
+
+    struct E3Data {
+        topo: String,
+        regime: String,
+        e2: f64, e3: f64, e4: f64,
+        rho_j: f64,
+        jac_entries: [f64; 25],
+    }
+
+    let mut all_data: Vec<E3Data> = Vec::new();
+
+    println!("\n  Phase 1: Collecting coefficient data...");
+    for &(topo_name, ref builder) in &topo_builders {
+        let lattice = builder();
+        let stats = pipeline::compute_lattice_stats(&lattice);
+        for &(regime_name, b1, d1, eps) in regimes {
+            let params = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1).with_eps(eps);
+            let results = pipeline::run_topological_iteration(&lattice, &stats, &params);
+            for opt in results.iter() {
+                if let Some(ref res) = opt {
+                    let j = jac_from_arr(&res.jacobian);
+                    all_data.push(E3Data {
+                        topo: topo_name.to_string(),
+                        regime: regime_name.to_string(),
+                        e2: sum_2x2_minors(&j),
+                        e3: sum_3x3_minors(&j),
+                        e4: sum_4x4_minors(&j),
+                        rho_j: res.rho_spectral,
+                        jac_entries: res.jacobian,
+                    });
+                }
+            }
+        }
+    }
+    let n = all_data.len();
+    println!("  Collected {} records", n);
+
+    let e2_vals: Vec<f64> = all_data.iter().map(|d| d.e2).collect();
+    let e3_vals: Vec<f64> = all_data.iter().map(|d| d.e3).collect();
+    let e4_vals: Vec<f64> = all_data.iter().map(|d| d.e4).collect();
+    let rho_vals: Vec<f64> = all_data.iter().map(|d| d.rho_j).collect();
+
+    println!("\n  Phase 2: e₃ distribution analysis");
+    println!("  e₃: mean={:.6}  std={:.6}  min={:.6}  max={:.6}",
+        mean_f64(&e3_vals), std_f64(&e3_vals),
+        e3_vals.iter().cloned().fold(f64::INFINITY, f64::min),
+        e3_vals.iter().cloned().fold(f64::NEG_INFINITY, f64::max));
+    let e3_abs: Vec<f64> = e3_vals.iter().map(|v| v.abs()).collect();
+    println!("  |e₃|: mean={:.6}  median={:.6}",
+        mean_f64(&e3_abs), median_f64(&e3_abs));
+
+    let mut e3_sorted = e3_abs.clone();
+    e3_sorted.sort_by(|a, b| a.partial_cmp(b).unwrap());
+    println!("  |e₃| percentiles: p10={:.4e}  p25={:.4e}  p50={:.4e}  p75={:.4e}  p90={:.4e}",
+        e3_sorted[n/10], e3_sorted[n/4], e3_sorted[n/2], e3_sorted[3*n/4], e3_sorted[9*n/10]);
+
+    println!("\n  Phase 3: e₃ vs e₂ and e₄ correlations");
+    let c_e3_e2 = pearson_corr(&e3_vals, &e2_vals);
+    let c_e3_e4 = pearson_corr(&e3_vals, &e4_vals);
+    let c_e3_rho = pearson_corr(&e3_vals, &rho_vals);
+    let c_e2_e4 = pearson_corr(&e2_vals, &e4_vals);
+    println!("  corr(e₃, e₂)     = {:.4}", c_e3_e2);
+    println!("  corr(e₃, e₄)     = {:.4}", c_e3_e4);
+    println!("  corr(e₃, ρ(J))   = {:.4}", c_e3_rho);
+    println!("  corr(e₂, e₄)     = {:.4}", c_e2_e4);
+
+    println!("\n  Phase 4: e₃/e₂ and e₃/e₄ ratios");
+    let ratio_e3_e2: Vec<f64> = all_data.iter()
+        .filter(|d| d.e2.abs() > 1e-10)
+        .map(|d| d.e3 / d.e2)
+        .collect();
+    let ratio_e3_e4: Vec<f64> = all_data.iter()
+        .filter(|d| d.e4.abs() > 1e-10)
+        .map(|d| d.e3 / d.e4)
+        .collect();
+    let ratio_e3_e2sq: Vec<f64> = all_data.iter()
+        .filter(|d| d.e2.abs() > 1e-10)
+        .map(|d| d.e3 / (d.e2 * d.e2))
+        .collect();
+    println!("  e₃/e₂: mean={:.6}  std={:.6}", mean_f64(&ratio_e3_e2), std_f64(&ratio_e3_e2));
+    println!("  e₃/e₄: mean={:.6}  std={:.6}", mean_f64(&ratio_e3_e4), std_f64(&ratio_e3_e4));
+    println!("  e₃/e₂²: mean={:.6}  std={:.6}", mean_f64(&ratio_e3_e2sq), std_f64(&ratio_e3_e2sq));
+
+    println!("\n  Phase 5: Multivariate regression e₃ = a·e₂ + b·e₄ + c");
+    let n_r = all_data.len() as f64;
+    let s_e2: f64 = e2_vals.iter().sum();
+    let s_e3: f64 = e3_vals.iter().sum();
+    let s_e4: f64 = e4_vals.iter().sum();
+    let s_e2e2: f64 = e2_vals.iter().map(|x| x * x).sum();
+    let s_e4e4: f64 = e4_vals.iter().map(|x| x * x).sum();
+    let s_e2e4: f64 = e2_vals.iter().zip(e4_vals.iter()).map(|(a, b)| a * b).sum();
+    let s_e2e3: f64 = e2_vals.iter().zip(e3_vals.iter()).map(|(a, b)| a * b).sum();
+    let s_e4e3: f64 = e4_vals.iter().zip(e3_vals.iter()).map(|(a, b)| a * b).sum();
+
+    let xtx = nalgebra::SMatrix::<f64, 3, 3>::new(
+        s_e2e2, s_e2e4, s_e2,
+        s_e2e4, s_e4e4, s_e4,
+        s_e2,   s_e4,   n_r,
+    );
+    let xty = nalgebra::SVector::<f64, 3>::new(s_e2e3, s_e4e3, s_e3);
+    let beta = xtx.try_inverse().map(|inv| inv * xty);
+    if let Some(b) = beta {
+        println!("  e₃ ≈ {:.6}·e₂ + {:.6}·e₄ + {:.6}", b[0], b[1], b[2]);
+        let pred: Vec<f64> = all_data.iter().map(|d| b[0]*d.e2 + b[1]*d.e4 + b[2]).collect();
+        let r2 = {
+            let e3_mean = mean_f64(&e3_vals);
+            let ss_tot: f64 = e3_vals.iter().map(|v| (v - e3_mean).powi(2)).sum();
+            let ss_res: f64 = e3_vals.iter().zip(pred.iter()).map(|(a, p)| (a - p).powi(2)).sum();
+            1.0 - ss_res / ss_tot
+        };
+        let mape_reg: Vec<f64> = e3_vals.iter().zip(pred.iter())
+            .filter(|(a, _)| a.abs() > 1e-10)
+            .map(|(a, p)| ((a - p) / a).abs())
+            .collect();
+        println!("  R²={:.6}  MAPE={:.2}%", r2, mean_f64(&mape_reg) * 100.0);
+
+        let residual: Vec<f64> = e3_vals.iter().zip(pred.iter()).map(|(a, p)| a - p).collect();
+        println!("  Residual: mean={:.2e}  std={:.6}  max|res|={:.6}",
+            mean_f64(&residual), std_f64(&residual),
+            residual.iter().map(|v| v.abs()).fold(0.0_f64, f64::max));
+    } else {
+        println!("  Regression failed (singular matrix)");
+    }
+
+    println!("\n  Phase 6: e₃ prediction from individual Jacobian entries");
+    let mut best_corr = 0.0_f64;
+    let mut best_idx = 0;
+    for idx in 0..25 {
+        let j_col: Vec<f64> = all_data.iter().map(|d| d.jac_entries[idx]).collect();
+        let c = pearson_corr(&e3_vals, &j_col);
+        if c.abs() > best_corr.abs() { best_corr = c; best_idx = idx; }
+    }
+    println!("  Best single J entry for e₃: J[{},{}] r={:.4}", best_idx / 5, best_idx % 5, best_corr);
+
+    println!("  Top 5 J entries correlated with e₃:");
+    let mut corrs: Vec<(usize, f64)> = (0..25).map(|idx| {
+        let j_col: Vec<f64> = all_data.iter().map(|d| d.jac_entries[idx]).collect();
+        (idx, pearson_corr(&e3_vals, &j_col).abs())
+    }).collect();
+    corrs.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
+    for (rank, &(idx, c)) in corrs.iter().take(5).enumerate() {
+        println!("    {}. J[{},{}] |r|={:.4}", rank + 1, idx / 5, idx % 5, c);
+    }
+
+    println!("\n  Phase 7: Regime and topology breakdown of e₃");
+    let mut regime_map: BTreeMap<String, Vec<&E3Data>> = BTreeMap::new();
+    let mut topo_map: BTreeMap<String, Vec<&E3Data>> = BTreeMap::new();
+    for d in &all_data {
+        regime_map.entry(d.regime.clone()).or_default().push(d);
+        topo_map.entry(d.topo.clone()).or_default().push(d);
+    }
+    println!("  {:>12}  {:>10}  {:>10}  {:>10}  {:>10}",
+        "regime", "e₃_mean", "|e₃|_mean", "e₃/e₂", "corr(e₃,e₂)");
+    for r in regimes.iter().map(|r| r.0) {
+        if let Some(data) = regime_map.get(r) {
+            let e3m = mean_f64(&data.iter().map(|d| d.e3).collect::<Vec<_>>());
+            let e3a = mean_f64(&data.iter().map(|d| d.e3.abs()).collect::<Vec<_>>());
+            let ratio = {
+                let r_vals: Vec<f64> = data.iter().filter(|d| d.e2.abs() > 1e-10).map(|d| d.e3 / d.e2).collect();
+                if r_vals.is_empty() { f64::NAN } else { mean_f64(&r_vals) }
+            };
+            let ev: Vec<f64> = data.iter().map(|d| d.e3).collect();
+            let e2v: Vec<f64> = data.iter().map(|d| d.e2).collect();
+            let cc = if ev.len() > 2 { pearson_corr(&ev, &e2v) } else { 0.0 };
+            println!("  {:>12}  {:>10.6}  {:>10.6}  {:>10.4}  {:>10.4}", r, e3m, e3a, ratio, cc);
+        }
+    }
+    println!("\n  {:>12}  {:>10}  {:>10}  {:>10}",
+        "topo", "e₃_mean", "|e₃|_mean", "e₃/e₂");
+    for (t, data) in &topo_map {
+        let e3m = mean_f64(&data.iter().map(|d| d.e3).collect::<Vec<_>>());
+        let e3a = mean_f64(&data.iter().map(|d| d.e3.abs()).collect::<Vec<_>>());
+        let ratio = {
+            let r_vals: Vec<f64> = data.iter().filter(|d| d.e2.abs() > 1e-10).map(|d| d.e3 / d.e2).collect();
+            if r_vals.is_empty() { f64::NAN } else { mean_f64(&r_vals) }
+        };
+        println!("  {:>12}  {:>10.6}  {:>10.6}  {:>10.4}", t, e3m, e3a, ratio);
+    }
+
+    println!("\n  Phase 8: e₃ impact on eigenvalue formula");
+    println!("  Comparing: (a) e₃=0 formula, (b) corrected quartic with actual e₃");
+
+    let mut err_e3eq0: Vec<f64> = Vec::new();
+    let mut err_quartic: Vec<f64> = Vec::new();
+    let mut rho_mape_e3eq0: Vec<f64> = Vec::new();
+    let mut rho_mape_quartic: Vec<f64> = Vec::new();
+
+    for d in &all_data {
+        let j = jac_from_arr(&d.jac_entries);
+        let numerical = sorted_eigs(&j);
+        let num_eigs: Vec<(f64, f64)> = numerical.iter().map(|e| (e.re, e.im)).collect();
+
+        let rho_num = d.rho_j;
+        if rho_num < 1e-10 { continue; }
+
+        // Method (a): e₃=0 formula (from v3.00)
+        let disc_a = d.e2 * d.e2 - 4.0 * d.e4;
+        let rho_a = if disc_a >= 0.0 {
+            let r1 = (-d.e2 + disc_a.sqrt()) / 2.0;
+            let r2 = (-d.e2 - disc_a.sqrt()) / 2.0;
+            r1.max(r2).max(0.0).sqrt()
+        } else {
+            let rp = -d.e2 / 2.0;
+            let ip = (-disc_a).sqrt() / 2.0;
+            (rp * rp + ip * ip).sqrt().sqrt()
+        };
+        rho_mape_e3eq0.push(((rho_num - rho_a) / rho_num).abs());
+
+        // Method (b): quartic λ⁴ + e₂λ² - e₃λ + e₄ = 0
+        // solved via companion matrix
+        let companion = nalgebra::SMatrix::<f64, 4, 4>::new(
+            0.0, 0.0, 0.0, -d.e4,
+            1.0, 0.0, 0.0, -d.e3,
+            0.0, 1.0, 0.0, -d.e2,
+            0.0, 0.0, 1.0,  0.0,
+        );
+        let quartic_eigs = companion.complex_eigenvalues();
+        let q_eigs: Vec<(f64, f64)> = quartic_eigs.iter().map(|e| (e.re, e.im)).collect();
+
+        let rho_b = q_eigs.iter().map(|(r, i)| (r*r + i*i).sqrt()).fold(0.0_f64, f64::max);
+        rho_mape_quartic.push(((rho_num - rho_b) / rho_num).abs());
+
+        // Match quartic eigenvalues to numerical (skip the zero eigenvalue)
+        let mut max_err_a = 0.0_f64;
+        let mut used_a = vec![false; 5];
+        let eigs_a = if disc_a >= 0.0 {
+            let r1 = (-d.e2 + disc_a.sqrt()) / 2.0;
+            let r2 = (-d.e2 - disc_a.sqrt()) / 2.0;
+            let sr1 = if r1 >= 0.0 { r1.sqrt() } else { 0.0 };
+            let sr2 = if r2 >= 0.0 { r2.sqrt() } else { 0.0 };
+            vec![(0.0, 0.0), (sr1, 0.0), (-sr1, 0.0), (sr2, 0.0), (-sr2, 0.0)]
+        } else {
+            let rp = -d.e2 / 2.0;
+            let ip = (-disc_a).sqrt() / 2.0;
+            let mag = (rp*rp + ip*ip).sqrt().sqrt();
+            let angle = (ip / rp).atan2(1.0) / 2.0;
+            vec![(0.0, 0.0),
+                 (mag * angle.cos(), mag * angle.sin()),
+                 (mag * angle.cos(), -mag * angle.sin()),
+                 (-mag * angle.cos(), -mag * angle.sin()),
+                 (-mag * angle.cos(), mag * angle.sin())]
+        };
+        for ae in &eigs_a {
+            let mut best = f64::INFINITY;
+            let mut bi = 0;
+            for (ni, ne) in num_eigs.iter().enumerate() {
+                if used_a[ni] { continue; }
+                let err = ((ae.0 - ne.0).powi(2) + (ae.1 - ne.1).powi(2)).sqrt();
+                if err < best { best = err; bi = ni; }
+            }
+            used_a[bi] = true;
+            if best > max_err_a { max_err_a = best; }
+        }
+        err_e3eq0.push(max_err_a);
+
+        // Match quartic eigenvalues to numerical (include zero eigenvalue)
+        let mut all_q = vec![(0.0, 0.0)];
+        all_q.extend(q_eigs.iter().map(|e| (e.0, e.1)));
+        let mut max_err_b = 0.0_f64;
+        let mut used_b = vec![false; 5];
+        for qe in &all_q {
+            let mut best = f64::INFINITY;
+            let mut bi = 0;
+            for (ni, ne) in num_eigs.iter().enumerate() {
+                if used_b[ni] { continue; }
+                let err = ((qe.0 - ne.0).powi(2) + (qe.1 - ne.1).powi(2)).sqrt();
+                if err < best { best = err; bi = ni; }
+            }
+            used_b[bi] = true;
+            if best > max_err_b { max_err_b = best; }
+        }
+        err_quartic.push(max_err_b);
+    }
+
+    println!("  Method (a) e₃=0 formula:     max_eig_err mean={:.2e}  ρ_MAPE={:.4}%",
+        mean_f64(&err_e3eq0), mean_f64(&rho_mape_e3eq0) * 100.0);
+    println!("  Method (b) quartic with e₃:  max_eig_err mean={:.2e}  ρ_MAPE={:.4}%",
+        mean_f64(&err_quartic), mean_f64(&rho_mape_quartic) * 100.0);
+    let improvement = if mean_f64(&err_e3eq0) > 1e-15 {
+        mean_f64(&err_e3eq0) / mean_f64(&err_quartic).max(1e-30)
+    } else { 0.0 };
+    println!("  Improvement ratio (a→b): {:.1}×", improvement);
+
+    let n_exact_b = err_quartic.iter().filter(|&&e| e < 1e-10).count();
+    let n_good_b = err_quartic.iter().filter(|&&e| e < 1e-6).count();
+    println!("  Quartic exact (<1e-10): {}/{} = {:.1}%", n_exact_b, n, 100.0 * n_exact_b as f64 / n as f64);
+    println!("  Quartic good  (<1e-6):  {}/{} = {:.1}%", n_good_b, n, 100.0 * n_good_b as f64 / n as f64);
+
+    println!("\n  Phase 9: Discriminant analysis of the quartic");
+    let disc_vals: Vec<f64> = all_data.iter().map(|d| {
+        d.e2 * d.e2 - 4.0 * d.e4
+    }).collect();
+    let n_pos = disc_vals.iter().filter(|&&v| v > 0.0).count();
+    let n_neg = disc_vals.iter().filter(|&&v| v < 0.0).count();
+    let n_zero = disc_vals.iter().filter(|&&v| v.abs() < 1e-12).count();
+    println!("  disc=e₂²-4e₄: positive={:.1}%  negative={:.1}%  zero={:.1}%",
+        100.0 * n_pos as f64 / n as f64,
+        100.0 * n_neg as f64 / n as f64,
+        100.0 * n_zero as f64 / n as f64);
+    println!("  disc: mean={:.6e}  std={:.6e}  min={:.6e}  max={:.6e}",
+        mean_f64(&disc_vals), std_f64(&disc_vals),
+        disc_vals.iter().cloned().fold(f64::INFINITY, f64::min),
+        disc_vals.iter().cloned().fold(f64::NEG_INFINITY, f64::max));
+
+    println!("\n  E₃ STRUCTURE ANALYSIS SUMMARY:");
+    println!("  e₃ distribution: mean={:.6}  |e₃|_mean={:.6}", mean_f64(&e3_vals), mean_f64(&e3_abs));
+    println!("  e₃ correlations: with e₂={:.4}  with e₄={:.4}  with ρ={:.4}", c_e3_e2, c_e3_e4, c_e3_rho);
+    println!("  Best single J predictor: J[{},{}] r={:.4}", best_idx / 5, best_idx % 5, best_corr);
+
+    if mean_f64(&rho_mape_quartic) < 0.001 {
+        println!("  → EXACT: Quartic companion matrix matches numerical eigenvalues perfectly");
+    } else if mean_f64(&rho_mape_quartic) < 0.01 {
+        println!("  → EXCELLENT: Quartic with e₃ captures eigenvalues to high precision");
+    } else {
+        println!("  → Quartic ρ_MAPE={:.4}%", mean_f64(&rho_mape_quartic) * 100.0);
+    }
+
+    println!("\n  Phase labels:");
+    println!("  Phase 1: Data collection");
+    println!("  Phase 2: e₃ distribution analysis");
+    println!("  Phase 3: e₃ vs e₂/e₄ correlations");
+    println!("  Phase 4: e₃/e₂ and e₃/e₄ ratios");
+    println!("  Phase 5: Multivariate regression e₃ = f(e₂, e₄)");
+    println!("  Phase 6: e₃ prediction from Jacobian entries");
+    println!("  Phase 7: Regime and topology breakdown");
+    println!("  Phase 8: Eigenvalue formula comparison");
+    println!("  Phase 9: Discriminant analysis of quartic");
+}

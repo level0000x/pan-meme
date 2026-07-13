@@ -212,4 +212,8 @@ fn run_synthetic_suite(_max_concepts: usize, _time_limit: f64, _output_dir: &Pat
     experiments::run_fixed_point_sensitivity();
     experiments::run_spectral_gap_analysis();
     experiments::run_convergence_anisotropy();
+    experiments::run_nonlinear_linear_transition();
+    experiments::run_trajectory_reconstruction();
+    experiments::run_analytical_eigenvalues();
+    experiments::run_e3_structure_analysis();
 }
