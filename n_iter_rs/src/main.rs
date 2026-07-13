@@ -217,4 +217,9 @@ fn run_synthetic_suite(_max_concepts: usize, _time_limit: f64, _output_dir: &Pat
     experiments::run_analytical_eigenvalues();
     experiments::run_e3_structure_analysis();
     experiments::run_jacobian_sparsity_analysis();
+    experiments::run_spectral_radius_from_cycles();
+    experiments::run_parameter_cycle_sensitivity();
+    experiments::run_cycle_landscape();
+    experiments::run_cycle_topology_invariance();
+    experiments::run_full_spectrum_from_cycles();
 }
