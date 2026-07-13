@@ -31,8 +31,7 @@ fn main() {
         println!("{}", "=".repeat(64));
         println!("  QUICK MODE: synthetic lattice experiments only");
         println!("{}", "=".repeat(64));
-        // TEMP: v3.17
-        experiments::run_spectral_gap_decomposition();
+        run_synthetic_suite(max_concepts, time_limit, &output_dir);
         return;
     }
 
@@ -232,4 +231,7 @@ fn run_synthetic_suite(_max_concepts: usize, _time_limit: f64, _output_dir: &Pat
     experiments::run_cycle_weight_pca();
     experiments::run_analytic_cycle_constraints();
     experiments::run_spectral_gap_decomposition();
+    experiments::run_spectral_radius_bounds();
+    experiments::run_empirical_rho_formula();
+    experiments::run_spectrally_invariant_dof();
 }
