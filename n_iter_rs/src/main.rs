@@ -31,7 +31,8 @@ fn main() {
         println!("{}", "=".repeat(64));
         println!("  QUICK MODE: synthetic lattice experiments only");
         println!("{}", "=".repeat(64));
-        run_synthetic_suite(max_concepts, time_limit, &output_dir);
+        // TEMP: v3.17
+        experiments::run_spectral_gap_decomposition();
         return;
     }
 
@@ -222,4 +223,13 @@ fn run_synthetic_suite(_max_concepts: usize, _time_limit: f64, _output_dir: &Pat
     experiments::run_cycle_landscape();
     experiments::run_cycle_topology_invariance();
     experiments::run_full_spectrum_from_cycles();
+    experiments::run_dynamic_cycle_evolution();
+    experiments::run_e4_cycle_decomposition();
+    experiments::run_spectral_perturbation_theory();
+    experiments::run_nonnormal_spectral_analysis();
+    experiments::run_transient_growth_in_trajectories();
+    experiments::run_eigenvector_modal_analysis();
+    experiments::run_cycle_weight_pca();
+    experiments::run_analytic_cycle_constraints();
+    experiments::run_spectral_gap_decomposition();
 }
