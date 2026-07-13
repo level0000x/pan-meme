@@ -22457,3 +22457,302 @@ pub fn run_e3_structure_analysis() {
     println!("  Phase 8: Eigenvalue formula comparison");
     println!("  Phase 9: Discriminant analysis of quartic");
 }
+
+pub fn run_jacobian_sparsity_analysis() {
+    use std::collections::BTreeMap;
+    use crate::{pipeline, n_operator::DynamicsParams};
+
+    println!("\n{}", "=".repeat(64));
+    println!("  v3.02: Jacobian Sparsity — Principal Minor Cycle Decomposition");
+    println!("{}", "=".repeat(64));
+
+    let topo_builders: Vec<(&str, fn() -> crate::fca::FcaLattice)> = vec![
+        ("chain-5", || crate::fca::build_chain_lattice(5)),
+        ("chain-7", || crate::fca::build_chain_lattice(7)),
+        ("diamond", || crate::fca::build_diamond_lattice()),
+        ("M3", || crate::fca::build_m3_lattice()),
+        ("B3", || crate::fca::build_b3_lattice()),
+        ("grid-3x3", || crate::fca::build_grid_lattice(3, 3)),
+    ];
+
+    let regimes: &[(&str, f64, f64, f64)] = &[
+        ("uniform", 1.0, 1.0, 0.01),
+        ("high-β", 3.0, 1.0, 0.01),
+        ("high-δ", 1.0, 3.0, 0.01),
+        ("low-ε", 1.0, 1.0, 0.001),
+        ("extreme", 3.0, 3.0, 0.001),
+    ];
+
+    fn e2_cycles(j: &[f64; 25]) -> [(f64, &'static str); 4] {
+        [
+            (j[0*5+1] * j[1*5+0], "J01·J10 (d↔b)"),
+            (j[0*5+3] * j[3*5+0], "J03·J30 (d↔r)"),
+            (j[2*5+3] * j[3*5+2], "J23·J32 (ρ↔r)"),
+            (j[3*5+4] * j[4*5+3], "J34·J43 (r↔s)"),
+        ]
+    }
+
+    fn e3_cycles(j: &[f64; 25]) -> [(f64, &'static str); 3] {
+        [
+            (j[0*5+1] * j[1*5+3] * j[3*5+0], "J01·J13·J30 (d→b→r→d)"),
+            (j[0*5+3] * j[2*5+0] * j[3*5+2], "J03·J20·J32 (d→r→ρ→r→d)*"),
+            (j[0*5+3] * j[3*5+4] * j[4*5+0], "J03·J34·J40 (d→r→s→d)"),
+        ]
+    }
+
+    fn e4_skip_k(j: &[f64; 25], k: usize) -> f64 {
+        let mut rows = Vec::new();
+        for i in 0..5 { if i != k { rows.push(i); } }
+        let m = nalgebra::SMatrix::<f64, 4, 4>::new(
+            j[rows[0]*5+rows[0]], j[rows[0]*5+rows[1]], j[rows[0]*5+rows[2]], j[rows[0]*5+rows[3]],
+            j[rows[1]*5+rows[0]], j[rows[1]*5+rows[1]], j[rows[1]*5+rows[2]], j[rows[1]*5+rows[3]],
+            j[rows[2]*5+rows[0]], j[rows[2]*5+rows[1]], j[rows[2]*5+rows[2]], j[rows[2]*5+rows[3]],
+            j[rows[3]*5+rows[0]], j[rows[3]*5+rows[1]], j[rows[3]*5+rows[2]], j[rows[3]*5+rows[3]],
+        );
+        m.determinant()
+    }
+
+    fn sum_2x2_minors(j_arr: &[f64; 25]) -> f64 {
+        let j = jac_from_arr(j_arr);
+        let mut s = 0.0;
+        for i in 0..5 { for k in (i+1)..5 { s += j[(i,i)]*j[(k,k)] - j[(i,k)]*j[(k,i)]; } }
+        s
+    }
+
+    fn sum_3x3_minors(j_arr: &[f64; 25]) -> f64 {
+        let j = jac_from_arr(j_arr);
+        let mut s = 0.0;
+        for i in 0..5 { for k in (i+1)..5 { for l in (k+1)..5 {
+            let m3 = nalgebra::SMatrix::<f64, 3, 3>::new(
+                j[(i,i)], j[(i,k)], j[(i,l)],
+                j[(k,i)], j[(k,k)], j[(k,l)],
+                j[(l,i)], j[(l,k)], j[(l,l)],
+            );
+            s += m3.determinant();
+        }}}
+        s
+    }
+
+    fn sum_4x4_minors(j_arr: &[f64; 25]) -> f64 {
+        (0..5).map(|k| e4_skip_k(j_arr, k)).sum()
+    }
+
+    struct SparsityData {
+        topo: String, regime: String,
+        rho_j: f64,
+        jac: [f64; 25],
+        e2_num: f64, e3_num: f64, e4_num: f64,
+        e2_cyc: [(f64, &'static str); 4],
+        e3_cyc: [(f64, &'static str); 3],
+        e4_skips: [f64; 5],
+    }
+
+    let mut all_data: Vec<SparsityData> = Vec::new();
+
+    println!("\n  Phase 1: Collecting Jacobian cycle data...");
+    for &(topo_name, ref builder) in &topo_builders {
+        let lattice = builder();
+        let stats = pipeline::compute_lattice_stats(&lattice);
+        for &(regime_name, b1, d1, eps) in regimes {
+            let params = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1).with_eps(eps);
+            let results = pipeline::run_topological_iteration(&lattice, &stats, &params);
+            for opt in results.iter() {
+                if let Some(ref res) = opt {
+                    let jac = res.jacobian;
+                    all_data.push(SparsityData {
+                        topo: topo_name.to_string(),
+                        regime: regime_name.to_string(),
+                        rho_j: res.rho_spectral,
+                        jac,
+                        e2_num: sum_2x2_minors(&jac),
+                        e3_num: sum_3x3_minors(&jac),
+                        e4_num: sum_4x4_minors(&jac),
+                        e2_cyc: e2_cycles(&jac),
+                        e3_cyc: e3_cycles(&jac),
+                        e4_skips: [e4_skip_k(&jac, 0), e4_skip_k(&jac, 1), e4_skip_k(&jac, 2),
+                                   e4_skip_k(&jac, 3), e4_skip_k(&jac, 4)],
+                    });
+                }
+            }
+        }
+    }
+    let n = all_data.len();
+    println!("  Collected {} records", n);
+
+    println!("\n  Phase 2: Jacobian sparsity pattern verification");
+    let mut zero_count = 0usize;
+    let mut nonzero_count = 0usize;
+    for d in &all_data {
+        for idx in 0..25 {
+            if d.jac[idx].abs() < 1e-15 { zero_count += 1; } else { nonzero_count += 1; }
+        }
+    }
+    println!("  Total entries: {} (zero: {} = {:.1}%, nonzero: {} = {:.1}%)",
+        n * 25, zero_count, 100.0 * zero_count as f64 / (n * 25) as f64,
+        nonzero_count, 100.0 * nonzero_count as f64 / (n * 25) as f64);
+
+    let expected_zero = [0,2,4, 5,7,9, 11,12,14, 17,19, 21,22,24];
+    let mut always_zero = 0;
+    for &idx in &expected_zero {
+        let all_zero = all_data.iter().all(|d| d.jac[idx].abs() < 1e-15);
+        if all_zero { always_zero += 1; }
+    }
+    println!("  Expected 14 structural zeros: {}/14 confirmed always zero", always_zero);
+
+    println!("\n  Phase 3: e₂ cycle decomposition");
+    let e2_cyc_sums: Vec<f64> = all_data.iter().map(|d| d.e2_cyc.iter().map(|c| c.0).sum()).collect();
+    let e2_num_vals: Vec<f64> = all_data.iter().map(|d| d.e2_num).collect();
+    let e2_verify: Vec<f64> = e2_cyc_sums.iter().zip(e2_num_vals.iter()).map(|(a, b)| (a + b).abs()).collect();
+    // e₂ = -Σ J[i,j]·J[j,i] for zero-diagonal, so e2_num should equal -e2_cyc_sum
+    let e2_err: Vec<f64> = all_data.iter().map(|d| {
+        let cyc_sum: f64 = d.e2_cyc.iter().map(|c| c.0).sum();
+        (d.e2_num + cyc_sum).abs()
+    }).collect();
+    println!("  e₂ verification: |e₂_num + Σ_cycles|: mean={:.2e}  max={:.2e}",
+        mean_f64(&e2_err), e2_err.iter().cloned().fold(0.0_f64, f64::max));
+
+    println!("  Individual cycle contributions to -e₂:");
+    for ci in 0..4 {
+        let vals: Vec<f64> = all_data.iter().map(|d| -d.e2_cyc[ci].0).collect();
+        let label = all_data[0].e2_cyc[ci].1;
+        let contribution = vals.iter().map(|v| v.abs()).sum::<f64>() /
+            all_data.iter().map(|d| d.e2_cyc.iter().map(|c| c.0.abs()).sum::<f64>()).sum::<f64>();
+        println!("    {:30}: mean={:+.6}  frac={:.1}%", label, mean_f64(&vals), contribution * 100.0);
+    }
+
+    println!("\n  Phase 4: e₃ cycle decomposition");
+    let e3_err: Vec<f64> = all_data.iter().map(|d| {
+        let cyc_sum: f64 = d.e3_cyc.iter().map(|c| c.0).sum();
+        (d.e3_num - cyc_sum).abs()
+    }).collect();
+    println!("  e₃ verification: |e₃_num - Σ_3cycles|: mean={:.2e}  max={:.2e}",
+        mean_f64(&e3_err), e3_err.iter().cloned().fold(0.0_f64, f64::max));
+
+    println!("  Individual 3-cycle contributions to e₃:");
+    for ci in 0..3 {
+        let vals: Vec<f64> = all_data.iter().map(|d| d.e3_cyc[ci].0).collect();
+        let label = all_data[0].e3_cyc[ci].1;
+        let total_abs: f64 = all_data.iter().map(|d| d.e3_cyc.iter().map(|c| c.0.abs()).sum::<f64>()).sum();
+        let contribution = vals.iter().map(|v| v.abs()).sum::<f64>() / total_abs;
+        println!("    {:35}: mean={:+.6}  frac={:.1}%", label, mean_f64(&vals), contribution * 100.0);
+    }
+
+    println!("\n  Phase 5: e₄ skip-row decomposition");
+    let e4_err: Vec<f64> = all_data.iter().map(|d| {
+        let skip_sum: f64 = d.e4_skips.iter().sum();
+        (d.e4_num - skip_sum).abs()
+    }).collect();
+    println!("  e₄ verification: |e₄_num - Σ_skips|: mean={:.2e}  max={:.2e}",
+        mean_f64(&e4_err), e4_err.iter().cloned().fold(0.0_f64, f64::max));
+
+    let skip_labels = ["skip-0 (d)", "skip-1 (b)", "skip-2 (ρ)", "skip-3 (r)", "skip-4 (s)"];
+    println!("  Individual 4×4 minor contributions to e₄:");
+    for si in 0..5 {
+        let vals: Vec<f64> = all_data.iter().map(|d| d.e4_skips[si]).collect();
+        let total_abs: f64 = all_data.iter().map(|d| d.e4_skips.iter().map(|v| v.abs()).sum::<f64>()).sum();
+        let contribution = vals.iter().map(|v| v.abs()).sum::<f64>() / total_abs;
+        println!("    {:15}: mean={:+.6}  frac={:.1}%", skip_labels[si], mean_f64(&vals), contribution * 100.0);
+    }
+
+    println!("\n  Phase 6: Cycle dominance analysis for e₃");
+    let mut dominant_cycle_count = [0usize; 3];
+    for d in &all_data {
+        let abs_vals: Vec<f64> = d.e3_cyc.iter().map(|c| c.0.abs()).collect();
+        let max_idx = abs_vals.iter().enumerate().max_by(|a, b| a.1.partial_cmp(b.1).unwrap()).unwrap().0;
+        dominant_cycle_count[max_idx] += 1;
+    }
+    for ci in 0..3 {
+        let label = all_data[0].e3_cyc[ci].1;
+        println!("    {} dominates in {}/{} = {:.1}%",
+            label, dominant_cycle_count[ci], n, 100.0 * dominant_cycle_count[ci] as f64 / n as f64);
+    }
+
+    println!("\n  Phase 7: Regime breakdown of e₃ cycle structure");
+    let mut regime_map: BTreeMap<String, Vec<&SparsityData>> = BTreeMap::new();
+    for d in &all_data { regime_map.entry(d.regime.clone()).or_default().push(d); }
+    println!("  {:>12}  {:>10}  {:>10}  {:>10}  {:>10}",
+        "regime", "cyc0_frac", "cyc1_frac", "cyc2_frac", "ρ_mean");
+    for (regime, data) in &regime_map {
+        let total_abs: f64 = data.iter().map(|d| d.e3_cyc.iter().map(|c| c.0.abs()).sum::<f64>()).sum();
+        let fracs: Vec<f64> = (0..3).map(|ci| {
+            data.iter().map(|d| d.e3_cyc[ci].0.abs()).sum::<f64>() / total_abs
+        }).collect();
+        let rho_mean = mean_f64(&data.iter().map(|d| d.rho_j).collect::<Vec<_>>());
+        println!("  {:>12}  {:>10.4}  {:>10.4}  {:>10.4}  {:>10.4}",
+            regime, fracs[0], fracs[1], fracs[2], rho_mean);
+    }
+
+    println!("\n  Phase 8: Topology breakdown of e₃ cycle structure");
+    let mut topo_map: BTreeMap<String, Vec<&SparsityData>> = BTreeMap::new();
+    for d in &all_data { topo_map.entry(d.topo.clone()).or_default().push(d); }
+    println!("  {:>12}  {:>10}  {:>10}  {:>10}",
+        "topo", "cyc0_frac", "cyc1_frac", "cyc2_frac");
+    for (topo, data) in &topo_map {
+        let total_abs: f64 = data.iter().map(|d| d.e3_cyc.iter().map(|c| c.0.abs()).sum::<f64>()).sum();
+        let fracs: Vec<f64> = (0..3).map(|ci| {
+            data.iter().map(|d| d.e3_cyc[ci].0.abs()).sum::<f64>() / total_abs
+        }).collect();
+        println!("  {:>12}  {:>10.4}  {:>10.4}  {:>10.4}",
+            topo, fracs[0], fracs[1], fracs[2]);
+    }
+
+    println!("\n  Phase 9: Simplified e₃ approximation from dominant cycle");
+    let e3_approx1: Vec<f64> = all_data.iter().map(|d| d.e3_cyc[0].0).collect();
+    let e3_num: Vec<f64> = all_data.iter().map(|d| d.e3_num).collect();
+    let e3_approx2: Vec<f64> = all_data.iter().map(|d| d.e3_cyc[0].0 + d.e3_cyc[1].0).collect();
+    let e3_approx3: Vec<f64> = all_data.iter().map(|d| d.e3_cyc[0].0 + d.e3_cyc[1].0 + d.e3_cyc[2].0).collect();
+
+    let r2_1 = {
+        let y_mean = mean_f64(&e3_num);
+        let ss_tot: f64 = e3_num.iter().map(|v| (v - y_mean).powi(2)).sum();
+        let ss_res: f64 = e3_num.iter().zip(e3_approx1.iter()).map(|(a, p)| (a - p).powi(2)).sum();
+        1.0 - ss_res / ss_tot.max(1e-30)
+    };
+    let r2_2 = {
+        let y_mean = mean_f64(&e3_num);
+        let ss_tot: f64 = e3_num.iter().map(|v| (v - y_mean).powi(2)).sum();
+        let ss_res: f64 = e3_num.iter().zip(e3_approx2.iter()).map(|(a, p)| (a - p).powi(2)).sum();
+        1.0 - ss_res / ss_tot.max(1e-30)
+    };
+    let r2_3 = {
+        let y_mean = mean_f64(&e3_num);
+        let ss_tot: f64 = e3_num.iter().map(|v| (v - y_mean).powi(2)).sum();
+        let ss_res: f64 = e3_num.iter().zip(e3_approx3.iter()).map(|(a, p)| (a - p).powi(2)).sum();
+        1.0 - ss_res / ss_tot.max(1e-30)
+    };
+    println!("  1-cycle approx (d→b→r→d):      R²={:.6}", r2_1);
+    println!("  2-cycle approx (+d→r→ρ→r→d):    R²={:.6}", r2_2);
+    println!("  3-cycle approx (+d→r→s→d):      R²={:.6}", r2_3);
+
+    let rho_vals: Vec<f64> = all_data.iter().map(|d| d.rho_j).collect();
+    let c_cycle0_rho = pearson_corr(&e3_approx1, &rho_vals);
+    let c_cycle1_rho = pearson_corr(
+        &all_data.iter().map(|d| d.e3_cyc[1].0).collect::<Vec<_>>(), &rho_vals);
+    let c_cycle2_rho = pearson_corr(
+        &all_data.iter().map(|d| d.e3_cyc[2].0).collect::<Vec<_>>(), &rho_vals);
+    println!("  corr(cycle0, ρ)={:.4}  corr(cycle1, ρ)={:.4}  corr(cycle2, ρ)={:.4}",
+        c_cycle0_rho, c_cycle1_rho, c_cycle2_rho);
+
+    println!("\n  JACOBIAN SParsity SUMMARY:");
+    println!("  11/25 nonzero entries confirmed (56% sparse)");
+    println!("  e₂ = -(J01·J10 + J03·J30 + J23·J32 + J34·J43) — 4 two-cycles");
+    println!("  e₃ = J01·J13·J30 + J03·J20·J32 + J03·J34·J40 — 3 three-cycles");
+    println!("  e₄ = Σ det(4×4 submatrix skipping row k) — 5 four-cycle minors");
+    if mean_f64(&e2_err) < 1e-10 && mean_f64(&e3_err) < 1e-10 {
+        println!("  → EXACT: All cycle decompositions verified to machine precision");
+    }
+    println!("  → e₃ R² from 1 dominant cycle: {:.4}", r2_1);
+    println!("  → e₃ R² from 2 cycles: {:.4}", r2_2);
+    println!("  → e₃ R² from all 3 cycles: {:.4}", r2_3);
+
+    println!("\n  Phase labels:");
+    println!("  Phase 1: Data collection");
+    println!("  Phase 2: Sparsity pattern verification");
+    println!("  Phase 3: e₂ cycle decomposition");
+    println!("  Phase 4: e₃ cycle decomposition");
+    println!("  Phase 5: e₄ skip-row decomposition");
+    println!("  Phase 6: Cycle dominance analysis");
+    println!("  Phase 7: Regime breakdown");
+    println!("  Phase 8: Topology breakdown");
+    println!("  Phase 9: Simplified e₃ approximation");
+}

@@ -216,4 +216,5 @@ fn run_synthetic_suite(_max_concepts: usize, _time_limit: f64, _output_dir: &Pat
     experiments::run_trajectory_reconstruction();
     experiments::run_analytical_eigenvalues();
     experiments::run_e3_structure_analysis();
+    experiments::run_jacobian_sparsity_analysis();
 }
