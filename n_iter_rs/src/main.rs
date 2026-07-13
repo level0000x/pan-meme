@@ -234,4 +234,7 @@ fn run_synthetic_suite(_max_concepts: usize, _time_limit: f64, _output_dir: &Pat
     experiments::run_spectral_radius_bounds();
     experiments::run_empirical_rho_formula();
     experiments::run_spectrally_invariant_dof();
+    experiments::run_invisible_dof_parameter_dependence();
+    experiments::run_cross_topology_nonnormality();
+    experiments::run_gmax_cycle_weight_prediction();
 }

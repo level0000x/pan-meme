@@ -27158,3 +27158,913 @@ pub fn run_spectrally_invariant_dof() {
         println!("  VERDICT: Near-normal (mean H={:.3}) — invisible DOF have minimal effect", mean_h);
     }
 }
+
+pub fn run_invisible_dof_parameter_dependence() {
+    use crate::{pipeline, n_operator::DynamicsParams, fca};
+
+    println!("\n{}", "=".repeat(64));
+    println!("  v3.21: INVISIBLE DOF PARAMETER DEPENDENCE");
+    println!("{}", "=".repeat(64));
+
+    let lattice = fca::build_diamond_lattice();
+    let stats = pipeline::compute_lattice_stats(&lattice);
+
+    fn compute_cycles(j: &[f64; 25]) -> [f64; 7] {
+        [
+            j[0*5+1] * j[1*5+0],
+            j[0*5+3] * j[3*5+0],
+            j[2*5+3] * j[3*5+2],
+            j[3*5+4] * j[4*5+3],
+            j[0*5+1] * j[1*5+3] * j[3*5+0],
+            j[0*5+3] * j[2*5+0] * j[3*5+2],
+            j[0*5+3] * j[3*5+4] * j[4*5+0],
+        ]
+    }
+    fn compute_four_cycles(j: &[f64; 25]) -> [f64; 2] {
+        [
+            j[0*5+1] * j[1*5+3] * j[3*5+4] * j[4*5+0],
+            j[0*5+1] * j[1*5+3] * j[2*5+0] * j[3*5+2],
+        ]
+    }
+
+    struct Rec {
+        b1: f64, d1: f64, eps: f64,
+        c: [f64; 6],
+        e2: f64, e3: f64, e4: f64,
+        rho: f64, henrici: f64, g_max: f64,
+        pr: f64, spec_rho_ratio: f64,
+    }
+    let mut recs: Vec<Rec> = Vec::new();
+
+    println!("\n  Phase 1: Parameter grid sweep...");
+    let b1_vals: Vec<f64> = (1..=20).map(|i| i as f64 * 0.5).collect();
+    let d1_vals: Vec<f64> = (1..=20).map(|i| i as f64 * 0.5).collect();
+    let eps_vals: Vec<f64> = vec![0.01, 0.05, 0.1, 0.5, 1.0, 2.0, 5.0];
+
+    for &b1 in &b1_vals {
+        for &d1 in &d1_vals {
+            for &eps in &eps_vals {
+                let params = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1).with_eps(eps);
+                let results = pipeline::run_topological_iteration(&lattice, &stats, &params);
+                for opt in results.iter() {
+                    if let Some(ref res) = opt {
+                        if !res.converged { continue; }
+                        let j_arr = &res.jacobian;
+                        let c7 = compute_cycles(j_arr);
+                        let fc2 = compute_four_cycles(j_arr);
+                        let e2 = c7[0] + c7[1] + c7[2] + c7[3];
+                        let e3 = c7[4] + c7[5] + c7[6];
+                        let e4 = c7[0]*(c7[2]+c7[3]) - (fc2[0]+fc2[1]);
+                        let j = jac_from_arr(j_arr);
+                        let rho = res.rho_spectral;
+                        let frob = j.norm();
+                        let comm = j * j.transpose() - j.transpose() * j;
+                        let henrici = if frob > 1e-15 { comm.norm() / frob } else { 0.0 };
+                        let spec_rho_ratio = if rho > 1e-15 { j.singular_values()[0] / rho } else { 0.0 };
+                        let mut jp = nalgebra::SMatrix::<f64, 5, 5>::identity();
+                        let mut g_max = 1.0_f64;
+                        for k in 1..=20 {
+                            jp = jp * j;
+                            let nk = jp.singular_values()[0];
+                            let gk = nk / rho.powi(k as i32);
+                            if gk > g_max { g_max = gk; }
+                        }
+                        let mut v = nalgebra::SVector::<f64, 5>::zeros();
+                        v[0] = 1.0;
+                        for _ in 0..10 {
+                            let w = j * v;
+                            let n = w.norm();
+                            if n > 1e-15 { v = w / n; }
+                        }
+                        let pr_num = v.iter().map(|x| x.powi(4)).sum::<f64>();
+                        let pr = if pr_num > 1e-15 { 1.0 / pr_num } else { 5.0 };
+
+                        recs.push(Rec {
+                            b1, d1, eps,
+                            c: [c7[0], c7[1], c7[2], c7[3], c7[4], c7[5]],
+                            e2, e3, e4, rho, henrici, g_max, pr, spec_rho_ratio,
+                        });
+                    }
+                }
+            }
+        }
+    }
+    let n = recs.len();
+    println!("  Collected {} records from {}×{}×{} grid", n, b1_vals.len(), d1_vals.len(), eps_vals.len());
+    if n < 10 { println!("  ERROR: insufficient data"); return; }
+
+    println!("\n  Phase 2: Basic distributions");
+    let rho_v: Vec<f64> = recs.iter().map(|r| r.rho).collect();
+    let hv: Vec<f64> = recs.iter().map(|r| r.henrici).collect();
+    let gv: Vec<f64> = recs.iter().map(|r| r.g_max).collect();
+    let prv: Vec<f64> = recs.iter().map(|r| r.pr).collect();
+    println!("  ρ:      mean={:.4}  std={:.4}  range=[{:.4}, {:.4}]", mean_f64(&rho_v), std_f64(&rho_v), rho_v.iter().cloned().fold(f64::INFINITY, f64::min), rho_v.iter().cloned().fold(0.0_f64, f64::max));
+    println!("  H:      mean={:.4}  std={:.4}  range=[{:.4}, {:.4}]", mean_f64(&hv), std_f64(&hv), hv.iter().cloned().fold(f64::INFINITY, f64::min), hv.iter().cloned().fold(0.0_f64, f64::max));
+    println!("  G_max:  mean={:.4}  std={:.4}  range=[{:.4}, {:.4}]", mean_f64(&gv), std_f64(&gv), gv.iter().cloned().fold(f64::INFINITY, f64::min), gv.iter().cloned().fold(0.0_f64, f64::max));
+    println!("  PR:     mean={:.4}  std={:.4}", mean_f64(&prv), std_f64(&prv));
+
+    println!("\n  Phase 3: Parameter → non-normality correlations");
+    let b1_v: Vec<f64> = recs.iter().map(|r| r.b1).collect();
+    let d1_v: Vec<f64> = recs.iter().map(|r| r.d1).collect();
+    let eps_v: Vec<f64> = recs.iter().map(|r| r.eps).collect();
+    let ln_eps: Vec<f64> = eps_v.iter().map(|e| e.ln()).collect();
+    println!("  corr(H, β₁):       r={:+.4}", pearson_corr(&hv, &b1_v));
+    println!("  corr(H, δ₁):       r={:+.4}", pearson_corr(&hv, &d1_v));
+    println!("  corr(H, ln ε):     r={:+.4}", pearson_corr(&hv, &ln_eps));
+    println!("  corr(G_max, β₁):   r={:+.4}", pearson_corr(&gv, &b1_v));
+    println!("  corr(G_max, δ₁):   r={:+.4}", pearson_corr(&gv, &d1_v));
+    println!("  corr(G_max, ln ε): r={:+.4}", pearson_corr(&gv, &ln_eps));
+    println!("  corr(PR, β₁):      r={:+.4}", pearson_corr(&prv, &b1_v));
+    println!("  corr(PR, δ₁):      r={:+.4}", pearson_corr(&prv, &d1_v));
+    println!("  corr(PR, ln ε):    r={:+.4}", pearson_corr(&prv, &ln_eps));
+    println!("  corr(ρ, β₁):       r={:+.4}", pearson_corr(&rho_v, &b1_v));
+    println!("  corr(ρ, δ₁):       r={:+.4}", pearson_corr(&rho_v, &d1_v));
+    println!("  corr(ρ, ln ε):     r={:+.4}", pearson_corr(&rho_v, &ln_eps));
+
+    println!("\n  Phase 4: ρ vs H trade-off (Pareto analysis)");
+    println!("  corr(ρ, H): r={:+.4}", pearson_corr(&rho_v, &hv));
+    println!("  corr(ρ, G_max): r={:+.4}", pearson_corr(&rho_v, &gv));
+
+    let mut pareto: Vec<(f64, f64, f64, f64, f64)> = recs.iter().map(|r| (r.rho, r.henrici, r.b1, r.d1, r.eps)).collect();
+    pareto.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
+    let mut dominated = 0;
+    for i in 0..pareto.len() {
+        for j in 0..pareto.len() {
+            if i == j { continue; }
+            if pareto[j].0 <= pareto[i].0 && pareto[j].1 <= pareto[i].1 && (pareto[j].0 < pareto[i].0 || pareto[j].1 < pareto[i].1) {
+                dominated += 1;
+                break;
+            }
+        }
+    }
+    println!("  Dominated points: {}/{} ({:.1}%)", dominated, n, dominated as f64 / n as f64 * 100.0);
+
+    let rho_med = median_f64(&rho_v);
+    let h_med = median_f64(&hv);
+    let fast_calm: Vec<&Rec> = recs.iter().filter(|r| r.rho < rho_med && r.henrici < h_med).collect();
+    let fast_violent: Vec<&Rec> = recs.iter().filter(|r| r.rho < rho_med && r.henrici >= h_med).collect();
+    let slow_calm: Vec<&Rec> = recs.iter().filter(|r| r.rho >= rho_med && r.henrici < h_med).collect();
+    let slow_violent: Vec<&Rec> = recs.iter().filter(|r| r.rho >= rho_med && r.henrici >= h_med).collect();
+    println!("  Quadrant counts (median split):");
+    println!("    fast+calm:    {} ({:.1}%)", fast_calm.len(), fast_calm.len() as f64 / n as f64 * 100.0);
+    println!("    fast+violent: {} ({:.1}%)", fast_violent.len(), fast_violent.len() as f64 / n as f64 * 100.0);
+    println!("    slow+calm:    {} ({:.1}%)", slow_calm.len(), slow_calm.len() as f64 / n as f64 * 100.0);
+    println!("    slow+violent: {} ({:.1}%)", slow_violent.len(), slow_violent.len() as f64 / n as f64 * 100.0);
+
+    if !fast_calm.is_empty() {
+        let fc_b1: Vec<f64> = fast_calm.iter().map(|r| r.b1).collect();
+        let fc_d1: Vec<f64> = fast_calm.iter().map(|r| r.d1).collect();
+        let fc_eps: Vec<f64> = fast_calm.iter().map(|r| r.eps).collect();
+        println!("  fast+calm params: β₁={:.2}±{:.2}  δ₁={:.2}±{:.2}  ε={:.3}±{:.3}",
+            mean_f64(&fc_b1), std_f64(&fc_b1), mean_f64(&fc_d1), std_f64(&fc_d1), mean_f64(&fc_eps), std_f64(&fc_eps));
+    }
+
+    println!("\n  Phase 5: Cycle weight parameter sensitivity");
+    let c_names = ["d↔b", "d↔r", "ρ↔r", "s↔r", "d→b→r", "d→r→ρ"];
+    for ci in 0..6 {
+        let cv: Vec<f64> = recs.iter().map(|r| r.c[ci]).collect();
+        let r_b1 = pearson_corr(&cv, &b1_v);
+        let r_d1 = pearson_corr(&cv, &d1_v);
+        let r_eps = pearson_corr(&cv, &ln_eps);
+        let r_rho = pearson_corr(&cv, &rho_v);
+        let r_h = pearson_corr(&cv, &hv);
+        println!("  c[{}]({:>6}): β₁={:+.4}  δ₁={:+.4}  lnε={:+.4}  ρ={:+.4}  H={:+.4}",
+            ci, c_names[ci], r_b1, r_d1, r_eps, r_rho, r_h);
+    }
+
+    println!("\n  Phase 6: Spectral invariant parameter sensitivity");
+    let e2v: Vec<f64> = recs.iter().map(|r| r.e2).collect();
+    let e3v: Vec<f64> = recs.iter().map(|r| r.e3).collect();
+    let e4v: Vec<f64> = recs.iter().map(|r| r.e4).collect();
+    let abs_e3: Vec<f64> = e3v.iter().map(|e| e.abs()).collect();
+    println!("  e₂: corr(β₁)={:+.4}  corr(δ₁)={:+.4}  corr(lnε)={:+.4}", pearson_corr(&e2v, &b1_v), pearson_corr(&e2v, &d1_v), pearson_corr(&e2v, &ln_eps));
+    println!("  |e₃|: corr(β₁)={:+.4}  corr(δ₁)={:+.4}  corr(lnε)={:+.4}", pearson_corr(&abs_e3, &b1_v), pearson_corr(&abs_e3, &d1_v), pearson_corr(&abs_e3, &ln_eps));
+    println!("  e₄: corr(β₁)={:+.4}  corr(δ₁)={:+.4}  corr(lnε)={:+.4}", pearson_corr(&e4v, &b1_v), pearson_corr(&e4v, &d1_v), pearson_corr(&e4v, &ln_eps));
+
+    println!("\n  Phase 7: Invisible component parameter sensitivity");
+    println!("  Residuals after regressing cycle weights on (e₂, |e₃|, e₄)");
+    let mut residuals = vec![vec![0.0f64; n]; 6];
+    for ci in 0..6 {
+        let cv: Vec<f64> = recs.iter().map(|r| r.c[ci]).collect();
+        let xtx = nalgebra::SMatrix::<f64, 4, 4>::new(
+            n as f64, e2v.iter().sum(), abs_e3.iter().sum(), e4v.iter().sum(),
+            e2v.iter().sum(), e2v.iter().map(|x| x*x).sum(), e2v.iter().zip(abs_e3.iter()).map(|(a,b)| a*b).sum(), e2v.iter().zip(e4v.iter()).map(|(a,b)| a*b).sum(),
+            abs_e3.iter().sum(), e2v.iter().zip(abs_e3.iter()).map(|(a,b)| a*b).sum(), abs_e3.iter().map(|x| x*x).sum(), abs_e3.iter().zip(e4v.iter()).map(|(a,b)| a*b).sum(),
+            e4v.iter().sum(), e2v.iter().zip(e4v.iter()).map(|(a,b)| a*b).sum(), abs_e3.iter().zip(e4v.iter()).map(|(a,b)| a*b).sum(), e4v.iter().map(|x| x*x).sum(),
+        );
+        let y: Vec<f64> = cv.clone();
+        let xty = nalgebra::SVector::<f64, 4>::new(
+            y.iter().sum(),
+            e2v.iter().zip(y.iter()).map(|(a,b)| a*b).sum(),
+            abs_e3.iter().zip(y.iter()).map(|(a,b)| a*b).sum(),
+            e4v.iter().zip(y.iter()).map(|(a,b)| a*b).sum(),
+        );
+        if let Some(beta) = xtx.try_inverse().map(|inv| inv * xty) {
+            for i in 0..n {
+                let pred = beta[0] + beta[1]*e2v[i] + beta[2]*abs_e3[i] + beta[3]*e4v[i];
+                residuals[ci][i] = y[i] - pred;
+            }
+        }
+    }
+    for ci in 0..6 {
+        let r_b1 = pearson_corr(&residuals[ci], &b1_v);
+        let r_d1 = pearson_corr(&residuals[ci], &d1_v);
+        let r_eps = pearson_corr(&residuals[ci], &ln_eps);
+        let r_h = pearson_corr(&residuals[ci], &hv);
+        println!("  res[{}]({:>6}): β₁={:+.4}  δ₁={:+.4}  lnε={:+.4}  H={:+.4}",
+            ci, c_names[ci], r_b1, r_d1, r_eps, r_h);
+    }
+
+    println!("\n  Phase 8: ε-conditional analysis (low/med/high ε)");
+    for &(label, lo, hi) in &[("low-ε(0.01-0.1)", 0.0, 0.15), ("med-ε(0.1-1.0)", 0.15, 1.5), ("high-ε(1-5)", 1.5, 10.0)] {
+        let sub: Vec<&Rec> = recs.iter().filter(|r| r.eps > lo && r.eps <= hi).collect();
+        if sub.is_empty() { continue; }
+        let s_rho: Vec<f64> = sub.iter().map(|r| r.rho).collect();
+        let s_h: Vec<f64> = sub.iter().map(|r| r.henrici).collect();
+        let s_g: Vec<f64> = sub.iter().map(|r| r.g_max).collect();
+        let s_b1: Vec<f64> = sub.iter().map(|r| r.b1).collect();
+        let s_d1: Vec<f64> = sub.iter().map(|r| r.d1).collect();
+        println!("  {:>18}: n={} ρ={:.3}±{:.3} H={:.3}±{:.3} G={:.3}±{:.3}  corr(H,β₁)={:+.3}  corr(H,δ₁)={:+.3}  corr(ρ,H)={:+.3}",
+            label, sub.len(), mean_f64(&s_rho), std_f64(&s_rho),
+            mean_f64(&s_h), std_f64(&s_h), mean_f64(&s_g), std_f64(&s_g),
+            pearson_corr(&s_h, &s_b1), pearson_corr(&s_h, &s_d1), pearson_corr(&s_rho, &s_h));
+    }
+
+    println!("\n  Phase 9: Non-normality-optimal parameters");
+    let mut idx_h: Vec<usize> = (0..n).collect();
+    idx_h.sort_by(|&a, &b| recs[a].henrici.partial_cmp(&recs[b].henrici).unwrap());
+    println!("  Top 5 lowest H:");
+    for (i, &idx) in idx_h.iter().take(5).enumerate() {
+        let r = &recs[idx];
+        println!("    #{}: β₁={:.1} δ₁={:.1} ε={:.2}  ρ={:.4}  H={:.4}  G_max={:.4}  PR={:.2}",
+            i, r.b1, r.d1, r.eps, r.rho, r.henrici, r.g_max, r.pr);
+    }
+    let mut idx_g: Vec<usize> = (0..n).collect();
+    idx_g.sort_by(|&a, &b| recs[a].g_max.partial_cmp(&recs[b].g_max).unwrap());
+    println!("  Top 5 lowest G_max:");
+    for (i, &idx) in idx_g.iter().take(5).enumerate() {
+        let r = &recs[idx];
+        println!("    #{}: β₁={:.1} δ₁={:.1} ε={:.2}  ρ={:.4}  H={:.4}  G_max={:.4}  PR={:.2}",
+            i, r.b1, r.d1, r.eps, r.rho, r.henrici, r.g_max, r.pr);
+    }
+
+    println!("\n  Phase 10: Joint ρ+H optimization");
+    let mut best_joint: Vec<(f64, &Rec)> = recs.iter().map(|r| {
+        let score = r.rho + 0.1 * r.henrici;
+        (score, r)
+    }).collect();
+    best_joint.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
+    println!("  Top 5 best ρ+0.1·H (low ρ, low H):");
+    for (i, (score, r)) in best_joint.iter().take(5).enumerate() {
+        println!("    #{}: score={:.4}  β₁={:.1} δ₁={:.1} ε={:.2}  ρ={:.4}  H={:.4}  G_max={:.4}",
+            i, score, r.b1, r.d1, r.eps, r.rho, r.henrici, r.g_max);
+    }
+
+    println!("\n  INVISIBLE DOF PARAMETER DEPENDENCE SUMMARY:");
+    println!("  Records: {}", n);
+    println!("  ρ range: [{:.4}, {:.4}]", rho_v.iter().cloned().fold(f64::INFINITY, f64::min), rho_v.iter().cloned().fold(0.0_f64, f64::max));
+    println!("  H range: [{:.4}, {:.4}]", hv.iter().cloned().fold(f64::INFINITY, f64::min), hv.iter().cloned().fold(0.0_f64, f64::max));
+    println!("  corr(ρ, H): {:+.4}", pearson_corr(&rho_v, &hv));
+    let fc_pct = fast_calm.len() as f64 / n as f64 * 100.0;
+    println!("  fast+calm quadrant: {:.1}% of parameter space", fc_pct);
+    if fc_pct > 10.0 {
+        println!("  VERDICT: Significant fast+calm region — parameters can jointly optimize ρ and H");
+    } else {
+        println!("  VERDICT: ρ-H tension — fast convergence tends to require high non-normality");
+    }
+}
+
+pub fn run_cross_topology_nonnormality() {
+    use crate::{pipeline, n_operator::DynamicsParams, fca};
+
+    println!("\n{}", "=".repeat(64));
+    println!("  v3.22: CROSS-TOPOLOGY NON-NORMALITY UNIVERSALITY");
+    println!("{}", "=".repeat(64));
+
+    fn compute_cycles(j: &[f64; 25]) -> [f64; 7] {
+        [
+            j[0*5+1] * j[1*5+0],
+            j[0*5+3] * j[3*5+0],
+            j[2*5+3] * j[3*5+2],
+            j[3*5+4] * j[4*5+3],
+            j[0*5+1] * j[1*5+3] * j[3*5+0],
+            j[0*5+3] * j[2*5+0] * j[3*5+2],
+            j[0*5+3] * j[3*5+4] * j[4*5+0],
+        ]
+    }
+    fn compute_four_cycles(j: &[f64; 25]) -> [f64; 2] {
+        [
+            j[0*5+1] * j[1*5+3] * j[3*5+4] * j[4*5+0],
+            j[0*5+1] * j[1*5+3] * j[2*5+0] * j[3*5+2],
+        ]
+    }
+
+    let topo_builders: Vec<(&str, fn() -> fca::FcaLattice)> = vec![
+        ("chain-3", || fca::build_chain_lattice(3)),
+        ("chain-5", || fca::build_chain_lattice(5)),
+        ("diamond", || fca::build_diamond_lattice()),
+        ("M3", || fca::build_m3_lattice()),
+        ("B3", || fca::build_b3_lattice()),
+        ("grid-2x3", || fca::build_grid_lattice(2, 3)),
+    ];
+
+    struct Rec {
+        topo: String,
+        b1: f64, d1: f64, eps: f64,
+        c: [f64; 6], e2: f64, e3: f64, e4: f64,
+        rho: f64, henrici: f64, g_max: f64,
+        pr: f64,
+    }
+
+    let b1_vals: Vec<f64> = (1..=10).map(|i| i as f64).collect();
+    let d1_vals: Vec<f64> = (1..=10).map(|i| i as f64).collect();
+    let eps_vals: Vec<f64> = vec![0.01, 0.1, 0.5, 1.0, 5.0];
+
+    println!("\n  Phase 1: Collecting data across 6 topologies...");
+    let mut all_recs: Vec<Rec> = Vec::new();
+    let mut topo_recs: std::collections::HashMap<String, Vec<Rec>> = std::collections::HashMap::new();
+
+    for &(_, ref builder) in &topo_builders {
+        let topo_name = topo_builders.iter().find(|(_, b)| {
+            std::ptr::eq(b as *const _, builder as *const _)
+        }).map(|(n, _)| *n).unwrap_or("unknown");
+    }
+
+    for &(topo_name, ref builder) in &topo_builders {
+        let lattice = builder();
+        let stats = pipeline::compute_lattice_stats(&lattice);
+        let mut topo_vec: Vec<Rec> = Vec::new();
+
+        for &b1 in &b1_vals {
+            for &d1 in &d1_vals {
+                for &eps in &eps_vals {
+                    let params = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1).with_eps(eps);
+                    let results = pipeline::run_topological_iteration(&lattice, &stats, &params);
+                    for opt in results.iter() {
+                        if let Some(ref res) = opt {
+                            if !res.converged { continue; }
+                            let j_arr = &res.jacobian;
+                            let c7 = compute_cycles(j_arr);
+                            let fc2 = compute_four_cycles(j_arr);
+                            let e2 = c7[0] + c7[1] + c7[2] + c7[3];
+                            let e3 = c7[4] + c7[5] + c7[6];
+                            let e4 = c7[0]*(c7[2]+c7[3]) - (fc2[0]+fc2[1]);
+                            let j = jac_from_arr(j_arr);
+                            let rho = res.rho_spectral;
+                            let frob = j.norm();
+                            let comm = j * j.transpose() - j.transpose() * j;
+                            let henrici = if frob > 1e-15 { comm.norm() / frob } else { 0.0 };
+                            let mut jp = nalgebra::SMatrix::<f64, 5, 5>::identity();
+                            let mut g_max = 1.0_f64;
+                            for k in 1..=20 {
+                                jp = jp * j;
+                                let nk = jp.singular_values()[0];
+                                let gk = nk / rho.powi(k as i32);
+                                if gk > g_max { g_max = gk; }
+                            }
+                            let mut v = nalgebra::SVector::<f64, 5>::zeros();
+                            v[0] = 1.0;
+                            for _ in 0..10 {
+                                let w = j * v;
+                                let n = w.norm();
+                                if n > 1e-15 { v = w / n; }
+                            }
+                            let pr_num = v.iter().map(|x| x.powi(4)).sum::<f64>();
+                            let pr = if pr_num > 1e-15 { 1.0 / pr_num } else { 5.0 };
+
+                            let rec = Rec {
+                                topo: topo_name.to_string(),
+                                b1, d1, eps,
+                                c: [c7[0], c7[1], c7[2], c7[3], c7[4], c7[5]],
+                                e2, e3, e4, rho, henrici, g_max, pr,
+                            };
+                            topo_vec.push(Rec {
+                                topo: topo_name.to_string(),
+                                b1, d1, eps,
+                                c: rec.c, e2: rec.e2, e3: rec.e3, e4: rec.e4,
+                                rho: rec.rho, henrici: rec.henrici, g_max: rec.g_max, pr: rec.pr,
+                            });
+                        }
+                    }
+                }
+            }
+        }
+        println!("  {:>10}: {} records", topo_name, topo_vec.len());
+        all_recs.extend(topo_vec.iter().map(|r| Rec {
+            topo: r.topo.clone(), b1: r.b1, d1: r.d1, eps: r.eps,
+            c: r.c, e2: r.e2, e3: r.e3, e4: r.e4,
+            rho: r.rho, henrici: r.henrici, g_max: r.g_max, pr: r.pr,
+        }));
+        topo_recs.insert(topo_name.to_string(), topo_vec);
+    }
+    let n_total = all_recs.len();
+    println!("  Total: {} records", n_total);
+
+    println!("\n  Phase 2: Per-topology non-normality distributions");
+    println!("  {:>10} {:>6} {:>8} {:>8} {:>8} {:>8} {:>8}", "topo", "n", "ρ_mean", "H_mean", "G_max", "PR", "H_std");
+    for &(topo_name, _) in &topo_builders {
+        if let Some(recs) = topo_recs.get(topo_name) {
+            if recs.is_empty() { continue; }
+            let rho_v: Vec<f64> = recs.iter().map(|r| r.rho).collect();
+            let hv: Vec<f64> = recs.iter().map(|r| r.henrici).collect();
+            let gv: Vec<f64> = recs.iter().map(|r| r.g_max).collect();
+            let prv: Vec<f64> = recs.iter().map(|r| r.pr).collect();
+            println!("  {:>10} {:>6} {:>8.4} {:>8.4} {:>8.4} {:>8.4} {:>8.4}",
+                topo_name, recs.len(), mean_f64(&rho_v), mean_f64(&hv), mean_f64(&gv), mean_f64(&prv), std_f64(&hv));
+        }
+    }
+
+    println!("\n  Phase 3: Per-topology parameter → H correlations");
+    println!("  {:>10} {:>10} {:>10} {:>10} {:>10}", "topo", "corr(H,β₁)", "corr(H,δ₁)", "corr(H,lnε)", "corr(ρ,H)");
+    for &(topo_name, _) in &topo_builders {
+        if let Some(recs) = topo_recs.get(topo_name) {
+            if recs.len() < 10 { continue; }
+            let hv: Vec<f64> = recs.iter().map(|r| r.henrici).collect();
+            let b1v: Vec<f64> = recs.iter().map(|r| r.b1).collect();
+            let d1v: Vec<f64> = recs.iter().map(|r| r.d1).collect();
+            let ln_eps: Vec<f64> = recs.iter().map(|r| r.eps.ln()).collect();
+            let rho_v: Vec<f64> = recs.iter().map(|r| r.rho).collect();
+            println!("  {:>10} {:+10.4} {:+10.4} {:+10.4} {:+10.4}",
+                topo_name,
+                pearson_corr(&hv, &b1v),
+                pearson_corr(&hv, &d1v),
+                pearson_corr(&hv, &ln_eps),
+                pearson_corr(&rho_v, &hv));
+        }
+    }
+
+    println!("\n  Phase 4: Per-topology cycle weight → H correlations");
+    let c_names = ["d↔b", "d↔r", "ρ↔r", "s↔r", "d→b→r", "d→r→ρ"];
+    println!("  {:>10} {:>10} {:>10} {:>10} {:>10} {:>10} {:>10}", "topo", "c[0]", "c[1]", "c[2]", "c[3]", "c[4]", "c[5]");
+    for &(topo_name, _) in &topo_builders {
+        if let Some(recs) = topo_recs.get(topo_name) {
+            if recs.len() < 10 { continue; }
+            let hv: Vec<f64> = recs.iter().map(|r| r.henrici).collect();
+            let mut corrs = Vec::new();
+            for ci in 0..6 {
+                let cv: Vec<f64> = recs.iter().map(|r| r.c[ci]).collect();
+                corrs.push(pearson_corr(&hv, &cv));
+            }
+            println!("  {:>10} {:+10.4} {:+10.4} {:+10.4} {:+10.4} {:+10.4} {:+10.4}",
+                topo_name, corrs[0], corrs[1], corrs[2], corrs[3], corrs[4], corrs[5]);
+        }
+    }
+
+    println!("\n  Phase 5: Per-topology fast+calm quadrant analysis");
+    println!("  {:>10} {:>8} {:>8} {:>8} {:>8} {:>20}", "topo", "n", "fc_%", "ρ_med", "H_med", "fc_params(β₁,δ₁,ε)");
+    for &(topo_name, _) in &topo_builders {
+        if let Some(recs) = topo_recs.get(topo_name) {
+            if recs.len() < 10 { continue; }
+            let rho_v: Vec<f64> = recs.iter().map(|r| r.rho).collect();
+            let hv: Vec<f64> = recs.iter().map(|r| r.henrici).collect();
+            let rho_med = median_f64(&rho_v);
+            let h_med = median_f64(&hv);
+            let fc: Vec<&Rec> = recs.iter().filter(|r| r.rho < rho_med && r.henrici < h_med).collect();
+            let fc_pct = fc.len() as f64 / recs.len() as f64 * 100.0;
+            let fc_params = if !fc.is_empty() {
+                let b1m: Vec<f64> = fc.iter().map(|r| r.b1).collect();
+                let d1m: Vec<f64> = fc.iter().map(|r| r.d1).collect();
+                let em: Vec<f64> = fc.iter().map(|r| r.eps).collect();
+                format!("({:.1},{:.1},{:.2})", mean_f64(&b1m), mean_f64(&d1m), mean_f64(&em))
+            } else { "N/A".to_string() };
+            println!("  {:>10} {:>8} {:>7.1}% {:>8.4} {:>8.4} {:>20}",
+                topo_name, recs.len(), fc_pct, rho_med, h_med, fc_params);
+        }
+    }
+
+    println!("\n  Phase 6: Per-topology spectral invariant parameter sensitivity");
+    println!("  {:>10} {:>10} {:>10} {:>10}", "topo", "e₂↔δ₁", "|e₃|↔lnε", "e₄↔lnε");
+    for &(topo_name, _) in &topo_builders {
+        if let Some(recs) = topo_recs.get(topo_name) {
+            if recs.len() < 10 { continue; }
+            let e2v: Vec<f64> = recs.iter().map(|r| r.e2).collect();
+            let abs_e3: Vec<f64> = recs.iter().map(|r| r.e3.abs()).collect();
+            let e4v: Vec<f64> = recs.iter().map(|r| r.e4).collect();
+            let d1v: Vec<f64> = recs.iter().map(|r| r.d1).collect();
+            let ln_eps: Vec<f64> = recs.iter().map(|r| r.eps.ln()).collect();
+            println!("  {:>10} {:+10.4} {:+10.4} {:+10.4}",
+                topo_name,
+                pearson_corr(&e2v, &d1v),
+                pearson_corr(&abs_e3, &ln_eps),
+                pearson_corr(&e4v, &ln_eps));
+        }
+    }
+
+    println!("\n  Phase 7: Cross-topology global analysis");
+    let g_rho_v: Vec<f64> = all_recs.iter().map(|r| r.rho).collect();
+    let g_hv: Vec<f64> = all_recs.iter().map(|r| r.henrici).collect();
+    let g_gv: Vec<f64> = all_recs.iter().map(|r| r.g_max).collect();
+    let g_b1: Vec<f64> = all_recs.iter().map(|r| r.b1).collect();
+    let g_d1: Vec<f64> = all_recs.iter().map(|r| r.d1).collect();
+    let g_ln_eps: Vec<f64> = all_recs.iter().map(|r| r.eps.ln()).collect();
+    println!("  Global (all topologies, n={}):", n_total);
+    println!("    corr(H, β₁):     {:+.4}", pearson_corr(&g_hv, &g_b1));
+    println!("    corr(H, δ₁):     {:+.4}", pearson_corr(&g_hv, &g_d1));
+    println!("    corr(H, ln ε):   {:+.4}", pearson_corr(&g_hv, &g_ln_eps));
+    println!("    corr(ρ, H):      {:+.4}", pearson_corr(&g_rho_v, &g_hv));
+    println!("    corr(G_max, H):  {:+.4}", pearson_corr(&g_gv, &g_hv));
+    println!("    corr(ρ, ln ε):   {:+.4}", pearson_corr(&g_rho_v, &g_ln_eps));
+
+    println!("\n  Phase 8: Topology-invariant vs topology-dependent features");
+    let mut topo_corr_h_eps: Vec<(&str, f64)> = Vec::new();
+    let mut topo_corr_rho_h: Vec<(&str, f64)> = Vec::new();
+    let mut topo_fc_pct: Vec<(&str, f64)> = Vec::new();
+    for &(topo_name, _) in &topo_builders {
+        if let Some(recs) = topo_recs.get(topo_name) {
+            if recs.len() < 10 { continue; }
+            let hv: Vec<f64> = recs.iter().map(|r| r.henrici).collect();
+            let rho_v: Vec<f64> = recs.iter().map(|r| r.rho).collect();
+            let ln_eps: Vec<f64> = recs.iter().map(|r| r.eps.ln()).collect();
+            let rho_med = median_f64(&rho_v);
+            let h_med = median_f64(&hv);
+            let fc = recs.iter().filter(|r| r.rho < rho_med && r.henrici < h_med).count();
+            topo_corr_h_eps.push((topo_name, pearson_corr(&hv, &ln_eps)));
+            topo_corr_rho_h.push((topo_name, pearson_corr(&rho_v, &hv)));
+            topo_fc_pct.push((topo_name, fc as f64 / recs.len() as f64 * 100.0));
+        }
+    }
+    let h_eps_vals: Vec<f64> = topo_corr_h_eps.iter().map(|(_, v)| *v).collect();
+    let rho_h_vals: Vec<f64> = topo_corr_rho_h.iter().map(|(_, v)| *v).collect();
+    let fc_vals: Vec<f64> = topo_fc_pct.iter().map(|(_, v)| *v).collect();
+    println!("  corr(H, ln ε) across topologies: mean={:+.4}  std={:.4}  range=[{:+.4}, {:+.4}]",
+        mean_f64(&h_eps_vals), std_f64(&h_eps_vals),
+        h_eps_vals.iter().cloned().fold(f64::INFINITY, f64::min),
+        h_eps_vals.iter().cloned().fold(f64::NEG_INFINITY, f64::max));
+    println!("  corr(ρ, H) across topologies:    mean={:+.4}  std={:.4}  range=[{:+.4}, {:+.4}]",
+        mean_f64(&rho_h_vals), std_f64(&rho_h_vals),
+        rho_h_vals.iter().cloned().fold(f64::INFINITY, f64::min),
+        rho_h_vals.iter().cloned().fold(f64::NEG_INFINITY, f64::max));
+    println!("  fast+calm % across topologies:    mean={:.1}%  std={:.1}%  range=[{:.1}%, {:.1}%]",
+        mean_f64(&fc_vals), std_f64(&fc_vals),
+        fc_vals.iter().cloned().fold(f64::INFINITY, f64::min),
+        fc_vals.iter().cloned().fold(0.0_f64, f64::max));
+
+    let h_eps_universal = h_eps_vals.iter().all(|v| *v < -0.3);
+    let rho_h_positive = rho_h_vals.iter().all(|v| *v > 0.0);
+    let fc_significant = fc_vals.iter().all(|v| *v > 15.0);
+
+    println!("\n  Phase 9: Universality verdict");
+    println!("  ε→H negative (all topologies): {}", if h_eps_universal { "YES ✓" } else { "NO ✗" });
+    println!("  ρ-H positive (all topologies):  {}", if rho_h_positive { "YES ✓" } else { "NO ✗" });
+    println!("  fast+calm >15% (all topologies):{}", if fc_significant { "YES ✓" } else { "NO ✗" });
+
+    println!("\n  CROSS-TOPOLOGY NON-NORMALITY SUMMARY:");
+    println!("  Topologies: {}  Total records: {}", topo_builders.len(), n_total);
+    println!("  Global corr(H, ln ε) = {:+.4}", pearson_corr(&g_hv, &g_ln_eps));
+    println!("  Global corr(ρ, H) = {:+.4}", pearson_corr(&g_rho_v, &g_hv));
+    let global_fc = all_recs.iter().filter(|r| {
+        let rho_med = median_f64(&g_rho_v);
+        let h_med = median_f64(&g_hv);
+        r.rho < rho_med && r.henrici < h_med
+    }).count();
+    println!("  Global fast+calm: {:.1}%", global_fc as f64 / n_total as f64 * 100.0);
+    if h_eps_universal && rho_h_positive {
+        println!("  VERDICT: UNIVERSAL — ε-controls-H and no-ρ-H-tradeoff hold across ALL topologies");
+    } else if h_eps_universal {
+        println!("  VERDICT: PARTIALLY UNIVERSAL — ε→H holds but ρ-H relation is topology-dependent");
+    } else {
+        println!("  VERDICT: TOPOLOGY-DEPENDENT — non-normality structure varies significantly across topologies");
+    }
+}
+
+pub fn run_gmax_cycle_weight_prediction() {
+    use crate::{pipeline, n_operator::DynamicsParams, fca};
+
+    println!("\n{}", "=".repeat(64));
+    println!("  v3.23: G_max CYCLE WEIGHT PREDICTION");
+    println!("{}", "=".repeat(64));
+
+    fn compute_cycles(j: &[f64; 25]) -> [f64; 7] {
+        [
+            j[0*5+1] * j[1*5+0],
+            j[0*5+3] * j[3*5+0],
+            j[2*5+3] * j[3*5+2],
+            j[3*5+4] * j[4*5+3],
+            j[0*5+1] * j[1*5+3] * j[3*5+0],
+            j[0*5+3] * j[2*5+0] * j[3*5+2],
+            j[0*5+3] * j[3*5+4] * j[4*5+0],
+        ]
+    }
+    fn compute_four_cycles(j: &[f64; 25]) -> [f64; 2] {
+        [
+            j[0*5+1] * j[1*5+3] * j[3*5+4] * j[4*5+0],
+            j[0*5+1] * j[1*5+3] * j[2*5+0] * j[3*5+2],
+        ]
+    }
+
+    let topo_builders: Vec<(&str, fn() -> fca::FcaLattice)> = vec![
+        ("chain-3", || fca::build_chain_lattice(3)),
+        ("chain-5", || fca::build_chain_lattice(5)),
+        ("diamond", || fca::build_diamond_lattice()),
+        ("M3", || fca::build_m3_lattice()),
+        ("B3", || fca::build_b3_lattice()),
+        ("grid-2x3", || fca::build_grid_lattice(2, 3)),
+    ];
+    let regimes: &[(&str, f64, f64, f64)] = &[
+        ("uniform",  1.0, 1.0, 0.01),
+        ("high-beta", 5.0, 1.0, 0.01),
+        ("low-delta", 1.0, 0.2, 0.01),
+        ("high-eps",  1.0, 1.0, 0.5),
+    ];
+
+    struct Rec {
+        topo: String, regime: String,
+        c: [f64; 6], fc: [f64; 2],
+        e2: f64, e3: f64, e4: f64,
+        rho: f64, henrici: f64, g_max: f64,
+        pr: f64, spec_rho_ratio: f64,
+    }
+    let mut recs: Vec<Rec> = Vec::new();
+
+    println!("\n  Phase 1: Collecting data...");
+    for &(_, ref builder) in &topo_builders {
+        let lattice = builder();
+        let stats = pipeline::compute_lattice_stats(&lattice);
+        for &(regime_name, b1, d1, eps) in regimes {
+            let params = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1).with_eps(eps);
+            let results = pipeline::run_topological_iteration(&lattice, &stats, &params);
+            for opt in results.iter() {
+                if let Some(ref res) = opt {
+                    if !res.converged { continue; }
+                    let j_arr = &res.jacobian;
+                    let c7 = compute_cycles(j_arr);
+                    let fc2 = compute_four_cycles(j_arr);
+                    let e2 = c7[0] + c7[1] + c7[2] + c7[3];
+                    let e3 = c7[4] + c7[5] + c7[6];
+                    let e4 = c7[0]*(c7[2]+c7[3]) - (fc2[0]+fc2[1]);
+                    let j = jac_from_arr(j_arr);
+                    let rho = res.rho_spectral;
+                    let frob = j.norm();
+                    let sv = j.singular_values();
+                    let spec = sv[0];
+                    let comm = j * j.transpose() - j.transpose() * j;
+                    let henrici = if frob > 1e-15 { comm.norm() / frob } else { 0.0 };
+                    let spec_rho_ratio = if rho > 1e-15 { spec / rho } else { 0.0 };
+                    let mut jp = nalgebra::SMatrix::<f64, 5, 5>::identity();
+                    let mut g_max = 1.0_f64;
+                    for k in 1..=30 {
+                        jp = jp * j;
+                        let nk = jp.singular_values()[0];
+                        let gk = nk / rho.powi(k as i32);
+                        if gk > g_max { g_max = gk; }
+                    }
+                    let mut v = nalgebra::SVector::<f64, 5>::zeros();
+                    v[0] = 1.0;
+                    for _ in 0..10 {
+                        let w = j * v;
+                        let n = w.norm();
+                        if n > 1e-15 { v = w / n; }
+                    }
+                    let pr_num = v.iter().map(|x| x.powi(4)).sum::<f64>();
+                    let pr = if pr_num > 1e-15 { 1.0 / pr_num } else { 5.0 };
+                    recs.push(Rec {
+                        topo: "".to_string(), regime: regime_name.to_string(),
+                        c: [c7[0], c7[1], c7[2], c7[3], c7[4], c7[5]],
+                        fc: [fc2[0], fc2[1]],
+                        e2, e3, e4, rho, henrici, g_max, pr, spec_rho_ratio,
+                    });
+                }
+            }
+        }
+    }
+    let n = recs.len();
+    println!("  Collected {} records", n);
+    if n < 10 { println!("  ERROR: insufficient data"); return; }
+
+    println!("\n  Phase 2: G_max distribution");
+    let gv: Vec<f64> = recs.iter().map(|r| r.g_max).collect();
+    let rho_v: Vec<f64> = recs.iter().map(|r| r.rho).collect();
+    let hv: Vec<f64> = recs.iter().map(|r| r.henrici).collect();
+    let prv: Vec<f64> = recs.iter().map(|r| r.pr).collect();
+    println!("  G_max: mean={:.4}  std={:.4}  range=[{:.4}, {:.4}]", mean_f64(&gv), std_f64(&gv), gv.iter().cloned().fold(f64::INFINITY, f64::min), gv.iter().cloned().fold(0.0_f64, f64::max));
+    println!("  ρ:     mean={:.4}  std={:.4}", mean_f64(&rho_v), std_f64(&rho_v));
+    println!("  H:     mean={:.4}  std={:.4}", mean_f64(&hv), std_f64(&hv));
+    println!("  PR:    mean={:.4}  std={:.4}", mean_f64(&prv), std_f64(&prv));
+
+    println!("\n  Phase 3: Single-variable correlations with G_max");
+    let c_names = ["d↔b", "d↔r", "ρ↔r", "s↔r", "d→b→r", "d→r→ρ"];
+    println!("  --- Cycle weights ---");
+    for ci in 0..6 {
+        let cv: Vec<f64> = recs.iter().map(|r| r.c[ci]).collect();
+        let r_g = pearson_corr(&gv, &cv);
+        let abs_r = r_g.abs();
+        println!("  c[{}]({:>6}): r={:+.4}  {}", ci, c_names[ci], r_g, if abs_r > 0.7 { "★★★" } else if abs_r > 0.5 { "★★" } else if abs_r > 0.3 { "★" } else { "" });
+    }
+    println!("  --- Four-cycles ---");
+    let fc_names = ["d→b→r→s→d", "d→b→r→ρ→d"];
+    for fi in 0..2 {
+        let fv: Vec<f64> = recs.iter().map(|r| r.fc[fi]).collect();
+        let r_g = pearson_corr(&gv, &fv);
+        println!("  fc[{}]: r={:+.4}", fi, r_g);
+    }
+    println!("  --- Spectral invariants ---");
+    let e2v: Vec<f64> = recs.iter().map(|r| r.e2).collect();
+    let abs_e3: Vec<f64> = recs.iter().map(|r| r.e3.abs()).collect();
+    let e4v: Vec<f64> = recs.iter().map(|r| r.e4).collect();
+    let e3v: Vec<f64> = recs.iter().map(|r| r.e3).collect();
+    println!("  e₂:     r={:+.4}", pearson_corr(&gv, &e2v));
+    println!("  |e₃|:   r={:+.4}", pearson_corr(&gv, &abs_e3));
+    println!("  e₄:     r={:+.4}", pearson_corr(&gv, &e4v));
+    println!("  --- Other metrics ---");
+    println!("  ρ:      r={:+.4}", pearson_corr(&gv, &rho_v));
+    println!("  H:      r={:+.4}", pearson_corr(&gv, &hv));
+    println!("  PR:     r={:+.4}", pearson_corr(&gv, &prv));
+    println!("  ‖J‖₂/ρ: r={:+.4}", pearson_corr(&gv, &recs.iter().map(|r| r.spec_rho_ratio).collect::<Vec<f64>>()));
+
+    println!("\n  Phase 4: Two-variable linear regression G_max ≈ α·x + β·y + γ");
+    let var_names = vec!["H", "ρ", "e₂", "|e₃|", "e₄", "c[5]", "c[3]", "PR"];
+    let var_vecs: Vec<Vec<f64>> = vec![
+        hv.clone(), rho_v.clone(), e2v.clone(), abs_e3.clone(), e4v.clone(),
+        recs.iter().map(|r| r.c[5]).collect(),
+        recs.iter().map(|r| r.c[3]).collect(),
+        prv.clone(),
+    ];
+    let mut best_mape = f64::INFINITY;
+    let mut best_pair = (0, 0);
+    for i in 0..var_names.len() {
+        for j in (i+1)..var_names.len() {
+            let x1 = &var_vecs[i];
+            let x2 = &var_vecs[j];
+            let xtx = nalgebra::SMatrix::<f64, 3, 3>::new(
+                n as f64, x1.iter().sum::<f64>(), x2.iter().sum::<f64>(),
+                x1.iter().sum::<f64>(), x1.iter().map(|x| x*x).sum::<f64>(), x1.iter().zip(x2.iter()).map(|(a,b)| a*b).sum::<f64>(),
+                x2.iter().sum::<f64>(), x1.iter().zip(x2.iter()).map(|(a,b)| a*b).sum::<f64>(), x2.iter().map(|x| x*x).sum::<f64>(),
+            );
+            let xty = nalgebra::SVector::<f64, 3>::new(
+                gv.iter().sum::<f64>(),
+                x1.iter().zip(gv.iter()).map(|(a,b)| a*b).sum::<f64>(),
+                x2.iter().zip(gv.iter()).map(|(a,b)| a*b).sum::<f64>(),
+            );
+            if let Some(beta) = xtx.try_inverse().map(|inv| inv * xty) {
+                let preds: Vec<f64> = (0..n).map(|k| beta[0] + beta[1]*x1[k] + beta[2]*x2[k]).collect();
+                let mape_vals: Vec<f64> = gv.iter().zip(preds.iter()).filter(|(a, p)| **a > 1e-10).map(|(a, p)| ((a - p) / a).abs()).collect();
+                let mape = if !mape_vals.is_empty() { mean_f64(&mape_vals) } else { f64::INFINITY };
+                if mape < best_mape { best_mape = mape; best_pair = (i, j); }
+            }
+        }
+    }
+    println!("  Best 2-var: {}+{}  MAPE={:.4}", var_names[best_pair.0], var_names[best_pair.1], best_mape);
+
+    for i in 0..var_names.len() {
+        for j in (i+1)..var_names.len() {
+            let x1 = &var_vecs[i];
+            let x2 = &var_vecs[j];
+            let xtx = nalgebra::SMatrix::<f64, 3, 3>::new(
+                n as f64, x1.iter().sum::<f64>(), x2.iter().sum::<f64>(),
+                x1.iter().sum::<f64>(), x1.iter().map(|x| x*x).sum::<f64>(), x1.iter().zip(x2.iter()).map(|(a,b)| a*b).sum::<f64>(),
+                x2.iter().sum::<f64>(), x1.iter().zip(x2.iter()).map(|(a,b)| a*b).sum::<f64>(), x2.iter().map(|x| x*x).sum::<f64>(),
+            );
+            let xty = nalgebra::SVector::<f64, 3>::new(
+                gv.iter().sum::<f64>(),
+                x1.iter().zip(gv.iter()).map(|(a,b)| a*b).sum::<f64>(),
+                x2.iter().zip(gv.iter()).map(|(a,b)| a*b).sum::<f64>(),
+            );
+            if let Some(beta) = xtx.try_inverse().map(|inv| inv * xty) {
+                let preds: Vec<f64> = (0..n).map(|k| beta[0] + beta[1]*x1[k] + beta[2]*x2[k]).collect();
+                let mape_vals: Vec<f64> = gv.iter().zip(preds.iter()).filter(|(a, p)| **a > 1e-10).map(|(a, p)| ((a - p) / a).abs()).collect();
+                let mape = if !mape_vals.is_empty() { mean_f64(&mape_vals) } else { f64::INFINITY };
+                if mape < 0.30 {
+                    println!("    {}+{}: MAPE={:.4} ({:.1}%)", var_names[i], var_names[j], mape, mape * 100.0);
+                }
+            }
+        }
+    }
+
+    println!("\n  Phase 5: Power law search G_max ≈ c[i]^a[i]");
+    let mut best_single_mape = f64::INFINITY;
+    let mut best_single_var = "";
+    for (name, xv) in [("H", &hv), ("ρ", &rho_v), ("e₂", &e2v), ("|e₃|", &abs_e3), ("e₄", &e4v), ("c[5]", &var_vecs[5]), ("c[3]", &var_vecs[6]), ("PR", &prv)].iter() {
+        for a_10 in -50..100 {
+            let a = a_10 as f64 / 100.0;
+            let preds: Vec<f64> = xv.iter().map(|x| {
+                if *x > 1e-15 { x.powf(a) } else { 0.0 }
+            }).collect();
+            let mape_vals: Vec<f64> = gv.iter().zip(preds.iter()).filter(|(g, p)| **g > 1e-10 && **p > 1e-10).map(|(g, p)| ((g - p) / g).abs()).collect();
+            let mape = if !mape_vals.is_empty() { mean_f64(&mape_vals) } else { f64::INFINITY };
+            if mape < best_single_mape { best_single_mape = mape; best_single_var = name; }
+        }
+    }
+    println!("  Best single power law: G_max ≈ {}^a  MAPE={:.4} ({:.1}%)", best_single_var, best_single_mape, best_single_mape * 100.0);
+
+    println!("\n  Phase 6: Product formula search G_max ≈ A · x^a · y^b");
+    let mut best_prod_mape = f64::INFINITY;
+    let mut best_prod_vars = ("", "");
+    let mut best_prod_exp = (0.0, 0.0);
+    for (i, (n1, v1)) in [("H", &hv), ("ρ", &rho_v), ("e₂", &e2v), ("|e₃|", &abs_e3), ("c[5]", &var_vecs[5])].iter().enumerate() {
+        for (j, (n2, v2)) in [("H", &hv), ("ρ", &rho_v), ("e₂", &e2v), ("|e₃|", &abs_e3), ("c[5]", &var_vecs[5])].iter().enumerate() {
+            if i >= j { continue; }
+            for a_10 in -50..100 {
+                let a = a_10 as f64 / 100.0;
+                for b_10 in -50..100 {
+                    let b = b_10 as f64 / 100.0;
+                    let preds: Vec<f64> = (0..n).map(|k| {
+                        let x = v1[k];
+                        let y = v2[k];
+                        if x > 1e-15 && y > 1e-15 { x.powf(a) * y.powf(b) } else { 0.0 }
+                    }).collect();
+                    let med_ratio = {
+                        let mut ratios: Vec<f64> = gv.iter().zip(preds.iter()).filter(|(g, p)| **g > 1e-10 && **p > 1e-10).map(|(g, p)| g / p).collect();
+                        if ratios.is_empty() { continue; }
+                        ratios.sort_by(|a, b| a.partial_cmp(b).unwrap());
+                        ratios[ratios.len() / 2]
+                    };
+                    let scaled_preds: Vec<f64> = preds.iter().map(|p| p * med_ratio).collect();
+                    let mape_vals: Vec<f64> = gv.iter().zip(scaled_preds.iter()).filter(|(g, p)| **g > 1e-10).map(|(g, p)| ((g - p) / g).abs()).collect();
+                    let mape = if !mape_vals.is_empty() { mean_f64(&mape_vals) } else { f64::INFINITY };
+                    if mape < best_prod_mape { best_prod_mape = mape; best_prod_vars = (n1, n2); best_prod_exp = (a, b); }
+                }
+            }
+        }
+    }
+    println!("  Best product: G_max ≈ A · {}^{:.2} · {}^{:.2}  MAPE={:.4} ({:.1}%)",
+        best_prod_vars.0, best_prod_exp.0, best_prod_vars.1, best_prod_exp.1, best_prod_mape, best_prod_mape * 100.0);
+
+    println!("\n  Phase 7: Companion matrix G_max analysis");
+    println!("  Testing if companion matrix C gives same G_max as full Jacobian J");
+    let mut comp_gmax_mape_vals: Vec<f64> = Vec::new();
+    let mut comp_gmax_abs_err: Vec<f64> = Vec::new();
+    let mut comp_gmax_ratio: Vec<f64> = Vec::new();
+    for rec in &recs {
+        if rec.e2.abs() < 1e-15 && rec.e3.abs() < 1e-15 && rec.e4.abs() < 1e-15 { continue; }
+        let comp = nalgebra::SMatrix::<f64, 4, 4>::new(
+            0.0, 0.0, 0.0, -rec.e4,
+            1.0, 0.0, 0.0, rec.e3,
+            0.0, 1.0, 0.0, rec.e2,
+            0.0, 0.0, 1.0, 0.0,
+        );
+        let comp_eigs = comp.complex_eigenvalues();
+        let comp_rho = comp_eigs.iter().map(|e| (e.re*e.re + e.im*e.im).sqrt()).fold(0.0_f64, f64::max);
+        if comp_rho < 1e-15 { continue; }
+        let mut cp = nalgebra::SMatrix::<f64, 4, 4>::identity();
+        let mut comp_g_max = 1.0_f64;
+        for k in 1..=30 {
+            cp = cp * comp;
+            let nk = cp.singular_values()[0];
+            let gk = nk / comp_rho.powi(k as i32);
+            if gk > comp_g_max { comp_g_max = gk; }
+        }
+        let err = (comp_g_max - rec.g_max).abs();
+        let ratio = if comp_g_max > 1e-15 { rec.g_max / comp_g_max } else { 0.0 };
+        let mape = if rec.g_max > 1e-10 { err / rec.g_max } else { 0.0 };
+        comp_gmax_mape_vals.push(mape);
+        comp_gmax_abs_err.push(err);
+        comp_gmax_ratio.push(ratio);
+    }
+    println!("  Companion matrix G_max MAPE: mean={:.4e}  median={:.4e}", mean_f64(&comp_gmax_mape_vals), median_f64(&comp_gmax_mape_vals));
+    println!("  Companion/Jacobian ratio: mean={:.6}  std={:.6}", mean_f64(&comp_gmax_ratio), std_f64(&comp_gmax_ratio));
+    let comp_exact_count = comp_gmax_mape_vals.iter().filter(|v| **v < 1e-6).count();
+    println!("  Exact (MAPE<1e-6): {}/{} ({:.1}%)", comp_exact_count, comp_gmax_mape_vals.len(), comp_exact_count as f64 / comp_gmax_mape_vals.len() as f64 * 100.0);
+
+    println!("\n  Phase 8: H as G_max predictor (the cycle weight → H → G_max chain)");
+    let h_mape_vals: Vec<f64> = gv.iter().zip(hv.iter()).filter(|(g, h)| **g > 1e-10 && **h > 1e-10).map(|(g, h)| {
+        let pred = 1.0 + h * 0.75;
+        ((g - pred) / g).abs()
+    }).collect();
+    println!("  G_max ≈ 1 + 0.75·H:  MAPE={:.4} ({:.1}%)", mean_f64(&h_mape_vals), mean_f64(&h_mape_vals) * 100.0);
+
+    for slope_10 in 10..300 {
+        let slope = slope_10 as f64 / 100.0;
+        let preds: Vec<f64> = hv.iter().map(|h| 1.0 + slope * h).collect();
+        let mape_vals: Vec<f64> = gv.iter().zip(preds.iter()).filter(|(g, p)| **g > 1e-10).map(|(g, p)| ((g - p) / g).abs()).collect();
+        let mape = if !mape_vals.is_empty() { mean_f64(&mape_vals) } else { f64::INFINITY };
+        if slope_10 % 25 == 0 || mape < 0.15 {
+            println!("    G_max ≈ 1 + {:.2}·H: MAPE={:.4}", slope, mape);
+        }
+    }
+
+    println!("\n  Phase 9: Log-space regression log(G_max-1) vs cycle weight logs");
+    let log_gm1: Vec<f64> = gv.iter().map(|g| (g - 1.0).max(1e-10).ln()).collect();
+    let log_c5: Vec<f64> = recs.iter().map(|r| r.c[5].max(1e-15).ln()).collect();
+    let log_c3: Vec<f64> = recs.iter().map(|r| r.c[3].max(1e-15).ln()).collect();
+    let log_h: Vec<f64> = hv.iter().map(|h| h.max(1e-15).ln()).collect();
+    let log_rho: Vec<f64> = rho_v.iter().map(|r| r.max(1e-15).ln()).collect();
+
+    println!("  corr(ln(G-1), ln H):     r={:+.4}", pearson_corr(&log_gm1, &log_h));
+    println!("  corr(ln(G-1), ln c[5]):  r={:+.4}", pearson_corr(&log_gm1, &log_c5));
+    println!("  corr(ln(G-1), ln c[3]):  r={:+.4}", pearson_corr(&log_gm1, &log_c3));
+    println!("  corr(ln(G-1), ln ρ):     r={:+.4}", pearson_corr(&log_gm1, &log_rho));
+
+    println!("\n  Phase 10: Comparison with ρ prediction difficulty");
+    println!("  v3.19 results: best ρ formula MAPE=42%, companion matrix ρ MAPE=1e-15");
+    println!("  v3.23 results:");
+    println!("    Best G_max single power law: MAPE={:.1}%", best_single_mape * 100.0);
+    println!("    Best G_max product formula:  MAPE={:.1}%", best_prod_mape * 100.0);
+    println!("    Companion matrix G_max:      MAPE={:.4e}", mean_f64(&comp_gmax_mape_vals));
+    let g_predictability = if best_single_mape < 0.30 { "EASIER" } else if best_single_mape < 0.42 { "COMPARABLE" } else { "HARDER" };
+    println!("    G_max vs ρ predictability:   {}", g_predictability);
+
+    println!("\n  G_max CYCLE WEIGHT PREDICTION SUMMARY:");
+    println!("  Records: {}", n);
+    println!("  G_max range: [{:.4}, {:.4}]", gv.iter().cloned().fold(f64::INFINITY, f64::min), gv.iter().cloned().fold(0.0_f64, f64::max));
+    println!("  corr(G_max, H): {:+.4}  (strongest)", pearson_corr(&gv, &hv));
+    println!("  Best single predictor: {}  MAPE={:.1}%", best_single_var, best_single_mape * 100.0);
+    println!("  Best product formula: {}^{} × {}^{}  MAPE={:.1}%", best_prod_vars.0, best_prod_exp.0, best_prod_vars.1, best_prod_exp.1, best_prod_mape * 100.0);
+    println!("  Companion matrix G_max: exact in {:.1}% cases", comp_exact_count as f64 / comp_gmax_mape_vals.len() as f64 * 100.0);
+    if comp_exact_count as f64 / comp_gmax_mape_vals.len() as f64 > 0.99 {
+        println!("  VERDICT: Companion matrix gives EXACT G_max (like ρ) — but no simpler formula exists");
+    } else if best_single_mape < 0.30 {
+        println!("  VERDICT: G_max is MORE predictable than ρ — simple formula exists!");
+    } else {
+        println!("  VERDICT: G_max is NO more predictable than ρ — companion matrix required for both");
+    }
+}
