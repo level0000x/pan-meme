@@ -18889,3 +18889,1205 @@ pub fn run_eigenvector_acceleration() {
     println!("  Phase 6: Lattice-level acceleration validated");
     println!("  Phase 7: Theoretical bounds established");
 }
+
+pub fn run_convergence_phase_transition() {
+    println!("\n=== v2.91 CONVERGENCE PHASE TRANSITION ===");
+
+    // ── Phase 1: ρ scan via ε ──
+    println!("\n--- Phase 1: ρ(J) vs ε ---");
+    let eps_vals: Vec<f64> = vec![
+        0.0001, 0.0005, 0.001, 0.005, 0.01, 0.02, 0.05,
+        0.1, 0.2, 0.5, 1.0, 2.0, 5.0, 10.0, 50.0, 100.0,
+    ];
+
+    println!("  {:>10} {:>10} {:>8} {:>10} {:>10} {:>10}", "ε", "ρ(J)", "n_iters", "1-ρ", "n_pred", "n/n_pred");
+
+    for &eps in &eps_vals {
+        let p = DynamicsParams::uniform().with_beta1(1.5).with_delta1(0.5).with_eps(eps);
+        let res = n_operator::run_iteration(
+            &five_dim::make_state(0.5, 0.5, 0.5, 0.5, 0.5), 0.0, 0.0, &p, 100000, 1e-12,
+        );
+        if !res.converged { println!("  {:>10.4} NOT CONVERGED", eps); continue; }
+
+        let rho = res.rho_spectral;
+        let m_star_arr = five_dim::to_array(&res.m_star);
+        let d0: f64 = (0..5).map(|k| (0.5 - m_star_arr[k]).powi(2)).sum::<f64>().sqrt();
+        let n_pred = n_pred_from_rho(d0, rho, 1e-12);
+        let ratio = res.n_iters as f64 / n_pred.max(1.0);
+
+        println!("  {:>10.4} {:>10.6} {:>8} {:>10.6} {:>10.1} {:>10.4}",
+            eps, rho, res.n_iters, 1.0 - rho, n_pred, ratio);
+    }
+
+    // ── Phase 2: Critical exponent extraction ──
+    println!("\n--- Phase 2: Critical exponent n = A*(1-rho)^(-nu) ---");
+    let mut data: Vec<(f64, f64)> = Vec::new();
+
+    for &eps in &[0.0001, 0.0005, 0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5] {
+        let p = DynamicsParams::uniform().with_beta1(1.5).with_delta1(0.5).with_eps(eps);
+        let res = n_operator::run_iteration(
+            &five_dim::make_state(0.5, 0.5, 0.5, 0.5, 0.5), 0.0, 0.0, &p, 100000, 1e-12,
+        );
+        if !res.converged { continue; }
+        let rho = res.rho_spectral;
+        if rho > 0.9999 || rho < 0.01 { continue; }
+        data.push((1.0 - rho, res.n_iters as f64));
+    }
+
+    if data.len() >= 4 {
+        let log_data: Vec<(f64, f64)> = data.iter()
+            .filter(|(x, y)| *x > 1e-10 && *y > 0.0)
+            .map(|(x, y)| (x.ln(), y.ln()))
+            .collect();
+
+        let n = log_data.len() as f64;
+        let sx: f64 = log_data.iter().map(|p| p.0).sum();
+        let sy: f64 = log_data.iter().map(|p| p.1).sum();
+        let sxx: f64 = log_data.iter().map(|p| p.0 * p.0).sum();
+        let sxy: f64 = log_data.iter().map(|p| p.0 * p.1).sum();
+        let denom = n * sxx - sx * sx;
+        let neg_nu = if denom.abs() > 1e-30 { (n * sxy - sx * sy) / denom } else { 0.0 };
+        let intercept = (sy - neg_nu * sx) / n;
+
+        let ss_res: f64 = log_data.iter().map(|(x, y)| (y - intercept - neg_nu * x).powi(2)).sum();
+        let ss_tot: f64 = log_data.iter().map(|(_, y)| (y - sy / n).powi(2)).sum();
+        let r2 = if ss_tot > 1e-30 { 1.0 - ss_res / ss_tot } else { 0.0 };
+
+        println!("  log-log fit: n = A*(1-rho)^(-{:.4}), A={:.4}, R²={:.4}", -neg_nu, intercept.exp(), r2);
+        println!("  Expected ν=1 (simple pole from Banach FPT)");
+        println!("  Measured ν={:.4}", -neg_nu);
+    }
+
+    // ── Phase 3: β₁ scan for critical behavior ──
+    println!("\n--- Phase 3: β₁ scan ---");
+    println!("  {:>10} {:>10} {:>8} {:>10} {:>10}", "β₁", "ρ(J)", "n_iters", "1-ρ", "n/n_pred");
+
+    for &b1 in &[0.1, 0.5, 1.0, 1.5, 2.0, 3.0, 5.0, 10.0, 20.0, 50.0, 100.0] {
+        let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(0.5).with_eps(0.1);
+        let res = n_operator::run_iteration(
+            &five_dim::make_state(0.5, 0.5, 0.5, 0.5, 0.5), 0.0, 0.0, &p, 100000, 1e-12,
+        );
+        if !res.converged { println!("  {:>10.1} NOT CONVERGED", b1); continue; }
+
+        let rho = res.rho_spectral;
+        let m_star_arr = five_dim::to_array(&res.m_star);
+        let d0: f64 = (0..5).map(|k| (0.5 - m_star_arr[k]).powi(2)).sum::<f64>().sqrt();
+        let n_pred = n_pred_from_rho(d0, rho, 1e-12);
+        let ratio = res.n_iters as f64 / n_pred.max(1.0);
+
+        println!("  {:>10.1} {:>10.6} {:>8} {:>10.6} {:>10.4}", b1, rho, res.n_iters, 1.0 - rho, ratio);
+    }
+
+    // ── Phase 4: Lattice critical point ──
+    println!("\n--- Phase 4: Lattice critical behavior ---");
+    let topologies: Vec<(&str, fca::FcaLattice)> = vec![
+        ("chain(5)", fca::build_chain_lattice(5)),
+        ("chain(10)", fca::build_chain_lattice(10)),
+        ("diamond", fca::build_diamond_lattice()),
+        ("M3", fca::build_m3_lattice()),
+        ("B3", fca::build_b3_lattice()),
+        ("grid(3,3)", fca::build_grid_lattice(3, 3)),
+    ];
+
+    println!("  {:<12} {:>10} {:>8} {:>10} {:>10} {:>10}", "topo", "ε", "max_n", "max_ρ", "mean_ρ", "n/pred");
+
+    for (tname, ref lat) in &topologies {
+        for &eps in &[0.01, 0.05, 0.1, 0.5, 1.0] {
+            let p = DynamicsParams::uniform().with_beta1(1.5).with_delta1(0.5).with_eps(eps);
+            let stats = pipeline::compute_lattice_stats(lat);
+            let results = pipeline::run_topological_iteration(lat, &stats, &p);
+
+            let mut n_vals: Vec<usize> = Vec::new();
+            let mut rho_vals: Vec<f64> = Vec::new();
+            let mut ratios: Vec<f64> = Vec::new();
+
+            for ci in 0..lat.concepts.len() {
+                if let Some(Some(ref res)) = results.get(ci) {
+                    if !res.converged { continue; }
+                    n_vals.push(res.n_iters);
+                    rho_vals.push(res.rho_spectral);
+
+                    let m0 = pipeline::init_state(ci, lat, &stats);
+                    let m0_arr = five_dim::to_array(&m0);
+                    let m_star_arr = five_dim::to_array(&res.m_star);
+                    let d0: f64 = (0..5).map(|k| (m0_arr[k] - m_star_arr[k]).powi(2)).sum::<f64>().sqrt();
+                    let n_pred = n_pred_from_rho(d0, res.rho_spectral, 1e-12);
+                    if n_pred > 0.5 { ratios.push(res.n_iters as f64 / n_pred); }
+                }
+            }
+
+            if n_vals.is_empty() { continue; }
+            let max_n = n_vals.iter().max().unwrap();
+            let max_rho = rho_vals.iter().cloned().fold(0.0_f64, f64::max);
+            let mean_rho = rho_vals.iter().sum::<f64>() / rho_vals.len() as f64;
+            let mean_ratio = ratios.iter().sum::<f64>() / ratios.len().max(1) as f64;
+
+            println!("  {:<12} {:>10.4} {:>8} {:>10.6} {:>10.6} {:>10.4}",
+                tname, eps, max_n, max_rho, mean_rho, mean_ratio);
+        }
+    }
+
+    // ── Phase 5: Scaling collapse test ──
+    println!("\n--- Phase 5: Scaling collapse n·(1-ρ) vs (1-ρ) ---");
+    println!("  If n ∝ 1/(1-ρ), then n·(1-ρ) should be constant");
+    println!("  {:>10} {:>10} {:>10} {:>10} {:>10}", "ε", "ρ(J)", "n_iters", "n·(1-ρ)", "ln(d₀/tol)");
+
+    for &eps in &[0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1.0, 5.0] {
+        let p = DynamicsParams::uniform().with_beta1(1.5).with_delta1(0.5).with_eps(eps);
+        let res = n_operator::run_iteration(
+            &five_dim::make_state(0.5, 0.5, 0.5, 0.5, 0.5), 0.0, 0.0, &p, 100000, 1e-12,
+        );
+        if !res.converged { continue; }
+
+        let rho = res.rho_spectral;
+        let m_star_arr = five_dim::to_array(&res.m_star);
+        let d0: f64 = (0..5).map(|k| (0.5 - m_star_arr[k]).powi(2)).sum::<f64>().sqrt();
+        let n_scaled = res.n_iters as f64 * (1.0 - rho);
+        let ln_d0_tol = (d0 / 1e-12).ln();
+
+        println!("  {:>10.4} {:>10.6} {:>10} {:>10.4} {:>10.4}", eps, rho, res.n_iters, n_scaled, ln_d0_tol);
+    }
+
+    // ── Phase 6: Summary ──
+    println!("\n  === CONVERGENCE PHASE TRANSITION SUMMARY ===");
+    println!("  Phase 1: ρ(J) vs ε mapping");
+    println!("  Phase 2: Critical exponent extraction");
+    println!("  Phase 3: β₁ scan for critical behavior");
+    println!("  Phase 4: Lattice critical behavior");
+    println!("  Phase 5: Scaling collapse test");
+}
+
+pub fn run_logistic_trajectory_prediction() {
+    println!("\n{}", "=".repeat(72));
+    println!("  v2.92: LOGISTIC MAP TRAJECTORY PREDICTION");
+    println!("  5D convergence dynamics → 1D logistic map reduction");
+    println!("  a_{{k+1}} = λ·a_k + (q/2)·a_k²  →  closed-form: a_k = K·a₀·λ^k/(K+a₀(λ^k-1))");
+    println!("  K = 2λ/|q|  carrying capacity");
+    println!("{}", "=".repeat(72));
+
+    let tol = 1e-12_f64;
+
+    // ── Phase 1: Riccati trajectory fitting for individual concepts ──
+    println!("\n--- Phase 1: Riccati trajectory fitting (λ_fit, q_fit, K_fit) ---");
+
+    struct TrajectoryFit {
+        b1: f64, d1: f64, eps: f64,
+        topo: String,
+        n_actual: usize,
+        rho_j: f64,
+        lambda_fit: f64,
+        q_fit: f64,
+        k_fit: f64,
+        r2_traj: f64,
+        n_pred_logistic: f64,
+        n_pred_naive: f64,
+    }
+
+    let regimes: Vec<(&str, f64, f64, f64)> = vec![
+        ("uniform", 1.0, 1.0, 0.01),
+        ("high-beta", 10.0, 1.0, 0.01),
+        ("high-delta", 1.0, 10.0, 0.01),
+        ("high-eps", 1.0, 1.0, 1.0),
+        ("extreme", 0.5, 0.5, 0.001),
+        ("balanced", 5.0, 5.0, 0.1),
+    ];
+
+    let topo_builders: Vec<(&str, Box<dyn Fn() -> fca::FcaLattice>)> = vec![
+        ("chain-10", Box::new(|| fca::build_chain_lattice(10))),
+        ("diamond", Box::new(|| fca::build_diamond_lattice())),
+        ("B3", Box::new(|| fca::build_b3_lattice())),
+        ("grid-3x3", Box::new(|| fca::build_grid_lattice(3, 3))),
+        ("chain-20", Box::new(|| fca::build_chain_lattice(20))),
+    ];
+
+    let mut all_fits: Vec<TrajectoryFit> = Vec::new();
+
+    for &(regime_name, b1, d1, eps) in &regimes {
+        for &(topo_name, ref builder) in &topo_builders {
+            let lattice = builder();
+            let params = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1).with_eps(eps);
+            let stats = pipeline::compute_lattice_stats(&lattice);
+            let results = pipeline::run_topological_iteration(&lattice, &stats, &params);
+
+            for (ci, opt_res) in results.iter().enumerate() {
+                let res = match opt_res {
+                    Some(r) if r.converged && r.trajectory.len() >= 6 => r,
+                    _ => continue,
+                };
+
+                let m_star = five_dim::to_array(&res.m_star);
+                let traj = &res.trajectory;
+
+                let mut d_k: Vec<f64> = Vec::new();
+                for state in traj.iter() {
+                    let dist: f64 = (0..5).map(|i| (state[i] - m_star[i]).powi(2)).sum::<f64>().sqrt();
+                    d_k.push(dist);
+                }
+
+                let rho = res.rho_spectral;
+                let n_actual = res.n_iters;
+
+                // Least-squares fit: d_{k+1} = λ·d_k + c·d_k²
+                // [d_k, d_k²] · [λ, c]^T = d_{k+1}
+                let n_pts = d_k.len() - 1;
+                let mut s_dd = 0.0_f64;
+                let mut s_dq = 0.0_f64;
+                let mut s_dq2 = 0.0_f64;
+                let mut s_qq = 0.0_f64;
+                let mut s_q3 = 0.0_f64;
+                let mut s_q4 = 0.0_f64;
+                for k in 0..n_pts {
+                    let dk = d_k[k];
+                    let dk1 = d_k[k + 1];
+                    let dk2 = dk * dk;
+                    let dk3 = dk2 * dk;
+                    let dk4 = dk2 * dk2;
+                    s_dd += dk * dk1;
+                    s_dq += dk2 * dk1;
+                    s_dq2 += dk3;
+                    s_qq += dk4;
+                    s_q3 += dk3 * dk;
+                    s_q4 += dk4 * dk2;
+                }
+                // Normal equations: [[s_dq2, s_qq], [s_qq, s_q4]] · [λ, c]^T = [s_dd, s_dq]^T (wrong — re-derive)
+                // Actually: d_{k+1} = λ·d_k + c·d_k²
+                // Let x1_k = d_k, x2_k = d_k²
+                // Σ(x1_k²)·λ + Σ(x1_k·x2_k)·c = Σ(x1_k·d_{k+1})
+                // Σ(x1_k·x2_k)·λ + Σ(x2_k²)·c = Σ(x2_k·d_{k+1})
+                let mut s11 = 0.0_f64;
+                let mut s12 = 0.0_f64;
+                let mut s22 = 0.0_f64;
+                let mut t1 = 0.0_f64;
+                let mut t2 = 0.0_f64;
+                for k in 0..n_pts {
+                    let dk = d_k[k];
+                    let dk1 = d_k[k + 1];
+                    let x1 = dk;
+                    let x2 = dk * dk;
+                    s11 += x1 * x1;
+                    s12 += x1 * x2;
+                    s22 += x2 * x2;
+                    t1 += x1 * dk1;
+                    t2 += x2 * dk1;
+                }
+
+                let det_a = s11 * s22 - s12 * s12;
+                if det_a.abs() < 1e-40 { continue; }
+
+                let lambda_fit = (s22 * t1 - s12 * t2) / det_a;
+                let c_fit = (s11 * t2 - s12 * t1) / det_a;
+
+                let k_fit = if c_fit.abs() > 1e-20 { 2.0 * lambda_fit / c_fit.abs() } else { 1e10 };
+
+                // Compute R² of trajectory fit
+                let mut ss_res = 0.0_f64;
+                let mut ss_tot = 0.0_f64;
+                let d_mean: f64 = d_k.iter().skip(1).sum::<f64>() / n_pts as f64;
+                for k in 0..n_pts {
+                    let d_pred = lambda_fit * d_k[k] + c_fit * d_k[k] * d_k[k];
+                    ss_res += (d_k[k + 1] - d_pred).powi(2);
+                    ss_tot += (d_k[k + 1] - d_mean).powi(2);
+                }
+                let r2_traj = if ss_tot > 1e-30 { 1.0 - ss_res / ss_tot } else { 0.0 };
+
+                // Logistic map prediction of n_iters
+                let d0 = d_k[0];
+                let n_pred_logistic = if lambda_fit > 0.0 && lambda_fit < 1.0 && k_fit > 0.0 && d0 < k_fit {
+                    let num = d0 * (k_fit - tol);
+                    let den = tol * (k_fit - d0);
+                    if num > 0.0 && den > 0.0 { (num / den).ln() / (1.0 / lambda_fit).ln() } else { 0.0 }
+                } else { 0.0 };
+
+                let n_pred_naive = n_pred_from_rho(d0, rho, tol);
+
+                all_fits.push(TrajectoryFit {
+                    b1, d1, eps,
+                    topo: topo_name.to_string(),
+                    n_actual,
+                    rho_j: rho,
+                    lambda_fit,
+                    q_fit: c_fit,
+                    k_fit,
+                    r2_traj,
+                    n_pred_logistic,
+                    n_pred_naive,
+                });
+            }
+        }
+    }
+
+    println!("  Fitted {} concept trajectories across {} regimes x {} topologies",
+             all_fits.len(), regimes.len(), topo_builders.len());
+
+    // ── Phase 2: λ_fit vs ρ(J) verification ──
+    println!("\n--- Phase 2: λ_fit vs ρ(J) comparison ---");
+    println!("  {:>10} {:>10} {:>10} {:>10} {:>10} {:>8}", "regime", "topo", "ρ(J)", "λ_fit", "λ/ρ", "R²_traj");
+
+    let mut lambda_rho_ratios: Vec<f64> = Vec::new();
+    let mut r2_values: Vec<f64> = Vec::new();
+
+    for f in all_fits.iter().take(30) {
+        let ratio = if f.rho_j > 1e-10 { f.lambda_fit / f.rho_j } else { 0.0 };
+        lambda_rho_ratios.push(ratio);
+        r2_values.push(f.r2_traj);
+        println!("  {:>10} {:>10} {:>10.6} {:>10.6} {:>10.4} {:>8.4}",
+                 f.b1, f.topo, f.rho_j, f.lambda_fit, ratio, f.r2_traj);
+    }
+
+    let lr_mean = mean_f64(&lambda_rho_ratios);
+    let lr_std = std_f64(&lambda_rho_ratios);
+    let r2_mean = mean_f64(&r2_values);
+    println!("\n  λ_fit/ρ(J): mean={:.4} ± {:.4} (ideal=1.000)", lr_mean, lr_std);
+    println!("  R²(trajectory fit): mean={:.4} (>0.99 = logistic map confirmed)", r2_mean);
+
+    // ── Phase 3: K (carrying capacity) analysis ──
+    println!("\n--- Phase 3: Carrying capacity K = 2λ/|c| ---");
+    println!("  {:>10} {:>10} {:>10} {:>10} {:>10} {:>10}", "b1", "topo", "ρ(J)", "λ_fit", "c_fit", "K_fit");
+
+    let mut k_values: Vec<f64> = Vec::new();
+    let mut k_by_regime: BTreeMap<String, Vec<f64>> = BTreeMap::new();
+
+    for f in all_fits.iter() {
+        if f.k_fit > 0.0 && f.k_fit < 1e6 {
+            k_values.push(f.k_fit);
+            k_by_regime.entry(format!("b{}_d{}_e{}", f.b1, f.d1, f.eps))
+                .or_default().push(f.k_fit);
+        }
+    }
+
+    for f in all_fits.iter().take(25) {
+        println!("  {:>10.2} {:>10} {:>10.6} {:>10.6} {:>10.6} {:>10.2}",
+                 f.b1, f.topo, f.rho_j, f.lambda_fit, f.q_fit, f.k_fit);
+    }
+
+    let k_mean = mean_f64(&k_values);
+    let k_median = median_f64(&k_values);
+    let k_std = std_f64(&k_values);
+    println!("\n  K statistics: mean={:.2}, median={:.2}, std={:.2}", k_mean, k_median, k_std);
+
+    println!("\n  K by regime:");
+    for (regime, ks) in &k_by_regime {
+        println!("    {:>20}: K_mean={:.2} ± {:.2} (N={})", regime, mean_f64(ks), std_f64(ks), ks.len());
+    }
+
+    // ── Phase 4: Logistic map n_iters prediction ──
+    println!("\n--- Phase 4: n_iters prediction: logistic vs naive ---");
+
+    let valid_logistic: Vec<&TrajectoryFit> = all_fits.iter()
+        .filter(|f| f.n_pred_logistic > 0.5 && f.n_actual > 0)
+        .collect();
+
+    let valid_naive: Vec<&TrajectoryFit> = all_fits.iter()
+        .filter(|f| f.n_pred_naive > 0.5 && f.n_actual > 0)
+        .collect();
+
+    let mut ratios_logistic: Vec<f64> = Vec::new();
+    let mut ratios_naive: Vec<f64> = Vec::new();
+    let mut err_logistic: Vec<f64> = Vec::new();
+    let mut err_naive: Vec<f64> = Vec::new();
+
+    for f in &valid_logistic {
+        let r = f.n_actual as f64 / f.n_pred_logistic;
+        ratios_logistic.push(r);
+        err_logistic.push((f.n_actual as f64 - f.n_pred_logistic).abs() / f.n_actual as f64 * 100.0);
+    }
+    for f in &valid_naive {
+        let r = f.n_actual as f64 / f.n_pred_naive;
+        ratios_naive.push(r);
+        err_naive.push((f.n_actual as f64 - f.n_pred_naive).abs() / f.n_actual as f64 * 100.0);
+    }
+
+    println!("  {:>25} {:>10} {:>10} {:>10} {:>10}", "method", "N", "ratio_mean", "ratio_std", "MAPE%");
+    if !ratios_logistic.is_empty() {
+        println!("  {:>25} {:>10} {:>10.4} {:>10.4} {:>10.2}",
+                 "logistic (d0,λ,K)", ratios_logistic.len(),
+                 mean_f64(&ratios_logistic), std_f64(&ratios_logistic),
+                 mean_f64(&err_logistic));
+    }
+    if !ratios_naive.is_empty() {
+        println!("  {:>25} {:>10} {:>10.4} {:>10.4} {:>10.2}",
+                 "naive (d0,ρ)", ratios_naive.len(),
+                 mean_f64(&ratios_naive), std_f64(&ratios_naive),
+                 mean_f64(&err_naive));
+    }
+
+    // ── Phase 5: Closed-form trajectory verification ──
+    println!("\n--- Phase 5: Closed-form trajectory a_k = K·a₀·λ^k/(K+a₀(λ^k-1)) ---");
+
+    let mut traj_r2_values: Vec<f64> = Vec::new();
+    let mut traj_examples: Vec<(String, f64, f64, f64, f64, usize)> = Vec::new();
+
+    for &(regime_name, b1, d1, eps) in &regimes {
+        for &(topo_name, ref builder) in topo_builders.iter().take(3) {
+            let lattice = builder();
+            let params = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1).with_eps(eps);
+            let stats = pipeline::compute_lattice_stats(&lattice);
+            let results = pipeline::run_topological_iteration(&lattice, &stats, &params);
+
+            for (ci, opt_res) in results.iter().enumerate() {
+                let res = match opt_res {
+                    Some(r) if r.converged && r.trajectory.len() >= 8 => r,
+                    _ => continue,
+                };
+
+                let m_star = five_dim::to_array(&res.m_star);
+                let traj = &res.trajectory;
+
+                let mut d_k: Vec<f64> = Vec::new();
+                for state in traj.iter() {
+                    let dist: f64 = (0..5).map(|i| (state[i] - m_star[i]).powi(2)).sum::<f64>().sqrt();
+                    d_k.push(dist);
+                }
+
+                if d_k.len() < 8 { continue; }
+
+                let half = d_k.len() / 2;
+                let mut s11 = 0.0_f64;
+                let mut s12 = 0.0_f64;
+                let mut s22 = 0.0_f64;
+                let mut t1 = 0.0_f64;
+                let mut t2 = 0.0_f64;
+                for k in 0..half {
+                    let x1 = d_k[k];
+                    let x2 = x1 * x1;
+                    let y = d_k[k + 1];
+                    s11 += x1 * x1;
+                    s12 += x1 * x2;
+                    s22 += x2 * x2;
+                    t1 += x1 * y;
+                    t2 += x2 * y;
+                }
+                let det_a = s11 * s22 - s12 * s12;
+                if det_a.abs() < 1e-40 { continue; }
+                let lam = (s22 * t1 - s12 * t2) / det_a;
+                let c = (s11 * t2 - s12 * t1) / det_a;
+                let k_cap = if c.abs() > 1e-20 { 2.0 * lam / c.abs() } else { 0.0 };
+                if k_cap <= 0.0 { continue; }
+
+                let a0 = d_k[0];
+                let mut ss_res = 0.0_f64;
+                let mut ss_tot = 0.0_f64;
+                let d_mean: f64 = d_k.iter().sum::<f64>() / d_k.len() as f64;
+                let mut predicted_d: Vec<f64> = Vec::new();
+                for k in 0..d_k.len() {
+                    let lam_k = lam.powi(k as i32);
+                    let denom = k_cap + a0 * (lam_k - 1.0);
+                    let pred = if denom.abs() > 1e-30 { k_cap * a0 * lam_k / denom } else { d_k[k] };
+                    predicted_d.push(pred);
+                    if k > 0 {
+                        ss_res += (d_k[k] - pred).powi(2);
+                        ss_tot += (d_k[k] - d_mean).powi(2);
+                    }
+                }
+                let r2_full = if ss_tot > 1e-30 { 1.0 - ss_res / ss_tot } else { 0.0 };
+                traj_r2_values.push(r2_full);
+
+                if ci == 0 || r2_full > 0.999 {
+                    traj_examples.push((format!("{}/{}", regime_name, topo_name), lam, c, k_cap, r2_full, d_k.len()));
+                }
+            }
+        }
+    }
+
+    println!("  {:>25} {:>10} {:>10} {:>10} {:>10} {:>8}", "regime/topo", "λ_fit", "c_fit", "K_fit", "R²_full", "traj_len");
+    for (name, lam, c, k, r2, len) in traj_examples.iter().take(20) {
+        println!("  {:>25} {:>10.6} {:>10.6} {:>10.2} {:>10.4} {:>8}", name, lam, c, k, r2, len);
+    }
+
+    let r2_traj_mean = mean_f64(&traj_r2_values);
+    let r2_traj_median = median_f64(&traj_r2_values);
+    println!("\n  Closed-form trajectory R²: mean={:.4}, median={:.4} (N={})", r2_traj_mean, r2_traj_median, traj_r2_values.len());
+
+    // ── Phase 6: q_fit vs q_form (Hessian) comparison ──
+    println!("\n--- Phase 6: q_fit (empirical) vs q_form (Hessian) ---");
+
+    let mut q_ratios: Vec<f64> = Vec::new();
+    let mut q_examples: Vec<(String, f64, f64, f64, f64)> = Vec::new();
+
+    for &(regime_name, b1, d1, eps) in &regimes {
+        for &(topo_name, ref builder) in topo_builders.iter().take(3) {
+            let lattice = builder();
+            let params = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1).with_eps(eps);
+            let stats = pipeline::compute_lattice_stats(&lattice);
+            let results = pipeline::run_topological_iteration(&lattice, &stats, &params);
+
+            for (ci, opt_res) in results.iter().enumerate() {
+                let res = match opt_res {
+                    Some(r) if r.converged && r.trajectory.len() >= 6 => r,
+                    _ => continue,
+                };
+
+                let j = jac_from_arr(&res.jacobian);
+                let rho = res.rho_spectral;
+
+                let m_star = five_dim::to_array(&res.m_star);
+                let m_star5 = res.m_star;
+                let traj = &res.trajectory;
+                let mut d_k: Vec<f64> = Vec::new();
+                for state in traj.iter() {
+                    let dist: f64 = (0..5).map(|i| (state[i] - m_star[i]).powi(2)).sum::<f64>().sqrt();
+                    d_k.push(dist);
+                }
+
+                // Empirical q
+                let n_pts = d_k.len() - 1;
+                let mut s11 = 0.0_f64;
+                let mut s12 = 0.0_f64;
+                let mut s22 = 0.0_f64;
+                let mut t1 = 0.0_f64;
+                let mut t2 = 0.0_f64;
+                for k in 0..n_pts {
+                    let x1 = d_k[k];
+                    let x2 = x1 * x1;
+                    let y = d_k[k + 1];
+                    s11 += x1 * x1;
+                    s12 += x1 * x2;
+                    s22 += x2 * x2;
+                    t1 += x1 * y;
+                    t2 += x2 * y;
+                }
+                let det_a = s11 * s22 - s12 * s12;
+                if det_a.abs() < 1e-40 { continue; }
+                let _lam_fit = (s22 * t1 - s12 * t2) / det_a;
+                let q_emp = (s11 * t2 - s12 * t1) / det_a;
+
+                // Hessian q_form
+                let hess = n_operator::compute_hessian_fd(&m_star5, 0.0, 0.0, &params);
+                let dom_vec = power_iter_dominant_vec(&j, 100);
+                let mut q_form = 0.0_f64;
+                for i in 0..5 {
+                    for jj in 0..5 {
+                        for kk in 0..5 {
+                            q_form += hess[i][jj][kk] * dom_vec[jj] * dom_vec[kk] * dom_vec[i];
+                        }
+                    }
+                }
+
+                if q_form.abs() > 1e-15 && q_emp.abs() > 1e-15 {
+                    let ratio = q_emp / q_form;
+                    q_ratios.push(ratio);
+                    q_examples.push((format!("{}/{}", regime_name, topo_name), q_form, q_emp, ratio, rho));
+                }
+            }
+        }
+    }
+
+    println!("  {:>25} {:>12} {:>12} {:>10} {:>10}", "regime/topo", "q_form", "q_emp", "q_emp/q_form", "ρ(J)");
+    for (name, qf, qe, r, rho) in q_examples.iter().take(20) {
+        println!("  {:>25} {:>12.6} {:>12.6} {:>10.2} {:>10.4}", name, qf, qe, r, rho);
+    }
+
+    if !q_ratios.is_empty() {
+        let qr_mean = mean_f64(&q_ratios);
+        let qr_median = median_f64(&q_ratios);
+        let qr_std = std_f64(&q_ratios);
+        println!("\n  q_emp/q_form: mean={:.2}, median={:.2}, std={:.2} (N={})", qr_mean, qr_median, qr_std, q_ratios.len());
+        println!("  Deviation from 1.0 = factor that separates empirical from Hessian prediction");
+    }
+
+    // ── Phase 7: Lattice-level logistic prediction ──
+    println!("\n--- Phase 7: Lattice-level logistic prediction (topology×regime) ---");
+
+    struct LatticeLResult {
+        topo: String,
+        regime: String,
+        n_concepts: usize,
+        mape_logistic: f64,
+        mape_naive: f64,
+        median_ratio_l: f64,
+        median_ratio_n: f64,
+    }
+
+    let mut lattice_results: Vec<LatticeLResult> = Vec::new();
+
+    for &(regime_name, b1, d1, eps) in &regimes {
+        for &(topo_name, ref builder) in &topo_builders {
+            let lattice = builder();
+            let params = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1).with_eps(eps);
+            let stats = pipeline::compute_lattice_stats(&lattice);
+            let results = pipeline::run_topological_iteration(&lattice, &stats, &params);
+
+            let mut ratios_l: Vec<f64> = Vec::new();
+            let mut ratios_n: Vec<f64> = Vec::new();
+            let mut err_l: Vec<f64> = Vec::new();
+            let mut err_n: Vec<f64> = Vec::new();
+            let mut count = 0;
+
+            for opt_res in results.iter() {
+                let res = match opt_res {
+                    Some(r) if r.converged && r.trajectory.len() >= 6 => r,
+                    _ => continue,
+                };
+
+                let m_star = five_dim::to_array(&res.m_star);
+                let traj = &res.trajectory;
+                let mut d_k: Vec<f64> = Vec::new();
+                for state in traj.iter() {
+                    let dist: f64 = (0..5).map(|i| (state[i] - m_star[i]).powi(2)).sum::<f64>().sqrt();
+                    d_k.push(dist);
+                }
+                let rho = res.rho_spectral;
+                let n_actual = res.n_iters as f64;
+                let d0 = d_k[0];
+
+                // Fit Riccati to this concept's trajectory
+                let n_pts = d_k.len() - 1;
+                let mut s11 = 0.0_f64;
+                let mut s12 = 0.0_f64;
+                let mut s22 = 0.0_f64;
+                let mut t1 = 0.0_f64;
+                let mut t2 = 0.0_f64;
+                for k in 0..n_pts {
+                    let x1 = d_k[k];
+                    let x2 = x1 * x1;
+                    let y = d_k[k + 1];
+                    s11 += x1 * x1;
+                    s12 += x1 * x2;
+                    s22 += x2 * x2;
+                    t1 += x1 * y;
+                    t2 += x2 * y;
+                }
+                let det_a = s11 * s22 - s12 * s12;
+                if det_a.abs() < 1e-40 { continue; }
+                let lam = (s22 * t1 - s12 * t2) / det_a;
+                let c = (s11 * t2 - s12 * t1) / det_a;
+                let k_cap = if c.abs() > 1e-20 { 2.0 * lam / c.abs() } else { 0.0 };
+
+                let n_pred_l = if lam > 0.0 && lam < 1.0 && k_cap > 0.0 && d0 < k_cap {
+                    let num = d0 * (k_cap - tol);
+                    let den = tol * (k_cap - d0);
+                    if num > 0.0 && den > 0.0 { (num / den).ln() / (1.0 / lam).ln() } else { 0.0 }
+                } else { 0.0 };
+
+                let n_pred_n = n_pred_from_rho(d0, rho, tol);
+
+                if n_pred_l > 0.5 {
+                    ratios_l.push(n_actual / n_pred_l);
+                    err_l.push((n_actual - n_pred_l).abs() / n_actual * 100.0);
+                }
+                if n_pred_n > 0.5 {
+                    ratios_n.push(n_actual / n_pred_n);
+                    err_n.push((n_actual - n_pred_n).abs() / n_actual * 100.0);
+                }
+                count += 1;
+            }
+
+            if !ratios_l.is_empty() && !ratios_n.is_empty() {
+                lattice_results.push(LatticeLResult {
+                    topo: topo_name.to_string(),
+                    regime: regime_name.to_string(),
+                    n_concepts: count,
+                    mape_logistic: mean_f64(&err_l),
+                    mape_naive: mean_f64(&err_n),
+                    median_ratio_l: median_f64(&ratios_l),
+                    median_ratio_n: median_f64(&ratios_n),
+                });
+            }
+        }
+    }
+
+    println!("  {:>12} {:>12} {:>6} {:>10} {:>10} {:>10} {:>10}", "topo", "regime", "N", "MAPE_log%", "MAPE_naï%", "med_r_log", "med_r_naï");
+    for lr in &lattice_results {
+        println!("  {:>12} {:>12} {:>6} {:>10.2} {:>10.2} {:>10.4} {:>10.4}",
+                 lr.topo, lr.regime, lr.n_concepts,
+                 lr.mape_logistic, lr.mape_naive,
+                 lr.median_ratio_l, lr.median_ratio_n);
+    }
+
+    let mape_l_all: Vec<f64> = lattice_results.iter().map(|r| r.mape_logistic).collect();
+    let mape_n_all: Vec<f64> = lattice_results.iter().map(|r| r.mape_naive).collect();
+    println!("\n  Aggregate MAPE: logistic={:.2}%, naive={:.2}%", mean_f64(&mape_l_all), mean_f64(&mape_n_all));
+
+    // ── Phase 8: Summary ──
+    println!("\n  === LOGISTIC MAP TRAJECTORY PREDICTION SUMMARY ===");
+    println!("  Phase 1: Riccati fit λ·d_k + c·d_k² to per-concept trajectories");
+    println!("  Phase 2: λ_fit vs ρ(J) — verifies spectral structure");
+    println!("  Phase 3: K = 2λ/|c| carrying capacity analysis");
+    println!("  Phase 4: n_iters prediction: logistic vs naive");
+    println!("  Phase 5: Closed-form trajectory verification");
+    println!("  Phase 6: q_fit vs q_form (Hessian) gap analysis");
+    println!("  Phase 7: Lattice-level logistic prediction");
+}
+
+pub fn run_stepwise_contraction_dynamics() {
+    println!("\n{}", "=".repeat(72));
+    println!("  v2.93: STEPWISE CONTRACTION DYNAMICS");
+    println!("  rho_k = ||e_{{k+1}}|| / ||e_k||  per-step contraction rate");
+    println!("  Goal: trace rho_k evolution and explain the 1.21 factor");
+    println!("{}", "=".repeat(72));
+
+    // ── Phase 1: Per-step rho_k for individual concepts ──
+    println!("\n--- Phase 1: rho_k trajectory analysis ---");
+
+    let regimes: Vec<(&str, f64, f64, f64)> = vec![
+        ("uniform", 1.0, 1.0, 0.01),
+        ("high-beta", 10.0, 1.0, 0.01),
+        ("high-delta", 1.0, 10.0, 0.01),
+        ("high-eps", 1.0, 1.0, 1.0),
+        ("extreme", 0.5, 0.5, 0.001),
+        ("balanced", 5.0, 5.0, 0.1),
+    ];
+
+    let topo_builders: Vec<(&str, Box<dyn Fn() -> fca::FcaLattice>)> = vec![
+        ("chain-10", Box::new(|| fca::build_chain_lattice(10))),
+        ("diamond", Box::new(|| fca::build_diamond_lattice())),
+        ("B3", Box::new(|| fca::build_b3_lattice())),
+        ("grid-3x3", Box::new(|| fca::build_grid_lattice(3, 3))),
+    ];
+
+    struct StepData {
+        rho_k: Vec<f64>,
+        rho_j: f64,
+        n_iters: usize,
+        geo_mean: f64,
+        rho_early: f64,
+        rho_late: f64,
+    }
+
+    let mut all_step_data: Vec<StepData> = Vec::new();
+
+    for &(_name, b1, d1, eps) in &regimes {
+        for &(topo_name, ref builder) in &topo_builders {
+            let lattice = builder();
+            let params = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1).with_eps(eps);
+            let stats = pipeline::compute_lattice_stats(&lattice);
+            let results = pipeline::run_topological_iteration(&lattice, &stats, &params);
+
+            for opt_res in results.iter() {
+                let res = match opt_res {
+                    Some(r) if r.converged && r.trajectory.len() >= 6 => r,
+                    _ => continue,
+                };
+
+                let m_star = five_dim::to_array(&res.m_star);
+                let traj = &res.trajectory;
+
+                let mut d_k: Vec<f64> = Vec::new();
+                for state in traj.iter() {
+                    let dist: f64 = (0..5).map(|i| (state[i] - m_star[i]).powi(2)).sum::<f64>().sqrt();
+                    d_k.push(dist);
+                }
+
+                let rho_j = res.rho_spectral;
+
+                let mut rho_k_vec: Vec<f64> = Vec::new();
+                for k in 0..d_k.len() - 1 {
+                    if d_k[k] > 1e-15 && d_k[k + 1] > 1e-15 {
+                        rho_k_vec.push(d_k[k + 1] / d_k[k]);
+                    }
+                }
+
+                if rho_k_vec.len() < 3 { continue; }
+
+                let valid_rho: Vec<f64> = rho_k_vec.iter().copied().filter(|&r| r > 1e-10 && r < 5.0).collect();
+                let geo_mean = if valid_rho.is_empty() { 0.0 }
+                else {
+                    let log_sum: f64 = valid_rho.iter().map(|r| r.ln()).sum::<f64>();
+                    (log_sum / valid_rho.len() as f64).exp()
+                };
+
+                let n_early = (rho_k_vec.len() / 3).max(1);
+                let n_late = (rho_k_vec.len() / 3).max(1);
+                let rho_early = mean_f64(&rho_k_vec[..n_early]);
+                let rho_late = mean_f64(&rho_k_vec[rho_k_vec.len() - n_late..]);
+
+                all_step_data.push(StepData {
+                    rho_k: rho_k_vec,
+                    rho_j,
+                    n_iters: res.n_iters,
+                    geo_mean,
+                    rho_early,
+                    rho_late,
+                });
+            }
+
+            // Print one example per topology
+            let example = all_step_data.last();
+            if let Some(sd) = example {
+                let first10: Vec<String> = sd.rho_k.iter().take(10).map(|r| format!("{:.4}", r)).collect();
+                println!("  {:>12}: rho(J)={:.4}, geo_mean={:.4}, rho_early={:.4}, rho_late={:.4}, rho_k[0..10]=[{}]",
+                         topo_name, sd.rho_j, sd.geo_mean, sd.rho_early, sd.rho_late, first10.join(", "));
+            }
+        }
+    }
+
+    println!("\n  Total concepts analyzed: {}", all_step_data.len());
+
+    // ── Phase 2: geo_mean vs rho(J) and vs 1.21*rho(J) ──
+    println!("\n--- Phase 2: Geometric mean contraction vs rho(J) ---");
+
+    let mut gm_over_rho: Vec<f64> = Vec::new();
+    let mut early_over_late: Vec<f64> = Vec::new();
+
+    for sd in &all_step_data {
+        if sd.rho_j > 1e-10 {
+            gm_over_rho.push(sd.geo_mean / sd.rho_j);
+        }
+        if sd.rho_late > 1e-10 {
+            early_over_late.push(sd.rho_early / sd.rho_late);
+        }
+    }
+
+    println!("  geo_mean / rho(J): mean={:.4}, median={:.4}, std={:.4}",
+             mean_f64(&gm_over_rho), median_f64(&gm_over_rho), std_f64(&gm_over_rho));
+    println!("  rho_early / rho_late: mean={:.4}, median={:.4}, std={:.4}",
+             mean_f64(&early_over_late), median_f64(&early_over_late), std_f64(&early_over_late));
+    println!("  If geo_mean/rho ~ 1.21, this explains the universal constant");
+
+    // ── Phase 3: rho_k evolution pattern ──
+    println!("\n--- Phase 3: rho_k evolution (early→mid→late) ---");
+
+    let max_len = all_step_data.iter().map(|sd| sd.rho_k.len()).max().unwrap_or(0);
+    let n_bins = 10;
+    let mut bin_rho: Vec<Vec<f64>> = vec![Vec::new(); n_bins];
+
+    for sd in &all_step_data {
+        let len = sd.rho_k.len();
+        for (k, &rk) in sd.rho_k.iter().enumerate() {
+            let bin = (k * n_bins / len).min(n_bins - 1);
+            bin_rho[bin].push(rk);
+        }
+    }
+
+    println!("  {:>8} {:>10} {:>10} {:>10} {:>8}", "k_frac", "rho_mean", "rho_median", "rho_std", "N");
+    for (b, br) in bin_rho.iter().enumerate() {
+        if br.is_empty() { continue; }
+        let frac = (b as f64 + 0.5) / n_bins as f64;
+        println!("  {:>8.2} {:>10.6} {:>10.6} {:>10.6} {:>8}", frac, mean_f64(br), median_f64(br), std_f64(br), br.len());
+    }
+
+    // ── Phase 4: rho_k by regime ──
+    println!("\n--- Phase 4: rho_k dynamics by parameter regime ---");
+
+    println!("  {:>12} {:>10} {:>10} {:>10} {:>10} {:>10} {:>10}", "regime", "N", "rho(J)", "geo_mean", "gm/rho", "rho_early", "rho_late");
+    for &(_name, b1, d1, eps) in &regimes {
+        let regime_data: Vec<&StepData> = all_step_data.iter()
+            .filter(|sd| {
+                (sd.rho_j - eps).abs() < 0.5 || true // just use ordering
+            })
+            .collect();
+
+        // Actually match by regime position
+        let regime_idx = regimes.iter().position(|&(n, _, _, _)| n == _name).unwrap_or(0);
+        let per_topo = all_step_data.len() / regimes.len();
+        let start = regime_idx * per_topo;
+        let end = (start + per_topo).min(all_step_data.len());
+        let slice = &all_step_data[start..end];
+
+        if slice.is_empty() { continue; }
+
+        let rho_j_vals: Vec<f64> = slice.iter().map(|sd| sd.rho_j).collect();
+        let gm_vals: Vec<f64> = slice.iter().map(|sd| sd.geo_mean).collect();
+        let ratio_vals: Vec<f64> = slice.iter().filter(|sd| sd.rho_j > 1e-10).map(|sd| sd.geo_mean / sd.rho_j).collect();
+        let early_vals: Vec<f64> = slice.iter().map(|sd| sd.rho_early).collect();
+        let late_vals: Vec<f64> = slice.iter().map(|sd| sd.rho_late).collect();
+
+        println!("  {:>12} {:>10} {:>10.4} {:>10.4} {:>10.4} {:>10.4} {:>10.4}",
+                 _name, slice.len(),
+                 mean_f64(&rho_j_vals), mean_f64(&gm_vals), mean_f64(&ratio_vals),
+                 mean_f64(&early_vals), mean_f64(&late_vals));
+    }
+
+    // ── Phase 5: 1.21 factor decomposition ──
+    println!("\n--- Phase 5: 1.21 factor decomposition ---");
+    println!("  Testing: n_actual/n_pred = prod(rho_k/rho(J))^(1/n) ?");
+    println!("  If prod(rho_k) = rho(J)^n * (1.21)^n, then per-step factor = 1.21");
+
+    let mut per_step_factor: Vec<f64> = Vec::new();
+    for sd in &all_step_data {
+        if sd.rho_j > 1e-10 && sd.geo_mean > 1e-10 {
+            let f = sd.geo_mean / sd.rho_j;
+            if f > 0.01 && f < 10.0 {
+                per_step_factor.push(f);
+            }
+        }
+    }
+
+    let psf_mean = mean_f64(&per_step_factor);
+    let psf_median = median_f64(&per_step_factor);
+    let psf_std = std_f64(&per_step_factor);
+    println!("  Per-step factor (geo_mean/rho): mean={:.4}, median={:.4}, std={:.4}", psf_mean, psf_median, psf_std);
+    println!("  Expected from v2.80: ~1.2100");
+    println!("  Deviation: mean={:.4}, median={:.4}", psf_mean - 1.21, psf_median - 1.21);
+
+    // ── Phase 6: rho_k convergence to rho(J) ──
+    println!("\n--- Phase 6: Asymptotic convergence rho_k → rho(J) ---");
+
+    let mut convergence_k: Vec<usize> = Vec::new();
+    for sd in &all_step_data {
+        if sd.rho_j < 1e-10 { continue; }
+        for (k, &rk) in sd.rho_k.iter().enumerate() {
+            let rel_err = (rk - sd.rho_j).abs() / sd.rho_j;
+            if rel_err < 0.05 {
+                convergence_k.push(k);
+                break;
+            }
+        }
+    }
+
+    if !convergence_k.is_empty() {
+        println!("  Step where rho_k enters 5% of rho(J): mean={:.1}, median={}, std={:.1}",
+                 mean_f64(&convergence_k.iter().map(|&x| x as f64).collect::<Vec<f64>>()),
+                 median_f64(&convergence_k.iter().map(|&x| x as f64).collect::<Vec<f64>>()),
+                 std_f64(&convergence_k.iter().map(|&x| x as f64).collect::<Vec<f64>>()));
+    }
+
+    // ── Phase 7: Summary ──
+    println!("\n  === STEPWISE CONTRACTION DYNAMICS SUMMARY ===");
+    println!("  Phase 1: Per-step rho_k computation for {} concepts", all_step_data.len());
+    println!("  Phase 2: Geometric mean vs rho(J) comparison");
+    println!("  Phase 3: rho_k evolution pattern (early→mid→late)");
+    println!("  Phase 4: Per-regime rho_k dynamics");
+    println!("  Phase 5: 1.21 factor decomposition into per-step contributions");
+    println!("  Phase 6: Asymptotic convergence rho_k → rho(J)");
+}
+
+pub fn run_fixed_point_manifold_geometry() {
+    println!("\n{}", "=".repeat(72));
+    println!("  v2.94: FIXED POINT MANIFOLD GEOMETRY");
+    println!("  How does M*=[d*,b*,rho*,r*,s*] distribute in 5D state space?");
+    println!("  Is there a low-dimensional manifold structure?");
+    println!("{}", "=".repeat(72));
+
+    let regimes: Vec<(&str, f64, f64, f64)> = vec![
+        ("uniform", 1.0, 1.0, 0.01),
+        ("high-beta", 10.0, 1.0, 0.01),
+        ("high-delta", 1.0, 10.0, 0.01),
+        ("high-eps", 1.0, 1.0, 1.0),
+        ("extreme", 0.5, 0.5, 0.001),
+        ("balanced", 5.0, 5.0, 0.1),
+    ];
+
+    let topo_builders: Vec<(&str, Box<dyn Fn() -> fca::FcaLattice>)> = vec![
+        ("chain-10", Box::new(|| fca::build_chain_lattice(10))),
+        ("diamond", Box::new(|| fca::build_diamond_lattice())),
+        ("B3", Box::new(|| fca::build_b3_lattice())),
+        ("grid-3x3", Box::new(|| fca::build_grid_lattice(3, 3))),
+        ("chain-20", Box::new(|| fca::build_chain_lattice(20))),
+    ];
+
+    // ── Phase 1: Collect all fixed points ──
+    println!("\n--- Phase 1: Collecting fixed points across regimes and topologies ---");
+
+    struct FPData {
+        d_star: f64, b_star: f64, rho_star: f64, r_star: f64, s_star: f64,
+        b_up: f64, rho_up: f64,
+        rho_j: f64,
+        n_iters: usize,
+        regime: String,
+        topo: String,
+    }
+
+    let mut all_fps: Vec<FPData> = Vec::new();
+
+    for &(regime_name, b1, d1, eps) in &regimes {
+        for &(topo_name, ref builder) in &topo_builders {
+            let lattice = builder();
+            let params = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1).with_eps(eps);
+            let stats = pipeline::compute_lattice_stats(&lattice);
+            let results = pipeline::run_topological_iteration(&lattice, &stats, &params);
+
+            for (ci, opt_res) in results.iter().enumerate() {
+                let res = match opt_res {
+                    Some(r) if r.converged => r,
+                    _ => continue,
+                };
+
+                let m = five_dim::to_array(&res.m_star);
+                let n_concepts = lattice.concepts.len();
+                let (b_up, rho_up) = if ci < n_concepts {
+                    pipeline::get_upstream(ci, &stats.feeders, &results)
+                } else { (0.0, 0.0) };
+
+                all_fps.push(FPData {
+                    d_star: m[0], b_star: m[1], rho_star: m[2], r_star: m[3], s_star: m[4],
+                    b_up, rho_up,
+                    rho_j: res.rho_spectral,
+                    n_iters: res.n_iters,
+                    regime: regime_name.to_string(),
+                    topo: topo_name.to_string(),
+                });
+            }
+        }
+    }
+
+    println!("  Collected {} fixed points", all_fps.len());
+
+    // ── Phase 2: Statistics per component ──
+    println!("\n--- Phase 2: Per-component statistics ---");
+
+    let components = ["d*", "b*", "rho*", "r*", "s*"];
+    let extractors: Vec<Box<dyn Fn(&FPData) -> f64>> = vec![
+        Box::new(|fp| fp.d_star),
+        Box::new(|fp| fp.b_star),
+        Box::new(|fp| fp.rho_star),
+        Box::new(|fp| fp.r_star),
+        Box::new(|fp| fp.s_star),
+    ];
+
+    println!("  {:>8} {:>10} {:>10} {:>10} {:>10} {:>10}", "comp", "mean", "median", "std", "min", "max");
+    for (i, name) in components.iter().enumerate() {
+        let vals: Vec<f64> = all_fps.iter().map(|fp| extractors[i](fp)).collect();
+        let sorted = { let mut v = vals.clone(); v.sort_by(|a, b| a.partial_cmp(b).unwrap()); v };
+        println!("  {:>8} {:>10.6} {:>10.6} {:>10.6} {:>10.6} {:>10.6}",
+                 name, mean_f64(&vals), sorted[sorted.len()/2], std_f64(&vals), sorted[0], sorted[sorted.len()-1]);
+    }
+
+    // ── Phase 3: Correlation matrix ──
+    println!("\n--- Phase 3: Correlation matrix of M* components ---");
+
+    let mut comp_vals: Vec<Vec<f64>> = Vec::new();
+    for i in 0..5 {
+        comp_vals.push(all_fps.iter().map(|fp| extractors[i](fp)).collect());
+    }
+
+    println!("  {:>8} {:>8} {:>8} {:>8} {:>8} {:>8}", "", "d*", "b*", "rho*", "r*", "s*");
+    for i in 0..5 {
+        let mut row = format!("  {:>8}", components[i]);
+        for j in 0..5 {
+            let corr = pearson_corr(&comp_vals[i], &comp_vals[j]);
+            row += &format!(" {:>8.4}", corr);
+        }
+        println!("{}", row);
+    }
+
+    // ── Phase 4: d*=b* and rho*=s* identity verification ──
+    println!("\n--- Phase 4: d*=b* and rho*=s* identity verification ---");
+
+    let mut db_diffs: Vec<f64> = Vec::new();
+    let mut rs_diffs: Vec<f64> = Vec::new();
+    let mut db_ratios: Vec<f64> = Vec::new();
+    let mut rs_ratios: Vec<f64> = Vec::new();
+
+    for fp in &all_fps {
+        if fp.d_star.abs() > 1e-15 && fp.b_star.abs() > 1e-15 {
+            db_diffs.push((fp.d_star - fp.b_star).abs());
+            db_ratios.push(fp.d_star / fp.b_star);
+        }
+        if fp.rho_star.abs() > 1e-15 && fp.s_star.abs() > 1e-15 {
+            rs_diffs.push((fp.rho_star - fp.s_star).abs());
+            rs_ratios.push(fp.rho_star / fp.s_star);
+        }
+    }
+
+    println!("  d*=b* identity:");
+    println!("    |d*-b*|: mean={:.2e}, median={:.2e}", mean_f64(&db_diffs), median_f64(&db_diffs));
+    println!("    d*/b*:  mean={:.6}, std={:.6}", mean_f64(&db_ratios), std_f64(&db_ratios));
+
+    println!("  rho*=s* identity:");
+    println!("    |rho*-s*|: mean={:.2e}, median={:.2e}", mean_f64(&rs_diffs), median_f64(&rs_diffs));
+    println!("    rho*/s*:  mean={:.6}, std={:.6}", mean_f64(&rs_ratios), std_f64(&rs_ratios));
+
+    // ── Phase 5: Effective dimensionality via PCA ──
+    println!("\n--- Phase 5: Effective dimensionality (PCA-like analysis) ---");
+
+    let n = all_fps.len() as f64;
+    let mut means = [0.0_f64; 5];
+    for fp in &all_fps {
+        means[0] += fp.d_star; means[1] += fp.b_star; means[2] += fp.rho_star;
+        means[3] += fp.r_star; means[4] += fp.s_star;
+    }
+    for m in means.iter_mut() { *m /= n; }
+
+    let mut cov = [[0.0_f64; 5]; 5];
+    for fp in &all_fps {
+        let v = [fp.d_star - means[0], fp.b_star - means[1], fp.rho_star - means[2],
+                 fp.r_star - means[3], fp.s_star - means[4]];
+        for i in 0..5 { for j in 0..5 { cov[i][j] += v[i] * v[j]; } }
+    }
+    for row in cov.iter_mut() { for x in row.iter_mut() { *x /= n; } }
+
+    println!("  Covariance matrix diagonal (variances):");
+    for i in 0..5 {
+        println!("    {}: var={:.6}, std={:.6}", components[i], cov[i][i], cov[i][i].sqrt());
+    }
+
+    let total_var: f64 = (0..5).map(|i| cov[i][i]).sum();
+    println!("  Total variance: {:.6}", total_var);
+    for i in 0..5 {
+        println!("    {}: {:.1}% of total", components[i], cov[i][i] / total_var * 100.0);
+    }
+
+    // ── Phase 6: Fixed point vs b_up/rho_up dependence ──
+    println!("\n--- Phase 6: M* dependence on (b_up, rho_up) ---");
+
+    let d_vals: Vec<f64> = all_fps.iter().map(|fp| fp.d_star).collect();
+    let b_vals: Vec<f64> = all_fps.iter().map(|fp| fp.b_star).collect();
+    let rho_vals: Vec<f64> = all_fps.iter().map(|fp| fp.rho_star).collect();
+    let bup_vals: Vec<f64> = all_fps.iter().map(|fp| fp.b_up).collect();
+    let rup_vals: Vec<f64> = all_fps.iter().map(|fp| fp.rho_up).collect();
+
+    println!("  Correlation of M* components with (b_up, rho_up):");
+    println!("  {:>8} {:>10} {:>10}", "comp", "corr(b_up)", "corr(rho_up)");
+    for (i, name) in components.iter().enumerate() {
+        let vals: Vec<f64> = all_fps.iter().map(|fp| extractors[i](fp)).collect();
+        let cb = pearson_corr(&vals, &bup_vals);
+        let cr = pearson_corr(&vals, &rup_vals);
+        println!("  {:>8} {:>10.4} {:>10.4}", name, cb, cr);
+    }
+
+    // ── Phase 7: Manifold dimensionality estimate ──
+    println!("\n--- Phase 7: Manifold dimensionality estimate ---");
+
+    // Effective dimensionality: ratio of (sum of variances)^2 / sum of variances^2
+    // This is the "participation ratio"
+    let variances: Vec<f64> = (0..5).map(|i| cov[i][i]).collect();
+    let sum_v: f64 = variances.iter().sum();
+    let sum_v2: f64 = variances.iter().map(|v| v * v).sum();
+    let participation_ratio = if sum_v2 > 1e-30 { sum_v * sum_v / sum_v2 } else { 0.0 };
+
+    println!("  Participation ratio (effective dimensionality): {:.2} / 5", participation_ratio);
+    if participation_ratio < 2.0 {
+        println!("  → Fixed points lie on a ~1D curve in 5D space");
+    } else if participation_ratio < 3.0 {
+        println!("  → Fixed points lie on a ~2D surface in 5D space");
+    } else {
+        println!("  → Fixed points spread across ~3D+ volume in 5D space");
+    }
+
+    // ── Phase 8: Per-regime manifold structure ──
+    println!("\n--- Phase 8: Per-regime manifold structure ---");
+
+    println!("  {:>12} {:>8} {:>10} {:>10} {:>10} {:>10} {:>10}", "regime", "N", "d*_mean", "b*_mean", "rho*_mean", "r*_mean", "s*_mean");
+    for &(regime_name, _, _, _) in &regimes {
+        let fps: Vec<&FPData> = all_fps.iter().filter(|fp| fp.regime == regime_name).collect();
+        if fps.is_empty() { continue; }
+        let dm: Vec<f64> = fps.iter().map(|fp| fp.d_star).collect();
+        let bm: Vec<f64> = fps.iter().map(|fp| fp.b_star).collect();
+        let rm: Vec<f64> = fps.iter().map(|fp| fp.rho_star).collect();
+        let rrm: Vec<f64> = fps.iter().map(|fp| fp.r_star).collect();
+        let sm: Vec<f64> = fps.iter().map(|fp| fp.s_star).collect();
+        println!("  {:>12} {:>8} {:>10.6} {:>10.6} {:>10.6} {:>10.6} {:>10.6}",
+                 regime_name, fps.len(), mean_f64(&dm), mean_f64(&bm), mean_f64(&rm), mean_f64(&rrm), mean_f64(&sm));
+    }
+
+    // ── Phase 9: Summary ──
+    println!("\n  === FIXED POINT MANIFOLD GEOMETRY SUMMARY ===");
+    println!("  Phase 1: Collected {} fixed points", all_fps.len());
+    println!("  Phase 2: Per-component statistics");
+    println!("  Phase 3: Correlation matrix");
+    println!("  Phase 4: d*=b*, rho*=s* identity verification");
+    println!("  Phase 5: Effective dimensionality (PCA)");
+    println!("  Phase 6: M* vs (b_up, rho_up) dependence");
+    println!("  Phase 7: Manifold dimensionality estimate");
+    println!("  Phase 8: Per-regime structure");
+}
+
+fn pearson_corr(x: &[f64], y: &[f64]) -> f64 {
+    let n = x.len().min(y.len());
+    if n < 2 { return 0.0; }
+    let mx = mean_f64(&x[..n]);
+    let my = mean_f64(&y[..n]);
+    let mut sxy = 0.0_f64;
+    let mut sx2 = 0.0_f64;
+    let mut sy2 = 0.0_f64;
+    for i in 0..n {
+        let dx = x[i] - mx;
+        let dy = y[i] - my;
+        sxy += dx * dy;
+        sx2 += dx * dx;
+        sy2 += dy * dy;
+    }
+    if sx2 < 1e-30 || sy2 < 1e-30 { return 0.0; }
+    sxy / (sx2 * sy2).sqrt()
+}
