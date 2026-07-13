@@ -203,4 +203,6 @@ fn run_synthetic_suite(_max_concepts: usize, _time_limit: f64, _output_dir: &Pat
     experiments::run_error_decomposition();
     experiments::run_edge_case_stress_test();
     experiments::run_hessian_second_order();
+    experiments::run_riccati_analytical_correction();
+    experiments::run_eigenvector_acceleration();
 }
