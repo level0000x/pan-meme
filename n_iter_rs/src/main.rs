@@ -119,5 +119,5 @@ fn main() {
 }
 
 fn run_synthetic_suite(_max_concepts: usize, _time_limit: f64, _output_dir: &PathBuf) {
-    experiments::run_fixed_point_manifold_geometry();
+    experiments::run_fixed_point_sensitivity();
 }

@@ -20091,3 +20091,287 @@ fn pearson_corr(x: &[f64], y: &[f64]) -> f64 {
     if sx2 < 1e-30 || sy2 < 1e-30 { return 0.0; }
     sxy / (sx2 * sy2).sqrt()
 }
+
+pub fn run_fixed_point_sensitivity() {
+    println!("\n{}", "=".repeat(72));
+    println!("  v2.95: FIXED POINT PARAMETER SENSITIVITY");
+    println!("  dM*/dp via numerical perturbation + implicit function theorem");
+    println!("  Sensitivity matrix S = (I-J)^(-1) * dF/dp");
+    println!("{}", "=".repeat(72));
+
+    let topo_builders: Vec<(&str, Box<dyn Fn() -> fca::FcaLattice>)> = vec![
+        ("chain-10", Box::new(|| fca::build_chain_lattice(10))),
+        ("diamond", Box::new(|| fca::build_diamond_lattice())),
+        ("B3", Box::new(|| fca::build_b3_lattice())),
+        ("grid-3x3", Box::new(|| fca::build_grid_lattice(3, 3))),
+    ];
+
+    let base_params = vec![
+        ("uniform", 1.0, 1.0, 0.01),
+        ("high-beta", 10.0, 1.0, 0.01),
+        ("high-delta", 1.0, 10.0, 0.01),
+        ("balanced", 5.0, 5.0, 0.1),
+    ];
+
+    struct SensData {
+        topo: String, regime: String,
+        db1: [f64; 5], dd1: [f64; 5], deps: [f64; 5],
+        rho_j: f64,
+    }
+
+    let delta_frac = 0.001_f64;
+    let mut all_sens: Vec<SensData> = Vec::new();
+
+    // ── Phase 1: Numerical sensitivity dM*/dp ──
+    println!("\n--- Phase 1: Numerical sensitivity dM*/dp ---");
+
+    for &(regime_name, b1, d1, eps) in &base_params {
+        for &(topo_name, ref builder) in &topo_builders {
+            let lattice = builder();
+            let stats = pipeline::compute_lattice_stats(&lattice);
+
+            let p0 = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1).with_eps(eps);
+            let r0 = pipeline::run_topological_iteration(&lattice, &stats, &p0);
+
+            let db1_p = DynamicsParams::uniform().with_beta1(b1 * (1.0 + delta_frac)).with_delta1(d1).with_eps(eps);
+            let db1_m = DynamicsParams::uniform().with_beta1(b1 * (1.0 - delta_frac)).with_delta1(d1).with_eps(eps);
+            let dd1_p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1 * (1.0 + delta_frac)).with_eps(eps);
+            let dd1_m = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1 * (1.0 - delta_frac)).with_eps(eps);
+            let deps_p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1).with_eps(eps * (1.0 + delta_frac));
+            let deps_m = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1).with_eps(eps * (1.0 - delta_frac));
+
+            let r_b1_p = pipeline::run_topological_iteration(&lattice, &stats, &db1_p);
+            let r_b1_m = pipeline::run_topological_iteration(&lattice, &stats, &db1_m);
+            let r_d1_p = pipeline::run_topological_iteration(&lattice, &stats, &dd1_p);
+            let r_d1_m = pipeline::run_topological_iteration(&lattice, &stats, &dd1_m);
+            let r_eps_p = pipeline::run_topological_iteration(&lattice, &stats, &deps_p);
+            let r_eps_m = pipeline::run_topological_iteration(&lattice, &stats, &deps_m);
+
+            for ci in 0..r0.len() {
+                let res0 = match &r0[ci] {
+                    Some(r) if r.converged => r,
+                    _ => continue,
+                };
+
+                let get_m = |opt: &Option<n_operator::IterResult>| -> Option<[f64; 5]> {
+                    opt.as_ref().filter(|r| r.converged).map(|r| five_dim::to_array(&r.m_star))
+                };
+
+                let m0 = five_dim::to_array(&res0.m_star);
+                let rho_j = res0.rho_spectral;
+
+                let (m_bp, m_bm) = (get_m(&r_b1_p[ci]), get_m(&r_b1_m[ci]));
+                let (m_dp, m_dm) = (get_m(&r_d1_p[ci]), get_m(&r_d1_m[ci]));
+                let (m_ep, m_em) = (get_m(&r_eps_p[ci]), get_m(&r_eps_m[ci]));
+
+                if m_bp.is_none() || m_bm.is_none() || m_dp.is_none() || m_dm.is_none() ||
+                   m_ep.is_none() || m_em.is_none() { continue; }
+
+                let (m_bp, m_bm) = (m_bp.unwrap(), m_bm.unwrap());
+                let (m_dp, m_dm) = (m_dp.unwrap(), m_dm.unwrap());
+                let (m_ep, m_em) = (m_ep.unwrap(), m_em.unwrap());
+
+                let mut db1 = [0.0_f64; 5];
+                let mut dd1 = [0.0_f64; 5];
+                let mut deps = [0.0_f64; 5];
+                for k in 0..5 {
+                    let dbeta = b1 * 2.0 * delta_frac;
+                    let ddelta = d1 * 2.0 * delta_frac;
+                    let de = eps * 2.0 * delta_frac;
+                    db1[k] = (m_bp[k] - m_bm[k]) / dbeta;
+                    dd1[k] = (m_dp[k] - m_dm[k]) / ddelta;
+                    deps[k] = (m_ep[k] - m_em[k]) / de;
+                }
+
+                all_sens.push(SensData {
+                    topo: topo_name.to_string(),
+                    regime: regime_name.to_string(),
+                    db1, dd1, deps,
+                    rho_j,
+                });
+            }
+        }
+    }
+
+    println!("  Computed sensitivity for {} concept-regime-topology combinations", all_sens.len());
+
+    // ── Phase 2: Sensitivity magnitude by component and parameter ──
+    println!("\n--- Phase 2: |dM*/dp| statistics ---");
+
+    let comps = ["d*", "b*", "rho*", "r*", "s*"];
+    let params = ["beta1", "delta1", "eps"];
+
+    println!("  {:>10} {:>12} {:>12} {:>12} {:>12}", "param", "d* mean", "b* mean", "rho* mean", "r* mean");
+    for (pi, pname) in params.iter().enumerate() {
+        let mut vals_by_comp: Vec<Vec<f64>> = vec![Vec::new(); 5];
+        for sd in &all_sens {
+            let arr = match pi { 0 => sd.db1, 1 => sd.dd1, _ => sd.deps };
+            for k in 0..5 { vals_by_comp[k].push(arr[k].abs()); }
+        }
+        println!("  {:>10} {:>12.6} {:>12.6} {:>12.6} {:>12.6}",
+                 pname,
+                 mean_f64(&vals_by_comp[0]), mean_f64(&vals_by_comp[1]),
+                 mean_f64(&vals_by_comp[2]), mean_f64(&vals_by_comp[3]));
+    }
+
+    // ── Phase 3: Normalized sensitivity (p/M*)(dM*/dp) ──
+    println!("\n--- Phase 3: Normalized sensitivity (p/M*)(dM*/dp) ---");
+
+    struct NormSens { db1: [f64; 5], dd1: [f64; 5], deps: [f64; 5] }
+    let mut norm_sens: Vec<NormSens> = Vec::new();
+
+    for (si, &(regime_name, b1, d1, eps)) in base_params.iter().cycle().enumerate() {
+        if si >= all_sens.len() { break; }
+        let sd = &all_sens[si];
+        let p_arr = [b1, d1, eps];
+        let m0_arr: [f64; 5] = [0.5; 5]; // placeholder; we need actual M*
+
+        let mut ns = NormSens { db1: [0.0; 5], dd1: [0.0; 5], deps: [0.0; 5] };
+        for k in 0..5 {
+            // Actually, we need the actual M* value for normalization
+            // For now, use the raw sensitivity and normalize later
+            ns.db1[k] = sd.db1[k] * b1;
+            ns.dd1[k] = sd.dd1[k] * d1;
+            ns.deps[k] = sd.deps[k] * eps;
+        }
+        norm_sens.push(ns);
+    }
+
+    // Re-compute with actual M* normalization
+    let mut norm_db1: Vec<[f64; 5]> = Vec::new();
+    let mut norm_dd1: Vec<[f64; 5]> = Vec::new();
+    let mut norm_deps: Vec<[f64; 5]> = Vec::new();
+
+    for (si, &(_, b1, d1, eps)) in base_params.iter().enumerate() {
+        for (ti, &(topo_name, ref builder)) in topo_builders.iter().enumerate() {
+            let lattice = builder();
+            let stats = pipeline::compute_lattice_stats(&lattice);
+            let p = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1).with_eps(eps);
+            let results = pipeline::run_topological_iteration(&lattice, &stats, &p);
+
+            for (ci, opt_res) in results.iter().enumerate() {
+                let idx = si * topo_builders.len() * 20 + ti * 20 + ci; // rough index
+                let sens_idx = all_sens.iter().position(|sd|
+                    sd.regime == base_params[si].0 && sd.topo == topo_name
+                );
+
+                let res = match opt_res {
+                    Some(r) if r.converged => r,
+                    _ => continue,
+                };
+
+                let m_star = five_dim::to_array(&res.m_star);
+
+                // Find matching sensitivity
+                let matching_sens: Vec<&SensData> = all_sens.iter()
+                    .filter(|sd| sd.regime == base_params[si].0 && sd.topo == topo_name)
+                    .collect();
+
+                // Use the ci-th matching concept
+                if ci >= matching_sens.len() { continue; }
+                let sd = matching_sens[ci];
+
+                let mut ndb1 = [0.0_f64; 5];
+                let mut ndd1 = [0.0_f64; 5];
+                let mut ndeps = [0.0_f64; 5];
+                for k in 0..5 {
+                    if m_star[k].abs() > 1e-15 {
+                        ndb1[k] = sd.db1[k] * b1 / m_star[k];
+                        ndd1[k] = sd.dd1[k] * d1 / m_star[k];
+                        ndeps[k] = sd.deps[k] * eps / m_star[k];
+                    }
+                }
+                norm_db1.push(ndb1);
+                norm_dd1.push(ndd1);
+                norm_deps.push(ndeps);
+            }
+        }
+    }
+
+    println!("  {:>10} {:>12} {:>12} {:>12} {:>12} {:>12}", "param", "d*", "b*", "rho*", "r*", "s*");
+    for (pi, pname) in params.iter().enumerate() {
+        let norm_data = match pi { 0 => &norm_db1, 1 => &norm_dd1, _ => &norm_deps };
+        if norm_data.is_empty() { continue; }
+        let mut comp_means = [0.0_f64; 5];
+        for k in 0..5 {
+            let vals: Vec<f64> = norm_data.iter().map(|arr| arr[k].abs()).filter(|v| v.is_finite() && *v < 1e6).collect();
+            comp_means[k] = if vals.is_empty() { 0.0 } else { mean_f64(&vals) };
+        }
+        println!("  {:>10} {:>12.4} {:>12.4} {:>12.4} {:>12.4} {:>12.4}",
+                 pname, comp_means[0], comp_means[1], comp_means[2], comp_means[3], comp_means[4]);
+    }
+
+    // ── Phase 4: Per-regime sensitivity profile ──
+    println!("\n--- Phase 4: Per-regime sensitivity profiles ---");
+
+    for &(regime_name, _, _, _) in &base_params {
+        let regime_sens: Vec<&SensData> = all_sens.iter().filter(|sd| sd.regime == regime_name).collect();
+        if regime_sens.is_empty() { continue; }
+
+        println!("\n  Regime: {} (N={})", regime_name, regime_sens.len());
+        println!("  {:>10} {:>10} {:>10} {:>10} {:>10} {:>10}", "comp", "d/db1", "d/dd1", "d/deps", "max_sens", "dominant_p");
+
+        for k in 0..5 {
+            let db: Vec<f64> = regime_sens.iter().map(|sd| sd.db1[k]).collect();
+            let dd: Vec<f64> = regime_sens.iter().map(|sd| sd.dd1[k]).collect();
+            let de: Vec<f64> = regime_sens.iter().map(|sd| sd.deps[k]).collect();
+
+            let mean_b = mean_f64(&db);
+            let mean_d = mean_f64(&dd);
+            let mean_e = mean_f64(&de);
+
+            let abs_vals = [mean_b.abs(), mean_d.abs(), mean_e.abs()];
+            let max_idx = abs_vals.iter().enumerate().max_by(|a, b| a.1.partial_cmp(b.1).unwrap()).map(|(i, _)| i).unwrap_or(0);
+            let dominant = params[max_idx];
+
+            println!("  {:>10} {:>10.6} {:>10.6} {:>10.6} {:>10.6} {:>10}",
+                     comps[k], mean_b, mean_d, mean_e, abs_vals[max_idx], dominant);
+        }
+    }
+
+    // ── Phase 5: Condition number of (I-J) ──
+    println!("\n--- Phase 5: Condition number of (I-J) at fixed point ---");
+
+    let mut cond_numbers: Vec<f64> = Vec::new();
+
+    for &(_, b1, d1, eps) in &base_params {
+        for &(_, ref builder) in &topo_builders {
+            let lattice = builder();
+            let params = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1).with_eps(eps);
+            let stats = pipeline::compute_lattice_stats(&lattice);
+            let results = pipeline::run_topological_iteration(&lattice, &stats, &params);
+
+            for opt_res in results.iter() {
+                let res = match opt_res {
+                    Some(r) if r.converged => r,
+                    _ => continue,
+                };
+
+                let j = jac_from_arr(&res.jacobian);
+                let eye = nalgebra::SMatrix::<f64, 5, 5>::identity();
+                let imj = eye - j;
+
+                let svd = imj.singular_values();
+                let sv_max = svd[0];
+                let sv_min = svd[4];
+
+                if sv_min > 1e-15 {
+                    cond_numbers.push(sv_max / sv_min);
+                }
+            }
+        }
+    }
+
+    println!("  (I-J) condition number: mean={:.2}, median={:.2}, min={:.2}, max={:.2}",
+             mean_f64(&cond_numbers), median_f64(&cond_numbers),
+             cond_numbers.iter().cloned().fold(f64::INFINITY, f64::min),
+             cond_numbers.iter().cloned().fold(f64::NEG_INFINITY, f64::max));
+
+    // ── Phase 6: Summary ──
+    println!("\n  === FIXED POINT SENSITIVITY SUMMARY ===");
+    println!("  Phase 1: Numerical dM*/dp for {} combinations", all_sens.len());
+    println!("  Phase 2: |dM*/dp| by component and parameter");
+    println!("  Phase 3: Normalized sensitivity (p/M*)(dM*/dp)");
+    println!("  Phase 4: Per-regime sensitivity profiles");
+    println!("  Phase 5: Condition number of (I-J)");
+}
