@@ -20375,3 +20375,581 @@ pub fn run_fixed_point_sensitivity() {
     println!("  Phase 4: Per-regime sensitivity profiles");
     println!("  Phase 5: Condition number of (I-J)");
 }
+
+pub fn run_spectral_gap_analysis() {
+    println!("\n{}", "=".repeat(72));
+    println!("  v2.96: SPECTRAL GAP ANALYSIS");
+    println!("  Delta = 1 - |lambda_2|/|lambda_1|");
+    println!("  Eigenvalue distribution, complex ratio, angular structure");
+    println!("{}", "=".repeat(72));
+
+    let regimes: Vec<(&str, f64, f64, f64)> = vec![
+        ("uniform", 1.0, 1.0, 0.01),
+        ("high-beta", 10.0, 1.0, 0.01),
+        ("high-delta", 1.0, 10.0, 0.01),
+        ("high-eps", 1.0, 1.0, 1.0),
+        ("extreme", 0.5, 0.5, 0.001),
+        ("balanced", 5.0, 5.0, 0.1),
+    ];
+
+    let topo_builders: Vec<(&str, Box<dyn Fn() -> fca::FcaLattice>)> = vec![
+        ("chain-10", Box::new(|| fca::build_chain_lattice(10))),
+        ("diamond", Box::new(|| fca::build_diamond_lattice())),
+        ("B3", Box::new(|| fca::build_b3_lattice())),
+        ("grid-3x3", Box::new(|| fca::build_grid_lattice(3, 3))),
+        ("chain-20", Box::new(|| fca::build_chain_lattice(20))),
+    ];
+
+    struct EigData {
+        rho1: f64, rho2: f64, rho3: f64,
+        spectral_gap: f64,
+        is_complex: bool,
+        rho_j: f64,
+        n_iters: usize,
+        regime: String, topo: String,
+    }
+
+    let mut all_eigs: Vec<EigData> = Vec::new();
+
+    // ── Phase 1: Eigenvalue extraction ──
+    println!("\n--- Phase 1: Eigenvalue extraction ---");
+
+    for &(regime_name, b1, d1, eps) in &regimes {
+        for &(topo_name, ref builder) in &topo_builders {
+            let lattice = builder();
+            let params = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1).with_eps(eps);
+            let stats = pipeline::compute_lattice_stats(&lattice);
+            let results = pipeline::run_topological_iteration(&lattice, &stats, &params);
+
+            for opt_res in results.iter() {
+                let res = match opt_res {
+                    Some(r) if r.converged && r.rho_spectral > 1e-10 => r,
+                    _ => continue,
+                };
+
+                let j = jac_from_arr(&res.jacobian);
+                let eigs = sorted_eigs(&j);
+
+                let rho1 = eigs[0].norm();
+                let rho2 = eigs[1].norm();
+                let rho3 = eigs[2].norm();
+
+                let spectral_gap = if rho1 > 1e-15 { 1.0 - rho2 / rho1 } else { 0.0 };
+                let is_complex_pair = eigs[0].im.abs() > 1e-10 && eigs[1].im.abs() > 1e-10
+                    && (eigs[0].im + eigs[1].im).abs() < 1e-6;
+
+                all_eigs.push(EigData {
+                    rho1, rho2, rho3,
+                    spectral_gap,
+                    is_complex: is_complex_pair,
+                    rho_j: res.rho_spectral,
+                    n_iters: res.n_iters,
+                    regime: regime_name.to_string(),
+                    topo: topo_name.to_string(),
+                });
+            }
+        }
+    }
+
+    println!("  Extracted eigenvalues for {} concepts", all_eigs.len());
+
+    // ── Phase 2: Spectral gap statistics ──
+    println!("\n--- Phase 2: Spectral gap statistics ---");
+
+    let gaps: Vec<f64> = all_eigs.iter().map(|e| e.spectral_gap).collect();
+    let rho1s: Vec<f64> = all_eigs.iter().map(|e| e.rho1).collect();
+    let rho2s: Vec<f64> = all_eigs.iter().map(|e| e.rho2).collect();
+
+    println!("  Spectral gap Delta = 1 - |lambda_2|/|lambda_1|:");
+    println!("    mean={:.4}, median={:.4}, std={:.4}", mean_f64(&gaps), median_f64(&gaps), std_f64(&gaps));
+
+    println!("  |lambda_1| (rho(J)):");
+    println!("    mean={:.4}, median={:.4}, std={:.4}", mean_f64(&rho1s), median_f64(&rho1s), std_f64(&rho1s));
+
+    println!("  |lambda_2|:");
+    println!("    mean={:.4}, median={:.4}, std={:.4}", mean_f64(&rho2s), median_f64(&rho2s), std_f64(&rho2s));
+
+    // ── Phase 3: Complex vs real dominant eigenvalue ──
+    println!("\n--- Phase 3: Complex vs real dominant eigenvalue ---");
+
+    let complex_count = all_eigs.iter().filter(|e| e.is_complex).count();
+    let real_count = all_eigs.len() - complex_count;
+    println!("  Complex dominant pair: {} ({:.1}%)", complex_count, complex_count as f64 / all_eigs.len() as f64 * 100.0);
+    println!("  Real dominant: {} ({:.1}%)", real_count, real_count as f64 / all_eigs.len() as f64 * 100.0);
+
+    let complex_gaps: Vec<f64> = all_eigs.iter().filter(|e| e.is_complex).map(|e| e.spectral_gap).collect();
+    let real_gaps: Vec<f64> = all_eigs.iter().filter(|e| !e.is_complex).map(|e| e.spectral_gap).collect();
+
+    if !complex_gaps.is_empty() {
+        println!("  Complex gap: mean={:.4}, std={:.4}", mean_f64(&complex_gaps), std_f64(&complex_gaps));
+    }
+    if !real_gaps.is_empty() {
+        println!("  Real gap:    mean={:.4}, std={:.4}", mean_f64(&real_gaps), std_f64(&real_gaps));
+    }
+
+    // ── Phase 4: Gap by regime ──
+    println!("\n--- Phase 4: Spectral gap by regime ---");
+
+    println!("  {:>12} {:>6} {:>10} {:>10} {:>10} {:>10} {:>10}", "regime", "N", "gap_mean", "gap_std", "rho1_mean", "rho2_mean", "complex%");
+    for &(regime_name, _, _, _) in &regimes {
+        let regime_data: Vec<&EigData> = all_eigs.iter().filter(|e| e.regime == regime_name).collect();
+        if regime_data.is_empty() { continue; }
+        let gaps_r: Vec<f64> = regime_data.iter().map(|e| e.spectral_gap).collect();
+        let r1s: Vec<f64> = regime_data.iter().map(|e| e.rho1).collect();
+        let r2s: Vec<f64> = regime_data.iter().map(|e| e.rho2).collect();
+        let c_pct = regime_data.iter().filter(|e| e.is_complex).count() as f64 / regime_data.len() as f64 * 100.0;
+        println!("  {:>12} {:>6} {:>10.4} {:>10.4} {:>10.4} {:>10.4} {:>10.1}",
+                 regime_name, regime_data.len(), mean_f64(&gaps_r), std_f64(&gaps_r),
+                 mean_f64(&r1s), mean_f64(&r2s), c_pct);
+    }
+
+    // ── Phase 5: Gap vs convergence speed ──
+    println!("\n--- Phase 5: Gap vs convergence speed ---");
+
+    let gap_vals: Vec<f64> = all_eigs.iter().map(|e| e.spectral_gap).collect();
+    let n_vals: Vec<f64> = all_eigs.iter().map(|e| e.n_iters as f64).collect();
+    let rho_vals: Vec<f64> = all_eigs.iter().map(|e| e.rho_j).collect();
+
+    let corr_gap_n = pearson_corr(&gap_vals, &n_vals);
+    let corr_gap_rho = pearson_corr(&gap_vals, &rho_vals);
+
+    println!("  Correlation(Delta, n_iters): {:.4}", corr_gap_n);
+    println!("  Correlation(Delta, rho(J)):  {:.4}", corr_gap_rho);
+
+    // ── Phase 6: Eigenvalue angle distribution ──
+    println!("\n--- Phase 6: Eigenvalue angle distribution ---");
+
+    let mut angles: Vec<f64> = Vec::new();
+    for ed in &all_eigs {
+        if ed.is_complex {
+            let j_dummy = nalgebra::SMatrix::<f64, 5, 5>::zeros();
+            // angle = atan2(im, re) of dominant eigenvalue
+        }
+    }
+
+    // Recompute angles from raw eigenvalues
+    let mut angle_hist = [0_u32; 12]; // 30-degree bins
+    for &(regime_name, b1, d1, eps) in &regimes {
+        for &(_, ref builder) in topo_builders.iter().take(2) {
+            let lattice = builder();
+            let params = DynamicsParams::uniform().with_beta1(b1).with_delta1(d1).with_eps(eps);
+            let stats = pipeline::compute_lattice_stats(&lattice);
+            let results = pipeline::run_topological_iteration(&lattice, &stats, &params);
+
+            for opt_res in results.iter() {
+                let res = match opt_res {
+                    Some(r) if r.converged => r,
+                    _ => continue,
+                };
+
+                let j = jac_from_arr(&res.jacobian);
+                let eigs = sorted_eigs(&j);
+
+                for eig in &eigs {
+                    if eig.norm() > 1e-10 {
+                        let angle = eig.arg(); // [-pi, pi]
+                        let angle_deg = angle * 180.0 / std::f64::consts::PI;
+                        let bin = ((angle_deg + 180.0) / 30.0) as usize;
+                        if bin < 12 { angle_hist[bin] += 1; }
+                    }
+                }
+            }
+        }
+    }
+
+    println!("  Eigenvalue angle distribution (30-degree bins):");
+    for (b, count) in angle_hist.iter().enumerate() {
+        let lo = -180.0 + b as f64 * 30.0;
+        let hi = lo + 30.0;
+        let max_val = *angle_hist.iter().max().unwrap() as f64;
+        let bar = "#".repeat((*count as f64 / max_val * 40.0) as usize);
+        println!("  [{:>6.0},{:>6.0}): {:>5} {}", lo, hi, count, bar);
+    }
+
+    // ── Phase 7: rho_2/rho_1 ratio analysis ──
+    println!("\n--- Phase 7: |lambda_2|/|lambda_1| ratio ---");
+
+    let ratios: Vec<f64> = all_eigs.iter()
+        .filter(|e| e.rho1 > 1e-10)
+        .map(|e| e.rho2 / e.rho1)
+        .collect();
+
+    println!("  |lambda_2|/|lambda_1|: mean={:.4}, median={:.4}, std={:.4}",
+             mean_f64(&ratios), median_f64(&ratios), std_f64(&ratios));
+    println!("  Spectral gap: 1 - ratio = {:.4} (mean)", 1.0 - mean_f64(&ratios));
+
+    // Bin analysis
+    let mut ratio_bins = [0_u32; 10];
+    for r in &ratios {
+        let bin = (*r * 10.0) as usize;
+        if bin < 10 { ratio_bins[bin] += 1; }
+    }
+    println!("  Ratio distribution:");
+    for (b, count) in ratio_bins.iter().enumerate() {
+        let lo = b as f64 * 0.1;
+        let hi = lo + 0.1;
+        let max_val = *ratio_bins.iter().max().unwrap() as f64;
+        let bar = "#".repeat((*count as f64 / max_val * 40.0) as usize);
+        println!("    [{:.1},{:.1}): {:>5} {}", lo, hi, count, bar);
+    }
+
+    // ── Phase 8: Summary ──
+    println!("\n  === SPECTRAL GAP ANALYSIS SUMMARY ===");
+    println!("  Phase 1: Eigenvalue extraction for {} concepts", all_eigs.len());
+    println!("  Phase 2: Spectral gap statistics");
+    println!("  Phase 3: Complex vs real dominant eigenvalue");
+    println!("  Phase 4: Gap by regime");
+    println!("  Phase 5: Gap vs convergence speed correlation");
+    println!("  Phase 6: Eigenvalue angle distribution");
+    println!("  Phase 7: |lambda_2|/|lambda_1| ratio analysis");
+}
+
+pub fn run_convergence_anisotropy() {
+    use std::collections::BTreeMap;
+    println!("{}", "=".repeat(64));
+    println!("  v2.97: Convergence Anisotropy & Mode Structure");
+    println!("{}", "=".repeat(64));
+
+    let topo_builders: Vec<(&str, Box<dyn Fn() -> fca::FcaLattice>)> = vec![
+        ("chain-5", Box::new(|| fca::build_chain_lattice(5))),
+        ("chain-7", Box::new(|| fca::build_chain_lattice(7))),
+        ("diamond", Box::new(|| fca::build_diamond_lattice())),
+        ("M3", Box::new(|| fca::build_m3_lattice())),
+        ("B3", Box::new(|| fca::build_b3_lattice())),
+        ("grid-3x3", Box::new(|| fca::build_grid_lattice(3, 3))),
+    ];
+
+    let regimes: &[(&str, f64, f64, f64)] = &[
+        ("uniform", 0.5, 0.5, 0.5),
+        ("high-β", 0.9, 0.5, 0.5),
+        ("high-δ", 0.5, 0.9, 0.5),
+        ("low-ε", 0.5, 0.5, 0.1),
+        ("extreme", 0.9, 0.9, 0.1),
+    ];
+
+    let dim_names = ["d", "b", "ρ", "r", "s"];
+
+    struct AnisoData {
+        topo: String,
+        regime: String,
+        ci: usize,
+        n_iters: usize,
+        rho_j: f64,
+        dim_contraction: [f64; 5],
+        dir_rotation_0_mid: f64,
+        dir_rotation_0_end: f64,
+        spectral_gap: f64,
+        anisotropy_ratio: f64,
+        dominant_dim: usize,
+        weakest_dim: usize,
+        mid_rotation_profile: Vec<f64>,
+    }
+
+    let mut all_data: Vec<AnisoData> = Vec::new();
+
+    println!("\n  Phase 1: Collecting convergence trajectories...");
+    for &(topo_name, ref builder) in &topo_builders {
+        let lattice = builder();
+        let stats = pipeline::compute_lattice_stats(&lattice);
+
+        for &(regime_name, b1, d1, eps) in regimes {
+            let params = DynamicsParams::uniform()
+                .with_beta1(b1)
+                .with_delta1(d1)
+                .with_eps(eps);
+
+            let results = pipeline::run_topological_iteration(&lattice, &stats, &params);
+
+            for (ci, opt) in results.iter().enumerate() {
+                if let Some(ref res) = opt {
+                    if res.trajectory.len() < 4 { continue; }
+                    let m_star = five_dim::to_array(&res.m_star);
+                    let traj = &res.trajectory;
+                    let n_steps = traj.len();
+
+                    let mut dim_contraction = [0.0_f64; 5];
+                    let mut dim_count = [0usize; 5];
+
+                    for k in 1..n_steps {
+                        for d in 0..5 {
+                            let prev_delta = (traj[k - 1][d] - m_star[d]).abs();
+                            let curr_delta = (traj[k][d] - m_star[d]).abs();
+                            if prev_delta > 1e-12 {
+                                dim_contraction[d] += curr_delta / prev_delta;
+                                dim_count[d] += 1;
+                            }
+                        }
+                    }
+
+                    for d in 0..5 {
+                        if dim_count[d] > 0 {
+                            dim_contraction[d] /= dim_count[d] as f64;
+                        } else {
+                            dim_contraction[d] = 1.0;
+                        }
+                    }
+
+                    let delta0: Vec<f64> = (0..5).map(|d| traj[0][d] - m_star[d]).collect();
+                    let d0_norm: f64 = delta0.iter().map(|x| x * x).sum::<f64>().sqrt();
+
+                    let mid_idx = n_steps / 2;
+                    let delta_mid: Vec<f64> = (0..5).map(|d| traj[mid_idx][d] - m_star[d]).collect();
+                    let dm_norm: f64 = delta_mid.iter().map(|x| x * x).sum::<f64>().sqrt();
+
+                    let delta_end: Vec<f64> = (0..5).map(|d| traj[n_steps - 1][d] - m_star[d]).collect();
+                    let de_norm: f64 = delta_end.iter().map(|x| x * x).sum::<f64>().sqrt();
+
+                    let cos_sim = |a: &[f64], an: f64, b: &[f64], bn: f64| -> f64 {
+                        if an < 1e-15 || bn < 1e-15 { return 1.0; }
+                        let dot: f64 = a.iter().zip(b.iter()).map(|(x, y)| x * y).sum();
+                        (dot / (an * bn)).abs()
+                    };
+
+                    let dir_rotation_0_mid = cos_sim(&delta0, d0_norm, &delta_mid, dm_norm);
+                    let dir_rotation_0_end = cos_sim(&delta0, d0_norm, &delta_end, de_norm);
+
+                    let mut mid_rotation_profile: Vec<f64> = Vec::new();
+                    for k in 1..n_steps {
+                        let dk_prev: Vec<f64> = (0..5).map(|d| traj[k - 1][d] - m_star[d]).collect();
+                        let dk_curr: Vec<f64> = (0..5).map(|d| traj[k][d] - m_star[d]).collect();
+                        let pn = dk_prev.iter().map(|x| x * x).sum::<f64>().sqrt();
+                        let cn = dk_curr.iter().map(|x| x * x).sum::<f64>().sqrt();
+                        mid_rotation_profile.push(cos_sim(&dk_prev, pn, &dk_curr, cn));
+                    }
+
+                    let min_c = dim_contraction.iter().cloned()
+                        .filter(|x| *x > 1e-10)
+                        .fold(f64::INFINITY, f64::min);
+                    let max_c = dim_contraction.iter().cloned()
+                        .fold(0.0_f64, f64::max);
+                    let anisotropy_ratio = if min_c > 1e-10 && min_c < 0.99 {
+                        max_c / min_c
+                    } else { 1.0 };
+
+                    let dominant_dim = dim_contraction.iter().enumerate()
+                        .min_by(|a, b| a.1.partial_cmp(b.1).unwrap())
+                        .map(|(i, _)| i).unwrap_or(0);
+                    let weakest_dim = dim_contraction.iter().enumerate()
+                        .max_by(|a, b| a.1.partial_cmp(b.1).unwrap())
+                        .map(|(i, _)| i).unwrap_or(0);
+
+                    let j = jac_from_arr(&res.jacobian);
+                    let eigs = sorted_eigs(&j);
+                    let spectral_gap = if eigs.len() >= 2 {
+                        eigs[0].norm() - eigs[1].norm()
+                    } else { 0.0 };
+
+                    all_data.push(AnisoData {
+                        topo: topo_name.to_string(),
+                        regime: regime_name.to_string(),
+                        ci,
+                        n_iters: res.n_iters,
+                        rho_j: res.rho_spectral,
+                        dim_contraction,
+                        dir_rotation_0_mid,
+                        dir_rotation_0_end,
+                        spectral_gap,
+                        anisotropy_ratio,
+                        dominant_dim,
+                        weakest_dim,
+                        mid_rotation_profile,
+                    });
+                }
+            }
+        }
+    }
+
+    println!("  Collected {} concept-level records across {} topologies × {} regimes",
+        all_data.len(), topo_builders.len(), regimes.len());
+
+    println!("\n  Phase 2: Per-dimension contraction rates");
+    let mut dim_totals = [0.0_f64; 5];
+    let mut dim_counts = [0usize; 5];
+    for d in &all_data {
+        for i in 0..5 {
+            if d.dim_contraction[i] > 1e-10 && d.dim_contraction[i] < 0.999 {
+                dim_totals[i] += d.dim_contraction[i];
+                dim_counts[i] += 1;
+            }
+        }
+    }
+
+    println!("  {:>6}  {:>12}  {:>12}  {:>12}",
+        "dim", "avg_contraction", "count", "rank");
+    let mut dim_ranked: Vec<(usize, f64)> = (0..5).map(|i| {
+        let avg = if dim_counts[i] > 0 { dim_totals[i] / dim_counts[i] as f64 } else { 1.0 };
+        (i, avg)
+    }).collect();
+    dim_ranked.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap());
+    for (rank, (i, avg)) in dim_ranked.iter().enumerate() {
+        let label = if rank == 0 { " ★ fastest" } else if rank == 4 { " ● slowest" } else { "" };
+        println!("  {:>6}  {:>12.6}  {:>12}  {:>12}{}",
+            dim_names[*i], avg, dim_counts[*i], rank + 1, label);
+    }
+
+    println!("\n  Phase 3: Direction rotation during convergence");
+    let rot_0_mid_vals: Vec<f64> = all_data.iter().map(|d| d.dir_rotation_0_mid).collect();
+    let rot_0_end_vals: Vec<f64> = all_data.iter().map(|d| d.dir_rotation_0_end).collect();
+    println!("  cos_sim(δ_0, δ_mid):  mean={:.4}  std={:.4}  min={:.4}",
+        mean_f64(&rot_0_mid_vals), std_f64(&rot_0_mid_vals),
+        rot_0_mid_vals.iter().cloned().fold(f64::INFINITY, f64::min));
+    println!("  cos_sim(δ_0, δ_end):  mean={:.4}  std={:.4}  min={:.4}",
+        mean_f64(&rot_0_end_vals), std_f64(&rot_0_end_vals),
+        rot_0_end_vals.iter().cloned().fold(f64::INFINITY, f64::min));
+
+    let n_high_rotation = all_data.iter().filter(|d| d.dir_rotation_0_mid < 0.8).count();
+    println!("  Records with cos_sim(δ_0,δ_mid) < 0.8: {}/{} = {:.1}%",
+        n_high_rotation, all_data.len(),
+        100.0 * n_high_rotation as f64 / all_data.len() as f64);
+
+    let n_very_stable = all_data.iter().filter(|d| d.dir_rotation_0_mid > 0.99).count();
+    println!("  Records with cos_sim(δ_0,δ_mid) > 0.99: {}/{} = {:.1}%",
+        n_very_stable, all_data.len(),
+        100.0 * n_very_stable as f64 / all_data.len() as f64);
+
+    println!("\n  Phase 4: Anisotropy ratio by regime");
+    let mut regime_aniso: BTreeMap<String, Vec<f64>> = BTreeMap::new();
+    for d in &all_data {
+        regime_aniso.entry(d.regime.clone()).or_default().push(d.anisotropy_ratio);
+    }
+    println!("  {:>12}  {:>10}  {:>10}  {:>10}  {:>10}",
+        "regime", "mean", "std", "median", "n");
+    for (regime, vals) in &regime_aniso {
+        println!("  {:>12}  {:>10.4}  {:>10.4}  {:>10.4}  {:>10}",
+            regime, mean_f64(vals), std_f64(vals), median_f64(vals), vals.len());
+    }
+
+    println!("\n  Phase 5: Anisotropy vs spectral gap correlation");
+    let gap_vals: Vec<f64> = all_data.iter().map(|d| d.spectral_gap).collect();
+    let aniso_vals: Vec<f64> = all_data.iter().map(|d| d.anisotropy_ratio).collect();
+    let gap_aniso_corr = pearson_corr(&gap_vals, &aniso_vals);
+    println!("  Pearson corr(gap, anisotropy_ratio) = {:.4}", gap_aniso_corr);
+
+    let rot_vals: Vec<f64> = all_data.iter().map(|d| d.dir_rotation_0_mid).collect();
+    let gap_rot_corr = pearson_corr(&gap_vals, &rot_vals);
+    println!("  Pearson corr(gap, cos_sim(δ_0,δ_mid)) = {:.4}", gap_rot_corr);
+
+    let rho_vals: Vec<f64> = all_data.iter().map(|d| d.rho_j).collect();
+    let rho_aniso_corr = pearson_corr(&rho_vals, &aniso_vals);
+    println!("  Pearson corr(ρ(J), anisotropy_ratio) = {:.4}", rho_aniso_corr);
+
+    let rho_rot_corr = pearson_corr(&rho_vals, &rot_vals);
+    println!("  Pearson corr(ρ(J), cos_sim(δ_0,δ_mid)) = {:.4}", rho_rot_corr);
+
+    println!("\n  Phase 6: Mid-trajectory rotation profile");
+    let max_profile_len = all_data.iter().map(|d| d.mid_rotation_profile.len()).max().unwrap_or(0);
+    let profile_len = max_profile_len.min(20);
+    let mut step_rotations: Vec<Vec<f64>> = vec![Vec::new(); profile_len];
+    for d in &all_data {
+        for (k, &r) in d.mid_rotation_profile.iter().enumerate() {
+            if k < profile_len { step_rotations[k].push(r); }
+        }
+    }
+
+    println!("  {:>6}  {:>12}  {:>12}  {:>12}  {:>8}",
+        "step", "mean_cos", "std", "min", "n");
+    for k in 0..profile_len {
+        if step_rotations[k].is_empty() { continue; }
+        let mean_r = mean_f64(&step_rotations[k]);
+        let std_r = std_f64(&step_rotations[k]);
+        let min_r = step_rotations[k].iter().cloned().fold(f64::INFINITY, f64::min);
+        println!("  {:>6}  {:>12.6}  {:>12.6}  {:>12.6}  {:>8}",
+            k + 1, mean_r, std_r, min_r, step_rotations[k].len());
+    }
+
+    let avg_step_rotation: Vec<f64> = step_rotations.iter()
+        .filter(|v| !v.is_empty())
+        .map(|v| mean_f64(v))
+        .collect();
+    let overall_step_rot = if !avg_step_rotation.is_empty() {
+        mean_f64(&avg_step_rotation)
+    } else { 1.0 };
+    println!("  Overall mean per-step cos_sim = {:.6}", overall_step_rot);
+
+    println!("\n  Phase 7: Dominant contraction dimension analysis");
+    let mut dom_dim_counts = [0usize; 5];
+    let mut weak_dim_counts = [0usize; 5];
+    for d in &all_data {
+        dom_dim_counts[d.dominant_dim] += 1;
+        weak_dim_counts[d.weakest_dim] += 1;
+    }
+
+    println!("  {:>6}  {:>12}  {:>12}  {:>12}",
+        "dim", "fastest_ct", "slowest_ct", "fastest_%");
+    for i in 0..5 {
+        let pct = 100.0 * dom_dim_counts[i] as f64 / all_data.len() as f64;
+        let marker = if dom_dim_counts[i] == *dom_dim_counts.iter().max().unwrap() { " ★" } else { "" };
+        println!("  {:>6}  {:>12}  {:>12}  {:>11.1}%{}",
+            dim_names[i], dom_dim_counts[i], weak_dim_counts[i], pct, marker);
+    }
+
+    println!("\n  Phase 8: Regime-specific rotation + anisotropy breakdown");
+    for &(regime_name, _, _, _) in regimes {
+        let subset: Vec<&AnisoData> = all_data.iter().filter(|d| d.regime == regime_name).collect();
+        if subset.is_empty() { continue; }
+        let avg_rot = mean_f64(&subset.iter().map(|d| d.dir_rotation_0_mid).collect::<Vec<_>>());
+        let avg_aniso = mean_f64(&subset.iter().map(|d| d.anisotropy_ratio).collect::<Vec<_>>());
+        let avg_gap = mean_f64(&subset.iter().map(|d| d.spectral_gap).collect::<Vec<_>>());
+        let avg_rho = mean_f64(&subset.iter().map(|d| d.rho_j).collect::<Vec<_>>());
+        let high_rot = subset.iter().filter(|d| d.dir_rotation_0_mid < 0.9).count();
+        println!("  {:>12}  rot={:.4}  aniso={:.4}  gap={:.4}  ρ={:.4}  high_rot={}/{}",
+            regime_name, avg_rot, avg_aniso, avg_gap, avg_rho, high_rot, subset.len());
+    }
+
+    println!("\n  Phase 9: Step-1 vs step-2 rotation (early dynamics)");
+    let mut step1_rot: Vec<f64> = Vec::new();
+    let mut step2_rot: Vec<f64> = Vec::new();
+    for d in &all_data {
+        if d.mid_rotation_profile.len() >= 2 {
+            step1_rot.push(d.mid_rotation_profile[0]);
+            step2_rot.push(d.mid_rotation_profile[1]);
+        }
+    }
+    if !step1_rot.is_empty() {
+        println!("  step-1 cos_sim: mean={:.6} std={:.6}", mean_f64(&step1_rot), std_f64(&step1_rot));
+        println!("  step-2 cos_sim: mean={:.6} std={:.6}", mean_f64(&step2_rot), std_f64(&step2_rot));
+        let step12_corr = pearson_corr(&step1_rot, &step2_rot);
+        println!("  Pearson corr(step1, step2) = {:.4}", step12_corr);
+    }
+
+    println!("\n  Phase 10: Anisotropy vs iteration count correlation");
+    let n_iter_vals: Vec<f64> = all_data.iter().map(|d| d.n_iters as f64).collect();
+    let aniso_n_corr = pearson_corr(&aniso_vals, &n_iter_vals);
+    let rot_n_corr = pearson_corr(&rot_vals, &n_iter_vals);
+    println!("  Pearson corr(anisotropy, n_iters) = {:.4}", aniso_n_corr);
+    println!("  Pearson corr(rotation, n_iters) = {:.4}", rot_n_corr);
+
+    let gap_n_corr = pearson_corr(&gap_vals, &n_iter_vals);
+    println!("  Pearson corr(spectral_gap, n_iters) = {:.4}", gap_n_corr);
+
+    println!("\n  CONVERGENCE ANISOTROPY SUMMARY:");
+    let overall_aniso = mean_f64(&aniso_vals);
+    let overall_rot = mean_f64(&rot_vals);
+    println!("  Mean anisotropy ratio = {:.4}", overall_aniso);
+    println!("  Mean direction preservation cos_sim(δ_0,δ_mid) = {:.4}", overall_rot);
+    println!("  Dominant (fastest contracting) dimension: {}", dim_names[dim_ranked[0].0]);
+    println!("  Weakest (slowest contracting) dimension: {}", dim_names[dim_ranked[4].0]);
+    println!("  Gap-anisotropy correlation = {:.4}", gap_aniso_corr);
+    println!("  Gap-rotation correlation = {:.4}", gap_rot_corr);
+    if overall_rot > 0.95 {
+        println!("  → Convergence is HIGHLY ISOTROPIC: direction barely changes");
+        println!("    Small spectral gap → all modes decay at similar rate → no rotation");
+    } else if overall_rot > 0.8 {
+        println!("  → Convergence is MODERATELY ANISOTROPIC: some direction drift");
+    } else {
+        println!("  → Convergence is STRONGLY ANISOTROPIC: significant direction rotation");
+        println!("    Different modes decay at very different rates");
+    }
+
+    println!("\n  Phase labels:");
+    println!("  Phase 1: Data collection");
+    println!("  Phase 2: Per-dimension contraction rates");
+    println!("  Phase 3: Direction rotation analysis");
+    println!("  Phase 4: Anisotropy by regime");
+    println!("  Phase 5: Anisotropy vs spectral gap");
+    println!("  Phase 6: Mid-trajectory rotation profile");
+    println!("  Phase 7: Dominant contraction dimension");
+    println!("  Phase 8: Regime-specific breakdown");
+    println!("  Phase 9: Early dynamics (step-1 vs step-2)");
+    println!("  Phase 10: Anisotropy vs iteration count");
+}
