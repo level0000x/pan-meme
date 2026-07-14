@@ -33768,3 +33768,238 @@ pub fn run_prediction_error_structure() {
         println!();
     }
 }
+
+pub fn run_d0_corrected_prediction() {
+    println!("\n=== v3.57: d₀-Corrected Prediction Formula ===\n");
+
+    #[derive(Clone)]
+    struct Pt {
+        pset: String,
+        topo: String,
+        depth: usize,
+        rho_fp: f64,
+        d0: f64,
+        n_actual: f64,
+        n_naive: f64,
+    }
+
+    let param_sets: Vec<(&str, DynamicsParams)> = vec![
+        ("uniform", DynamicsParams::uniform()),
+        ("high-β", DynamicsParams::uniform().with_beta1(2.0)),
+        ("high-δ", DynamicsParams::uniform().with_delta1(2.0)),
+        ("high-κ₂", DynamicsParams::uniform().with_kappa2(2.0)),
+        ("asym-1", DynamicsParams::uniform().with_beta1(1.5).with_gamma1(0.8).with_zeta1(1.2).with_theta1(0.7).with_kappa2(1.8).with_eps(0.01)),
+        ("asym-2", DynamicsParams::uniform().with_beta1(0.5).with_gamma1(2.0).with_zeta1(0.8).with_theta1(1.5).with_kappa2(0.6).with_eps(0.05)),
+        ("extreme", DynamicsParams::uniform().with_beta1(3.0).with_gamma1(0.3).with_zeta1(2.0).with_theta1(0.4).with_kappa2(3.0).with_eps(0.02)),
+    ];
+
+    let topo_builders: Vec<(&str, Box<dyn Fn() -> fca::FcaLattice>)> = vec![
+        ("chain-5", Box::new(|| fca::build_chain_lattice(5))),
+        ("chain-10", Box::new(|| fca::build_chain_lattice(10))),
+        ("diamond", Box::new(|| fca::build_diamond_lattice())),
+        ("m3", Box::new(|| fca::build_m3_lattice())),
+    ];
+
+    let tol = 1e-12_f64;
+    let mut pts: Vec<Pt> = Vec::new();
+
+    for &(pname, ref params) in &param_sets {
+        for &(tname, ref builder) in &topo_builders {
+            let lattice = builder();
+            let stats = pipeline::compute_lattice_stats(&lattice);
+            let results = pipeline::run_topological_iteration(&lattice, &stats, params);
+
+            for (i, opt) in results.iter().enumerate() {
+                if let Some(ref res) = opt {
+                    if !res.converged { continue; }
+                    let rho_fp = res.rho_spectral;
+                    if rho_fp <= 0.0 || rho_fp >= 1.0 { continue; }
+                    let n_actual = res.n_iters as f64;
+                    if n_actual < 3.0 { continue; }
+                    let traj = &res.trajectory;
+                    if traj.len() < 2 { continue; }
+                    let d0 = traj[0][0];
+                    if d0 <= 0.0 { continue; }
+                    let ln_r = d0 / tol;
+                    if ln_r <= 0.0 { continue; }
+                    let n_naive = ln_r.ln() / (-rho_fp.ln());
+                    if n_naive <= 0.0 { continue; }
+
+                    pts.push(Pt { pset: pname.to_string(), topo: tname.to_string(), depth: i, rho_fp, d0, n_actual, n_naive });
+                }
+            }
+        }
+    }
+
+    println!("  Collected {} data points\n", pts.len());
+    let n = pts.len();
+
+    fn mape_fn(preds: &[f64], actuals: &[f64]) -> f64 {
+        preds.iter().zip(actuals.iter()).map(|(p, a)| ((p - a) / a).abs()).sum::<f64>() / preds.len() as f64
+    }
+
+    let actuals: Vec<f64> = pts.iter().map(|p| p.n_actual).collect();
+    let naive_preds: Vec<f64> = pts.iter().map(|p| p.n_naive).collect();
+    let mape_naive = mape_fn(&naive_preds, &actuals);
+
+    println!("  === 1. In-Sample OLS Correction ===\n");
+
+    let signed_err: Vec<f64> = pts.iter().map(|p| (p.n_naive - p.n_actual) / p.n_actual).collect();
+    let y_mean: f64 = signed_err.iter().sum::<f64>() / n as f64;
+    let ss_tot: f64 = signed_err.iter().map(|v| (v - y_mean).powi(2)).sum();
+
+    let x_cols: Vec<Vec<f64>> = vec![
+        pts.iter().map(|p| p.d0.ln()).collect(),
+        pts.iter().map(|p| (1.0 / p.rho_fp).ln()).collect(),
+    ];
+    let x_names = ["log(d0)", "log(1/ρ)"];
+    let p_dim = x_cols.len();
+    let xm: Vec<f64> = x_cols.iter().map(|c| c.iter().sum::<f64>() / n as f64).collect();
+
+    fn solve_ols(x_cols: &[Vec<f64>], y: &[f64], xm: &[f64], y_mean: f64, n: usize, p_dim: usize) -> (Vec<f64>, f64, f64) {
+        let mut xt_x = vec![vec![0.0f64; p_dim]; p_dim];
+        let mut xt_y = vec![0.0f64; p_dim];
+        for i in 0..p_dim {
+            for j in 0..p_dim {
+                for s in 0..n {
+                    xt_x[i][j] += (x_cols[i][s] - xm[i]) * (x_cols[j][s] - xm[j]);
+                }
+            }
+            for s in 0..n {
+                xt_y[i] += (x_cols[i][s] - xm[i]) * (y[s] - y_mean);
+            }
+        }
+        let mut a = xt_x;
+        let mut b = xt_y;
+        for col in 0..p_dim {
+            let mut max_val = a[col][col].abs();
+            let mut max_row = col;
+            for row in (col + 1)..p_dim {
+                if a[row][col].abs() > max_val { max_val = a[row][col].abs(); max_row = row; }
+            }
+            if max_row != col { a.swap(col, max_row); b.swap(col, max_row); }
+            if a[col][col].abs() < 1e-30 { continue; }
+            let pivot = a[col][col];
+            for j in col..p_dim { a[col][j] /= pivot; }
+            b[col] /= pivot;
+            for row in 0..p_dim {
+                if row == col { continue; }
+                let factor = a[row][col];
+                for j in col..p_dim { a[row][j] -= factor * a[col][j]; }
+                b[row] -= factor * b[col];
+            }
+        }
+        let betas = b;
+        let intercept = y_mean - betas.iter().enumerate().map(|(i, bv)| bv * xm[i]).sum::<f64>();
+        let mut ss_res = 0.0f64;
+        for s in 0..n {
+            let mut yhat = intercept;
+            for i in 0..p_dim { yhat += betas[i] * x_cols[i][s]; }
+            ss_res += (y[s] - yhat).powi(2);
+        }
+        let ss_tot: f64 = y.iter().map(|v| (v - y_mean).powi(2)).sum();
+        let r2 = 1.0 - ss_res / ss_tot;
+        (betas, intercept, r2)
+    }
+
+    let (betas, intercept, r2) = solve_ols(&x_cols, &signed_err, &xm, y_mean, n, p_dim);
+
+    println!("  signed_err = {:.4} + {:.4}·log(d₀) + {:.4}·log(1/ρ)", intercept, betas[0], betas[1]);
+    println!("  R² = {:.4}\n", r2);
+
+    let preds_ols: Vec<f64> = pts.iter().map(|p| {
+        let e_pred = intercept + betas[0] * p.d0.ln() + betas[1] * (1.0 / p.rho_fp).ln();
+        p.n_naive / (1.0 + e_pred).max(0.1)
+    }).collect();
+    let mape_ols = mape_fn(&preds_ols, &actuals);
+
+    println!("  In-sample MAPE:  naive={:.1}%  OLS-corrected={:.1}%  Δ={:+.1}%",
+        mape_naive * 100.0, mape_ols * 100.0, (mape_ols - mape_naive) * 100.0);
+
+    println!("\n  === 2. Leave-One-Out Cross-Validation ===\n");
+
+    let pset_names: Vec<String> = param_sets.iter().map(|p| p.0.to_string()).collect();
+    let mut total_loo_mape = 0.0f64;
+    let mut loo_results: Vec<(String, f64, f64)> = Vec::new();
+
+    for held_out in &pset_names {
+        let train_idxs: Vec<usize> = pts.iter().enumerate().filter(|(_, p)| &p.pset != held_out).map(|(i, _)| i).collect();
+        let test_idxs: Vec<usize> = pts.iter().enumerate().filter(|(_, p)| &p.pset == held_out).map(|(i, _)| i).collect();
+
+        if train_idxs.is_empty() || test_idxs.is_empty() { continue; }
+
+        let n_train = train_idxs.len();
+        let y_train: Vec<f64> = train_idxs.iter().map(|&i| signed_err[i]).collect();
+        let ym_train: f64 = y_train.iter().sum::<f64>() / n_train as f64;
+
+        let x_train: Vec<Vec<f64>> = x_cols.iter().map(|col| train_idxs.iter().map(|&i| col[i]).collect()).collect();
+        let xm_train: Vec<f64> = x_train.iter().map(|c| c.iter().sum::<f64>() / n_train as f64).collect();
+
+        let (b_loo, int_loo, _) = solve_ols(&x_train, &y_train, &xm_train, ym_train, n_train, p_dim);
+
+        let preds_loo: Vec<f64> = test_idxs.iter().map(|&i| {
+            let e_pred = int_loo + b_loo[0] * pts[i].d0.ln() + b_loo[1] * (1.0 / pts[i].rho_fp).ln();
+            pts[i].n_naive / (1.0 + e_pred).max(0.1)
+        }).collect();
+        let actuals_loo: Vec<f64> = test_idxs.iter().map(|&i| pts[i].n_actual).collect();
+        let naive_loo: Vec<f64> = test_idxs.iter().map(|&i| pts[i].n_naive).collect();
+
+        let m_corrected = mape_fn(&preds_loo, &actuals_loo);
+        let m_naive = mape_fn(&naive_loo, &actuals_loo);
+        total_loo_mape += m_corrected * test_idxs.len() as f64;
+
+        loo_results.push((held_out.clone(), m_naive, m_corrected));
+    }
+
+    let weighted_loo_mape = total_loo_mape / n as f64;
+
+    println!("  Per-parameter-set LOO results:");
+    println!("    {:<12} Naive    Corrected  Δ", "Param Set");
+    for (name, m_n, m_c) in &loo_results {
+        println!("    {:<12} {:.1}%    {:.1}%      {:+.1}%", name, m_n * 100.0, m_c * 100.0, (m_c - m_n) * 100.0);
+    }
+
+    println!("\n  Weighted LOO MAPE: {:.1}%", weighted_loo_mape * 100.0);
+    println!("  Naive MAPE:        {:.1}%", mape_naive * 100.0);
+
+    println!("\n  === 3. log(d₀)-Only Correction (2-param model) ===\n");
+
+    let x_d0: Vec<Vec<f64>> = vec![pts.iter().map(|p| p.d0.ln()).collect()];
+    let xm_d0 = vec![x_d0[0].iter().sum::<f64>() / n as f64];
+    let (b_d0, int_d0, r2_d0) = solve_ols(&x_d0, &signed_err, &xm_d0, y_mean, n, 1);
+
+    println!("  signed_err = {:.4} + {:.4}·log(d₀)", int_d0, b_d0[0]);
+    println!("  R² = {:.4}", r2_d0);
+
+    let preds_d0: Vec<f64> = pts.iter().map(|p| {
+        let e_pred = int_d0 + b_d0[0] * p.d0.ln();
+        p.n_naive / (1.0 + e_pred).max(0.1)
+    }).collect();
+    let mape_d0 = mape_fn(&preds_d0, &actuals);
+
+    println!("  MAPE:  naive={:.1}%  d₀-only={:.1}%  Δ={:+.1}%",
+        mape_naive * 100.0, mape_d0 * 100.0, (mape_d0 - mape_naive) * 100.0);
+
+    println!("\n  === 4. Per-(pset, topo) Comparison ===\n");
+
+    println!("    {:<10} {:<10} {:>8} {:>10} {:>10}", "pset", "topo", "n_pts", "Naive", "OLS");
+    for &(pname, _) in &param_sets {
+        for &(tname, _) in &topo_builders {
+            let idxs: Vec<usize> = pts.iter().enumerate()
+                .filter(|(_, p)| p.pset == pname && p.topo == tname)
+                .map(|(i, _)| i).collect();
+            if idxs.is_empty() { continue; }
+            let e_n: Vec<f64> = idxs.iter().map(|&i| ((naive_preds[i] - actuals[i]) / actuals[i]).abs()).collect();
+            let e_c: Vec<f64> = idxs.iter().map(|&i| ((preds_ols[i] - actuals[i]) / actuals[i]).abs()).collect();
+            let mn = e_n.iter().sum::<f64>() / e_n.len() as f64;
+            let mc = e_c.iter().sum::<f64>() / e_c.len() as f64;
+            println!("    {:<10} {:<10} {:>8} {:>9.1}% {:>9.1}%", pname, tname, idxs.len(), mn * 100.0, mc * 100.0);
+        }
+    }
+
+    println!("\n  === Summary ===\n");
+    println!("  Naive MAPE:        {:.1}%", mape_naive * 100.0);
+    println!("  OLS in-sample:     {:.1}%  (Δ={:+.1}%)", mape_ols * 100.0, (mape_ols - mape_naive) * 100.0);
+    println!("  OLS LOO:           {:.1}%  (Δ={:+.1}%)", weighted_loo_mape * 100.0, (weighted_loo_mape - mape_naive) * 100.0);
+    println!("  d₀-only in-sample: {:.1}%  (Δ={:+.1}%)", mape_d0 * 100.0, (mape_d0 - mape_naive) * 100.0);
+}
