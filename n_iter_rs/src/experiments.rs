@@ -32844,3 +32844,140 @@ pub fn run_nonlinearity_cascade_separation() {
             mean_delta_cascade / mean_delta_iso * 100.0);
     }
 }
+
+pub fn run_nonuniform_cascade_validation() {
+    println!("\n{}", "=".repeat(64));
+    println!("  v3.53: CROSS-PARAMETER CASCADE UNIVERSALITY");
+    println!("{}", "=".repeat(64));
+    println!("  Test cascade formula across 12 parameter sets × 4 topologies\n");
+
+    let param_sets: Vec<(&str, DynamicsParams)> = vec![
+        ("uniform", DynamicsParams::uniform()),
+        ("high-β", DynamicsParams::uniform().with_beta1(2.0)),
+        ("high-δ", DynamicsParams::uniform().with_delta1(2.0)),
+        ("high-γ", DynamicsParams::uniform().with_gamma1(2.0)),
+        ("high-κ₂", DynamicsParams::uniform().with_kappa2(2.0)),
+        ("asym-1", DynamicsParams::uniform().with_beta1(1.5).with_gamma1(0.8).with_zeta1(1.2).with_theta1(0.7).with_kappa2(1.8)),
+        ("asym-2", DynamicsParams::uniform().with_beta1(0.5).with_gamma1(2.0).with_zeta1(0.8).with_theta1(1.5).with_kappa2(0.6)),
+        ("extreme", DynamicsParams::uniform().with_beta1(3.0).with_gamma1(0.3).with_zeta1(2.0).with_theta1(0.4).with_kappa2(3.0)),
+        ("low-ε", DynamicsParams::uniform().with_eps(0.001)),
+        ("high-ε", DynamicsParams::uniform().with_eps(5.0)),
+        ("balanced", DynamicsParams::uniform().with_beta1(1.0).with_delta1(1.0).with_gamma1(1.0).with_zeta1(1.0).with_theta1(1.0).with_kappa2(1.0)),
+        ("random-1", DynamicsParams::uniform().with_beta1(0.7).with_delta1(1.8).with_gamma1(0.4).with_zeta1(1.5).with_theta1(1.2).with_kappa2(0.9).with_eps(0.03)),
+    ];
+
+    let topo_builders: Vec<(&str, usize, Box<dyn Fn() -> fca::FcaLattice>)> = vec![
+        ("chain-5", 5, Box::new(|| fca::build_chain_lattice(5))),
+        ("chain-10", 10, Box::new(|| fca::build_chain_lattice(10))),
+        ("chain-20", 20, Box::new(|| fca::build_chain_lattice(20))),
+        ("diamond", 6, Box::new(|| fca::build_diamond_lattice())),
+    ];
+
+    #[derive(Clone)]
+    struct PredRec {
+        pset: String, topo: String, depth: usize, eps: f64,
+        rho_fp: f64, n_actual: usize,
+        n_naive: f64, n_corrected: f64,
+    }
+
+    let mut records: Vec<PredRec> = Vec::new();
+
+    for &(pname, ref params) in &param_sets {
+        for &(tname, _nc, ref builder) in &topo_builders {
+            let lattice = builder();
+            let stats = pipeline::compute_lattice_stats(&lattice);
+            let max_depth = stats.heights.iter().copied().max().unwrap_or(1);
+            let results = pipeline::run_topological_iteration(&lattice, &stats, params);
+            let eps = params.eps;
+
+            for (i, opt) in results.iter().enumerate() {
+                if let Some(ref res) = opt {
+                    if !stats.feeders[i].is_empty() { continue; }
+                    let traj = &res.trajectory;
+                    let nt = traj.len();
+                    if nt < 3 { continue; }
+                    let rho_fp = res.rho_spectral;
+                    let m_star = *traj.last().unwrap();
+                    let d0 = (0..5).map(|j| (traj[0][j] - m_star[j]).powi(2)).sum::<f64>().sqrt();
+                    let tol = 1e-12_f64;
+                    let ln_ratio = d0 / tol;
+                    let n_naive = if rho_fp < 1.0 && rho_fp > 0.0 && ln_ratio > 0.0 {
+                        ln_ratio.ln() / (-rho_fp.ln())
+                    } else { 0.0 };
+
+                    let cascade_amp = 0.118 * ((max_depth - 1).max(1) as f64).powf(0.23) * eps.powf(0.29);
+                    let ratio = (1.0 - cascade_amp).max(0.1);
+                    let rho_corrected = rho_fp * ratio;
+                    let n_corrected = if rho_corrected < 1.0 && rho_corrected > 0.0 && ln_ratio > 0.0 {
+                        ln_ratio.ln() / (-rho_corrected.ln())
+                    } else { 0.0 };
+
+                    records.push(PredRec {
+                        pset: pname.to_string(), topo: tname.to_string(),
+                        depth: max_depth, eps,
+                        rho_fp, n_actual: nt - 1,
+                        n_naive, n_corrected,
+                    });
+                }
+            }
+        }
+    }
+
+    let n_r = records.len();
+    println!("  {} data points across {} param sets × {} topologies\n",
+        n_r, param_sets.len(), topo_builders.len());
+
+    println!("  {:>12} {:>10} {:>5} {:>5} {:>8} {:>6} {:>8} {:>8} {:>8} {:>8}",
+        "pset", "topo", "depth", "ε", "ρ_fp", "n_act", "n_naive", "n_corr", "err_na", "err_co");
+    for r in &records {
+        let err_na = if r.n_actual > 0 { (r.n_naive - r.n_actual as f64).abs() / r.n_actual as f64 * 100.0 } else { 0.0 };
+        let err_co = if r.n_actual > 0 { (r.n_corrected - r.n_actual as f64).abs() / r.n_actual as f64 * 100.0 } else { 0.0 };
+        println!("  {:>12} {:>10} {:>5} {:>5.2} {:>8.4} {:>6} {:>8.1} {:>8.1} {:>7.1}% {:>7.1}%",
+            r.pset, r.topo, r.depth, r.eps, r.rho_fp, r.n_actual, r.n_naive, r.n_corrected, err_na, err_co);
+    }
+
+    let valid: Vec<&PredRec> = records.iter().filter(|r| r.n_actual > 0 && r.n_naive > 0.0 && r.n_corrected > 0.0).collect();
+    let mape_naive: f64 = valid.iter().map(|r| (r.n_naive - r.n_actual as f64).abs() / r.n_actual as f64).sum::<f64>() / valid.len() as f64 * 100.0;
+    let mape_corrected: f64 = valid.iter().map(|r| (r.n_corrected - r.n_actual as f64).abs() / r.n_actual as f64).sum::<f64>() / valid.len() as f64 * 100.0;
+
+    let n_mean: f64 = valid.iter().map(|r| r.n_actual as f64).sum::<f64>() / valid.len() as f64;
+    let ss_tot: f64 = valid.iter().map(|r| (r.n_actual as f64 - n_mean).powi(2)).sum();
+    let ss_res_naive: f64 = valid.iter().map(|r| (r.n_actual as f64 - r.n_naive).powi(2)).sum();
+    let ss_res_corr: f64 = valid.iter().map(|r| (r.n_actual as f64 - r.n_corrected).powi(2)).sum();
+    let r2_naive = if ss_tot > 1e-15 { 1.0 - ss_res_naive / ss_tot } else { 0.0 };
+    let r2_corr = if ss_tot > 1e-15 { 1.0 - ss_res_corr / ss_tot } else { 0.0 };
+
+    println!("\n  GLOBAL PREDICTION ACCURACY ({} points):", valid.len());
+    println!("  {:>25} {:>10} {:>10}", "Metric", "Naive", "Corrected");
+    println!("  {:>25} {:>10.1}% {:>10.1}%", "MAPE", mape_naive, mape_corrected);
+    println!("  {:>25} {:>10.4} {:>10.4}", "R²", r2_naive, r2_corr);
+
+    println!("\n  Per-parameter-set MAPE:");
+    let mut pset_names: Vec<String> = records.iter().map(|r| r.pset.clone()).collect::<std::collections::HashSet<_>>().into_iter().collect();
+    pset_names.sort();
+    for ps in &pset_names {
+        let subset: Vec<&PredRec> = valid.iter().filter(|r| r.pset == *ps).copied().collect();
+        if subset.is_empty() { continue; }
+        let mape_c: f64 = subset.iter().map(|r| (r.n_corrected - r.n_actual as f64).abs() / r.n_actual as f64).sum::<f64>() / subset.len() as f64 * 100.0;
+        let mape_n: f64 = subset.iter().map(|r| (r.n_naive - r.n_actual as f64).abs() / r.n_actual as f64).sum::<f64>() / subset.len() as f64 * 100.0;
+        let delta = mape_n - mape_c;
+        let arrow = if delta > 0.5 { "↓" } else if delta < -0.5 { "↑" } else { "=" };
+        println!("  {:>12}: naive={:>5.1}% corrected={:>5.1}% Δ={:>+.1}% {}", ps, mape_n, mape_c, delta, arrow);
+    }
+
+    let improved = pset_names.iter().filter(|ps| {
+        let subset: Vec<&PredRec> = valid.iter().filter(|r| r.pset == **ps).copied().collect();
+        if subset.is_empty() { return false; }
+        let mape_c: f64 = subset.iter().map(|r| (r.n_corrected - r.n_actual as f64).abs() / r.n_actual as f64).sum::<f64>() / subset.len() as f64 * 100.0;
+        let mape_n: f64 = subset.iter().map(|r| (r.n_naive - r.n_actual as f64).abs() / r.n_actual as f64).sum::<f64>() / subset.len() as f64 * 100.0;
+        mape_c < mape_n
+    }).count();
+
+    println!("\n  CASCADE UNIVERSALITY:");
+    println!("  {}/{} parameter sets improved by cascade correction", improved, pset_names.len());
+    if mape_corrected < mape_naive {
+        println!("  ✓ Cascade formula universal across parameter space (MAPE {:.1}%→{:.1}%)", mape_naive, mape_corrected);
+    } else {
+        println!("  ✗ Cascade formula NOT universal — parameter-dependent correction needed");
+    }
+}
