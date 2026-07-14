@@ -31513,3 +31513,254 @@ pub fn run_cascade_amplification_model() {
         println!("  R²(log) = {:.4}", r2_log);
     }
 }
+
+pub fn run_cascade_interaction_model() {
+    println!("\n{}", "=".repeat(64));
+    println!("  v3.46: CASCADE INTERACTION MODEL");
+    println!("{}", "=".repeat(64));
+    println!("  Goal: Improve R² with depth×ε interaction term\n");
+
+    #[derive(Clone)]
+    struct AmpRec {
+        topo: String, depth: usize, eps: f64,
+        rho_fp: f64, rho_eff: f64, ratio: f64,
+        n_iters: usize,
+    }
+
+    let mut records: Vec<AmpRec> = Vec::new();
+    let chain_lens: Vec<usize> = vec![3, 5, 7, 10, 15, 20, 30, 50];
+    let eps_vals: Vec<f64> = vec![0.01, 0.05, 0.1, 0.5, 1.0];
+
+    for &n in &chain_lens {
+        for &eps in &eps_vals {
+            let lattice = fca::build_chain_lattice(n);
+            let stats = pipeline::compute_lattice_stats(&lattice);
+            let params = DynamicsParams::uniform().with_eps(eps);
+            let results = pipeline::run_topological_iteration(&lattice, &stats, &params);
+            for (i, opt) in results.iter().enumerate() {
+                if let Some(ref res) = opt {
+                    if !stats.feeders[i].is_empty() { continue; }
+                    let traj = &res.trajectory;
+                    let nt = traj.len();
+                    if nt < 3 { continue; }
+                    let rho_fp = res.rho_spectral;
+                    let m_star = *traj.last().unwrap();
+                    let delta0 = (0..5).map(|j| (traj[0][j] - m_star[j]).powi(2)).sum::<f64>().sqrt();
+                    let delta_last = (0..5).map(|j| (traj[nt-2][j] - m_star[j]).powi(2)).sum::<f64>().sqrt();
+                    let rho_eff = if delta0 > 1e-15 && delta_last > 1e-15 {
+                        (delta_last / delta0).powf(1.0 / (nt as f64 - 2.0))
+                    } else { rho_fp };
+                    records.push(AmpRec {
+                        topo: format!("chain-{}", n), depth: n, eps,
+                        rho_fp, rho_eff,
+                        ratio: rho_eff / rho_fp.max(1e-15),
+                        n_iters: nt - 1,
+                    });
+                }
+            }
+        }
+    }
+    for &eps in &eps_vals {
+        let lattice = fca::build_diamond_lattice();
+        let stats = pipeline::compute_lattice_stats(&lattice);
+        let params = DynamicsParams::uniform().with_eps(eps);
+        let results = pipeline::run_topological_iteration(&lattice, &stats, &params);
+        let max_depth = stats.heights.iter().copied().max().unwrap_or(0);
+        for (i, opt) in results.iter().enumerate() {
+            if let Some(ref res) = opt {
+                if !stats.feeders[i].is_empty() { continue; }
+                let traj = &res.trajectory;
+                let nt = traj.len();
+                if nt < 3 { continue; }
+                let rho_fp = res.rho_spectral;
+                let m_star = *traj.last().unwrap();
+                let delta0 = (0..5).map(|j| (traj[0][j] - m_star[j]).powi(2)).sum::<f64>().sqrt();
+                let delta_last = (0..5).map(|j| (traj[nt-2][j] - m_star[j]).powi(2)).sum::<f64>().sqrt();
+                let rho_eff = if delta0 > 1e-15 && delta_last > 1e-15 {
+                    (delta_last / delta0).powf(1.0 / (nt as f64 - 2.0))
+                } else { rho_fp };
+                records.push(AmpRec {
+                    topo: "diamond".to_string(), depth: max_depth, eps,
+                    rho_fp, rho_eff,
+                    ratio: rho_eff / rho_fp.max(1e-15),
+                    n_iters: nt - 1,
+                });
+            }
+        }
+    }
+
+    let n_r = records.len();
+    let baseline_ratio: f64 = records.iter().filter(|r| r.depth <= 3).map(|r| r.ratio).sum::<f64>()
+        / records.iter().filter(|r| r.depth <= 3).count() as f64;
+    println!("  {} data points, baseline ratio = {:.4}\n", n_r, baseline_ratio);
+
+    let cascade: Vec<f64> = records.iter().map(|r| {
+        ((1.0 - r.ratio) - (1.0 - baseline_ratio)).max(1e-10)
+    }).collect();
+    let x1: Vec<f64> = records.iter().map(|r| ((r.depth - 1).max(1) as f64).ln()).collect();
+    let x2: Vec<f64> = records.iter().map(|r| r.eps.ln()).collect();
+    let x3: Vec<f64> = (0..n_r).map(|i| x1[i] * x2[i]).collect();
+    let y: Vec<f64> = cascade.iter().map(|v| v.ln()).collect();
+
+    let n = n_r as f64;
+
+    // Model 1: ln(cascade) = a + b*x1 + c*x2  (separable, from v3.45)
+    // Model 2: ln(cascade) = a + b*x1 + c*x2 + d*x3  (interaction)
+    // Model 3: Threshold: ln(cascade) = a + b*ln(max(0.05,depth-1)) + c*ln(max(0.02,eps))
+
+    let mean_y: f64 = y.iter().sum::<f64>() / n;
+    let ss_tot: f64 = y.iter().map(|yi| (yi - mean_y).powi(2)).sum();
+
+    // OLS helper for k predictors
+    fn ols_r2(predictors: &[Vec<f64>], y: &[f64]) -> (Vec<f64>, f64) {
+        let n = y.len() as f64;
+        let k = predictors.len();
+        let p = k + 1; // with intercept
+
+        let mut a = vec![vec![0.0f64; p]; p];
+        let mut b_vec = vec![0.0f64; p];
+
+        a[0][0] = n;
+        for j in 0..k {
+            a[0][j + 1] = predictors[j].iter().sum::<f64>();
+            a[j + 1][0] = a[0][j + 1];
+            b_vec[j + 1] = predictors[j].iter().zip(y.iter()).map(|(x, yi)| x * yi).sum::<f64>();
+        }
+        b_vec[0] = y.iter().sum::<f64>();
+
+        for i in 0..k {
+            for j in 0..k {
+                a[i + 1][j + 1] = predictors[i].iter().zip(predictors[j].iter()).map(|(x, z)| x * z).sum::<f64>();
+            }
+        }
+
+        // Gaussian elimination
+        let mut aug = vec![vec![0.0f64; p + 1]; p];
+        for i in 0..p {
+            for j in 0..p { aug[i][j] = a[i][j]; }
+            aug[i][p] = b_vec[i];
+        }
+
+        for col in 0..p {
+            let mut max_val = aug[col][col].abs();
+            let mut max_row = col;
+            for row in (col + 1)..p {
+                if aug[row][col].abs() > max_val {
+                    max_val = aug[row][col].abs();
+                    max_row = row;
+                }
+            }
+            aug.swap(col, max_row);
+            if aug[col][col].abs() < 1e-15 { continue; }
+            for row in (col + 1)..p {
+                let factor = aug[row][col] / aug[col][col];
+                for j in col..=p {
+                    aug[row][j] -= factor * aug[col][j];
+                }
+            }
+        }
+
+        let mut coeff = vec![0.0f64; p];
+        for i in (0..p).rev() {
+            if aug[i][i].abs() < 1e-15 { continue; }
+            coeff[i] = aug[i][p];
+            for j in (i + 1)..p {
+                coeff[i] -= aug[i][j] * coeff[j];
+            }
+            coeff[i] /= aug[i][i];
+        }
+
+        let y_mean = y.iter().sum::<f64>() / n;
+        let mut ss_res = 0.0f64;
+        let mut ss_tot = 0.0f64;
+        for i in 0..y.len() {
+            let mut pred = coeff[0];
+            for j in 0..k { pred += coeff[j + 1] * predictors[j][i]; }
+            ss_res += (y[i] - pred).powi(2);
+            ss_tot += (y[i] - y_mean).powi(2);
+        }
+        let r2 = if ss_tot > 1e-15 { 1.0 - ss_res / ss_tot } else { 0.0 };
+        (coeff, r2)
+    }
+
+    // Model 1: separable
+    let (c1, r2_1) = ols_r2(&[x1.clone(), x2.clone()], &y);
+    println!("  Model 1 (separable): ln(cascade) = {:.3} + {:.3}·ln(d) + {:.3}·ln(ε)", c1[0], c1[1], c1[2]);
+    println!("  R² = {:.4}", r2_1);
+
+    // Model 2: with interaction
+    let (c2, r2_2) = ols_r2(&[x1.clone(), x2.clone(), x3.clone()], &y);
+    println!("\n  Model 2 (interaction): ln(cascade) = {:.3} + {:.3}·ln(d) + {:.3}·ln(ε) + {:.3}·ln(d)·ln(ε)", c2[0], c2[1], c2[2], c2[3]);
+    println!("  R² = {:.4}", r2_2);
+    println!("  Interaction coefficient γ = {:.3}", c2[3]);
+
+    // Model 3: threshold ε model — try different thresholds
+    println!("\n  Model 3: Threshold search");
+    let mut best_r2 = 0.0f64;
+    let mut best_eps0 = 0.0f64;
+
+    for eps0_int in 1..50 {
+        let eps0 = eps0_int as f64 * 0.002 + 0.001;
+        let x1_t: Vec<f64> = records.iter().map(|r| ((r.depth - 1).max(1) as f64).ln()).collect();
+        let x2_t: Vec<f64> = records.iter().map(|r| (r.eps - eps0).max(1e-10).ln()).collect();
+        let (_, r2_t) = ols_r2(&[x1_t, x2_t], &y);
+        if r2_t > best_r2 {
+            best_r2 = r2_t;
+            best_eps0 = eps0;
+        }
+    }
+    // Recalculate best model
+    let x1_t: Vec<f64> = records.iter().map(|r| ((r.depth - 1).max(1) as f64).ln()).collect();
+    let x2_t: Vec<f64> = records.iter().map(|r| (r.eps - best_eps0).max(1e-10).ln()).collect();
+    let (c3, r2_3) = ols_r2(&[x1_t.clone(), x2_t.clone()], &y);
+    println!("  Threshold model: ln(cascade) = {:.3} + {:.3}·ln(d-1) + {:.3}·ln(ε-{:.4})", c3[0], c3[1], c3[2], best_eps0);
+    println!("  R² = {:.4} at ε₀ = {:.4}", r2_3, best_eps0);
+
+    // Model 4: interaction + threshold
+    let x3_t: Vec<f64> = (0..n_r).map(|i| x1_t[i] * x2_t[i]).collect();
+    let (c4, r2_4) = ols_r2(&[x1_t, x2_t, x3_t], &y);
+    println!("\n  Model 4 (interaction+threshold): R² = {:.4}", r2_4);
+
+    println!("\n  MODEL COMPARISON:");
+    println!("  {:>30} {:>8} {:>8}", "Model", "R²", "ΔR²");
+    println!("  {:>30} {:>8.4} {:>8.4}", "1. Separable (v3.45)", r2_1, 0.0);
+    println!("  {:>30} {:>8.4} {:>8.4}", "2. + interaction γ·ln(d)·ln(ε)", r2_2, r2_2 - r2_1);
+    println!("  {:>30} {:>8.4} {:>8.4}", format!("3. Threshold ε₀={:.4}", best_eps0), r2_3, r2_3 - r2_1);
+    println!("  {:>30} {:>8.4} {:>8.4}", "4. Interaction + threshold", r2_4, r2_4 - r2_1);
+
+    // Residual analysis for best model
+    let best_model = if r2_4 >= r2_2 && r2_4 >= r2_3 { 4 }
+        else if r2_2 >= r2_3 { 2 } else { 3 };
+    println!("\n  Best model: {}", best_model);
+
+    println!("\n  Residual analysis (best model):");
+    println!("  {:>10} {:>5} {:>5} {:>8} {:>8} {:>8}",
+        "topo", "depth", "ε", "actual", "pred", "resid");
+    for (i, r) in records.iter().enumerate() {
+        let y_pred = match best_model {
+            2 => c2[0] + c2[1] * x1[i] + c2[2] * x2[i] + c2[3] * x3[i],
+            3 => c3[0] + c3[1] * x1[i] + c3[2] * (r.eps - best_eps0).max(1e-10).ln(),
+            _ => c4[0] + c4[1] * x1[i] + c4[2] * (r.eps - best_eps0).max(1e-10).ln() + c4[3] * x1[i] * (r.eps - best_eps0).max(1e-10).ln(),
+        };
+        let actual_amp = cascade[i].ln();
+        println!("  {:>10} {:>5} {:>5.2} {:>8.4} {:>8.4} {:>8.4}",
+            r.topo, r.depth, r.eps, actual_amp, y_pred, actual_amp - y_pred);
+    }
+
+    // Extract physical insights
+    println!("\n  PHYSICAL INSIGHTS:");
+    if r2_2 > r2_1 + 0.05 {
+        println!("  ✓ Interaction term significant (ΔR²={:.3})", r2_2 - r2_1);
+        if c2[3] > 0.0 {
+            println!("  ✓ γ>0: deep lattices amplify ε more (synergistic)");
+        } else {
+            println!("  ✓ γ<0: deep lattices saturate ε effect (antagonistic)");
+        }
+    } else {
+        println!("  ✗ Interaction term NOT significant (ΔR²={:.3})", r2_2 - r2_1);
+        println!("  → Separable model is adequate");
+    }
+    if r2_3 > r2_1 + 0.05 {
+        println!("  ✓ Threshold ε₀={:.4} significant (ΔR²={:.3})", best_eps0, r2_3 - r2_1);
+    }
+}

@@ -255,4 +255,5 @@ fn run_synthetic_suite(_max_concepts: usize, _time_limit: f64, _output_dir: &Pat
     experiments::run_transient_amplification_analysis();
     experiments::run_lattice_size_scaling();
     experiments::run_cascade_amplification_model();
+    experiments::run_cascade_interaction_model();
 }
