@@ -37679,3 +37679,156 @@ pub fn run_d0_only_robust_prediction() {
 
     println!("\n  Key insight: Compare d₀-only LOO vs d₀+ρ LOO to quantify ρ's marginal instability cost.");
 }
+
+pub fn run_wikipedia_d0_validation() {
+    println!("\n=== v3.69: Wikipedia Real Data Validation of d₀-Only Formula ===\n");
+
+    let wiki_dir = std::path::PathBuf::from("experiments/010-missing-archetypes/data/fulltext");
+    if !wiki_dir.exists() {
+        println!("  Wikipedia fulltext directory not found: {}", wiki_dir.display());
+        println!("  Skipping v3.69.");
+        return;
+    }
+
+    let mut articles: Vec<String> = Vec::new();
+    let mut article_names: Vec<String> = Vec::new();
+    for entry in std::fs::read_dir(&wiki_dir).unwrap() {
+        let entry = entry.unwrap();
+        let path = entry.path();
+        if path.extension().map_or(false, |e| e == "txt") {
+            if let Ok(content) = std::fs::read_to_string(&path) {
+                if content.len() > 100 {
+                    articles.push(content);
+                    article_names.push(path.file_stem().unwrap().to_string_lossy().to_string());
+                }
+            }
+        }
+    }
+
+    if articles.len() < 5 {
+        println!("  Not enough Wikipedia articles found (need >= 5, got {}).", articles.len());
+        return;
+    }
+
+    println!("  Loaded {} Wikipedia articles:", articles.len());
+    for name in &article_names {
+        println!("    - {}", name);
+    }
+    println!();
+
+    let tol = 1e-12_f64;
+
+    let times = std::time::Instant::now();
+    let lattice = fca::build_article_lattice(&articles, 200, 2, 500, 60.0);
+    let build_time = times.elapsed();
+    println!("  Built lattice: {} concepts, {} edges ({} ms)",
+        lattice.concepts.len(), lattice.edges.len(), build_time.as_millis());
+
+    if lattice.concepts.len() < 3 {
+        println!("  Lattice too small, skipping.");
+        return;
+    }
+
+    let stats = pipeline::compute_lattice_stats(&lattice);
+
+    let params = DynamicsParams::uniform();
+    let iter_time = std::time::Instant::now();
+    let results = pipeline::run_topological_iteration(&lattice, &stats, &params);
+    let iter_dur = iter_time.elapsed();
+    println!("  Iteration: {} ms", iter_dur.as_millis());
+
+    let mut pair_count = 0;
+    let mut conv_count = 0;
+    let mut errs_naive: Vec<f64> = Vec::new();
+    let mut errs_v357: Vec<f64> = Vec::new();
+    let mut errs_d0only: Vec<f64> = Vec::new();
+
+    fn mape(errs: &[f64]) -> f64 {
+        errs.iter().map(|e| e.abs()).sum::<f64>() / errs.len() as f64 * 100.0
+    }
+
+    for (ci, opt) in results.iter().enumerate() {
+        if let Some(ref res) = opt {
+            if !res.converged { continue; }
+            let rho_fp = res.rho_spectral;
+            if rho_fp <= 0.0 || rho_fp >= 1.0 { continue; }
+            let n_actual = res.n_iters as f64;
+            if n_actual < 3.0 { continue; }
+            let traj = &res.trajectory;
+            if traj.is_empty() { continue; }
+            let d0 = traj[0][0];
+            if d0 <= 0.0 { continue; }
+
+            let lr = (-rho_fp.ln()).max(0.001);
+            let n_naive = (d0 / tol).ln() / lr;
+
+            let e_v357 = -0.0386 + 0.0464 * d0.ln() + 0.0583 * lr;
+            let n_v357 = n_naive / (1.0 + e_v357).max(0.1);
+
+            let e_d0 = 0.0482 * d0.ln();
+            let n_d0 = n_naive / (1.0 + e_d0).max(0.1);
+
+            errs_naive.push((n_naive - n_actual) / n_actual);
+            errs_v357.push((n_v357 - n_actual) / n_actual);
+            errs_d0only.push((n_d0 - n_actual) / n_actual);
+
+            pair_count += 1;
+            conv_count += 1;
+        }
+    }
+
+    println!("\n  === Results ===\n");
+    println!("  Converged concepts: {}/{}", conv_count, pair_count);
+    println!();
+    println!("  Formula                          MAPE");
+    println!("  ───────────────────────────────  ──────");
+    println!("  Naive (no correction)            {:.2}%", mape(&errs_naive));
+    println!("  v3.57 (d₀+ρ, fixed coefs)       {:.2}%", mape(&errs_v357));
+    println!("  d₀-only (e=0.048·ln(d₀))        {:.2}%", mape(&errs_d0only));
+
+    let improv_naive = (mape(&errs_naive) - mape(&errs_d0only)) / mape(&errs_naive) * 100.0;
+    let improv_v357 = (mape(&errs_v357) - mape(&errs_d0only)) / mape(&errs_v357) * 100.0;
+
+    println!("\n  d₀-only improvement over naive: {:.1}%", improv_naive);
+    println!("  d₀-only improvement over v3.57: {:.1}%", improv_v357);
+
+    println!("\n  === Concept-Level Breakdown ===\n");
+    println!("  {:>5}  {:>8}  {:>8}  {:>8}  {:>10}  {:>10}  {:>10}",
+        "ci", "d₀", "ρ_fp", "n_act", "n_naive", "n_v357", "n_d0");
+    let mut ci_idx = 0;
+    for (ci, opt) in results.iter().enumerate() {
+        if let Some(ref res) = opt {
+            if !res.converged { continue; }
+            let rho_fp = res.rho_spectral;
+            if rho_fp <= 0.0 || rho_fp >= 1.0 { continue; }
+            let n_actual = res.n_iters as f64;
+            if n_actual < 3.0 { continue; }
+            let traj = &res.trajectory;
+            if traj.is_empty() { continue; }
+            let d0 = traj[0][0];
+            if d0 <= 0.0 { continue; }
+
+            let lr = (-rho_fp.ln()).max(0.001);
+            let n_naive = (d0 / tol).ln() / lr;
+            let e_v357 = -0.0386 + 0.0464 * d0.ln() + 0.0583 * lr;
+            let n_v357 = n_naive / (1.0 + e_v357).max(0.1);
+            let e_d0 = 0.0482 * d0.ln();
+            let n_d0 = n_naive / (1.0 + e_d0).max(0.1);
+
+            println!("  {:>5}  {:>8.4}  {:>8.4}  {:>8.0}  {:>10.1}  {:>10.1}  {:>10.1}",
+                ci, d0, rho_fp, n_actual, n_naive, n_v357, n_d0);
+            ci_idx += 1;
+            if ci_idx >= 20 { break; }
+        }
+    }
+
+    println!("\n  === Key Questions ===\n");
+    println!("  Q1: Does d₀-only formula generalize to Wikipedia real data?");
+    println!("    → MAPE(d₀-only) = {:.2}%", mape(&errs_d0only));
+    println!("  Q2: Is d₀-only better than v3.57 on real data?");
+    println!("    → ΔMAPE = {:.2}%", mape(&errs_v357) - mape(&errs_d0only));
+    println!("  Q3: Is the improvement consistent with synthetic results?");
+    println!("    → Synthetic: d₀-only 3.36% vs v3.57 4.49% (Δ=1.13%)");
+    println!("    → Wikipedia: d₀-only {:.2}% vs v3.57 {:.2}% (Δ={:.2}%)",
+        mape(&errs_d0only), mape(&errs_v357), mape(&errs_v357) - mape(&errs_d0only));
+}
