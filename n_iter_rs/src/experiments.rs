@@ -33,6 +33,341 @@ fn t_mono_verdict(passes: usize, total: usize) {
     }
 }
 
+pub fn run_early_jacobian_rho_estimation() {
+    println!("\n=== v3.63: Early Jacobian ρ Estimation ===\n");
+
+    let param_sets: Vec<(&str, DynamicsParams)> = vec![
+        ("uniform", DynamicsParams::uniform()),
+        ("high-β", DynamicsParams::uniform().with_beta1(2.0)),
+        ("high-δ", DynamicsParams::uniform().with_delta1(2.0)),
+        ("asym-1", DynamicsParams::uniform().with_beta1(1.5).with_gamma1(0.8).with_zeta1(1.2).with_theta1(0.7).with_kappa2(1.8).with_eps(0.01)),
+        ("asym-2", DynamicsParams::uniform().with_beta1(0.5).with_gamma1(2.0).with_zeta1(0.8).with_theta1(1.5).with_kappa2(0.6).with_eps(0.05)),
+    ];
+
+    let topo_builders: Vec<(&str, Box<dyn Fn() -> fca::FcaLattice>)> = vec![
+        ("chain-5", Box::new(|| fca::build_chain_lattice(5))),
+        ("chain-10", Box::new(|| fca::build_chain_lattice(10))),
+        ("chain-20", Box::new(|| fca::build_chain_lattice(20))),
+        ("chain-50", Box::new(|| fca::build_chain_lattice(50))),
+        ("diamond", Box::new(|| fca::build_diamond_lattice())),
+        ("b3", Box::new(|| fca::build_b3_lattice())),
+        ("grid-4x4", Box::new(|| fca::build_grid_lattice(4, 4))),
+    ];
+
+    let tol = 1e-12_f64;
+
+    println!("  === 1. ρ(J_k) Convergence Speed ===\n");
+
+    for &(tname, ref builder) in &topo_builders {
+        let lattice = builder();
+        let stats = pipeline::compute_lattice_stats(&lattice);
+        let n_concepts = lattice.concepts.len();
+
+        for &(pname, ref params) in &param_sets {
+            let results = pipeline::run_topological_iteration(&lattice, &stats, params);
+
+            let mut all_fracs: Vec<(f64, f64, f64, f64, f64)> = Vec::new();
+
+            for (ci, opt) in results.iter().enumerate() {
+                if let Some(ref res) = opt {
+                    if !res.converged { continue; }
+                    let rho_fp = res.rho_spectral;
+                    if rho_fp <= 0.0 || rho_fp >= 1.0 { continue; }
+                    let n_iters = res.n_iters;
+                    if n_iters < 10 { continue; }
+                    let traj = &res.trajectory;
+                    if traj.len() < 5 { continue; }
+
+                    let m_star = five_dim::from_array(&traj[traj.len() - 1]);
+                    let csize = &lattice.concept_sizes[ci];
+                    let n_intent = csize.0;
+                    let n_extent = csize.1;
+                    let n_total = n_intent + n_extent;
+                    let n_words = lattice.n_words;
+                    let n_bigrams = lattice.n_bigrams;
+
+                    let mut b_up_star = 0.0f64;
+                    let mut rho_up_star = 0.0f64;
+                    let feeders = &stats.feeders[ci];
+                    if !feeders.is_empty() {
+                        for &f_idx in feeders {
+                            if let Some(ref fres) = results[f_idx] {
+                                if fres.converged {
+                                    b_up_star += five_dim::b_of(&fres.m_star);
+                                    rho_up_star += five_dim::rho_of(&fres.m_star);
+                                }
+                            }
+                        }
+                        b_up_star /= feeders.len() as f64;
+                        rho_up_star /= feeders.len() as f64;
+                    }
+
+                    let checkpoints: Vec<usize> = {
+                        let mut cps = vec![0];
+                        for frac in &[0.05, 0.10, 0.20, 0.30, 0.50, 0.70] {
+                            let k = ((n_iters as f64 * frac) as usize).max(1).min(n_iters - 1);
+                            if *cps.last().unwrap() < k { cps.push(k); }
+                        }
+                        cps
+                    };
+
+                    let m0 = pipeline::init_state(ci, &lattice, &stats);
+                    let (_, rho_hist) = n_operator::run_iteration_with_rho_history(
+                        &m0, b_up_star, rho_up_star, params, n_iters + 5, tol, &checkpoints
+                    );
+
+                    if rho_hist.len() >= 2 {
+                        let rho_0 = rho_hist[0].1;
+                        let mut fracs = Vec::new();
+                        for &(k, rho_k) in &rho_hist {
+                            let frac = k as f64 / n_iters as f64;
+                            let err = ((rho_k - rho_fp) / rho_fp).abs();
+                            fracs.push((frac, err, rho_k, rho_fp, rho_0));
+                        }
+                        all_fracs.extend(fracs);
+                    }
+                }
+            }
+
+            if all_fracs.is_empty() { continue; }
+
+            let frac_targets = [0.0, 0.05, 0.10, 0.20, 0.30, 0.50, 0.70, 1.0];
+            for &target in &frac_targets {
+                let matching: Vec<&(f64, f64, f64, f64, f64)> = all_fracs.iter()
+                    .filter(|(f, _, _, _, _, )| (f - target).abs() < 0.03)
+                    .collect();
+                if matching.is_empty() { continue; }
+                let mape: f64 = matching.iter().map(|(_, e, _, _, _)| e).sum::<f64>() / matching.len() as f64;
+                let max_err: f64 = matching.iter().map(|(_, e, _, _, _)| *e).fold(0.0f64, f64::max);
+                let within5: f64 = matching.iter().filter(|(_, e, _, _, _)| *e < 0.05).count() as f64 / matching.len() as f64;
+                if target <= 0.1 || target == 0.2 || target == 0.5 || target >= 0.99 {
+                    println!("    {:<14} {:<10} step_frac={:.0}%  MAPE={:.2}%  max_err={:.2}%  within5%={:.0}%  n={}",
+                        tname, pname, target * 100.0, mape * 100.0, max_err * 100.0, within5 * 100.0, matching.len());
+                }
+            }
+        }
+    }
+
+    println!("\n  === 2. ρ Stabilization Step (ρ within 5% of final) ===\n");
+
+    for &(tname, ref builder) in &topo_builders {
+        let lattice = builder();
+        let stats = pipeline::compute_lattice_stats(&lattice);
+
+        for &(pname, ref params) in &param_sets {
+            let results = pipeline::run_topological_iteration(&lattice, &stats, params);
+
+            let mut stab_steps: Vec<f64> = Vec::new();
+
+            for (ci, opt) in results.iter().enumerate() {
+                if let Some(ref res) = opt {
+                    if !res.converged { continue; }
+                    let rho_fp = res.rho_spectral;
+                    if rho_fp <= 0.0 || rho_fp >= 1.0 { continue; }
+                    let n_iters = res.n_iters;
+                    if n_iters < 10 { continue; }
+                    let traj = &res.trajectory;
+
+                    let csize = &lattice.concept_sizes[ci];
+                    let n_intent = csize.0;
+                    let n_extent = csize.1;
+                    let n_words = lattice.n_words;
+                    let n_bigrams = lattice.n_bigrams;
+
+                    let mut b_up_star = 0.0f64;
+                    let mut rho_up_star = 0.0f64;
+                    let feeders = &stats.feeders[ci];
+                    if !feeders.is_empty() {
+                        for &f_idx in feeders {
+                            if let Some(ref fres) = results[f_idx] {
+                                if fres.converged {
+                                    b_up_star += five_dim::b_of(&fres.m_star);
+                                    rho_up_star += five_dim::rho_of(&fres.m_star);
+                                }
+                            }
+                        }
+                        b_up_star /= feeders.len() as f64;
+                        rho_up_star /= feeders.len() as f64;
+                    }
+
+                    let checkpoints: Vec<usize> = (0..=n_iters.min(200)).collect();
+                    let m0 = pipeline::init_state(ci, &lattice, &stats);
+                    let (_, rho_hist) = n_operator::run_iteration_with_rho_history(
+                        &m0, b_up_star, rho_up_star, params, n_iters + 5, tol, &checkpoints
+                    );
+
+                    for &(k, rho_k) in &rho_hist {
+                        if ((rho_k - rho_fp) / rho_fp).abs() < 0.05 {
+                            stab_steps.push(k as f64 / n_iters as f64);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if !stab_steps.is_empty() {
+                let mean_frac: f64 = stab_steps.iter().sum::<f64>() / stab_steps.len() as f64;
+                let median_frac = {
+                    let mut sorted = stab_steps.clone();
+                    sorted.sort_by(|a, b| a.partial_cmp(b).unwrap());
+                    sorted[sorted.len() / 2]
+                };
+                let max_frac = stab_steps.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
+                println!("    {:<14} {:<10} n={:>4}  mean_frac={:.2}  median_frac={:.2}  max_frac={:.2}",
+                    tname, pname, stab_steps.len(), mean_frac, median_frac, max_frac);
+            }
+        }
+    }
+
+    println!("\n  === 3. ρ_k/ρ_fp Ratio at 10% and 20% Steps ===\n");
+
+    for &(tname, ref builder) in &topo_builders {
+        let lattice = builder();
+        let stats = pipeline::compute_lattice_stats(&lattice);
+
+        for &(pname, ref params) in &param_sets {
+            let results = pipeline::run_topological_iteration(&lattice, &stats, params);
+
+            let mut ratios_10: Vec<f64> = Vec::new();
+            let mut ratios_20: Vec<f64> = Vec::new();
+
+            for (ci, opt) in results.iter().enumerate() {
+                if let Some(ref res) = opt {
+                    if !res.converged { continue; }
+                    let rho_fp = res.rho_spectral;
+                    if rho_fp <= 0.0 || rho_fp >= 1.0 { continue; }
+                    let n_iters = res.n_iters;
+                    if n_iters < 20 { continue; }
+
+                    let mut b_up_star = 0.0f64;
+                    let mut rho_up_star = 0.0f64;
+                    let feeders = &stats.feeders[ci];
+                    if !feeders.is_empty() {
+                        for &f_idx in feeders {
+                            if let Some(ref fres) = results[f_idx] {
+                                if fres.converged {
+                                    b_up_star += five_dim::b_of(&fres.m_star);
+                                    rho_up_star += five_dim::rho_of(&fres.m_star);
+                                }
+                            }
+                        }
+                        b_up_star /= feeders.len() as f64;
+                        rho_up_star /= feeders.len() as f64;
+                    }
+
+                    let k10 = (n_iters as f64 * 0.10) as usize;
+                    let k20 = (n_iters as f64 * 0.20) as usize;
+                    let checkpoints = vec![k10.max(1), k20.max(2)];
+                    let m0 = pipeline::init_state(ci, &lattice, &stats);
+                    let (_, rho_hist) = n_operator::run_iteration_with_rho_history(
+                        &m0, b_up_star, rho_up_star, params, n_iters + 5, tol, &checkpoints
+                    );
+
+                    for &(k, rho_k) in &rho_hist {
+                        let frac = k as f64 / n_iters as f64;
+                        if (frac - 0.10).abs() < 0.02 {
+                            ratios_10.push(rho_k / rho_fp);
+                        }
+                        if (frac - 0.20).abs() < 0.02 {
+                            ratios_20.push(rho_k / rho_fp);
+                        }
+                    }
+                }
+            }
+
+            if !ratios_10.is_empty() {
+                let r10_mean: f64 = ratios_10.iter().sum::<f64>() / ratios_10.len() as f64;
+                let r10_std: f64 = (ratios_10.iter().map(|v| (v - r10_mean).powi(2)).sum::<f64>() / ratios_10.len() as f64).sqrt();
+                let r20_mean: f64 = ratios_20.iter().sum::<f64>() / ratios_20.len() as f64;
+                let r20_std: f64 = (ratios_20.iter().map(|v| (v - r20_mean).powi(2)).sum::<f64>() / ratios_20.len() as f64).sqrt();
+                println!("    {:<14} {:<10} 10%: ratio={:.4}±{:.4}  20%: ratio={:.4}±{:.4}",
+                    tname, pname, r10_mean, r10_std, r20_mean, r20_std);
+            }
+        }
+    }
+
+    println!("\n  === 4. End-to-End: Predict n from Early ρ Estimate ===\n");
+
+    fn mape_fn(preds: &[f64], actuals: &[f64]) -> f64 {
+        preds.iter().zip(actuals.iter()).map(|(p, a)| ((p - a) / a).abs()).sum::<f64>() / preds.len() as f64
+    }
+
+    for &(tname, ref builder) in &topo_builders {
+        let lattice = builder();
+        let stats = pipeline::compute_lattice_stats(&lattice);
+
+        for &(pname, ref params) in &param_sets {
+            let results = pipeline::run_topological_iteration(&lattice, &stats, params);
+
+            let mut actuals: Vec<f64> = Vec::new();
+            let mut preds_10: Vec<f64> = Vec::new();
+            let mut preds_20: Vec<f64> = Vec::new();
+
+            for (ci, opt) in results.iter().enumerate() {
+                if let Some(ref res) = opt {
+                    if !res.converged { continue; }
+                    let rho_fp = res.rho_spectral;
+                    if rho_fp <= 0.0 || rho_fp >= 1.0 { continue; }
+                    let n_iters = res.n_iters as f64;
+                    if n_iters < 20.0 { continue; }
+                    let traj = &res.trajectory;
+                    if traj.is_empty() { continue; }
+                    let d0 = traj[0][0];
+                    if d0 <= 0.0 { continue; }
+
+                    let mut b_up_star = 0.0f64;
+                    let mut rho_up_star = 0.0f64;
+                    let feeders = &stats.feeders[ci];
+                    if !feeders.is_empty() {
+                        for &f_idx in feeders {
+                            if let Some(ref fres) = results[f_idx] {
+                                if fres.converged {
+                                    b_up_star += five_dim::b_of(&fres.m_star);
+                                    rho_up_star += five_dim::rho_of(&fres.m_star);
+                                }
+                            }
+                        }
+                        b_up_star /= feeders.len() as f64;
+                        rho_up_star /= feeders.len() as f64;
+                    }
+
+                    let k10 = (n_iters * 0.10) as usize;
+                    let k20 = (n_iters * 0.20) as usize;
+                    let checkpoints = vec![k10.max(1), k20.max(2)];
+                    let m0 = pipeline::init_state(ci, &lattice, &stats);
+                    let (_, rho_hist) = n_operator::run_iteration_with_rho_history(
+                        &m0, b_up_star, rho_up_star, params, n_iters as usize + 5, tol, &checkpoints
+                    );
+
+                    let lr_fp = (-rho_fp.ln()).max(0.001);
+
+                    for &(k, rho_k) in &rho_hist {
+                        let frac = k as f64 / n_iters;
+                        let lr_k = (-rho_k.ln()).max(0.001);
+                        let e = -0.0386 + 0.0464 * d0.ln() + 0.0583 * lr_k;
+                        let n_pred = (d0 / tol).ln() / lr_k / (1.0 + e).max(0.1);
+
+                        if (frac - 0.10).abs() < 0.02 {
+                            actuals.push(n_iters);
+                            preds_10.push(n_pred);
+                        }
+                        if (frac - 0.20).abs() < 0.02 {
+                            preds_20.push(n_pred);
+                        }
+                    }
+                }
+            }
+
+            if !actuals.is_empty() && preds_10.len() == actuals.len() {
+                let m10 = mape_fn(&preds_10, &actuals);
+                let m20 = if preds_20.len() == actuals.len() { mape_fn(&preds_20, &actuals) } else { f64::NAN };
+                println!("    {:<14} {:<10} n={:>4}  MAPE(10%)={:.1}%  MAPE(20%)={:.1}%",
+                    tname, pname, actuals.len(), m10 * 100.0, m20 * 100.0);
+            }
+        }
+    }
+}
+
 pub fn run_experiment(label: &str, _merged_text: &str, art_texts: &[String], max_attrs: usize, max_concepts: usize, time_limit: f64, _output_dir: &PathBuf) {
     let bg_chars: usize = art_texts.iter().map(|t| t.chars().count()).sum();
 

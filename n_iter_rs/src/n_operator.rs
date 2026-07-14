@@ -203,6 +203,73 @@ pub fn run_iteration(
     }
 }
 
+pub fn run_iteration_with_rho_history(
+    m0: &State5,
+    b_up: f64,
+    rho_up: f64,
+    p: &DynamicsParams,
+    max_iter: usize,
+    tol: f64,
+    checkpoints: &[usize],
+) -> (IterResult, Vec<(usize, f64)>) {
+    let mut m = *m0;
+    let mut trajectory: Vec<[f64; 5]> = vec![five_dim::to_array(&m)];
+    let mut rho_history: Vec<(usize, f64)> = Vec::new();
+    let mut cp_idx = 0;
+
+    for k in 0..max_iter {
+        while cp_idx < checkpoints.len() && k == checkpoints[cp_idx] {
+            let j = compute_jacobian(&m, b_up, rho_up, p);
+            let eigs = j.complex_eigenvalues();
+            let rho_val = eigs.iter().map(|c| c.modulus()).fold(0.0_f64, f64::max);
+            rho_history.push((k, rho_val));
+            cp_idx += 1;
+        }
+
+        let m_next = n_operator(&m, b_up, rho_up, p);
+        trajectory.push(five_dim::to_array(&m_next));
+        if (m_next - m).abs().max() < tol {
+            m = m_next;
+            let j = compute_jacobian(&m, b_up, rho_up, p);
+            let eigs = j.complex_eigenvalues();
+            let rho_val = eigs.iter().map(|c| c.modulus()).fold(0.0_f64, f64::max);
+            while cp_idx < checkpoints.len() {
+                rho_history.push((k + 1, rho_val));
+                cp_idx += 1;
+            }
+            let tau = -f64::ln(rho_val.max(1e-10));
+            let mut j_arr = [0.0_f64; 25];
+            for r in 0..5 { for c in 0..5 { j_arr[r * 5 + c] = j[(r, c)]; } }
+            return (IterResult {
+                converged: true,
+                m_star: m,
+                rho_spectral: rho_val,
+                tau_inv: tau,
+                n_iters: k + 1,
+                trajectory,
+                jacobian: j_arr,
+            }, rho_history);
+        }
+        m = m_next;
+    }
+
+    let j = compute_jacobian(&m, b_up, rho_up, p);
+    let eigs = j.complex_eigenvalues();
+    let rho_val = eigs.iter().map(|c| c.modulus()).fold(0.0_f64, f64::max);
+    let tau = -f64::ln(rho_val.max(1e-10));
+    let mut j_arr = [0.0_f64; 25];
+    for r in 0..5 { for c in 0..5 { j_arr[r * 5 + c] = j[(r, c)]; } }
+    (IterResult {
+        converged: false,
+        m_star: m,
+        rho_spectral: rho_val,
+        tau_inv: tau,
+        n_iters: max_iter,
+        trajectory,
+        jacobian: j_arr,
+    }, rho_history)
+}
+
 impl IterResult {
     pub fn verify_trajectory_conservation(&self, p: &DynamicsParams, b_up: f64, rho_up: f64) -> Option<f64> {
         if self.trajectory.len() < 2 {
