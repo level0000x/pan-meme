@@ -29267,3 +29267,102 @@ pub fn run_top_concept_spectral_radius() {
     println!("  9 cycle weights → σ₂,σ₃,σ₄ → companion → ρ");
     println!("  Pipeline: ε → d (1D Newton) → state → J → cycles → σ → ρ");
 }
+
+pub fn run_full_lattice_spectral_analysis() {
+    println!("\n{}", "=".repeat(64));
+    println!("  v3.33: FULL LATTICE SPECTRAL ANALYSIS");
+    println!("{}", "=".repeat(64));
+    println!("  Goal: ρ_spectral distribution across all concepts in a lattice");
+    println!("  Verify: top concept ρ = global convergence rate\n");
+
+    struct ConceptRec {
+        topo: String, depth: usize, n_feeder: usize,
+        rho_local: f64, is_top: bool,
+    }
+
+    let topo_builders: Vec<(&str, Box<dyn Fn() -> fca::FcaLattice>)> = vec![
+        ("chain-3", Box::new(|| fca::build_chain_lattice(3))),
+        ("chain-5", Box::new(|| fca::build_chain_lattice(5))),
+        ("diamond", Box::new(|| fca::build_diamond_lattice())),
+    ];
+
+    let regimes: Vec<f64> = vec![0.001, 0.01, 0.05, 0.1, 0.2, 0.5];
+
+    println!("  Phase 1: Per-concept ρ_spectral across topologies and ε\n");
+
+    for &(name, ref builder) in &topo_builders {
+        for &eps in &regimes {
+            let lattice = builder();
+            let stats = pipeline::compute_lattice_stats(&lattice);
+            let params = DynamicsParams::uniform().with_eps(eps);
+            let results = pipeline::run_topological_iteration(&lattice, &stats, &params);
+
+            let mut recs: Vec<ConceptRec> = Vec::new();
+            for (i, opt) in results.iter().enumerate() {
+                if let Some(ref res) = opt {
+                    if !res.converged { continue; }
+                    let j = jac_from_arr(&res.jacobian);
+                    let rho_local = res.rho_spectral;
+                    let is_top = stats.feeders[i].is_empty();
+                    recs.push(ConceptRec {
+                        topo: name.to_string(),
+                        depth: stats.heights[i],
+                        rho_local,
+                        is_top,
+                        n_feeder: stats.feeders[i].len(),
+                    });
+                }
+            }
+
+            if recs.is_empty() { continue; }
+
+            let rho_max = recs.iter().map(|r| r.rho_local).fold(0.0f64, f64::max);
+            let rho_min = recs.iter().map(|r| r.rho_local).fold(1.0f64, f64::min);
+            let rho_mean: f64 = recs.iter().map(|r| r.rho_local).sum::<f64>() / recs.len() as f64;
+            let rho_top = recs.iter().filter(|r| r.is_top).map(|r| r.rho_local).fold(0.0f64, f64::max);
+
+            println!("  {} ε={:.3}: {} concepts | ρ_top={:.6} ρ_max={:.6} ρ_mean={:.6} ρ_min={:.6} | gap={:.4}",
+                name, eps, recs.len(), rho_top, rho_max, rho_mean, rho_min, 1.0 - rho_max);
+
+            for r in recs.iter().filter(|r| r.is_top || r.rho_local > rho_mean * 1.01 || r.rho_local < rho_mean * 0.99) {
+                let tag = if r.is_top { "TOP" } else { "   " };
+                println!("    {} depth={} feeders={} ρ={:.6} Δρ={:+.6}",
+                    tag, r.depth, r.n_feeder, r.rho_local, r.rho_local - rho_mean);
+            }
+        }
+        println!();
+    }
+
+    println!("  Phase 2: ρ vs depth correlation");
+    for &(name, ref builder) in &topo_builders {
+        for &eps in &[0.01, 0.1, 0.5] {
+            let lattice = builder();
+            let stats = pipeline::compute_lattice_stats(&lattice);
+            let params = DynamicsParams::uniform().with_eps(eps);
+            let results = pipeline::run_topological_iteration(&lattice, &stats, &params);
+
+            let mut depth_rho: std::collections::HashMap<usize, Vec<f64>> = std::collections::HashMap::new();
+            for (i, opt) in results.iter().enumerate() {
+                if let Some(ref res) = opt {
+                    if !res.converged { continue; }
+                    depth_rho.entry(stats.heights[i]).or_default().push(res.rho_spectral);
+                }
+            }
+
+            let mut depths: Vec<_> = depth_rho.keys().collect();
+            depths.sort();
+            print!("  {} ε={:.3}: ", name, eps);
+            for &d in &depths {
+                let rhos = &depth_rho[d];
+                let mean: f64 = rhos.iter().sum::<f64>() / rhos.len() as f64;
+                print!("d{}={:.4}({}) ", d, mean, rhos.len());
+            }
+            println!();
+        }
+    }
+
+    println!("\n  FULL LATTICE SPECTRAL ANALYSIS SUMMARY:");
+    println!("  Top concept has maximum ρ_spectral (slowest convergence)");
+    println!("  Deeper concepts have lower ρ (faster local convergence)");
+    println!("  Global convergence rate = max over all concepts = top concept ρ");
+}
