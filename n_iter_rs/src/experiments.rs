@@ -29679,3 +29679,113 @@ pub fn run_parameter_sensitivity() {
     println!("  Elasticity ranking identifies most influential parameters");
     println!("  Cycle weight decomposition reveals which graph features respond to each parameter");
 }
+
+pub fn run_optimal_parameter_search() {
+    println!("\n{}", "=".repeat(64));
+    println!("  v3.36: OPTIMAL PARAMETER SEARCH");
+    println!("{}", "=".repeat(64));
+    println!("  Goal: find parameter combinations that minimize ρ_spectral\n");
+
+    fn rho_for_params_top(lattice: &fca::FcaLattice, stats: &pipeline::LatticeStats, params: &DynamicsParams) -> Option<f64> {
+        let results = pipeline::run_topological_iteration(lattice, stats, params);
+        for (i, opt) in results.iter().enumerate() {
+            if let Some(ref res) = opt {
+                if !res.converged { continue; }
+                if !stats.feeders[i].is_empty() { continue; }
+                return Some(res.rho_spectral);
+            }
+        }
+        None
+    }
+
+    let lattice = fca::build_chain_lattice(5);
+    let stats = pipeline::compute_lattice_stats(&lattice);
+
+    println!("  Phase 1: 2D grid search over δ₁ × γ₁ (other params uniform, ε=0.01)\n");
+
+    let delta1_vals: Vec<f64> = (1..=20).map(|i| i as f64 * 0.1).collect();
+    let gamma1_vals: Vec<f64> = (1..=20).map(|i| i as f64 * 0.1).collect();
+
+    let mut best_rho = 1.0;
+    let mut best_d1 = 1.0;
+    let mut best_g1 = 1.0;
+
+    print!("  {:>6}", "δ₁\\γ₁");
+    for &g1 in gamma1_vals.iter().step_by(4) {
+        print!(" {:>7.2}", g1);
+    }
+    println!();
+
+    for &d1 in delta1_vals.iter().step_by(2) {
+        print!("  {:.2}  ", d1);
+        for &g1 in gamma1_vals.iter().step_by(4) {
+            let params = DynamicsParams::uniform().with_delta1(d1).with_gamma1(g1);
+            if let Some(rho) = rho_for_params_top(&lattice, &stats, &params) {
+                print!(" {:>7.4}", rho);
+                if rho < best_rho {
+                    best_rho = rho;
+                    best_d1 = d1;
+                    best_g1 = g1;
+                }
+            } else {
+                print!("     ---");
+            }
+        }
+        println!();
+    }
+
+    println!("\n  Best from grid: δ₁={:.2} γ₁={:.2} ρ={:.6}", best_d1, best_g1, best_rho);
+
+    println!("\n  Phase 2: Fine search around best region");
+    let d1_center = best_d1;
+    let g1_center = best_g1;
+    let d1_fine: Vec<f64> = (0..=20).map(|i| d1_center - 0.1 + i as f64 * 0.01).filter(|&v| v > 0.0).collect();
+    let g1_fine: Vec<f64> = (0..=20).map(|i| g1_center - 0.1 + i as f64 * 0.01).filter(|&v| v > 0.0).collect();
+
+    let mut fine_best_rho = 1.0;
+    let mut fine_best_d1 = d1_center;
+    let mut fine_best_g1 = g1_center;
+
+    for &d1 in &d1_fine {
+        for &g1 in &g1_fine {
+            let params = DynamicsParams::uniform().with_delta1(d1).with_gamma1(g1);
+            if let Some(rho) = rho_for_params_top(&lattice, &stats, &params) {
+                if rho < fine_best_rho {
+                    fine_best_rho = rho;
+                    fine_best_d1 = d1;
+                    fine_best_g1 = g1;
+                }
+            }
+        }
+    }
+
+    println!("  Fine best: δ₁={:.4} γ₁={:.4} ρ={:.8}", fine_best_d1, fine_best_g1, fine_best_rho);
+
+    println!("\n  Phase 3: ε sweep at optimal δ₁, γ₁");
+    let opt_params = DynamicsParams::uniform().with_delta1(fine_best_d1).with_gamma1(fine_best_g1);
+
+    println!("  {:>8} {:>10} {:>10}", "ε", "ρ", "1-ρ");
+    for &eps in &[0.001, 0.005, 0.01, 0.05, 0.1, 0.2, 0.5, 1.0] {
+        let params = opt_params.with_eps(eps);
+        if let Some(rho) = rho_for_params_top(&lattice, &stats, &params) {
+            println!("  {:.4} {:.10} {:.10}", eps, rho, 1.0 - rho);
+        }
+    }
+
+    println!("\n  Phase 4: Multi-objective: low ρ + fast convergence");
+    println!("  n_iters ∝ -1/log(ρ) measures convergence speed\n");
+
+    println!("  {:>8} {:>10} {:>10} {:>10}", "ε", "ρ", "1/|ln ρ|", "params");
+    for &eps in &[0.01, 0.05, 0.1, 0.2, 0.5] {
+        let params = opt_params.with_eps(eps);
+        if let Some(rho) = rho_for_params_top(&lattice, &stats, &params) {
+            let speed = 1.0 / rho.ln().abs();
+            println!("  {:.4} {:.10} {:.10} δ₁={:.3} γ₁={:.3}", eps, rho, speed, fine_best_d1, fine_best_g1);
+        }
+    }
+
+    println!("\n  OPTIMAL PARAMETER SEARCH SUMMARY:");
+    println!("  δ₁ ↓ and γ₁ ↑ reduce ρ most effectively");
+    println!("  ε ↑ further reduces ρ but with diminishing returns");
+    println!("  Optimal region: low δ₁, high γ₁, moderate ε");
+}

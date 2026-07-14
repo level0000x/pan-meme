@@ -245,4 +245,5 @@ fn run_synthetic_suite(_max_concepts: usize, _time_limit: f64, _output_dir: &Pat
     experiments::run_full_lattice_spectral_analysis();
     experiments::run_nonuniform_param_spectral();
     experiments::run_parameter_sensitivity();
+    experiments::run_optimal_parameter_search();
 }
