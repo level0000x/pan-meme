@@ -253,4 +253,5 @@ fn run_synthetic_suite(_max_concepts: usize, _time_limit: f64, _output_dir: &Pat
     experiments::run_nonlinear_acceleration_analysis();
     experiments::run_nonlinear_iteration_model();
     experiments::run_transient_amplification_analysis();
+    experiments::run_lattice_size_scaling();
 }
