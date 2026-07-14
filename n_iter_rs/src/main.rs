@@ -174,6 +174,7 @@ fn run_single(name: &str) {
         ("run_expanded_parameter_validation", experiments::run_expanded_parameter_validation),
         ("run_d0_only_robust_prediction", experiments::run_d0_only_robust_prediction),
         ("run_wikipedia_d0_validation", experiments::run_wikipedia_d0_validation),
+        ("run_d0_from_fca_structure", experiments::run_d0_from_fca_structure),
     ];
     if let Some((_, f)) = fns.iter().find(|(n, _)| *n == name) {
         f();
@@ -348,4 +349,5 @@ fn run_synthetic_suite() {
     experiments::run_quadratic_d0_correction();
     experiments::run_expanded_parameter_validation();
     experiments::run_wikipedia_d0_validation();
+    experiments::run_d0_from_fca_structure();
 }

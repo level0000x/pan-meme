@@ -37832,3 +37832,233 @@ pub fn run_wikipedia_d0_validation() {
     println!("    → Wikipedia: d₀-only {:.2}% vs v3.57 {:.2}% (Δ={:.2}%)",
         mape(&errs_d0only), mape(&errs_v357), mape(&errs_v357) - mape(&errs_d0only));
 }
+
+pub fn run_d0_from_fca_structure() {
+    println!("\n=== v3.70: d₀ from FCA — Can We Predict d₀ from Concept Lattice Properties? ===\n");
+
+    let topo_builders: Vec<(&str, Box<dyn Fn() -> fca::FcaLattice>)> = vec![
+        ("chain-5", Box::new(|| fca::build_chain_lattice(5))),
+        ("chain-10", Box::new(|| fca::build_chain_lattice(10))),
+        ("chain-20", Box::new(|| fca::build_chain_lattice(20))),
+        ("chain-50", Box::new(|| fca::build_chain_lattice(50))),
+        ("diamond", Box::new(|| fca::build_diamond_lattice())),
+        ("m3", Box::new(|| fca::build_m3_lattice())),
+        ("b3", Box::new(|| fca::build_b3_lattice())),
+        ("b4", Box::new(|| fca::build_b4_lattice())),
+        ("grid-4x4", Box::new(|| fca::build_grid_lattice(4, 4))),
+        ("grid-5x5", Box::new(|| fca::build_grid_lattice(5, 5))),
+        ("antichain-10", Box::new(|| fca::build_antichain_lattice(10))),
+    ];
+
+    let params = DynamicsParams::uniform();
+    let tol = 1e-12_f64;
+
+    #[derive(Clone)]
+    struct D0Rec {
+        topo: String,
+        ci: usize,
+        d0: f64,
+        extent: usize,
+        intent: usize,
+        depth: usize,
+        n_feeders: usize,
+        extent_intent_ratio: f64,
+        concept_size: usize,
+        is_top: bool,
+        is_bottom: bool,
+    }
+
+    let mut records: Vec<D0Rec> = Vec::new();
+
+    for &(tname, ref builder) in &topo_builders {
+        let lattice = builder();
+        let stats = pipeline::compute_lattice_stats(&lattice);
+        let results = pipeline::run_topological_iteration(&lattice, &stats, &params);
+
+        for (ci, opt) in results.iter().enumerate() {
+            if let Some(ref res) = opt {
+                if !res.converged { continue; }
+                let traj = &res.trajectory;
+                if traj.is_empty() { continue; }
+                let d0 = traj[0][0];
+                if d0 <= 0.0 { continue; }
+
+                let (extent, intent) = lattice.concept_sizes[ci];
+                let depth = stats.heights[ci];
+                let n_feeders = stats.feeders[ci].len();
+                let ratio = extent as f64 / (intent as f64).max(1.0);
+                let csize = extent + intent;
+                let is_top = n_feeders == 0;
+                let is_bottom = depth == 0;
+
+                records.push(D0Rec {
+                    topo: tname.to_string(), ci, d0,
+                    extent, intent, depth, n_feeders,
+                    extent_intent_ratio: ratio,
+                    concept_size: csize,
+                    is_top, is_bottom,
+                });
+            }
+        }
+    }
+
+    let n = records.len();
+    println!("  Collected {} concepts from {} topologies\n", n, topo_builders.len());
+
+    println!("  === 1. d₀ Distribution Across Topologies ===\n");
+    println!("  Topo          n_concepts  d₀_min    d₀_max    d₀_mean   unique");
+    println!("  ────────────  ──────────  ────────  ────────  ────────  ──────");
+
+    let topo_names: Vec<String> = {
+        let mut v: Vec<String> = records.iter().map(|r| r.topo.clone()).collect();
+        v.sort(); v.dedup(); v
+    };
+
+    for tname in &topo_names {
+        let idxs: Vec<usize> = records.iter().enumerate().filter(|(_, r)| r.topo == *tname).map(|(i, _)| i).collect();
+        let d0s: Vec<f64> = idxs.iter().map(|&i| records[i].d0).collect();
+        let mut unique_d0s: Vec<f64> = d0s.clone();
+        unique_d0s.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        unique_d0s.dedup_by(|a, b| (*a - *b).abs() < 1e-10);
+        let d0_min = d0s.iter().cloned().fold(f64::INFINITY, f64::min);
+        let d0_max = d0s.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
+        let d0_mean = d0s.iter().sum::<f64>() / d0s.len() as f64;
+        println!("  {:<14} {:<11} {:<9.4} {:<9.4} {:<9.4} {:<6}",
+            tname, d0s.len(), d0_min, d0_max, d0_mean, unique_d0s.len());
+    }
+
+    println!("\n  === 2. d₀ vs FCA Properties: Correlation ===\n");
+
+    fn corr(x: &[f64], y: &[f64]) -> f64 {
+        let n = x.len() as f64;
+        let mx = x.iter().sum::<f64>() / n;
+        let my = y.iter().sum::<f64>() / n;
+        let sx = (x.iter().map(|v| (v - mx).powi(2)).sum::<f64>() / n).sqrt();
+        let sy = (y.iter().map(|v| (v - my).powi(2)).sum::<f64>() / n).sqrt();
+        if sx < 1e-15 || sy < 1e-15 { return 0.0; }
+        x.iter().zip(y.iter()).map(|(a, b)| (a - mx) * (b - my)).sum::<f64>() / (n * sx * sy)
+    }
+
+    let d0s: Vec<f64> = records.iter().map(|r| r.d0).collect();
+    let ln_d0s: Vec<f64> = d0s.iter().map(|d| d.ln()).collect();
+    let extents: Vec<f64> = records.iter().map(|r| r.extent as f64).collect();
+    let intents: Vec<f64> = records.iter().map(|r| r.intent as f64).collect();
+    let depths: Vec<f64> = records.iter().map(|r| r.depth as f64).collect();
+    let nfeeders: Vec<f64> = records.iter().map(|r| r.n_feeders as f64).collect();
+    let ratios: Vec<f64> = records.iter().map(|r| r.extent_intent_ratio).collect();
+    let csizes: Vec<f64> = records.iter().map(|r| r.concept_size as f64).collect();
+
+    println!("  Feature              corr(d₀, ·)  corr(ln(d₀), ·)");
+    println!("  ───────────────────  ───────────  ──────────────");
+    println!("  extent               {:.4}        {:.4}", corr(&d0s, &extents), corr(&ln_d0s, &extents));
+    println!("  intent               {:.4}        {:.4}", corr(&d0s, &intents), corr(&ln_d0s, &intents));
+    println!("  depth                {:.4}        {:.4}", corr(&d0s, &depths), corr(&ln_d0s, &depths));
+    println!("  n_feeders            {:.4}        {:.4}", corr(&d0s, &nfeeders), corr(&ln_d0s, &nfeeders));
+    println!("  extent/intent ratio  {:.4}        {:.4}", corr(&d0s, &ratios), corr(&ln_d0s, &ratios));
+    println!("  concept_size         {:.4}        {:.4}", corr(&d0s, &csizes), corr(&ln_d0s, &csizes));
+
+    println!("\n  === 3. d₀ Prediction: OLS from FCA Properties ===\n");
+
+    fn ols_fit(_records: &[D0Rec], x_cols: &[Vec<f64>], y: &[f64], x_names: &[&str]) -> (f64, Vec<f64>, f64) {
+        let n = y.len();
+        let p_dim = x_cols.len();
+        let y_mean = y.iter().sum::<f64>() / n as f64;
+        let xm: Vec<f64> = x_cols.iter().map(|c| c.iter().sum::<f64>() / n as f64).collect();
+
+        let mut xt_x = vec![vec![0.0f64; p_dim]; p_dim];
+        let mut xt_y = vec![0.0f64; p_dim];
+        for i in 0..p_dim {
+            for j in 0..p_dim {
+                for s in 0..n { xt_x[i][j] += (x_cols[i][s] - xm[i]) * (x_cols[j][s] - xm[j]); }
+            }
+            for s in 0..n { xt_y[i] += (x_cols[i][s] - xm[i]) * (y[s] - y_mean); }
+        }
+
+        let mut a = xt_x;
+        let mut b_vec = xt_y;
+        for col in 0..p_dim {
+            let mut max_val = a[col][col].abs();
+            let mut max_row = col;
+            for row in (col + 1)..p_dim {
+                if a[row][col].abs() > max_val { max_val = a[row][col].abs(); max_row = row; }
+            }
+            if max_row != col { a.swap(col, max_row); b_vec.swap(col, max_row); }
+            if a[col][col].abs() < 1e-30 { continue; }
+            let pivot = a[col][col];
+            for j in col..p_dim { a[col][j] /= pivot; }
+            b_vec[col] /= pivot;
+            for row in 0..p_dim {
+                if row == col { continue; }
+                let factor = a[row][col];
+                for j in col..p_dim { a[row][j] -= factor * a[col][j]; }
+                b_vec[row] -= factor * b_vec[col];
+            }
+        }
+        let intercept = y_mean - b_vec.iter().enumerate().map(|(i, bv)| bv * xm[i]).sum::<f64>();
+
+        let preds: Vec<f64> = (0..n).map(|s| {
+            let mut p = intercept;
+            for k in 0..p_dim { p += b_vec[k] * x_cols[k][s]; }
+            p
+        }).collect();
+        let _mape = y.iter().zip(preds.iter()).map(|(a, b)| ((b - a) / a).abs()).sum::<f64>() / n as f64;
+
+        println!("    d₀ = {:.4}", intercept);
+        for i in 0..p_dim {
+            println!("       + {:.6}·{}", b_vec[i], x_names[i]);
+        }
+        let ss_res: f64 = y.iter().zip(preds.iter()).map(|(a, b)| (a - b).powi(2)).sum();
+        let ss_tot: f64 = y.iter().map(|a| (a - y_mean).powi(2)).sum();
+        let r2 = 1.0 - ss_res / ss_tot;
+
+        (intercept, b_vec, r2)
+    }
+
+    println!("  Model A: d₀ = a + b·depth");
+    let (_, _, r2_a) = ols_fit(&records, &[depths.clone()], &d0s, &["depth"]);
+    println!("    R²={:.4}\n", r2_a);
+
+    println!("  Model B: d₀ = a + b·extent + c·intent");
+    let (_, _, r2_b) = ols_fit(&records, &[extents.clone(), intents.clone()], &d0s, &["extent", "intent"]);
+    println!("    R²={:.4}\n", r2_b);
+
+    println!("  Model C: d₀ = a + b·depth + c·n_feeders + d·extent/intent");
+    let (_, _, r2_c) = ols_fit(&records, &[depths.clone(), nfeeders.clone(), ratios.clone()], &d0s, &["depth", "n_feeders", "extent/intent"]);
+    println!("    R²={:.4}\n", r2_c);
+
+    println!("  Model D: ln(d₀) = a + b·depth + c·ln(extent) + d·ln(intent) + e·ln(n_feeders+1)");
+    let ln_ext: Vec<f64> = records.iter().map(|r| (r.extent as f64).max(1.0).ln()).collect();
+    let ln_int: Vec<f64> = records.iter().map(|r| (r.intent as f64).max(1.0).ln()).collect();
+    let ln_nf: Vec<f64> = records.iter().map(|r| (r.n_feeders as f64 + 1.0).ln()).collect();
+    let (_, _, r2_d) = ols_fit(&records, &[depths.clone(), ln_ext.clone(), ln_int.clone(), ln_nf.clone()], &ln_d0s, &["depth", "ln(extent)", "ln(intent)", "ln(n_feeders+1)"]);
+    println!("    R²={:.4}\n", r2_d);
+
+    println!("  Model E: d₀ = a + b·depth + c·is_top + d·is_bottom");
+    let is_top: Vec<f64> = records.iter().map(|r| if r.is_top { 1.0 } else { 0.0 }).collect();
+    let is_bottom: Vec<f64> = records.iter().map(|r| if r.is_bottom { 1.0 } else { 0.0 }).collect();
+    let (_, _, r2_e) = ols_fit(&records, &[depths.clone(), is_top.clone(), is_bottom.clone()], &d0s, &["depth", "is_top", "is_bottom"]);
+    println!("    R²={:.4}\n", r2_e);
+
+    println!("  === 4. Within-Topology d₀ Structure ===\n");
+
+    for tname in &topo_names {
+        let idxs: Vec<usize> = records.iter().enumerate().filter(|(_, r)| r.topo == *tname).map(|(i, _)| i).collect();
+        if idxs.len() < 2 { continue; }
+        let td: Vec<f64> = idxs.iter().map(|&i| records[i].depth as f64).collect();
+        let td0: Vec<f64> = idxs.iter().map(|&i| records[i].d0).collect();
+        let c = corr(&td, &td0);
+        let ln_td0: Vec<f64> = td0.iter().map(|d| d.ln()).collect();
+        let c_ln = corr(&td, &ln_td0);
+        println!("  {:<14} corr(depth, d₀)={:.4}  corr(depth, ln(d₀))={:.4}  n={}",
+            tname, c, c_ln, idxs.len());
+    }
+
+    println!("\n  === 5. d₀ Formula Decomposition ===\n");
+    println!("  d₀ = raw_d / max_d_valid");
+    println!("  raw_d = initial distance from concept's initial state");
+    println!("  max_d_valid = max raw_d among all non-bottom concepts");
+    println!();
+    println!("  The key question: can raw_d be predicted from FCA properties?");
+    println!("  If yes → d₀ prediction is fully closed-form without iteration.");
+    println!("  If no  → d₀ requires the initial state computation (cheap but not free).");
+}
