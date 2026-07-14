@@ -257,4 +257,5 @@ fn run_synthetic_suite(_max_concepts: usize, _time_limit: f64, _output_dir: &Pat
     experiments::run_cascade_amplification_model();
     experiments::run_cascade_interaction_model();
     experiments::run_cascade_corrected_prediction();
+    experiments::run_cross_topology_prediction();
 }

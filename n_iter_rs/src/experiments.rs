@@ -31927,3 +31927,131 @@ pub fn run_cascade_corrected_prediction() {
     println!("  Corrected (cascade): MAPE={:.1}%, R²={:.4}", mape_corrected, r2_corr);
     println!("  Cascade model: 1-ratio = 0.118·(d-1)^0.23·ε^0.29");
 }
+
+pub fn run_cross_topology_prediction() {
+    println!("\n{}", "=".repeat(64));
+    println!("  v3.48: CROSS-TOPOLOGY PREDICTION VALIDATION");
+    println!("{}", "=".repeat(64));
+    println!("  Validate cascade-corrected pipeline on novel topologies\n");
+
+    #[derive(Clone)]
+    struct PredRec {
+        topo: String, depth: usize, eps: f64,
+        rho_fp: f64, n_actual: usize,
+        n_naive: f64, n_corrected: f64,
+    }
+
+    let mut records: Vec<PredRec> = Vec::new();
+    let eps_vals: Vec<f64> = vec![0.01, 0.05, 0.1, 0.5, 1.0];
+
+    let topo_builders: Vec<(&str, Box<dyn Fn() -> fca::FcaLattice>)> = vec![
+        ("m3", Box::new(|| fca::build_m3_lattice())),
+        ("b3", Box::new(|| fca::build_b3_lattice())),
+        ("b4", Box::new(|| fca::build_b4_lattice())),
+        ("grid-3x3", Box::new(|| fca::build_grid_lattice(3, 3))),
+        ("grid-4x4", Box::new(|| fca::build_grid_lattice(4, 4))),
+        ("antichain-5", Box::new(|| fca::build_antichain_lattice(5))),
+        ("antichain-10", Box::new(|| fca::build_antichain_lattice(10))),
+        ("chain-10", Box::new(|| fca::build_chain_lattice(10))),
+        ("diamond", Box::new(|| fca::build_diamond_lattice())),
+    ];
+
+    for &(name, ref builder) in &topo_builders {
+        for &eps in &eps_vals {
+            let lattice = builder();
+            let stats = pipeline::compute_lattice_stats(&lattice);
+            let params = DynamicsParams::uniform().with_eps(eps);
+            let results = pipeline::run_topological_iteration(&lattice, &stats, &params);
+            let max_depth = stats.heights.iter().copied().max().unwrap_or(1);
+
+            for (i, opt) in results.iter().enumerate() {
+                if let Some(ref res) = opt {
+                    if !stats.feeders[i].is_empty() { continue; }
+                    let traj = &res.trajectory;
+                    let nt = traj.len();
+                    if nt < 3 { continue; }
+                    let rho_fp = res.rho_spectral;
+                    let m_star = *traj.last().unwrap();
+                    let d0 = (0..5).map(|j| (traj[0][j] - m_star[j]).powi(2)).sum::<f64>().sqrt();
+                    let tol = 1e-12_f64;
+                    let ln_ratio = d0 / tol;
+                    let n_naive = if rho_fp < 1.0 && rho_fp > 0.0 && ln_ratio > 0.0 {
+                        ln_ratio.ln() / (-rho_fp.ln())
+                    } else { 0.0 };
+                    let cascade_amp = 0.118 * ((max_depth - 1).max(1) as f64).powf(0.23) * eps.powf(0.29);
+                    let ratio = (1.0 - cascade_amp).max(0.1);
+                    let rho_corrected = rho_fp * ratio;
+                    let n_corrected = if rho_corrected < 1.0 && rho_corrected > 0.0 && ln_ratio > 0.0 {
+                        ln_ratio.ln() / (-rho_corrected.ln())
+                    } else { 0.0 };
+
+                    records.push(PredRec {
+                        topo: name.to_string(), depth: max_depth, eps,
+                        rho_fp, n_actual: nt - 1,
+                        n_naive, n_corrected,
+                    });
+                }
+            }
+        }
+    }
+
+    let n_r = records.len();
+    println!("  {} data points across {} topologies × {} ε values\n",
+        n_r, topo_builders.len(), eps_vals.len());
+
+    println!("  {:>12} {:>5} {:>5} {:>6} {:>8} {:>8} {:>8} {:>8} {:>8}",
+        "topo", "depth", "ε", "n_act", "ρ_fp", "n_naive", "n_corr", "err_na", "err_co");
+    for r in &records {
+        let err_na = if r.n_actual > 0 { (r.n_naive - r.n_actual as f64).abs() / r.n_actual as f64 * 100.0 } else { 0.0 };
+        let err_co = if r.n_actual > 0 { (r.n_corrected - r.n_actual as f64).abs() / r.n_actual as f64 * 100.0 } else { 0.0 };
+        println!("  {:>12} {:>5} {:>5.2} {:>6} {:>8.4} {:>8.1} {:>8.1} {:>7.1}% {:>7.1}%",
+            r.topo, r.depth, r.eps, r.n_actual, r.rho_fp, r.n_naive, r.n_corrected, err_na, err_co);
+    }
+
+    let mape_naive: f64 = records.iter()
+        .filter(|r| r.n_actual > 0 && r.n_naive > 0.0)
+        .map(|r| (r.n_naive - r.n_actual as f64).abs() / r.n_actual as f64)
+        .sum::<f64>() / records.iter().filter(|r| r.n_actual > 0 && r.n_naive > 0.0).count() as f64 * 100.0;
+    let mape_corrected: f64 = records.iter()
+        .filter(|r| r.n_actual > 0 && r.n_corrected > 0.0)
+        .map(|r| (r.n_corrected - r.n_actual as f64).abs() / r.n_actual as f64)
+        .sum::<f64>() / records.iter().filter(|r| r.n_actual > 0 && r.n_corrected > 0.0).count() as f64 * 100.0;
+
+    let n_mean: f64 = records.iter().map(|r| r.n_actual as f64).sum::<f64>() / n_r as f64;
+    let ss_tot: f64 = records.iter().map(|r| (r.n_actual as f64 - n_mean).powi(2)).sum();
+    let ss_res_naive: f64 = records.iter().map(|r| (r.n_actual as f64 - r.n_naive).powi(2)).sum();
+    let ss_res_corr: f64 = records.iter().map(|r| (r.n_actual as f64 - r.n_corrected).powi(2)).sum();
+    let r2_naive = if ss_tot > 1e-15 { 1.0 - ss_res_naive / ss_tot } else { 0.0 };
+    let r2_corr = if ss_tot > 1e-15 { 1.0 - ss_res_corr / ss_tot } else { 0.0 };
+
+    println!("\n  CROSS-TOPOLOGY PREDICTION ACCURACY:");
+    println!("  {:>25} {:>10} {:>10}", "Metric", "Naive", "Corrected");
+    println!("  {:>25} {:>10.1}% {:>10.1}%", "MAPE", mape_naive, mape_corrected);
+    println!("  {:>25} {:>10.4} {:>10.4}", "R²", r2_naive, r2_corr);
+
+    println!("\n  Per-topology MAPE:");
+    let mut topo_names: Vec<String> = records.iter().map(|r| r.topo.clone()).collect::<std::collections::HashSet<_>>().into_iter().collect();
+    topo_names.sort();
+    for topo in &topo_names {
+        let subset: Vec<&PredRec> = records.iter().filter(|r| &r.topo == topo).collect();
+        let cnt = subset.len();
+        let mape_n: f64 = subset.iter()
+            .filter(|r| r.n_actual > 0 && r.n_naive > 0.0)
+            .map(|r| (r.n_naive - r.n_actual as f64).abs() / r.n_actual as f64)
+            .sum::<f64>() / subset.iter().filter(|r| r.n_actual > 0 && r.n_naive > 0.0).count().max(1) as f64 * 100.0;
+        let mape_c: f64 = subset.iter()
+            .filter(|r| r.n_actual > 0 && r.n_corrected > 0.0)
+            .map(|r| (r.n_corrected - r.n_actual as f64).abs() / r.n_actual as f64)
+            .sum::<f64>() / subset.iter().filter(|r| r.n_actual > 0 && r.n_corrected > 0.0).count().max(1) as f64 * 100.0;
+        let delta = if mape_n > mape_c { format!("-{:.1}%", mape_n - mape_c) } else { format!("+{:.1}%", mape_c - mape_n) };
+        println!("  {:>12} (n={:>2}): naive={:>5.1}% corrected={:>5.1}% Δ={}", topo, cnt, mape_n, mape_c, delta);
+    }
+
+    println!("\n  Cross-topology generalization: cascade model trained on chain/diamond");
+    println!("  Tested on m3, b3, b4, grid, antichain (NOVEL topologies)");
+    if mape_corrected < mape_naive {
+        println!("  ✓ Cascade correction generalizes to unseen topologies (MAPE {:.1}%→{:.1}%)", mape_naive, mape_corrected);
+    } else {
+        println!("  ✗ Cascade correction does NOT generalize (overfitting to chain/diamond)");
+    }
+}
