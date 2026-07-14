@@ -34003,3 +34003,208 @@ pub fn run_d0_corrected_prediction() {
     println!("  OLS LOO:           {:.1}%  (Δ={:+.1}%)", weighted_loo_mape * 100.0, (weighted_loo_mape - mape_naive) * 100.0);
     println!("  d₀-only in-sample: {:.1}%  (Δ={:+.1}%)", mape_d0 * 100.0, (mape_d0 - mape_naive) * 100.0);
 }
+
+pub fn run_d0_correction_generalization() {
+    println!("\n=== v3.58: d₀-Correction Generalization to Unseen Topologies ===\n");
+
+    #[derive(Clone)]
+    struct Pt {
+        pset: String,
+        topo: String,
+        depth: usize,
+        rho_fp: f64,
+        d0: f64,
+        n_actual: f64,
+        n_naive: f64,
+    }
+
+    let param_sets: Vec<(&str, DynamicsParams)> = vec![
+        ("uniform", DynamicsParams::uniform()),
+        ("high-β", DynamicsParams::uniform().with_beta1(2.0)),
+        ("high-δ", DynamicsParams::uniform().with_delta1(2.0)),
+        ("high-κ₂", DynamicsParams::uniform().with_kappa2(2.0)),
+        ("asym-1", DynamicsParams::uniform().with_beta1(1.5).with_gamma1(0.8).with_zeta1(1.2).with_theta1(0.7).with_kappa2(1.8).with_eps(0.01)),
+        ("asym-2", DynamicsParams::uniform().with_beta1(0.5).with_gamma1(2.0).with_zeta1(0.8).with_theta1(1.5).with_kappa2(0.6).with_eps(0.05)),
+        ("extreme", DynamicsParams::uniform().with_beta1(3.0).with_gamma1(0.3).with_zeta1(2.0).with_theta1(0.4).with_kappa2(3.0).with_eps(0.02)),
+    ];
+
+    let unseen_builders: Vec<(&str, Box<dyn Fn() -> fca::FcaLattice>)> = vec![
+        ("chain-20", Box::new(|| fca::build_chain_lattice(20))),
+        ("chain-50", Box::new(|| fca::build_chain_lattice(50))),
+        ("b3", Box::new(|| fca::build_b3_lattice())),
+        ("grid-4x4", Box::new(|| fca::build_grid_lattice(4, 4))),
+        ("grid-5x5", Box::new(|| fca::build_grid_lattice(5, 5))),
+        ("b4", Box::new(|| fca::build_b4_lattice())),
+        ("antichain-10", Box::new(|| fca::build_antichain_lattice(10))),
+    ];
+
+    let tol = 1e-12_f64;
+    let int_ols = 0.1392_f64;
+    let b_d0 = 0.0559_f64;
+    let b_rho = -0.1028_f64;
+
+    let mut pts: Vec<Pt> = Vec::new();
+
+    for &(pname, ref params) in &param_sets {
+        for &(tname, ref builder) in &unseen_builders {
+            let lattice = builder();
+            let stats = pipeline::compute_lattice_stats(&lattice);
+            let results = pipeline::run_topological_iteration(&lattice, &stats, params);
+
+            for (i, opt) in results.iter().enumerate() {
+                if let Some(ref res) = opt {
+                    if !res.converged { continue; }
+                    let rho_fp = res.rho_spectral;
+                    if rho_fp <= 0.0 || rho_fp >= 1.0 { continue; }
+                    let n_actual = res.n_iters as f64;
+                    if n_actual < 3.0 { continue; }
+                    let traj = &res.trajectory;
+                    if traj.len() < 2 { continue; }
+                    let d0 = traj[0][0];
+                    if d0 <= 0.0 { continue; }
+                    let ln_r = d0 / tol;
+                    if ln_r <= 0.0 { continue; }
+                    let n_naive = ln_r.ln() / (-rho_fp.ln());
+                    if n_naive <= 0.0 { continue; }
+
+                    pts.push(Pt { pset: pname.to_string(), topo: tname.to_string(), depth: i, rho_fp, d0, n_actual, n_naive });
+                }
+            }
+        }
+    }
+
+    println!("  Collected {} data points (unseen topologies)\n", pts.len());
+
+    fn mape_fn(preds: &[f64], actuals: &[f64]) -> f64 {
+        preds.iter().zip(actuals.iter()).map(|(p, a)| ((p - a) / a).abs()).sum::<f64>() / preds.len() as f64
+    }
+
+    let actuals: Vec<f64> = pts.iter().map(|p| p.n_actual).collect();
+    let naive_preds: Vec<f64> = pts.iter().map(|p| p.n_naive).collect();
+    let corrected_preds: Vec<f64> = pts.iter().map(|p| {
+        let e_pred = int_ols + b_d0 * p.d0.ln() + b_rho * (1.0 / p.rho_fp).ln();
+        p.n_naive / (1.0 + e_pred).max(0.1)
+    }).collect();
+
+    let mape_naive = mape_fn(&naive_preds, &actuals);
+    let mape_corrected = mape_fn(&corrected_preds, &actuals);
+
+    println!("  === Global Results ===\n");
+    println!("    Naive MAPE:     {:.1}%", mape_naive * 100.0);
+    println!("    Corrected MAPE: {:.1}%  (Δ={:+.1}%)", mape_corrected * 100.0, (mape_corrected - mape_naive) * 100.0);
+
+    println!("\n  === Per-Topology ===\n");
+
+    let topo_names: Vec<&str> = unseen_builders.iter().map(|t| t.0).collect();
+    for tname in &topo_names {
+        let subset: Vec<usize> = pts.iter().enumerate().filter(|(_, p)| p.topo == *tname).map(|(i, _)| i).collect();
+        if subset.is_empty() { continue; }
+        let e_n: Vec<f64> = subset.iter().map(|&i| ((naive_preds[i] - actuals[i]) / actuals[i]).abs()).collect();
+        let e_c: Vec<f64> = subset.iter().map(|&i| ((corrected_preds[i] - actuals[i]) / actuals[i]).abs()).collect();
+        let mn = e_n.iter().sum::<f64>() / e_n.len() as f64;
+        let mc = e_c.iter().sum::<f64>() / e_c.len() as f64;
+        println!("    {:<14} n={:>4}  Naive={:.1}%  Corrected={:.1}%  Δ={:+.1}%",
+            tname, subset.len(), mn * 100.0, mc * 100.0, (mc - mn) * 100.0);
+    }
+
+    println!("\n  === Per-Parameter-Set ===\n");
+
+    for &(pname, _) in &param_sets {
+        let subset: Vec<usize> = pts.iter().enumerate().filter(|(_, p)| p.pset == pname).map(|(i, _)| i).collect();
+        if subset.is_empty() { continue; }
+        let e_n: Vec<f64> = subset.iter().map(|&i| ((naive_preds[i] - actuals[i]) / actuals[i]).abs()).collect();
+        let e_c: Vec<f64> = subset.iter().map(|&i| ((corrected_preds[i] - actuals[i]) / actuals[i]).abs()).collect();
+        let mn = e_n.iter().sum::<f64>() / e_n.len() as f64;
+        let mc = e_c.iter().sum::<f64>() / e_c.len() as f64;
+        println!("    {:<10} n={:>4}  Naive={:.1}%  Corrected={:.1}%  Δ={:+.1}%",
+            pname, subset.len(), mn * 100.0, mc * 100.0, (mc - mn) * 100.0);
+    }
+
+    println!("\n  === Per-(pset, topo) Heatmap ===\n");
+
+    print!("    {:>10}", "");
+    for tname in &topo_names { print!(" {:>12}", tname); }
+    println!();
+    for &(pname, _) in &param_sets {
+        print!("    {:>10}", pname);
+        for tname in &topo_names {
+            let subset: Vec<usize> = pts.iter().enumerate()
+                .filter(|(_, p)| p.pset == pname && p.topo == *tname)
+                .map(|(i, _)| i).collect();
+            if subset.is_empty() {
+                print!(" {:>12}", "—");
+            } else {
+                let e_c: Vec<f64> = subset.iter().map(|&i| ((corrected_preds[i] - actuals[i]) / actuals[i]).abs()).collect();
+                let mc = e_c.iter().sum::<f64>() / e_c.len() as f64;
+                print!(" {:>11.1}%", mc * 100.0);
+            }
+        }
+        println!();
+    }
+
+    println!("\n  === Signed Error Analysis ===\n");
+
+    let signed: Vec<f64> = pts.iter().zip(corrected_preds.iter()).map(|(p, pred)| (pred - p.n_actual) / p.n_actual).collect();
+    let mean_s: f64 = signed.iter().sum::<f64>() / signed.len() as f64;
+    let std_s: f64 = (signed.iter().map(|v| (v - mean_s).powi(2)).sum::<f64>() / signed.len() as f64).sqrt();
+    let over_pct = signed.iter().filter(|v| **v > 0.0).count() as f64 / signed.len() as f64 * 100.0;
+
+    println!("    Mean signed:  {:+.1}%", mean_s * 100.0);
+    println!("    Std signed:   {:.1}%", std_s * 100.0);
+    println!("    % over:       {:.0}%", over_pct);
+
+    println!("\n  === v3.57 Training Topologies (for reference) ===\n");
+
+    let train_builders: Vec<(&str, Box<dyn Fn() -> fca::FcaLattice>)> = vec![
+        ("chain-5", Box::new(|| fca::build_chain_lattice(5))),
+        ("chain-10", Box::new(|| fca::build_chain_lattice(10))),
+        ("diamond", Box::new(|| fca::build_diamond_lattice())),
+        ("m3", Box::new(|| fca::build_m3_lattice())),
+    ];
+
+    let mut train_pts: Vec<Pt> = Vec::new();
+    for &(pname, ref params) in &param_sets {
+        for &(tname, ref builder) in &train_builders {
+            let lattice = builder();
+            let stats = pipeline::compute_lattice_stats(&lattice);
+            let results = pipeline::run_topological_iteration(&lattice, &stats, params);
+            for (i, opt) in results.iter().enumerate() {
+                if let Some(ref res) = opt {
+                    if !res.converged { continue; }
+                    let rho_fp = res.rho_spectral;
+                    if rho_fp <= 0.0 || rho_fp >= 1.0 { continue; }
+                    let n_actual = res.n_iters as f64;
+                    if n_actual < 3.0 { continue; }
+                    let traj = &res.trajectory;
+                    if traj.len() < 2 { continue; }
+                    let d0 = traj[0][0];
+                    if d0 <= 0.0 { continue; }
+                    let ln_r = d0 / tol;
+                    if ln_r <= 0.0 { continue; }
+                    let n_naive = ln_r.ln() / (-rho_fp.ln());
+                    if n_naive <= 0.0 { continue; }
+                    train_pts.push(Pt { pset: pname.to_string(), topo: tname.to_string(), depth: i, rho_fp, d0, n_actual, n_naive });
+                }
+            }
+        }
+    }
+
+    let train_actuals: Vec<f64> = train_pts.iter().map(|p| p.n_actual).collect();
+    let train_naive: Vec<f64> = train_pts.iter().map(|p| p.n_naive).collect();
+    let train_corrected: Vec<f64> = train_pts.iter().map(|p| {
+        let e_pred = int_ols + b_d0 * p.d0.ln() + b_rho * (1.0 / p.rho_fp).ln();
+        p.n_naive / (1.0 + e_pred).max(0.1)
+    }).collect();
+
+    let train_mape_n = mape_fn(&train_naive, &train_actuals);
+    let train_mape_c = mape_fn(&train_corrected, &train_actuals);
+
+    println!("    Training set:  Naive={:.1}%  Corrected={:.1}%", train_mape_n * 100.0, train_mape_c * 100.0);
+    println!("    Unseen set:    Naive={:.1}%  Corrected={:.1}%", mape_naive * 100.0, mape_corrected * 100.0);
+
+    if mape_corrected < mape_naive {
+        println!("\n  ✓ Formula GENERALIZES to unseen topologies (MAPE {:.1}% → {:.1}%)", mape_naive * 100.0, mape_corrected * 100.0);
+    } else {
+        println!("\n  ✗ Formula DOES NOT generalize (MAPE {:.1}% → {:.1}%)", mape_naive * 100.0, mape_corrected * 100.0);
+    }
+}

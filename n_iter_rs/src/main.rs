@@ -267,4 +267,5 @@ fn run_synthetic_suite(_max_concepts: usize, _time_limit: f64, _output_dir: &Pat
     experiments::run_cycle_weight_cascade_prediction();
     experiments::run_prediction_error_structure();
     experiments::run_d0_corrected_prediction();
+    experiments::run_d0_correction_generalization();
 }
