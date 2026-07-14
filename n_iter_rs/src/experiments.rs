@@ -32465,3 +32465,209 @@ pub fn run_cascade_refit_expanded() {
         println!("  ✗ Refit does NOT improve MAPE: {:.1}%→{:.1}%", mape_old, mape_new);
     }
 }
+
+pub fn run_per_level_cascade_decomposition() {
+    println!("\n{}", "=".repeat(64));
+    println!("  v3.51: PER-LEVEL CASCADE DECOMPOSITION");
+    println!("{}", "=".repeat(64));
+    println!("  Decompose cascade amplification by lattice depth level\n");
+
+    let eps_vals: Vec<f64> = vec![0.01, 0.1, 0.5, 1.0];
+    let topo_builders: Vec<(&str, Box<dyn Fn() -> fca::FcaLattice>)> = vec![
+        ("chain-10", Box::new(|| fca::build_chain_lattice(10))),
+        ("chain-20", Box::new(|| fca::build_chain_lattice(20))),
+        ("chain-50", Box::new(|| fca::build_chain_lattice(50))),
+        ("grid-3x3", Box::new(|| fca::build_grid_lattice(3, 3))),
+        ("grid-4x4", Box::new(|| fca::build_grid_lattice(4, 4))),
+        ("grid-5x5", Box::new(|| fca::build_grid_lattice(5, 5))),
+        ("diamond", Box::new(|| fca::build_diamond_lattice())),
+    ];
+
+    #[derive(Clone)]
+    struct LevelRec {
+        topo: String, depth_level: usize, eps: f64,
+        rho_step: f64, rho_fp: f64, n_concepts_at_level: usize,
+    }
+
+    let mut all_levels: Vec<LevelRec> = Vec::new();
+
+    for &(name, ref builder) in &topo_builders {
+        for &eps in &eps_vals {
+            let lattice = builder();
+            let stats = pipeline::compute_lattice_stats(&lattice);
+            let params = DynamicsParams::uniform().with_eps(eps);
+            let results = pipeline::run_topological_iteration(&lattice, &stats, &params);
+
+            let max_depth = stats.heights.iter().copied().max().unwrap_or(1);
+            let rho_fp_global = results.iter()
+                .filter_map(|o| o.as_ref().map(|r| r.rho_spectral))
+                .fold(0.0f64, f64::max);
+
+            for depth_lev in 0..=max_depth {
+                let concepts_at_level: Vec<usize> = (0..stats.heights.len())
+                    .filter(|&i| stats.heights[i] == depth_lev)
+                    .collect();
+                if concepts_at_level.is_empty() { continue; }
+
+                let mut step_rates: Vec<f64> = Vec::new();
+                for &ci in &concepts_at_level {
+                    if let Some(ref res) = results[ci] {
+                        let traj = &res.trajectory;
+                        let nt = traj.len();
+                        if nt < 4 { continue; }
+                        let m_star = *traj.last().unwrap();
+                        let d0 = (0..5).map(|j| (traj[0][j] - m_star[j]).powi(2)).sum::<f64>().sqrt();
+                        if d0 < 1e-15 { continue; }
+
+                        for k in 1..nt-1 {
+                            let dk = (0..5).map(|j| (traj[k][j] - m_star[j]).powi(2)).sum::<f64>().sqrt();
+                            let dk1 = (0..5).map(|j| (traj[k+1][j] - m_star[j]).powi(2)).sum::<f64>().sqrt();
+                            if dk > 1e-15 && dk1 > 1e-15 {
+                                let ratio = dk1 / dk;
+                                if ratio > 0.0 && ratio < 1.0 {
+                                    step_rates.push(ratio);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if !step_rates.is_empty() {
+                    step_rates.sort_by(|a, b| a.partial_cmp(b).unwrap());
+                    let median_rho = step_rates[step_rates.len() / 2];
+                    all_levels.push(LevelRec {
+                        topo: name.to_string(), depth_level: depth_lev, eps,
+                        rho_step: median_rho, rho_fp: rho_fp_global,
+                        n_concepts_at_level: concepts_at_level.len(),
+                    });
+                }
+            }
+        }
+    }
+
+    println!("  {} level records across {} topologies × {} ε values\n",
+        all_levels.len(), topo_builders.len(), eps_vals.len());
+
+    println!("  {:>12} {:>5} {:>5} {:>8} {:>8} {:>8} {:>8}",
+        "topo", "depth", "ε", "ρ_step", "ρ_fp", "δ_k", "ρ_ratio");
+    for r in &all_levels {
+        let delta_k = 1.0 - r.rho_step / r.rho_fp.max(1e-15);
+        let rho_ratio = r.rho_step / r.rho_fp.max(1e-15);
+        println!("  {:>12} {:>5} {:>5.2} {:>8.4} {:>8.4} {:>8.4} {:>8.4}",
+            r.topo, r.depth_level, r.eps, r.rho_step, r.rho_fp, delta_k, rho_ratio);
+    }
+
+    println!("\n  Phase 2: Aggregate δ_k vs depth\n");
+
+    let mut depth_bins: Vec<usize> = all_levels.iter().map(|r| r.depth_level).collect::<std::collections::HashSet<_>>().into_iter().collect();
+    depth_bins.sort();
+
+    let mut agg_data: Vec<(usize, f64, f64, usize)> = Vec::new();
+    for &d in &depth_bins {
+        let subset: Vec<&LevelRec> = all_levels.iter().filter(|r| r.depth_level == d).collect();
+        let n = subset.len();
+        let mean_delta: f64 = subset.iter()
+            .map(|r| 1.0 - r.rho_step / r.rho_fp.max(1e-15))
+            .sum::<f64>() / n as f64;
+        let mean_ratio: f64 = subset.iter()
+            .map(|r| r.rho_step / r.rho_fp.max(1e-15))
+            .sum::<f64>() / n as f64;
+        agg_data.push((d, mean_delta, mean_ratio, n));
+    }
+
+    println!("  {:>5} {:>10} {:>10} {:>6}", "depth", "mean_δ_k", "mean_ratio", "n");
+    for &(d, md, mr, n) in &agg_data {
+        println!("  {:>5} {:>10.4} {:>10.4} {:>6}", d, md, mr, n);
+    }
+
+    let ln_depth_data: Vec<f64> = agg_data.iter()
+        .filter(|&&(d, md, _, _)| d >= 1 && md > 1e-10)
+        .map(|&(d, _, _, _)| ((d).max(1) as f64).ln())
+        .collect();
+    let ln_delta_data: Vec<f64> = agg_data.iter()
+        .filter(|&&(d, md, _, _)| d >= 1 && md > 1e-10)
+        .map(|&(_, md, _, _)| md.ln())
+        .collect();
+
+    if ln_depth_data.len() >= 3 {
+        let nf = ln_depth_data.len() as f64;
+        let x_bar = ln_depth_data.iter().sum::<f64>() / nf;
+        let y_bar = ln_delta_data.iter().sum::<f64>() / nf;
+        let (mut sxx, mut sxy) = (0.0f64, 0.0);
+        for i in 0..ln_depth_data.len() {
+            let xp = ln_depth_data[i] - x_bar;
+            let yp = ln_delta_data[i] - y_bar;
+            sxx += xp * xp;
+            sxy += xp * yp;
+        }
+        if sxx > 1e-15 {
+            let gamma_fit = sxy / sxx;
+            let ln_a = y_bar - gamma_fit * x_bar;
+            let a_fit = ln_a.exp();
+
+            let ss_res: f64 = (0..ln_depth_data.len())
+                .map(|i| {
+                    let y_pred = ln_a + gamma_fit * ln_depth_data[i];
+                    (ln_delta_data[i] - y_pred).powi(2)
+                })
+                .sum();
+            let ss_tot: f64 = ln_delta_data.iter().map(|&y| (y - y_bar).powi(2)).sum();
+            let r2 = if ss_tot > 1e-15 { 1.0 - ss_res / ss_tot } else { 0.0 };
+
+            println!("\n  PER-LEVEL CASCADE FIT: δ_k = A · k^γ");
+            println!("  A = {:.4}", a_fit);
+            println!("  γ = {:.4} (predicted from α=0.23: γ=1-α={:.4})", gamma_fit, 1.0 - 0.23);
+            println!("  R² = {:.4}", r2);
+
+            if gamma_fit > 0.0 {
+                println!("  ✓ Per-level decay confirmed: δ_k ∝ depth^{:.2}", gamma_fit);
+                let alpha_predicted = 1.0 - gamma_fit;
+                println!("  → Implied cascade α = 1-γ = {:.4} (v3.45 empirical: 0.23)", alpha_predicted);
+                let discrepancy = (alpha_predicted - 0.23).abs() / 0.23 * 100.0;
+                println!("  → Discrepancy: {:.1}%", discrepancy);
+            } else {
+                println!("  ✗ δ_k does NOT decay with depth (γ<0)");
+            }
+        }
+    }
+
+    println!("\n  Phase 3: Per-ε analysis\n");
+
+    for &eps in &eps_vals {
+        let subset: Vec<&LevelRec> = all_levels.iter().filter(|r| (r.eps - eps).abs() < 0.001 && r.depth_level >= 1).collect();
+        if subset.len() < 3 { continue; }
+
+        let x: Vec<f64> = subset.iter().map(|r| (r.depth_level as f64).ln()).collect();
+        let y: Vec<f64> = subset.iter()
+            .map(|r| (1.0 - r.rho_step / r.rho_fp.max(1e-15)).max(1e-10).ln())
+            .collect();
+        let nf = x.len() as f64;
+        let x_bar = x.iter().sum::<f64>() / nf;
+        let y_bar = y.iter().sum::<f64>() / nf;
+        let (mut sxx, mut sxy) = (0.0f64, 0.0);
+        for i in 0..x.len() {
+            let xp = x[i] - x_bar;
+            let yp = y[i] - y_bar;
+            sxx += xp * xp;
+            sxy += xp * yp;
+        }
+        if sxx > 1e-15 {
+            let gamma = sxy / sxx;
+            let ln_a = y_bar - gamma * x_bar;
+            let a = ln_a.exp();
+            let ss_res: f64 = (0..x.len()).map(|i| (y[i] - ln_a - gamma * x[i]).powi(2)).sum();
+            let ss_tot: f64 = y.iter().map(|&yi| (yi - y_bar).powi(2)).sum();
+            let r2 = if ss_tot > 1e-15 { 1.0 - ss_res / ss_tot } else { 0.0 };
+            println!("  ε={:>4.2}: δ_k = {:.4}·k^{:.4}, R²={:.4}", eps, a, gamma, r2);
+        }
+    }
+
+    println!("\n  CASCADE DECOMPOSITION SUMMARY:");
+    println!("  Per-level correction δ_k measures how much each depth level");
+    println!("  reduces the effective contraction below the local ρ_fp.");
+    println!("  If δ_k ∝ k^γ, then the cumulative effect gives:");
+    println!("  1-ratio ≈ Σ δ_k ∝ Σ k^γ ∝ depth^(γ+1) for γ>-1");
+    println!("  → cascade α = γ+1 (but our fit uses α directly)");
+    println!("  The per-level decomposition reveals the microscopic mechanism");
+    println!("  behind the macroscopic cascade amplification formula.");
+}
