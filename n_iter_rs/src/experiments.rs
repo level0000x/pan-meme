@@ -34908,3 +34908,420 @@ pub fn run_analytical_d0_prediction() {
         }
     }
 }
+
+pub fn run_rho_fp_topology_prediction() {
+    println!("\n=== v3.61: ρ_fp Topology Prediction ===\n");
+
+    #[derive(Clone)]
+    struct Pt {
+        topo: String,
+        depth: usize,
+        nfeed: usize,
+        nsub: usize,
+        n_edges: usize,
+        n_concepts: usize,
+        extent_size: usize,
+        intent_size: usize,
+        d0: f64,
+        rho_fp: f64,
+        n_actual: f64,
+        pset: String,
+    }
+
+    let param_sets: Vec<(&str, DynamicsParams)> = vec![
+        ("uniform", DynamicsParams::uniform()),
+        ("high-β", DynamicsParams::uniform().with_beta1(2.0)),
+        ("high-δ", DynamicsParams::uniform().with_delta1(2.0)),
+        ("high-κ₂", DynamicsParams::uniform().with_kappa2(2.0)),
+        ("asym-1", DynamicsParams::uniform().with_beta1(1.5).with_gamma1(0.8).with_zeta1(1.2).with_theta1(0.7).with_kappa2(1.8).with_eps(0.01)),
+        ("asym-2", DynamicsParams::uniform().with_beta1(0.5).with_gamma1(2.0).with_zeta1(0.8).with_theta1(1.5).with_kappa2(0.6).with_eps(0.05)),
+        ("extreme", DynamicsParams::uniform().with_beta1(3.0).with_gamma1(0.3).with_zeta1(2.0).with_theta1(0.4).with_kappa2(3.0).with_eps(0.02)),
+    ];
+
+    let topo_builders: Vec<(&str, Box<dyn Fn() -> fca::FcaLattice>)> = vec![
+        ("chain-5", Box::new(|| fca::build_chain_lattice(5))),
+        ("chain-10", Box::new(|| fca::build_chain_lattice(10))),
+        ("chain-20", Box::new(|| fca::build_chain_lattice(20))),
+        ("chain-50", Box::new(|| fca::build_chain_lattice(50))),
+        ("diamond", Box::new(|| fca::build_diamond_lattice())),
+        ("m3", Box::new(|| fca::build_m3_lattice())),
+        ("b3", Box::new(|| fca::build_b3_lattice())),
+        ("b4", Box::new(|| fca::build_b4_lattice())),
+        ("grid-4x4", Box::new(|| fca::build_grid_lattice(4, 4))),
+        ("grid-5x5", Box::new(|| fca::build_grid_lattice(5, 5))),
+        ("antichain-10", Box::new(|| fca::build_antichain_lattice(10))),
+    ];
+
+    let tol = 1e-12_f64;
+
+    let mut topo_data: Vec<(String, fca::FcaLattice, pipeline::LatticeStats, Vec<(usize, n_operator::DynamicsParams, Option<n_operator::IterResult>)>)> = Vec::new();
+
+    for &(tname, ref builder) in &topo_builders {
+        let lattice = builder();
+        let stats = pipeline::compute_lattice_stats(&lattice);
+        let mut concept_results: Vec<(usize, n_operator::DynamicsParams, Option<n_operator::IterResult>)> = Vec::new();
+
+        for &(_, ref params) in &param_sets {
+            let results = pipeline::run_topological_iteration(&lattice, &stats, params);
+            for (i, opt) in results.into_iter().enumerate() {
+                concept_results.push((i, params.clone(), opt));
+            }
+        }
+        topo_data.push((tname.to_string(), lattice, stats, concept_results));
+    }
+
+    let mut pts: Vec<Pt> = Vec::new();
+
+    for (tname, lattice, stats, results) in &topo_data {
+        let mut sub_concepts: Vec<Vec<usize>> = vec![vec![]; lattice.concepts.len()];
+        for &(p, c) in &lattice.edges {
+            sub_concepts[c].push(p);
+        }
+
+        let concepts_per_pset = lattice.concepts.len();
+        let mut result_counter = 0usize;
+
+        for (i, _, opt) in results {
+            let pset_idx = result_counter / concepts_per_pset.max(1);
+            result_counter += 1;
+
+            if let Some(ref res) = *opt {
+                if !res.converged { continue; }
+                let rho_fp = res.rho_spectral;
+                if rho_fp <= 0.0 || rho_fp >= 1.0 { continue; }
+                let n_actual = res.n_iters as f64;
+                if n_actual < 3.0 { continue; }
+                let traj = &res.trajectory;
+                if traj.is_empty() { continue; }
+                let d0 = traj[0][0];
+                if d0 <= 0.0 { continue; }
+
+                let csize = &lattice.concept_sizes[*i];
+
+                pts.push(Pt {
+                    topo: tname.to_string(),
+                    depth: stats.heights[*i],
+                    nfeed: stats.feeders[*i].len(),
+                    nsub: sub_concepts[*i].len(),
+                    n_edges: lattice.edges.len(),
+                    n_concepts: lattice.concepts.len(),
+                    extent_size: csize.1,
+                    intent_size: csize.0,
+                    d0,
+                    rho_fp,
+                    n_actual,
+                    pset: param_sets.get(pset_idx).map(|(n, _)| n.to_string()).unwrap_or("unknown".to_string()),
+                });
+            }
+        }
+    }
+
+    println!("  Collected {} data points\n", pts.len());
+    let n = pts.len();
+
+    println!("  === 1. ρ_fp Global Statistics ===\n");
+
+    let rho_fps: Vec<f64> = pts.iter().map(|p| p.rho_fp).collect();
+    let rho_mean: f64 = rho_fps.iter().sum::<f64>() / n as f64;
+    let rho_std: f64 = (rho_fps.iter().map(|v| (v - rho_mean).powi(2)).sum::<f64>() / n as f64).sqrt();
+    let rho_min = rho_fps.iter().cloned().fold(f64::INFINITY, f64::min);
+    let rho_max = rho_fps.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
+    println!("    ρ_fp mean={:.6}  std={:.6}  min={:.6}  max={:.6}", rho_mean, rho_std, rho_min, rho_max);
+
+    let l_rhos: Vec<f64> = rho_fps.iter().map(|v| (-v.ln()).max(0.001)).collect();
+    let lr_mean: f64 = l_rhos.iter().sum::<f64>() / n as f64;
+    let lr_std: f64 = (l_rhos.iter().map(|v| (v - lr_mean).powi(2)).sum::<f64>() / n as f64).sqrt();
+    println!("    L_ρ=|ln(ρ)| mean={:.6}  std={:.6}", lr_mean, lr_std);
+
+    println!("\n  === 2. ρ_fp vs Lattice Features (per param set) ===\n");
+
+    for &(pname, _) in &param_sets {
+        let subset: Vec<&Pt> = pts.iter().filter(|p| p.pset == pname).collect();
+        if subset.is_empty() { continue; }
+        let ns = subset.len();
+        let rhos: Vec<f64> = subset.iter().map(|p| p.rho_fp).collect();
+        let r_mean: f64 = rhos.iter().sum::<f64>() / ns as f64;
+
+        let features: Vec<(&str, Vec<f64>)> = vec![
+            ("depth", subset.iter().map(|p| p.depth as f64).collect()),
+            ("log(depth+1)", subset.iter().map(|p| ((p.depth + 1) as f64).ln()).collect()),
+            ("nfeed", subset.iter().map(|p| p.nfeed as f64).collect()),
+            ("nsub", subset.iter().map(|p| p.nsub as f64).collect()),
+            ("log(n_concepts)", subset.iter().map(|p| (p.n_concepts.max(1) as f64).ln()).collect()),
+            ("n_edges/n_concepts", subset.iter().map(|p| p.n_edges as f64 / p.n_concepts.max(1) as f64).collect()),
+            ("d0", subset.iter().map(|p| p.d0).collect()),
+            ("log(d0)", subset.iter().map(|p| p.d0.max(1e-10).ln()).collect()),
+            ("extent_size", subset.iter().map(|p| p.extent_size as f64).collect()),
+            ("intent_size", subset.iter().map(|p| p.intent_size as f64).collect()),
+        ];
+
+        let ss_tot: f64 = rhos.iter().map(|v| (v - r_mean).powi(2)).sum();
+        println!("    [{}: n={}  ρ_fp mean={:.6}]", pname, ns, r_mean);
+        for (fname, x) in &features {
+            let xm: f64 = x.iter().sum::<f64>() / ns as f64;
+            let sxy: f64 = x.iter().zip(rhos.iter()).map(|(a, b)| (a - xm) * (b - r_mean)).sum();
+            let sxx: f64 = x.iter().map(|a| (a - xm).powi(2)).sum();
+            let r = if sxx > 0.0 && ss_tot > 0.0 { sxy / (sxx * ss_tot).sqrt() } else { 0.0 };
+            let b1 = if sxx > 0.0 { sxy / sxx } else { 0.0 };
+            let b0 = r_mean - b1 * xm;
+            let ss_res: f64 = x.iter().zip(rhos.iter()).map(|(a, b)| (b - b0 - b1 * a).powi(2)).sum();
+            let r2 = if ss_tot > 0.0 { 1.0 - ss_res / ss_tot } else { 0.0 };
+            println!("      corr({:<18}, ρ_fp) = {:+.4}  R²={:.4}", fname, r, r2);
+        }
+    }
+
+    println!("\n  === 3. ρ_fp Per Topology × Param Set ===\n");
+
+    let topo_names_unique: Vec<String> = {
+        let mut v: Vec<String> = pts.iter().map(|p| p.topo.clone()).collect();
+        v.sort();
+        v.dedup();
+        v
+    };
+
+    for tname in &topo_names_unique {
+        for &(pname, _) in &param_sets {
+            let subset: Vec<&Pt> = pts.iter().filter(|p| p.topo == *tname && p.pset == pname).collect();
+            if subset.is_empty() { continue; }
+            let rhos: Vec<f64> = subset.iter().map(|p| p.rho_fp).collect();
+            let r_mean: f64 = rhos.iter().sum::<f64>() / rhos.len() as f64;
+            let r_std: f64 = (rhos.iter().map(|v| (v - r_mean).powi(2)).sum::<f64>() / rhos.len() as f64).sqrt();
+            let r_min = rhos.iter().cloned().fold(f64::INFINITY, f64::min);
+            let r_max = rhos.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
+            println!("    {:<14} {:<10} n={:>4}  ρ_fp=[{:.6}, {:.6}]  mean={:.6}  std={:.6}",
+                tname, pname, subset.len(), r_min, r_max, r_mean, r_std);
+        }
+    }
+
+    println!("\n  === 4. Within-Topology ρ_fp Variation ===\n");
+
+    for tname in &topo_names_unique {
+        for &(pname, _) in &param_sets {
+            let subset: Vec<&Pt> = pts.iter().filter(|p| p.topo == *tname && p.pset == pname).collect();
+            if subset.len() < 3 { continue; }
+            let rhos: Vec<f64> = subset.iter().map(|p| p.rho_fp).collect();
+            let r_mean: f64 = rhos.iter().sum::<f64>() / rhos.len() as f64;
+            let r_std: f64 = (rhos.iter().map(|v| (v - r_mean).powi(2)).sum::<f64>() / rhos.len() as f64).sqrt();
+            let cv = if r_mean > 0.0 { r_std / r_mean } else { 0.0 };
+
+            let depths: Vec<f64> = subset.iter().map(|p| p.depth as f64).collect();
+            let d_mean: f64 = depths.iter().sum::<f64>() / depths.len() as f64;
+            let ss_tot_d: f64 = depths.iter().map(|v| (v - d_mean).powi(2)).sum();
+            let ss_tot_r: f64 = rhos.iter().map(|v| (v - r_mean).powi(2)).sum();
+            let sxy: f64 = depths.iter().zip(rhos.iter()).map(|(a, b)| (a - d_mean) * (b - r_mean)).sum();
+            let sxx: f64 = depths.iter().map(|a| (a - d_mean).powi(2)).sum();
+            let r_corr = if sxx > 0.0 && ss_tot_r > 0.0 { sxy / (sxx * ss_tot_r).sqrt() } else { 0.0 };
+            let b1 = if sxx > 0.0 { sxy / sxx } else { 0.0 };
+            let b0 = r_mean - b1 * d_mean;
+            let ss_res: f64 = depths.iter().zip(rhos.iter()).map(|(a, b)| (b - b0 - b1 * a).powi(2)).sum();
+            let r2 = if ss_tot_r > 0.0 { 1.0 - ss_res / ss_tot_r } else { 0.0 };
+
+            if cv > 0.01 {
+                println!("    {:<14} {:<10} CV={:.4}  corr(depth,ρ)={:+.4}  R²={:.4}  ρ={:.4}+{:.6}·depth",
+                    tname, pname, cv, r_corr, r2, b0, b1);
+            }
+        }
+    }
+
+    println!("\n  === 5. Topology-Invariant ρ_fp Model (uniform params) ===\n");
+
+    let uniform_pts: Vec<&Pt> = pts.iter().filter(|p| p.pset == "uniform").collect();
+    let nu = uniform_pts.len();
+    println!("    Uniform param: {} data points", nu);
+
+    let y_u: Vec<f64> = uniform_pts.iter().map(|p| p.rho_fp).collect();
+    let y_u_mean: f64 = y_u.iter().sum::<f64>() / nu as f64;
+    let ss_tot_u: f64 = y_u.iter().map(|v| (v - y_u_mean).powi(2)).sum();
+
+    let x_cols_u: Vec<(&str, Vec<f64>)> = vec![
+        ("depth", uniform_pts.iter().map(|p| p.depth as f64).collect()),
+        ("log(depth+1)", uniform_pts.iter().map(|p| ((p.depth + 1) as f64).ln()).collect()),
+        ("nfeed", uniform_pts.iter().map(|p| p.nfeed as f64).collect()),
+        ("nsub", uniform_pts.iter().map(|p| p.nsub as f64).collect()),
+        ("d0", uniform_pts.iter().map(|p| p.d0).collect()),
+        ("log(d0)", uniform_pts.iter().map(|p| p.d0.max(1e-10).ln()).collect()),
+    ];
+
+    for (fname, x) in &x_cols_u {
+        let xm: f64 = x.iter().sum::<f64>() / nu as f64;
+        let sxy: f64 = x.iter().zip(y_u.iter()).map(|(a, b)| (a - xm) * (b - y_u_mean)).sum();
+        let sxx: f64 = x.iter().map(|a| (a - xm).powi(2)).sum();
+        let r = if sxx > 0.0 && ss_tot_u > 0.0 { sxy / (sxx * ss_tot_u).sqrt() } else { 0.0 };
+        let b1 = if sxx > 0.0 { sxy / sxx } else { 0.0 };
+        let b0 = y_u_mean - b1 * xm;
+        let ss_res: f64 = x.iter().zip(y_u.iter()).map(|(a, b)| (b - b0 - b1 * a).powi(2)).sum();
+        let r2 = if ss_tot_u > 0.0 { 1.0 - ss_res / ss_tot_u } else { 0.0 };
+        println!("    corr({:<18}, ρ_fp) = {:+.4}  R²={:.4}", fname, r, r2);
+    }
+
+    println!("\n  === 6. Per-Topology ρ_fp Constancy (uniform params) ===\n");
+
+    for tname in &topo_names_unique {
+        let subset: Vec<&Pt> = uniform_pts.iter().filter(|p| p.topo == *tname).cloned().collect();
+        if subset.is_empty() { continue; }
+        let rhos: Vec<f64> = subset.iter().map(|p| p.rho_fp).collect();
+        let r_mean: f64 = rhos.iter().sum::<f64>() / rhos.len() as f64;
+        let r_std: f64 = (rhos.iter().map(|v| (v - r_mean).powi(2)).sum::<f64>() / rhos.len() as f64).sqrt();
+        let cv = if r_mean > 0.0 { r_std / r_mean } else { 0.0 };
+        let depths: Vec<f64> = subset.iter().map(|p| p.depth as f64).collect();
+        let d_mean: f64 = depths.iter().sum::<f64>() / depths.len() as f64;
+        let ss_tot_d: f64 = depths.iter().map(|v| (v - d_mean).powi(2)).sum();
+        let ss_tot_r: f64 = rhos.iter().map(|v| (v - r_mean).powi(2)).sum();
+        let sxy: f64 = depths.iter().zip(rhos.iter()).map(|(a, b)| (a - d_mean) * (b - r_mean)).sum();
+        let sxx: f64 = depths.iter().map(|a| (a - d_mean).powi(2)).sum();
+        let r_corr = if sxx > 0.0 && ss_tot_r > 0.0 { sxy / (sxx * ss_tot_r).sqrt() } else { 0.0 };
+        let b1 = if sxx > 0.0 { sxy / sxx } else { 0.0 };
+        let b0 = r_mean - b1 * d_mean;
+        println!("    {:<14} n={:>4}  ρ_fp={:.6}±{:.6}  CV={:.4}  corr(depth)={:+.4}  ρ={:.6}+{:.8}·depth",
+            tname, subset.len(), r_mean, r_std, cv, r_corr, b0, b1);
+    }
+
+    println!("\n  === 7. Multi-variate OLS for ρ_fp (uniform) ===\n");
+
+    let x_mv: Vec<Vec<f64>> = vec![
+        uniform_pts.iter().map(|p| ((p.depth + 1) as f64).ln()).collect(),
+        uniform_pts.iter().map(|p| p.nfeed as f64).collect(),
+        uniform_pts.iter().map(|p| p.nsub as f64).collect(),
+        uniform_pts.iter().map(|p| p.d0.max(1e-10).ln()).collect(),
+    ];
+    let x_mv_names = ["log(depth+1)", "nfeed", "nsub", "log(d0)"];
+    let p_dim = x_mv.len();
+    let xm_mv: Vec<f64> = x_mv.iter().map(|c| c.iter().sum::<f64>() / nu as f64).collect();
+
+    let mut xt_x = vec![vec![0.0f64; p_dim]; p_dim];
+    let mut xt_y = vec![0.0f64; p_dim];
+    for i in 0..p_dim {
+        for j in 0..p_dim {
+            for s in 0..nu {
+                xt_x[i][j] += (x_mv[i][s] - xm_mv[i]) * (x_mv[j][s] - xm_mv[j]);
+            }
+        }
+        for s in 0..nu {
+            xt_y[i] += (x_mv[i][s] - xm_mv[i]) * (y_u[s] - y_u_mean);
+        }
+    }
+
+    let mut a = xt_x;
+    let mut b_vec = xt_y;
+    for col in 0..p_dim {
+        let mut max_val = a[col][col].abs();
+        let mut max_row = col;
+        for row in (col + 1)..p_dim {
+            if a[row][col].abs() > max_val { max_val = a[row][col].abs(); max_row = row; }
+        }
+        if max_row != col { a.swap(col, max_row); b_vec.swap(col, max_row); }
+        if a[col][col].abs() < 1e-30 { continue; }
+        let pivot = a[col][col];
+        for j in col..p_dim { a[col][j] /= pivot; }
+        b_vec[col] /= pivot;
+        for row in 0..p_dim {
+            if row == col { continue; }
+            let factor = a[row][col];
+            for j in col..p_dim { a[row][j] -= factor * a[col][j]; }
+            b_vec[row] -= factor * b_vec[col];
+        }
+    }
+    let betas = b_vec;
+    let intercept = y_u_mean - betas.iter().enumerate().map(|(i, bv)| bv * xm_mv[i]).sum::<f64>();
+
+    println!("  ρ_fp = {:.6}", intercept);
+    for i in 0..p_dim {
+        println!("    + {:.8}·{}", betas[i], x_mv_names[i]);
+    }
+
+    let mut ss_res_m = 0.0f64;
+    let mut preds_rho: Vec<f64> = Vec::new();
+    for s in 0..nu {
+        let mut rho_hat = intercept;
+        for i in 0..p_dim {
+            rho_hat += betas[i] * x_mv[i][s];
+        }
+        rho_hat = rho_hat.clamp(0.001, 0.999);
+        preds_rho.push(rho_hat);
+        ss_res_m += (y_u[s] - rho_hat).powi(2);
+    }
+    let r2_m = 1.0 - ss_res_m / ss_tot_u;
+    let mape_rho: f64 = uniform_pts.iter().zip(preds_rho.iter()).map(|(p, pred)| ((pred - p.rho_fp) / p.rho_fp).abs()).sum::<f64>() / nu as f64;
+    println!("  R² = {:.4}", r2_m);
+    println!("  MAPE(ρ_fp) = {:.2}%", mape_rho * 100.0);
+
+    let mape_lrho: f64 = uniform_pts.iter().zip(preds_rho.iter()).map(|(p, pred)| {
+        let lr_actual = (-p.rho_fp.ln()).max(0.001);
+        let lr_pred = (-pred.ln()).max(0.001);
+        ((lr_pred - lr_actual) / lr_actual).abs()
+    }).sum::<f64>() / nu as f64;
+    println!("  MAPE(|ln(ρ_fp)|) = {:.2}%", mape_lrho * 100.0);
+
+    println!("\n  === 8. End-to-End with Predicted ρ_fp (uniform) ===\n");
+
+    fn mape_fn(preds: &[f64], actuals: &[f64]) -> f64 {
+        preds.iter().zip(actuals.iter()).map(|(p, a)| ((p - a) / a).abs()).sum::<f64>() / preds.len() as f64
+    }
+
+    let actuals: Vec<f64> = uniform_pts.iter().map(|p| p.n_actual).collect();
+
+    let preds_naive_actual: Vec<f64> = uniform_pts.iter().map(|p| {
+        (p.d0 / tol).ln() / (-p.rho_fp.ln()).max(0.001)
+    }).collect();
+
+    let preds_corrected_actual: Vec<f64> = uniform_pts.iter().map(|p| {
+        let l_rho = (-p.rho_fp.ln()).max(0.001);
+        let e = -0.0386 + 0.0464 * p.d0.ln() + 0.0583 * l_rho;
+        (p.d0 / tol).ln() / l_rho / (1.0 + e).max(0.1)
+    }).collect();
+
+    let preds_corrected_pred_rho: Vec<f64> = uniform_pts.iter().zip(preds_rho.iter()).map(|(p, &rho_pred)| {
+        let l_rho_pred = (-rho_pred.ln()).max(0.001);
+        let e = -0.0386 + 0.0464 * p.d0.ln() + 0.0583 * l_rho_pred;
+        (p.d0 / tol).ln() / l_rho_pred / (1.0 + e).max(0.1)
+    }).collect();
+
+    println!("    Naive (actual ρ_fp):              {:.1}%", mape_fn(&preds_naive_actual, &actuals) * 100.0);
+    println!("    d₀-corrected (actual ρ_fp):       {:.1}%", mape_fn(&preds_corrected_actual, &actuals) * 100.0);
+    println!("    d₀-corrected (predicted ρ_fp):    {:.1}%", mape_fn(&preds_corrected_pred_rho, &actuals) * 100.0);
+
+    println!("\n  === 9. Per-Topology End-to-End (uniform, predicted ρ_fp) ===\n");
+
+    for tname in &topo_names_unique {
+        let idxs: Vec<usize> = uniform_pts.iter().enumerate().filter(|(_, p)| p.topo == *tname).map(|(i, _)| i).collect();
+        if idxs.is_empty() { continue; }
+
+        let e_naive: Vec<f64> = idxs.iter().map(|&i| ((preds_naive_actual[i] - actuals[i]) / actuals[i]).abs()).collect();
+        let e_corr_actual: Vec<f64> = idxs.iter().map(|&i| ((preds_corrected_actual[i] - actuals[i]) / actuals[i]).abs()).collect();
+        let e_corr_pred: Vec<f64> = idxs.iter().map(|&i| ((preds_corrected_pred_rho[i] - actuals[i]) / actuals[i]).abs()).collect();
+
+        let mn = e_naive.iter().sum::<f64>() / e_naive.len() as f64;
+        let mc = e_corr_actual.iter().sum::<f64>() / e_corr_actual.len() as f64;
+        let mp = e_corr_pred.iter().sum::<f64>() / e_corr_pred.len() as f64;
+
+        println!("    {:<14} Naive={:.1}%  Corr(actual_ρ)={:.1}%  Corr(pred_ρ)={:.1}%",
+            tname, mn * 100.0, mc * 100.0, mp * 100.0);
+    }
+
+    println!("\n  === 10. Cross-Param ρ_fp Predictability ===\n");
+
+    for &(pname, _) in &param_sets {
+        let subset: Vec<&Pt> = pts.iter().filter(|p| p.pset == pname).collect();
+        if subset.is_empty() { continue; }
+        let ns = subset.len();
+        let rhos: Vec<f64> = subset.iter().map(|p| p.rho_fp).collect();
+        let r_mean: f64 = rhos.iter().sum::<f64>() / ns as f64;
+        let ss_tot_p: f64 = rhos.iter().map(|v| (v - r_mean).powi(2)).sum();
+
+        let depths: Vec<f64> = subset.iter().map(|p| p.depth as f64).collect();
+        let nfeeds: Vec<f64> = subset.iter().map(|p| p.nfeed as f64).collect();
+
+        let d_mean: f64 = depths.iter().sum::<f64>() / ns as f64;
+        let nf_mean: f64 = nfeeds.iter().sum::<f64>() / ns as f64;
+
+        let sxy_d: f64 = depths.iter().zip(rhos.iter()).map(|(a, b)| (a - d_mean) * (b - r_mean)).sum();
+        let sxx_d: f64 = depths.iter().map(|a| (a - d_mean).powi(2)).sum();
+        let sxy_nf: f64 = nfeeds.iter().zip(rhos.iter()).map(|(a, b)| (a - nf_mean) * (b - r_mean)).sum();
+        let sxx_nf: f64 = nfeeds.iter().map(|a| (a - nf_mean).powi(2)).sum();
+
+        let r_d = if sxx_d > 0.0 && ss_tot_p > 0.0 { sxy_d / (sxx_d * ss_tot_p).sqrt() } else { 0.0 };
+        let r_nf = if sxx_nf > 0.0 && ss_tot_p > 0.0 { sxy_nf / (sxx_nf * ss_tot_p).sqrt() } else { 0.0 };
+
+        println!("    {:<10} corr(depth,ρ)={:+.4}  corr(nfeed,ρ)={:+.4}  ρ_mean={:.6}", pname, r_d, r_nf, r_mean);
+    }
+}
