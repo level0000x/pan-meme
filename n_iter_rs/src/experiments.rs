@@ -38095,6 +38095,200 @@ pub fn run_tm_fca_diagnostic() {
     println!("\n{}", "=".repeat(72));
 }
 
+pub fn run_tm_fca_pattern_structure() {
+    println!("\n{}", "=".repeat(72));
+    println!("  B-24 v9: Pattern Structure π-Mapping (Ganter & Kuznetsov 2001)");
+    println!("{}", "=".repeat(72));
+
+    let params = DynamicsParams::uniform();
+    let max_levels = [1, 2, 3, 4];
+    let k_configs = [(2, 4)]; // k_min=2, k_max=4: 2,3,4-grams
+    let max_concepts = 50000;
+    let time_limit = 300.0;
+
+    println!("\n  Strategy: k-grams as pattern descriptions, ⊓ = set intersection");
+    println!("  Levels ∈ {:?}, k ∈ {:?}", max_levels, k_configs);
+    println!("  Key: Non-overlapping blocks can share k-grams → FCA clusters form naturally");
+
+    // Phase 1: SimpleNonHalter
+    println!("\n── Phase 1: SimpleNonHalter (Known Non-Halting) ──\n");
+    let nonhalter = crate::tm_fca::simple_nonhalter();
+    let seq_non = crate::tm_fca::compute_pattern_rho_sequence(
+        &nonhalter, 20, 5000, 1, &max_levels, &k_configs, max_concepts, time_limit, &params,
+    );
+
+    // Phase 2: CurrentChampion
+    println!("\n── Phase 2: CurrentChampion (Known Halting) ──\n");
+    let champion = crate::tm_fca::current_champion();
+    let seq_champ = crate::tm_fca::compute_pattern_rho_sequence(
+        &champion, 20, 10000, 2, &max_levels, &k_configs, max_concepts, time_limit, &params,
+    );
+
+    // Phase 3: Antihydra
+    println!("\n── Phase 3: Antihydra (Undecided) ──\n");
+    let antihydra = crate::tm_fca::antihydra();
+    let seq_anti = crate::tm_fca::compute_pattern_rho_sequence(
+        &antihydra, 20, 50000, 2, &max_levels, &k_configs, max_concepts, time_limit, &params,
+    );
+
+    // Summary
+    println!("\n── Cross-TM Comparison (Pattern Structure) ──\n");
+    println!("  {:>20} {:>3} {:>3} {:>3} {:>8} {:>8} {:>8} {:>10} {:>12}",
+        "TM", "ml", "k", "L", "Concepts", "Edges", "Objs", "Attrs", "rho_top");
+    println!("  {:>20} {:>3} {:>3} {:>3} {:>8} {:>8} {:>8} {:>10} {:>12}",
+        "──", "──", "───", "───", "────────", "─────", "────", "──────", "──────");
+
+    for (name, seq) in [("SimpleNonHalter", &seq_non), ("CurrentChampion", &seq_champ), ("Antihydra", &seq_anti)] {
+        for (ml, kmin, kmax, l, nc, ne, _np, no, na, rho, _bt, _it) in seq {
+            println!("  {:>20} {:>3} {}-{} {:>3} {:>8} {:>8} {:>8} {:>10} {:>12.8}",
+                name, ml, kmin, kmax, l, nc, ne, no, na, rho);
+        }
+    }
+
+    let best_non = seq_non.iter().max_by_key(|x| x.4);
+    let best_champ = seq_champ.iter().max_by_key(|x| x.4);
+    let best_anti = seq_anti.iter().max_by_key(|x| x.4);
+
+    println!("\n  Best (max concepts) per TM:");
+    if let Some((ml, kmin, kmax, l, nc, ne, _np, no, na, rho, _, _)) = best_non {
+        println!("    SimpleNonHalter:   ml={} k={}-{} L={} concepts={} edges={} objs={} attrs={} ρ={:.8}",
+            ml, kmin, kmax, l, nc, ne, no, na, rho);
+    }
+    if let Some((ml, kmin, kmax, l, nc, ne, _np, no, na, rho, _, _)) = best_champ {
+        println!("    CurrentChampion:   ml={} k={}-{} L={} concepts={} edges={} objs={} attrs={} ρ={:.8}",
+            ml, kmin, kmax, l, nc, ne, no, na, rho);
+    }
+    if let Some((ml, kmin, kmax, l, nc, ne, _np, no, na, rho, _, _)) = best_anti {
+        println!("    Antihydra:         ml={} k={}-{} L={} concepts={} edges={} objs={} attrs={} ρ={:.8}",
+            ml, kmin, kmax, l, nc, ne, no, na, rho);
+    }
+
+    // ρ(J) comparison
+    let rho_non = seq_non.iter().map(|x| x.9).fold(f64::NAN, f64::min);
+    let rho_champ = seq_champ.iter().map(|x| x.9).fold(f64::NAN, f64::min);
+    let rho_anti = seq_anti.iter().map(|x| x.9).fold(f64::NAN, f64::min);
+
+    println!("\n  ρ(J) comparison:");
+    println!("    SimpleNonHalter (non-halt): ρ = {:.8}", rho_non);
+    println!("    CurrentChampion (halt):     ρ = {:.8}", rho_champ);
+    println!("    Antihydra (undecided):      ρ = {:.8}", rho_anti);
+
+    if (rho_non - rho_champ).abs() > 1e-8 || (rho_non - rho_anti).abs() > 1e-8 {
+        println!("\n  *** ρ(J) DIFFERS between TMs! B-24.5.4.2 supported! ***");
+    } else {
+        println!("\n  -> ρ(J) still identical across all TMs");
+    }
+
+    // Concept count check
+    let mcn = best_non.map(|x| x.4).unwrap_or(0);
+    let mcc = best_champ.map(|x| x.4).unwrap_or(0);
+    let mca = best_anti.map(|x| x.4).unwrap_or(0);
+
+    println!("\n  B-24.5.4.1 verification (concept count > 10):");
+    println!("    SimpleNonHalter: max = {} {}", mcn, if mcn > 10 { "✓" } else { "✗" });
+    println!("    CurrentChampion: max = {} {}", mcc, if mcc > 10 { "✓" } else { "✗" });
+    println!("    Antihydra:       max = {} {}", mca, if mca > 10 { "✓" } else { "✗" });
+
+    println!("\n{}", "=".repeat(72));
+}
+
+pub fn run_tm_fca_block_decomposition() {
+    println!("\n{}", "=".repeat(72));
+    println!("  B-24 v8: Multi-level Block Decomposition (π Mapping)");
+    println!("{}", "=".repeat(72));
+
+    let params = DynamicsParams::uniform();
+    let max_levels = [1, 2, 3, 4]; // block sizes: 2, 4, 8, 16
+    let max_concepts = 10000;
+    let time_limit = 120.0;
+
+    println!("\n  Strategy: Non-overlapping power-of-2 blocks with containment edges");
+    println!("  Levels ∈ {:?} (block sizes 2^r)", max_levels);
+    println!("  Key: Same-level blocks share 0 positions → γ-correlation eliminated");
+
+    // Phase 1: SimpleNonHalter
+    println!("\n── Phase 1: SimpleNonHalter (Known Non-Halting) ──\n");
+    let nonhalter = crate::tm_fca::simple_nonhalter();
+    let seq_non = crate::tm_fca::compute_block_rho_sequence(
+        &nonhalter, 20, 5000, 1, &max_levels, max_concepts, time_limit, &params,
+    );
+
+    // Phase 2: CurrentChampion
+    println!("\n── Phase 2: CurrentChampion (Known Halting) ──\n");
+    let champion = crate::tm_fca::current_champion();
+    let seq_champ = crate::tm_fca::compute_block_rho_sequence(
+        &champion, 20, 10000, 2, &max_levels, max_concepts, time_limit, &params,
+    );
+
+    // Phase 3: Antihydra
+    println!("\n── Phase 3: Antihydra (Undecided) ──\n");
+    let antihydra = crate::tm_fca::antihydra();
+    let seq_anti = crate::tm_fca::compute_block_rho_sequence(
+        &antihydra, 50, 50000, 2, &max_levels, max_concepts, time_limit, &params,
+    );
+
+    // Cross-TM comparison
+    println!("\n── Cross-TM Comparison ──\n");
+    println!("  {:>20} {:>4} {:>4} {:>8} {:>8} {:>8} {:>8} {:>12}",
+        "TM", "ml", "L", "Concepts", "Edges", "Pats", "Objs", "rho_top");
+    println!("  {:>20} {:>4} {:>4} {:>8} {:>8} {:>8} {:>8} {:>12}",
+        "──", "──", "──", "────────", "─────", "────", "────", "──────");
+
+    for (name, seq) in [("SimpleNonHalter", &seq_non), ("CurrentChampion", &seq_champ), ("Antihydra", &seq_anti)] {
+        for (ml, l, nc, ne, np, no, rho, _bt, _it) in seq {
+            println!("  {:>20} {:>4} {:>4} {:>8} {:>8} {:>8} {:>8} {:>12.8}",
+                name, ml, l, nc, ne, np, no, rho);
+        }
+    }
+
+    // Best concept count per TM
+    let best_non = seq_non.iter().max_by_key(|x| x.2);
+    let best_champ = seq_champ.iter().max_by_key(|x| x.2);
+    let best_anti = seq_anti.iter().max_by_key(|x| x.2);
+
+    println!("\n  Best (max concepts) per TM:");
+    if let Some((ml, l, nc, ne, np, _no, rho, _, _)) = best_non {
+        println!("    SimpleNonHalter:   ml={} L={} concepts={} edges={} pats={} ρ={:.8}", ml, l, nc, ne, np, rho);
+    }
+    if let Some((ml, l, nc, ne, np, _no, rho, _, _)) = best_champ {
+        println!("    CurrentChampion:   ml={} L={} concepts={} edges={} pats={} ρ={:.8}", ml, l, nc, ne, np, rho);
+    }
+    if let Some((ml, l, nc, ne, np, _no, rho, _, _)) = best_anti {
+        println!("    Antihydra:         ml={} L={} concepts={} edges={} pats={} ρ={:.8}", ml, l, nc, ne, np, rho);
+    }
+
+    // ρ(J) comparison
+    let rho_non = seq_non.iter().map(|x| x.6).fold(f64::NAN, f64::min);
+    let rho_champ = seq_champ.iter().map(|x| x.6).fold(f64::NAN, f64::min);
+    let rho_anti = seq_anti.iter().map(|x| x.6).fold(f64::NAN, f64::min);
+
+    println!("\n  ρ(J) comparison:");
+    println!("    SimpleNonHalter (non-halt): ρ = {:.8}", rho_non);
+    println!("    CurrentChampion (halt):     ρ = {:.8}", rho_champ);
+    println!("    Antihydra (undecided):      ρ = {:.8}", rho_anti);
+
+    if (rho_non - rho_champ).abs() > 1e-8 || (rho_non - rho_anti).abs() > 1e-8 {
+        println!("\n  *** ρ(J) DIFFERS between TMs! B-24.5.4.2 supported! ***");
+    } else {
+        println!("\n  -> ρ(J) still identical across all TMs");
+    }
+
+    // Verify B-24.5.4.1: concept count > 10?
+    let max_concepts_non = best_non.map(|x| x.2).unwrap_or(0);
+    let max_concepts_champ = best_champ.map(|x| x.2).unwrap_or(0);
+    let max_concepts_anti = best_anti.map(|x| x.2).unwrap_or(0);
+
+    println!("\n  B-24.5.4.1 verification (concept count > 10):");
+    println!("    SimpleNonHalter: max concepts = {} {}",
+        max_concepts_non, if max_concepts_non > 10 { "✓" } else { "✗" });
+    println!("    CurrentChampion: max concepts = {} {}",
+        max_concepts_champ, if max_concepts_champ > 10 { "✓" } else { "✗" });
+    println!("    Antihydra:       max concepts = {} {}",
+        max_concepts_anti, if max_concepts_anti > 10 { "✓" } else { "✗" });
+
+    println!("\n{}", "=".repeat(72));
+}
+
 pub fn run_tm_fca_halting_analysis() {
 
     let params = DynamicsParams::uniform();

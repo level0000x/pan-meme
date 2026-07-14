@@ -180,6 +180,8 @@ fn run_single(name: &str) {
         ("run_tm_fca_info_state", experiments::run_tm_fca_info_state_analysis),
         ("run_tm_fca_pattern", experiments::run_tm_fca_pattern_transition),
         ("run_tm_fca_cluster", experiments::run_tm_fca_cluster_analysis),
+        ("run_tm_fca_block", experiments::run_tm_fca_block_decomposition),
+        ("run_tm_fca_ps", experiments::run_tm_fca_pattern_structure),
     ];
     if let Some((_, f)) = fns.iter().find(|(n, _)| *n == name) {
         f();

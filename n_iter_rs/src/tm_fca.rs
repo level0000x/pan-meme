@@ -1557,6 +1557,353 @@ pub fn compute_cluster_rho_sequence(
     sequence
 }
 
+// ─── v8: Multi-level Block Decomposition (π mapping, B-24.5) ──────────────────
+
+/// Extract non-overlapping blocks from a tape window at a given level.
+///
+/// B-24.5 π mapping: B_{r,i} = tape[i·2^r..(i+1)·2^r-1]
+/// Level r: block size = 2^r, non-overlapping partition of the window.
+fn extract_blocks(window: &[u8], level: usize) -> Vec<(usize, String)> {
+    let block_size = 1usize << level;
+    if window.len() < block_size {
+        return Vec::new();
+    }
+    let n_blocks = window.len() / block_size;
+    let mut blocks = Vec::with_capacity(n_blocks);
+    for i in 0..n_blocks {
+        let start = i * block_size;
+        let end = start + block_size;
+        let mut val: usize = 0;
+        for j in start..end {
+            val = (val << 1) | (window[j] as usize);
+        }
+        blocks.push((val, format!("L{}_B{}", level, i)));
+    }
+    blocks
+}
+
+/// Build formal context using multi-level block decomposition (v8 π mapping).
+///
+/// B-24.5: Non-overlapping power-of-2 blocks with natural containment.
+/// Objects = all blocks across all levels and time steps.
+/// Attributes = tape-position-based (pos_{k} for each window position k).
+/// ALL levels share the same N_attr = window_l attribute space.
+/// Block B_{r,i} has attribute pos_{k} iff tape[k] = 1 at the block's positions.
+///
+/// Key insight: blocks at DIFFERENT levels covering overlapping tape regions
+/// SHARE attributes (containment). Blocks at SAME level cover DISJOINT regions
+/// (no γ-correlation). This simultaneously satisfies containment and de-correlation.
+pub fn build_block_decomposition_context(
+    tm: &TuringMachine,
+    max_steps: u64,
+    window_l: usize,
+    sample_every: u64,
+    max_level: usize,
+) -> (Vec<Vec<bool>>, Vec<String>, Vec<String>, usize, usize) {
+    let (configs, halted, steps) = tm.simulate(max_steps, window_l);
+
+    let n_attrs = window_l;
+    let attr_labels: Vec<String> = (0..window_l).map(|k| format!("p{}", k)).collect();
+
+    let mut all_block_data: Vec<(usize, usize, usize)> = Vec::new(); // (level, start_pos, time_idx)
+    let mut block_labels: Vec<String> = Vec::new();
+    let mut seen_patterns: HashSet<usize> = HashSet::new();
+
+    for (time_idx, (_state, _head, window)) in configs.iter().enumerate() {
+        if time_idx as u64 % sample_every != 0 {
+            continue;
+        }
+        for level in 1..=max_level {
+            let blocks = extract_blocks(window, level);
+            for (content, label) in blocks {
+                seen_patterns.insert(content);
+                // start_pos = block_index * block_size
+                let block_size = 1usize << level;
+                let block_idx: usize = label
+                    .strip_prefix(&format!("L{}_B", level))
+                    .and_then(|s| s.parse().ok())
+                    .unwrap_or(0);
+                let start_pos = block_idx * block_size;
+                all_block_data.push((level, start_pos, time_idx));
+                block_labels.push(format!("t{}:{}", time_idx, label));
+            }
+        }
+    }
+
+    let n_objects = all_block_data.len();
+
+    let mut matrix = vec![vec![false; n_attrs]; n_objects];
+
+    // Fill incidence matrix: re-simulate using the same configs reference
+    let mut obj_idx = 0usize;
+    for (time_idx, (_state, _head, window)) in configs.iter().enumerate() {
+        if time_idx as u64 % sample_every != 0 {
+            continue;
+        }
+        for level in 1..=max_level {
+            let block_size = 1usize << level;
+            let n_blocks = window.len() / block_size;
+            for block_i in 0..n_blocks {
+                let start = block_i * block_size;
+                for k in 0..block_size {
+                    if window[start + k] == 1 {
+                        // The tape position is start + k relative to window start
+                        // Use a SHARED position attribute
+                        let pos_attr = start + k;
+                        if pos_attr < n_attrs {
+                            matrix[obj_idx][pos_attr] = true;
+                        }
+                    }
+                }
+                obj_idx += 1;
+            }
+        }
+    }
+
+    let mut unique_row_patterns: HashSet<Vec<bool>> = HashSet::new();
+    for row in &matrix {
+        unique_row_patterns.insert(row.clone());
+    }
+
+    let mut level_counts = vec![0usize; max_level + 1];
+    for &(level, _, _) in &all_block_data {
+        level_counts[level] += 1;
+    }
+
+    let total_patterns = seen_patterns.len();
+
+    println!(
+        "    block_dec(L1-{}): {} steps ({}), {} objs, {} attrs, {} pats, {} uniq_rows",
+        max_level, steps, if halted { "halted" } else { "non-halt" },
+        n_objects, n_attrs, total_patterns, unique_row_patterns.len()
+    );
+
+    for level in 1..=max_level {
+        if level_counts[level] > 0 {
+            println!("      L{}: {} blocks", level, level_counts[level]);
+        }
+    }
+
+    (matrix, block_labels, attr_labels, total_patterns, n_objects)
+}
+
+/// Compute ρ(J) for block decomposition FCA lattice at multiple (L, max_level) combos.
+pub fn compute_block_rho_sequence(
+    tm: &TuringMachine,
+    max_l: usize,
+    max_steps: u64,
+    sample_every: u64,
+    max_levels: &[usize],
+    max_concepts: usize,
+    time_limit: f64,
+    params: &DynamicsParams,
+) -> Vec<(usize, usize, usize, usize, usize, usize, f64, f64, f64)> {
+    let mut sequence = Vec::new();
+
+    for &ml in max_levels {
+        for l in [5, 10, 20, 50, 100].iter().filter(|&&x| x <= max_l) {
+            let t0 = std::time::Instant::now();
+            let (matrix, _obj_labels, _attr_labels, n_pats, n_objs) =
+                build_block_decomposition_context(tm, max_steps, *l, sample_every, ml);
+            if matrix.is_empty() {
+                continue;
+            }
+            let lattice = build_lattice(&matrix, max_concepts, time_limit);
+            let build_time = t0.elapsed().as_secs_f64();
+
+            if lattice.concepts.is_empty() {
+                eprintln!("  block L={} ml={}: empty lattice, skipping", l, ml);
+                continue;
+            }
+
+            let t1 = std::time::Instant::now();
+            let (results, stats) = run_lattice_analysis(&lattice, params);
+            let iter_time = t1.elapsed().as_secs_f64();
+            let rho_top = extract_top_rho(&results, &stats).unwrap_or(f64::NAN);
+
+            sequence.push((ml, *l, lattice.concepts.len(), lattice.edges.len(),
+                n_pats, n_objs, rho_top, build_time, iter_time));
+
+            println!(
+                "  ml={} L={:3}: concepts={:5}, edges={:5}, pats={:5}, objs={:5}, ρ_top={:.8}, build={:.2}s, iter={:.2}s",
+                ml, l, lattice.concepts.len(), lattice.edges.len(),
+                n_pats, n_objs, rho_top, build_time, iter_time
+            );
+        }
+    }
+
+    sequence
+}
+
+// ─── v9: Pattern Structure π-Mapping (B-24.6) ─────────────────────────────────
+
+/// Extract k-gram patterns from a bitvector (block content).
+///
+/// B-24.6: δ_k(B) = {B[t..t+k-1] : t = 0..|B|-k}
+/// Key encoding: (k << 16) | pattern
+/// Returns set of unique (k, pattern) keys.
+fn extract_block_kgrams(content: usize, block_level: usize, k_min: usize, k_max: usize) -> Vec<usize> {
+    let block_size = 1usize << block_level;
+    if block_size < k_min {
+        return Vec::new();
+    }
+    let eff_k_max = k_max.min(block_size);
+    let mut pats = Vec::with_capacity((block_size - k_min + 1) * (eff_k_max - k_min + 1));
+    for k in k_min..=eff_k_max {
+        for t in 0..=(block_size - k) {
+            let pat = (content >> (block_size - t - k)) & ((1usize << k) - 1);
+            let key = (k << 16) | pat;
+            pats.push(key);
+        }
+    }
+    pats.sort();
+    pats.dedup();
+    pats
+}
+
+/// Build formal context using pattern structure (v9 π mapping).
+///
+/// B-24.6: Each block is described by the set of k-grams it contains.
+/// Attributes = all unique k-gram patterns across all blocks.
+/// This naturally bypasses the "impossible triangle" because:
+/// - Non-overlapping blocks CAN share k-grams (content similarity)
+/// - Containment is preserved: sub-block k-grams ⊆ super-block k-grams
+/// - Each unique block content → distinct pattern set → distinct concept
+pub fn build_pattern_structure_context(
+    tm: &TuringMachine,
+    max_steps: u64,
+    window_l: usize,
+    sample_every: u64,
+    max_level: usize,
+    k_min: usize,
+    k_max: usize,
+) -> (Vec<Vec<bool>>, Vec<String>, Vec<String>, usize, usize, usize) {
+    let (configs, halted, steps) = tm.simulate(max_steps, window_l);
+
+    let mut all_blocks: Vec<(usize, usize, usize, usize)> = Vec::new(); // (level, content, time, block_idx)
+    let mut block_labels: Vec<String> = Vec::new();
+    let mut pattern_map: HashMap<usize, Vec<usize>> = HashMap::new(); // content -> kgrams
+    let mut all_patterns: HashSet<usize> = HashSet::new();
+
+    for (time_idx, (_state, _head, window)) in configs.iter().enumerate() {
+        if time_idx as u64 % sample_every != 0 {
+            continue;
+        }
+        for level in 1..=max_level {
+            let blocks = extract_blocks(window, level);
+            for (content, label) in &blocks {
+                if !pattern_map.contains_key(content) {
+                    let pats = extract_block_kgrams(*content, level, k_min, k_max);
+                    for &p in &pats { all_patterns.insert(p); }
+                    pattern_map.insert(*content, pats);
+                }
+                let block_idx: usize = label
+                    .strip_prefix(&format!("L{}_B", level))
+                    .and_then(|s| s.parse().ok())
+                    .unwrap_or(0);
+                all_blocks.push((level, *content, time_idx, block_idx));
+                block_labels.push(format!("t{}:{}", time_idx, label));
+            }
+        }
+    }
+
+    let n_objects = all_blocks.len();
+
+    let mut sorted_pats: Vec<usize> = all_patterns.iter().copied().collect();
+    sorted_pats.sort();
+    let mut pat_to_idx: HashMap<usize, usize> = HashMap::new();
+    let mut attr_labels: Vec<String> = Vec::new();
+    for &p in &sorted_pats {
+        pat_to_idx.insert(p, attr_labels.len());
+        let k = p >> 16;
+        let val = p & 0xFFFF;
+        attr_labels.push(format!("k{}_p{:0width$b}", k, val, width = k));
+    }
+    let n_attrs = attr_labels.len();
+
+    // Build incidence matrix
+    let mut matrix = vec![vec![false; n_attrs]; n_objects];
+    for (obj_idx, &(_level, content, _time, _block_idx)) in all_blocks.iter().enumerate() {
+        if let Some(pats) = pattern_map.get(&content) {
+            for &p in pats {
+                if let Some(&attr_idx) = pat_to_idx.get(&p) {
+                    matrix[obj_idx][attr_idx] = true;
+                }
+            }
+        }
+    }
+
+    let mut unique_rows: HashSet<Vec<bool>> = HashSet::new();
+    for row in &matrix { unique_rows.insert(row.clone()); }
+
+    let n_pats = all_patterns.len();
+
+    let mut level_counts = vec![0usize; max_level + 1];
+    for &(level, _, _, _) in &all_blocks { level_counts[level] += 1; }
+
+    println!(
+        "    ps(L1-{} k{}-{}): {} steps ({}), {} objs, {} attrs, {} pats, {} uniq_rows",
+        max_level, k_min, k_max, steps, if halted { "halted" } else { "non-halt" },
+        n_objects, n_attrs, n_pats, unique_rows.len()
+    );
+    for level in 1..=max_level {
+        if level_counts[level] > 0 {
+            println!("      L{}: {} blocks", level, level_counts[level]);
+        }
+    }
+
+    (matrix, block_labels, attr_labels, n_pats, n_objects, n_attrs)
+}
+
+/// Compute ρ(J) for pattern structure FCA lattice at multiple (L, max_level, k_max) combos.
+pub fn compute_pattern_rho_sequence(
+    tm: &TuringMachine,
+    max_l: usize,
+    max_steps: u64,
+    sample_every: u64,
+    max_levels: &[usize],
+    k_configs: &[(usize, usize)], // (k_min, k_max) combos
+    max_concepts: usize,
+    time_limit: f64,
+    params: &DynamicsParams,
+) -> Vec<(usize, usize, usize, usize, usize, usize, usize, usize, usize, f64, f64, f64)> {
+    let mut sequence = Vec::new();
+
+    for &ml in max_levels {
+        for &(k_min, k_max) in k_configs {
+            for l in [5, 10, 20, 50].iter().filter(|&&x| x <= max_l) {
+                let t0 = std::time::Instant::now();
+                let (matrix, _obj_labels, _attr_labels, n_pats, n_objs, n_attrs) =
+                    build_pattern_structure_context(tm, max_steps, *l, sample_every, ml, k_min, k_max);
+                if matrix.is_empty() { continue; }
+                let lattice = build_lattice(&matrix, max_concepts, time_limit);
+                let build_time = t0.elapsed().as_secs_f64();
+
+                if lattice.concepts.is_empty() {
+                    eprintln!("  ps ml={} k={}-{} L={}: empty lattice", ml, k_min, k_max, l);
+                    continue;
+                }
+
+                let t1 = std::time::Instant::now();
+                let (results, stats) = run_lattice_analysis(&lattice, params);
+                let iter_time = t1.elapsed().as_secs_f64();
+                let rho_top = extract_top_rho(&results, &stats).unwrap_or(f64::NAN);
+
+                sequence.push((ml, k_min, k_max, *l, lattice.concepts.len(),
+                    lattice.edges.len(), n_pats, n_objs, n_attrs, rho_top, build_time, iter_time));
+
+                println!(
+                    "  ps ml={} k={}-{} L={:3}: concepts={:6}, edges={:6}, pats={:6}, objs={:7}, attrs={:6}, ρ_top={:.8}, build={:.2}s, iter={:.2}s",
+                    ml, k_min, k_max, *l, lattice.concepts.len(), lattice.edges.len(),
+                    n_pats, n_objs, n_attrs, rho_top, build_time, iter_time
+                );
+            }
+        }
+    }
+
+    sequence
+}
+
 // ─── Certificate Construction (per B-24 §4) ─────────────────────────────────
 
 /// ISD Certificate for a Turing machine (B-24 §4.1).
