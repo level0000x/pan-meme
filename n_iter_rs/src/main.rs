@@ -8,6 +8,7 @@ use n_iter_rs::io;
 
 fn main() {
     let quick_mode = env::var("QUICK").is_ok();
+
     let extract_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .parent().unwrap().join("experiments").join("011-fca-n-iteration").join("extracts");
     let output_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
@@ -15,57 +16,34 @@ fn main() {
     let _ = fs::create_dir_all(&output_dir);
 
     println!("{}", "=".repeat(64));
-    println!("  N-Iteration Experiment Suite");
+    println!("  n-iteration experiment suite");
     println!("{}", "=".repeat(64));
 
-    let mut all_articles: Vec<(String, String, String)> = Vec::new();
-    if extract_dir.exists() {
-        let cat_map = io::build_category_map();
-        for entry in fs::read_dir(&extract_dir).unwrap().flatten() {
-            let path = entry.path();
-            if path.extension().map_or(false, |e| e == "json") {
-                if let Some((title, extract)) = io::read_wikipedia_extract(&path) {
-                    let slug = path.file_stem().unwrap().to_string_lossy().to_string();
-                    let cat = cat_map.get(&slug).cloned().unwrap_or_else(|| "Uncategorized".to_string());
-                    all_articles.push((title, extract, cat));
-                }
-            }
-        }
-        println!("Loaded {} Wikipedia extracts", all_articles.len());
-    } else {
-        println!("No extracts directory found, running synthetic-only experiments");
-    }
+    let wiki_extracts = io::load_wikipedia_extracts(&extract_dir);
+    println!("Loaded {} Wikipedia extracts", wiki_extracts.len());
 
-    let max_attrs = if quick_mode { 6 } else { 12 };
-    let max_concepts = if quick_mode { 12 } else { 30 };
-    let time_limit = if quick_mode { 5.0 } else { 30.0 };
+    let category_map = io::build_category_map(&wiki_extracts);
+    println!("Category map: {} categories", category_map.len());
 
-    let merged: String = all_articles.iter().map(|(_, e, _)| e.as_str()).collect::<Vec<_>>().join(" ");
-    let art_texts: Vec<String> = all_articles.iter().map(|(_, e, _)| e.clone()).collect();
+    experiments::run_experiment(&wiki_extracts, &category_map, &output_dir, quick_mode);
 
-    let by_cat: HashMap<String, Vec<(String, String)>> = {
-        let mut m: HashMap<String, Vec<(String, String)>> = HashMap::new();
-        for (title, extract, cat) in &all_articles {
-            m.entry(cat.clone()).or_default().push((title.clone(), extract.clone()));
-        }
-        m
-    };
-
-    experiments::run_experiment("all", &merged, &art_texts, max_attrs, max_concepts, time_limit, &output_dir);
-    experiments::run_param_scan(&all_articles, max_attrs, max_concepts, time_limit, &output_dir);
-    experiments::run_lattice_richness_scan(&by_cat, max_concepts, time_limit, &output_dir);
-    experiments::run_isolation_experiment(&all_articles, max_attrs, max_concepts, time_limit, &output_dir);
-    experiments::run_delta1_scan(&all_articles, max_attrs, max_concepts, time_limit, &output_dir);
-    experiments::run_e1_tokenization_stability(&merged, &art_texts, max_concepts);
-    experiments::run_e2_carrier_independence(&all_articles, max_attrs, max_concepts, time_limit, &output_dir);
-    experiments::run_degradation_scan(&all_articles, max_attrs, max_concepts, time_limit, &output_dir);
-    experiments::run_theorem_verification(&all_articles, max_attrs, max_concepts, time_limit, &output_dir);
+    experiments::param_scan(&wiki_extracts, &category_map, &output_dir);
+    experiments::lattice_richness_scan(&wiki_extracts, &category_map, &output_dir);
+    experiments::isolation_experiment(&wiki_extracts, &category_map, &output_dir);
+    experiments::delta1_scan(&wiki_extracts, &category_map, &output_dir);
+    experiments::e1_tokenization_stability(&wiki_extracts, &category_map, &output_dir);
+    experiments::e2_carrier_independence(&wiki_extracts, &category_map, &output_dir);
+    experiments::degradation_scan(&wiki_extracts, &category_map, &output_dir);
+    experiments::theorem_verification(&wiki_extracts, &category_map, &output_dir);
 
     run_synthetic_suite(&output_dir);
 }
 
 fn run_synthetic_suite(output_dir: &PathBuf) {
-    let _ = output_dir;
+    println!("{}", "=".repeat(64));
+    println!("  synthetic lattice experiment suite");
+    println!("{}", "=".repeat(64));
+
     experiments::run_th617_verification();
     experiments::run_ode_verification();
     experiments::run_ode_stability_analysis();
@@ -216,4 +194,5 @@ fn run_synthetic_suite(output_dir: &PathBuf) {
     experiments::run_d0_corrected_prediction();
     experiments::run_d0_correction_generalization();
     experiments::run_d0_coefficient_analysis();
+    experiments::run_analytical_d0_prediction();
 }

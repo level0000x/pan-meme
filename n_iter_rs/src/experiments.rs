@@ -34522,3 +34522,389 @@ pub fn run_d0_coefficient_analysis() {
     println!("    Decomposition:{:.1}%", mape_fn(&preds_decomp, &actuals) * 100.0);
     println!("    Empirical:    {:.1}%", mape_fn(&preds_empirical, &actuals) * 100.0);
 }
+
+pub fn run_analytical_d0_prediction() {
+    println!("\n=== v3.60: Analytical d₀ Prediction from Lattice Topology ===\n");
+
+    #[derive(Clone)]
+    struct Pt {
+        topo: String,
+        concept_idx: usize,
+        depth: usize,
+        nfeed: usize,
+        nsub: usize,
+        raw_d: f64,
+        d0: f64,
+        rho_fp: f64,
+        n_actual: f64,
+        n_naive: f64,
+        total_extent: usize,
+        total_intent: usize,
+        max_d_valid: f64,
+        b_init: f64,
+        rho_init: f64,
+    }
+
+    let param_sets: Vec<(&str, DynamicsParams)> = vec![
+        ("uniform", DynamicsParams::uniform()),
+        ("high-β", DynamicsParams::uniform().with_beta1(2.0)),
+        ("high-δ", DynamicsParams::uniform().with_delta1(2.0)),
+        ("high-κ₂", DynamicsParams::uniform().with_kappa2(2.0)),
+        ("asym-1", DynamicsParams::uniform().with_beta1(1.5).with_gamma1(0.8).with_zeta1(1.2).with_theta1(0.7).with_kappa2(1.8).with_eps(0.01)),
+        ("asym-2", DynamicsParams::uniform().with_beta1(0.5).with_gamma1(2.0).with_zeta1(0.8).with_theta1(1.5).with_kappa2(0.6).with_eps(0.05)),
+        ("extreme", DynamicsParams::uniform().with_beta1(3.0).with_gamma1(0.3).with_zeta1(2.0).with_theta1(0.4).with_kappa2(3.0).with_eps(0.02)),
+    ];
+
+    let topo_builders: Vec<(&str, Box<dyn Fn() -> fca::FcaLattice>)> = vec![
+        ("chain-5", Box::new(|| fca::build_chain_lattice(5))),
+        ("chain-10", Box::new(|| fca::build_chain_lattice(10))),
+        ("chain-20", Box::new(|| fca::build_chain_lattice(20))),
+        ("chain-50", Box::new(|| fca::build_chain_lattice(50))),
+        ("diamond", Box::new(|| fca::build_diamond_lattice())),
+        ("m3", Box::new(|| fca::build_m3_lattice())),
+        ("b3", Box::new(|| fca::build_b3_lattice())),
+        ("b4", Box::new(|| fca::build_b4_lattice())),
+        ("grid-4x4", Box::new(|| fca::build_grid_lattice(4, 4))),
+        ("grid-5x5", Box::new(|| fca::build_grid_lattice(5, 5))),
+        ("antichain-10", Box::new(|| fca::build_antichain_lattice(10))),
+    ];
+
+    let tol = 1e-12_f64;
+
+    let mut topo_data: Vec<(String, fca::FcaLattice, pipeline::LatticeStats, Vec<(usize, n_operator::DynamicsParams, Option<n_operator::IterResult>)>)> = Vec::new();
+
+    for &(tname, ref builder) in &topo_builders {
+        let lattice = builder();
+        let stats = pipeline::compute_lattice_stats(&lattice);
+        let mut concept_results: Vec<(usize, n_operator::DynamicsParams, Option<n_operator::IterResult>)> = Vec::new();
+
+        for &(_, ref params) in &param_sets {
+            let results = pipeline::run_topological_iteration(&lattice, &stats, params);
+            for (i, opt) in results.into_iter().enumerate() {
+                concept_results.push((i, params.clone(), opt));
+            }
+        }
+        topo_data.push((tname.to_string(), lattice, stats, concept_results));
+    }
+
+    let mut pts: Vec<Pt> = Vec::new();
+
+    for (tname, lattice, stats, results) in &topo_data {
+        let mut sub_concepts: Vec<Vec<usize>> = vec![vec![]; lattice.concepts.len()];
+        for &(p, c) in &lattice.edges {
+            sub_concepts[c].push(p);
+        }
+        for (i, _, opt) in results {
+            if let Some(ref res) = *opt {
+                if !res.converged { continue; }
+                let rho_fp = res.rho_spectral;
+                if rho_fp <= 0.0 || rho_fp >= 1.0 { continue; }
+                let n_actual = res.n_iters as f64;
+                if n_actual < 3.0 { continue; }
+                let traj = &res.trajectory;
+                if traj.len() < 2 { continue; }
+                let d0 = traj[0][0];
+                if d0 <= 0.0 { continue; }
+                let ln_r = d0 / tol;
+                if ln_r <= 0.0 { continue; }
+                let n_naive = ln_r.ln() / (-rho_fp.ln());
+                if n_naive <= 0.0 { continue; }
+
+                let raw_d = lattice.d_values[*i];
+                let csize = &lattice.concept_sizes[*i];
+                let b_init = (1.0 - csize.1 as f64 / stats.total_extent.max(1) as f64).clamp(0.0, 1.0);
+                let rho_init = (csize.0 as f64 / stats.total_intent.max(1) as f64).clamp(0.0, 1.0);
+
+                pts.push(Pt {
+                    topo: tname.to_string(),
+                    concept_idx: *i,
+                    depth: stats.heights[*i],
+                    nfeed: stats.feeders[*i].len(),
+                    nsub: sub_concepts[*i].len(),
+                    raw_d,
+                    d0,
+                    rho_fp,
+                    n_actual,
+                    n_naive,
+                    total_extent: stats.total_extent,
+                    total_intent: stats.total_intent,
+                    max_d_valid: stats.max_d_valid,
+                    b_init,
+                    rho_init,
+                });
+            }
+        }
+    }
+
+    println!("  Collected {} data points\n", pts.len());
+    let n = pts.len();
+
+    println!("  === 1. d₀ Structure Analysis ===\n");
+
+    let d0s: Vec<f64> = pts.iter().map(|p| p.d0).collect();
+    let d0_mean: f64 = d0s.iter().sum::<f64>() / n as f64;
+    let d0_std: f64 = (d0s.iter().map(|v| (v - d0_mean).powi(2)).sum::<f64>() / n as f64).sqrt();
+    let d0_min = d0s.iter().cloned().fold(f64::INFINITY, f64::min);
+    let d0_max = d0s.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
+
+    println!("    d₀ mean={:.4}  std={:.4}  min={:.4}  max={:.4}", d0_mean, d0_std, d0_min, d0_max);
+
+    let raw_ds: Vec<f64> = pts.iter().map(|p| p.raw_d).collect();
+    let rd_mean: f64 = raw_ds.iter().sum::<f64>() / n as f64;
+    println!("    raw_d mean={:.4}", rd_mean);
+
+    let unique_d0: Vec<f64> = {
+        let mut v: Vec<f64> = d0s.clone();
+        v.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        v.dedup_by(|a, b| (*a - *b).abs() < 1e-10);
+        v
+    };
+    println!("    Unique d₀ values: {}", unique_d0.len());
+
+    println!("\n  === 2. Per-Topology d₀ Analysis ===\n");
+
+    let topo_names_unique: Vec<String> = {
+        let mut v: Vec<String> = pts.iter().map(|p| p.topo.clone()).collect();
+        v.sort();
+        v.dedup();
+        v
+    };
+
+    for tname in &topo_names_unique {
+        let subset: Vec<&Pt> = pts.iter().filter(|p| p.topo == *tname).collect();
+        let ds: Vec<f64> = subset.iter().map(|p| p.d0).collect();
+        let m: f64 = ds.iter().sum::<f64>() / ds.len() as f64;
+        let s: f64 = (ds.iter().map(|v| (v - m).powi(2)).sum::<f64>() / ds.len() as f64).sqrt();
+        let min_d = ds.iter().cloned().fold(f64::INFINITY, f64::min);
+        let max_d = ds.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
+        let unique: usize = {
+            let mut v2 = ds.clone();
+            v2.sort_by(|a, b| a.partial_cmp(b).unwrap());
+            v2.dedup_by(|a, b| (*a - *b).abs() < 1e-10);
+            v2.len()
+        };
+        println!("    {:<14} n={:>5}  d₀=[{:.3}, {:.3}]  mean={:.3}  std={:.3}  unique={}",
+            tname, subset.len(), min_d, max_d, m, s, unique);
+    }
+
+    println!("\n  === 3. d₀ vs Lattice Features ===\n");
+
+    let y: Vec<f64> = d0s.clone();
+    let y_mean = d0_mean;
+    let ss_tot: f64 = y.iter().map(|v| (v - y_mean).powi(2)).sum();
+
+    let features: Vec<(&str, Vec<f64>)> = vec![
+        ("depth", pts.iter().map(|p| p.depth as f64).collect()),
+        ("log(depth)", pts.iter().map(|p| (p.depth.max(1) as f64).ln()).collect()),
+        ("nfeed", pts.iter().map(|p| p.nfeed as f64).collect()),
+        ("nsub", pts.iter().map(|p| p.nsub as f64).collect()),
+        ("raw_d", pts.iter().map(|p| p.raw_d).collect()),
+        ("log(raw_d)", pts.iter().map(|p| p.raw_d.max(1e-10).ln()).collect()),
+        ("raw_d/max_d", pts.iter().map(|p| p.raw_d / p.max_d_valid.max(1e-10)).collect()),
+        ("b_init", pts.iter().map(|p| p.b_init).collect()),
+        ("rho_init", pts.iter().map(|p| p.rho_init).collect()),
+        ("1-nfeed/extent", pts.iter().map(|p| 1.0 - p.nfeed as f64 / p.total_extent.max(1) as f64).collect()),
+    ];
+
+    for (fname, x) in &features {
+        let xm: f64 = x.iter().sum::<f64>() / n as f64;
+        let sxy: f64 = x.iter().zip(y.iter()).map(|(a, b)| (a - xm) * (b - y_mean)).sum();
+        let sxx: f64 = x.iter().map(|a| (a - xm).powi(2)).sum();
+        let r = if sxx > 0.0 && ss_tot > 0.0 { sxy / (sxx * ss_tot).sqrt() } else { 0.0 };
+
+        let b1 = if sxx > 0.0 { sxy / sxx } else { 0.0 };
+        let b0 = y_mean - b1 * xm;
+        let ss_res: f64 = x.iter().zip(y.iter()).map(|(a, b)| (b - b0 - b1 * a).powi(2)).sum();
+        let r2 = 1.0 - ss_res / ss_tot;
+
+        println!("    corr({:<18}, d₀) = {:+.4}  R²={:.4}", fname, r, r2);
+    }
+
+    println!("\n  === 4. Per-Topology d₀ Formula ===\n");
+
+    for tname in &topo_names_unique {
+        let subset: Vec<&Pt> = pts.iter().filter(|p| p.topo == *tname).collect();
+        if subset.len() < 3 { continue; }
+
+        let depths: Vec<f64> = subset.iter().map(|p| p.depth as f64).collect();
+        let d0s_sub: Vec<f64> = subset.iter().map(|p| p.d0).collect();
+
+        let ns = subset.len();
+        let dm: f64 = depths.iter().sum::<f64>() / ns as f64;
+        let d0m: f64 = d0s_sub.iter().sum::<f64>() / ns as f64;
+        let sxy: f64 = depths.iter().zip(d0s_sub.iter()).map(|(a, b)| (a - dm) * (b - d0m)).sum();
+        let sxx: f64 = depths.iter().map(|a| (a - dm).powi(2)).sum();
+        let ss_tot_sub: f64 = d0s_sub.iter().map(|v| (v - d0m).powi(2)).sum();
+
+        let b1 = if sxx > 0.0 { sxy / sxx } else { 0.0 };
+        let b0 = d0m - b1 * dm;
+        let ss_res: f64 = depths.iter().zip(d0s_sub.iter()).map(|(a, b)| (b - b0 - b1 * a).powi(2)).sum();
+        let r2 = if ss_tot_sub > 0.0 { 1.0 - ss_res / ss_tot_sub } else { 0.0 };
+
+        let mape_d0: f64 = subset.iter().map(|p| {
+            let d0_pred = b0 + b1 * p.depth as f64;
+            ((d0_pred - p.d0) / p.d0).abs()
+        }).sum::<f64>() / ns as f64;
+
+        println!("    {:<14} d₀ = {:.4} + {:.4}·depth  R²={:.4}  MAPE={:.1}%",
+            tname, b0, b1, r2, mape_d0 * 100.0);
+    }
+
+    println!("\n  === 5. Global d₀ Model ===\n");
+
+    let x_cols: Vec<Vec<f64>> = vec![
+        pts.iter().map(|p| p.depth as f64).collect(),
+        pts.iter().map(|p| p.nfeed as f64).collect(),
+        pts.iter().map(|p| (p.depth.max(1) as f64).ln()).collect(),
+    ];
+    let x_names = ["depth", "nfeed", "log(depth)"];
+    let p_dim = x_cols.len();
+    let xm: Vec<f64> = x_cols.iter().map(|c| c.iter().sum::<f64>() / n as f64).collect();
+
+    let mut xt_x = vec![vec![0.0f64; p_dim]; p_dim];
+    let mut xt_y = vec![0.0f64; p_dim];
+    for i in 0..p_dim {
+        for j in 0..p_dim {
+            for s in 0..n {
+                xt_x[i][j] += (x_cols[i][s] - xm[i]) * (x_cols[j][s] - xm[j]);
+            }
+        }
+        for s in 0..n {
+            xt_y[i] += (x_cols[i][s] - xm[i]) * (y[s] - y_mean);
+        }
+    }
+
+    let mut a = xt_x;
+    let mut b_vec = xt_y;
+    for col in 0..p_dim {
+        let mut max_val = a[col][col].abs();
+        let mut max_row = col;
+        for row in (col + 1)..p_dim {
+            if a[row][col].abs() > max_val { max_val = a[row][col].abs(); max_row = row; }
+        }
+        if max_row != col { a.swap(col, max_row); b_vec.swap(col, max_row); }
+        if a[col][col].abs() < 1e-30 { continue; }
+        let pivot = a[col][col];
+        for j in col..p_dim { a[col][j] /= pivot; }
+        b_vec[col] /= pivot;
+        for row in 0..p_dim {
+            if row == col { continue; }
+            let factor = a[row][col];
+            for j in col..p_dim { a[row][j] -= factor * a[col][j]; }
+            b_vec[row] -= factor * b_vec[col];
+        }
+    }
+    let betas = b_vec;
+    let intercept = y_mean - betas.iter().enumerate().map(|(i, bv)| bv * xm[i]).sum::<f64>();
+
+    println!("  d₀ = {:.4}", intercept);
+    for i in 0..p_dim {
+        println!("    + {:.6}·{}", betas[i], x_names[i]);
+    }
+
+    let mut ss_res_m = 0.0f64;
+    let mut preds_d0: Vec<f64> = Vec::new();
+    for s in 0..n {
+        let mut d0hat = intercept;
+        for i in 0..p_dim {
+            d0hat += betas[i] * x_cols[i][s];
+        }
+        preds_d0.push(d0hat.max(0.001));
+        ss_res_m += (y[s] - d0hat).powi(2);
+    }
+    let r2_m = 1.0 - ss_res_m / ss_tot;
+    println!("  R² = {:.4}", r2_m);
+
+    let mape_d0: f64 = pts.iter().zip(preds_d0.iter()).map(|(p, pred)| ((pred - p.d0) / p.d0).abs()).sum::<f64>() / n as f64;
+    println!("  MAPE = {:.1}%", mape_d0 * 100.0);
+
+    println!("\n  === 6. raw_d/max_d Analysis ===\n");
+
+    let rdm: Vec<f64> = pts.iter().map(|p| if p.max_d_valid > 0.0 { p.raw_d / p.max_d_valid } else { 0.0 }).collect();
+    let rdm_mean: f64 = rdm.iter().sum::<f64>() / n as f64;
+    let ss_tot_rdm: f64 = rdm.iter().map(|v| (v - rdm_mean).powi(2)).sum();
+    let sxy_rdm: f64 = rdm.iter().zip(y.iter()).map(|(a, b)| (a - rdm_mean) * (b - y_mean)).sum();
+    let sxx_rdm: f64 = rdm.iter().map(|a| (a - rdm_mean).powi(2)).sum();
+    let r_rdm = if sxx_rdm > 0.0 && ss_tot_rdm > 0.0 { sxy_rdm / (sxx_rdm * ss_tot).sqrt() } else { 0.0 };
+
+    let b1_rdm = if sxx_rdm > 0.0 { sxy_rdm / sxx_rdm } else { 0.0 };
+    let b0_rdm = y_mean - b1_rdm * rdm_mean;
+    let ss_res_rdm: f64 = rdm.iter().zip(y.iter()).map(|(a, b)| (b - b0_rdm - b1_rdm * a).powi(2)).sum();
+    let r2_rdm = 1.0 - ss_res_rdm / ss_tot;
+
+    println!("    corr(raw_d/max_d, d₀) = {:+.4}  R²={:.4}", r_rdm, r2_rdm);
+
+    let mape_rdm: f64 = pts.iter().zip(rdm.iter()).map(|(p, rd)| {
+        let d0_pred = (b0_rdm + b1_rdm * rd).max(0.001);
+        ((d0_pred - p.d0) / p.d0).abs()
+    }).sum::<f64>() / n as f64;
+    println!("    d₀ = {:.4} + {:.4}·raw_d/max_d  MAPE={:.1}%", b0_rdm, b1_rdm, mape_rdm * 100.0);
+
+    println!("\n  === 7. End-to-End: Analytical n_iters ===\n");
+
+    let actuals: Vec<f64> = pts.iter().map(|p| p.n_actual).collect();
+    let naive_preds: Vec<f64> = pts.iter().map(|p| p.n_naive).collect();
+
+    fn mape_fn(preds: &[f64], actuals: &[f64]) -> f64 {
+        preds.iter().zip(actuals.iter()).map(|(p, a)| ((p - a) / a).abs()).sum::<f64>() / preds.len() as f64
+    }
+
+    let mape_naive = mape_fn(&naive_preds, &actuals);
+
+    let preds_d0_corrected: Vec<f64> = pts.iter().zip(preds_d0.iter()).map(|(p, d0_pred)| {
+        let l_rho = (-p.rho_fp.ln()).max(0.001);
+        let d0_pred_clamped = (*d0_pred).max(0.001);
+        let e = -0.0386 + 0.0464 * d0_pred_clamped.ln() + 0.0583 * l_rho;
+        let n_naive_analytical = (d0_pred_clamped / tol).ln() / l_rho;
+        n_naive_analytical / (1.0 + e).max(0.1)
+    }).collect();
+
+    let mape_d0_corr = mape_fn(&preds_d0_corrected, &actuals);
+
+    let preds_actual_d0: Vec<f64> = pts.iter().map(|p| {
+        let l_rho = (-p.rho_fp.ln()).max(0.001);
+        let e = -0.0386 + 0.0464 * p.d0.ln() + 0.0583 * l_rho;
+        p.n_naive / (1.0 + e).max(0.1)
+    }).collect();
+    let mape_actual_d0 = mape_fn(&preds_actual_d0, &actuals);
+
+    println!("    Naive (actual d₀):     {:.1}%", mape_naive * 100.0);
+    println!("    d₀-corrected (actual): {:.1}%", mape_actual_d0 * 100.0);
+    println!("    d₀-corrected (OLS):    {:.1}%", mape_d0_corr * 100.0);
+
+    println!("\n  === 8. Per-Topology End-to-End ===\n");
+
+    for tname in &topo_names_unique {
+        let idxs: Vec<usize> = pts.iter().enumerate().filter(|(_, p)| p.topo == *tname).map(|(i, _)| i).collect();
+        if idxs.is_empty() { continue; }
+
+        let e_n: Vec<f64> = idxs.iter().map(|&i| ((naive_preds[i] - actuals[i]) / actuals[i]).abs()).collect();
+        let e_c: Vec<f64> = idxs.iter().map(|&i| ((preds_d0_corrected[i] - actuals[i]) / actuals[i]).abs()).collect();
+        let e_a: Vec<f64> = idxs.iter().map(|&i| ((preds_actual_d0[i] - actuals[i]) / actuals[i]).abs()).collect();
+
+        let mn = e_n.iter().sum::<f64>() / e_n.len() as f64;
+        let mc = e_c.iter().sum::<f64>() / e_c.len() as f64;
+        let ma = e_a.iter().sum::<f64>() / e_a.len() as f64;
+
+        println!("    {:<14} Naive={:.1}%  d₀-corr(actual)={:.1}%  d₀-corr(OLS)={:.1}%",
+            tname, mn * 100.0, ma * 100.0, mc * 100.0);
+    }
+
+    println!("\n  === 9. Unique d₀ Values by Topology ===\n");
+
+    for tname in &topo_names_unique {
+        let subset: Vec<&Pt> = pts.iter().filter(|p| p.topo == *tname).collect();
+        let unique_ds: Vec<f64> = {
+            let mut v: Vec<f64> = subset.iter().map(|p| p.d0).collect();
+            v.sort_by(|a, b| a.partial_cmp(b).unwrap());
+            v.dedup_by(|a, b| (*a - *b).abs() < 1e-10);
+            v
+        };
+        if unique_ds.len() <= 8 {
+            let vals: Vec<String> = unique_ds.iter().map(|v| format!("{:.4}", v)).collect();
+            println!("    {:<14} {} unique: [{}]", tname, unique_ds.len(), vals.join(", "));
+        } else {
+            println!("    {:<14} {} unique d₀ values", tname, unique_ds.len());
+        }
+    }
+}
