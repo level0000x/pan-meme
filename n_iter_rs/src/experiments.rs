@@ -33490,3 +33490,281 @@ pub fn run_cycle_weight_cascade_prediction() {
     println!("    CW-full(10): {:.1}%  R²={:.4}", mape_full * 100.0, r2_full);
     println!("    CW-reduced:  {:.1}%  R²={:.4}", mape_red * 100.0, r2_red);
 }
+
+pub fn run_prediction_error_structure() {
+    println!("\n=== v3.56: Prediction Error Structure Decomposition ===\n");
+
+    #[derive(Clone)]
+    struct Pt {
+        pset: String,
+        topo: String,
+        depth: usize,
+        rho_fp: f64,
+        d0: f64,
+        n_actual: f64,
+        n_naive: f64,
+        signed_err: f64,
+        rel_err: f64,
+    }
+
+    let param_sets: Vec<(&str, DynamicsParams)> = vec![
+        ("uniform", DynamicsParams::uniform()),
+        ("high-β", DynamicsParams::uniform().with_beta1(2.0)),
+        ("high-δ", DynamicsParams::uniform().with_delta1(2.0)),
+        ("high-κ₂", DynamicsParams::uniform().with_kappa2(2.0)),
+        ("asym-1", DynamicsParams::uniform().with_beta1(1.5).with_gamma1(0.8).with_zeta1(1.2).with_theta1(0.7).with_kappa2(1.8).with_eps(0.01)),
+        ("asym-2", DynamicsParams::uniform().with_beta1(0.5).with_gamma1(2.0).with_zeta1(0.8).with_theta1(1.5).with_kappa2(0.6).with_eps(0.05)),
+        ("extreme", DynamicsParams::uniform().with_beta1(3.0).with_gamma1(0.3).with_zeta1(2.0).with_theta1(0.4).with_kappa2(3.0).with_eps(0.02)),
+    ];
+
+    let topo_builders: Vec<(&str, Box<dyn Fn() -> fca::FcaLattice>)> = vec![
+        ("chain-5", Box::new(|| fca::build_chain_lattice(5))),
+        ("chain-10", Box::new(|| fca::build_chain_lattice(10))),
+        ("diamond", Box::new(|| fca::build_diamond_lattice())),
+        ("m3", Box::new(|| fca::build_m3_lattice())),
+    ];
+
+    let tol = 1e-12_f64;
+    let mut pts: Vec<Pt> = Vec::new();
+
+    for &(pname, ref params) in &param_sets {
+        for &(tname, ref builder) in &topo_builders {
+            let lattice = builder();
+            let stats = pipeline::compute_lattice_stats(&lattice);
+            let results = pipeline::run_topological_iteration(&lattice, &stats, params);
+
+            for (i, opt) in results.iter().enumerate() {
+                if let Some(ref res) = opt {
+                    if !res.converged { continue; }
+                    let rho_fp = res.rho_spectral;
+                    if rho_fp <= 0.0 || rho_fp >= 1.0 { continue; }
+                    let n_actual = res.n_iters as f64;
+                    if n_actual < 3.0 { continue; }
+                    let traj = &res.trajectory;
+                    if traj.len() < 2 { continue; }
+                    let d0 = traj[0][0];
+                    if d0 <= 0.0 { continue; }
+
+                    let ln_r = d0 / tol;
+                    if ln_r <= 0.0 { continue; }
+                    let n_naive = ln_r.ln() / (-rho_fp.ln());
+                    if n_naive <= 0.0 { continue; }
+
+                    let signed_err = (n_naive - n_actual) / n_actual;
+                    let rel_err = signed_err.abs();
+
+                    pts.push(Pt {
+                        pset: pname.to_string(),
+                        topo: tname.to_string(),
+                        depth: i,
+                        rho_fp,
+                        d0,
+                        n_actual,
+                        n_naive,
+                        signed_err,
+                        rel_err,
+                    });
+                }
+            }
+        }
+    }
+
+    println!("  Collected {} data points\n", pts.len());
+
+    let n = pts.len();
+
+    println!("  === 1. Signed Error Analysis ===\n");
+
+    let mean_signed: f64 = pts.iter().map(|p| p.signed_err).sum::<f64>() / n as f64;
+    let std_signed: f64 = (pts.iter().map(|p| (p.signed_err - mean_signed).powi(2)).sum::<f64>() / n as f64).sqrt();
+    let median_signed = {
+        let mut v: Vec<f64> = pts.iter().map(|p| p.signed_err).collect();
+        v.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        v[v.len() / 2]
+    };
+    let pct_over = pts.iter().filter(|p| p.signed_err > 0.0).count() as f64 / n as f64 * 100.0;
+
+    println!("    Mean signed error:   {:.4} ({:.1}%)", mean_signed, mean_signed * 100.0);
+    println!("    Std signed error:    {:.4} ({:.1}%)", std_signed, std_signed * 100.0);
+    println!("    Median signed error: {:.4} ({:.1}%)", median_signed, median_signed * 100.0);
+    println!("    % over-predicted:    {:.1}%", pct_over);
+
+    println!("\n  === 2. Per-Parameter-Set Error ===\n");
+
+    for &(pname, _) in &param_sets {
+        let subset: Vec<&Pt> = pts.iter().filter(|p| p.pset == pname).collect();
+        if subset.is_empty() { continue; }
+        let m_signed: f64 = subset.iter().map(|p| p.signed_err).sum::<f64>() / subset.len() as f64;
+        let mape: f64 = subset.iter().map(|p| p.rel_err).sum::<f64>() / subset.len() as f64;
+        let over_pct = subset.iter().filter(|p| p.signed_err > 0.0).count() as f64 / subset.len() as f64 * 100.0;
+        println!("    {:<10} mean={:+.3}  MAPE={:.1}%  over={:.0}%", pname, m_signed * 100.0, mape * 100.0, over_pct);
+    }
+
+    println!("\n  === 3. Per-Topology Error ===\n");
+
+    for &(tname, _) in &topo_builders {
+        let subset: Vec<&Pt> = pts.iter().filter(|p| p.topo == tname).collect();
+        if subset.is_empty() { continue; }
+        let m_signed: f64 = subset.iter().map(|p| p.signed_err).sum::<f64>() / subset.len() as f64;
+        let mape: f64 = subset.iter().map(|p| p.rel_err).sum::<f64>() / subset.len() as f64;
+        println!("    {:<10} mean={:+.3}  MAPE={:.1}%", tname, m_signed * 100.0, mape * 100.0);
+    }
+
+    println!("\n  === 4. Error Correlations ===\n");
+
+    let y: Vec<f64> = pts.iter().map(|p| p.signed_err).collect();
+    let y_mean = mean_signed;
+    let ss_tot: f64 = y.iter().map(|v| (v - y_mean).powi(2)).sum();
+
+    let features: Vec<(&str, Vec<f64>)> = vec![
+        ("log(d0)", pts.iter().map(|p| p.d0.ln()).collect()),
+        ("log(1/ρ)", pts.iter().map(|p| (1.0 / p.rho_fp).ln()).collect()),
+        ("ρ_fp", pts.iter().map(|p| p.rho_fp).collect()),
+        ("depth", pts.iter().map(|p| p.depth as f64).collect()),
+        ("log(n_naive)", pts.iter().map(|p| p.n_naive.ln()).collect()),
+    ];
+
+    for (fname, x) in &features {
+        let xm: f64 = x.iter().sum::<f64>() / n as f64;
+        let sxy: f64 = x.iter().zip(y.iter()).map(|(a, b)| (a - xm) * (b - y_mean)).sum();
+        let sxx: f64 = x.iter().map(|a| (a - xm).powi(2)).sum();
+        let r = if sxx > 0.0 && ss_tot > 0.0 { sxy / (sxx * ss_tot).sqrt() } else { 0.0 };
+
+        let b1 = if sxx > 0.0 { sxy / sxx } else { 0.0 };
+        let b0 = y_mean - b1 * xm;
+        let ss_res: f64 = x.iter().zip(y.iter()).map(|(a, b)| (b - b0 - b1 * a).powi(2)).sum();
+        let r2 = if ss_tot > 0.0 { 1.0 - ss_res / ss_tot } else { 0.0 };
+
+        println!("    corr({}, signed_err) = {:+.4}  R²={:.4}", fname, r, r2);
+    }
+
+    println!("\n  === 5. Multi-variate OLS ===\n");
+
+    let x_cols: Vec<Vec<f64>> = vec![
+        pts.iter().map(|p| p.d0.ln()).collect(),
+        pts.iter().map(|p| (1.0 / p.rho_fp).ln()).collect(),
+        pts.iter().map(|p| p.depth as f64).collect(),
+    ];
+    let x_names = ["log(d0)", "log(1/ρ)", "depth"];
+    let p_dim = x_cols.len();
+    let xm: Vec<f64> = x_cols.iter().map(|c| c.iter().sum::<f64>() / n as f64).collect();
+
+    let mut xt_x = vec![vec![0.0f64; p_dim]; p_dim];
+    let mut xt_y = vec![0.0f64; p_dim];
+    for i in 0..p_dim {
+        for j in 0..p_dim {
+            for s in 0..n {
+                xt_x[i][j] += (x_cols[i][s] - xm[i]) * (x_cols[j][s] - xm[j]);
+            }
+        }
+        for s in 0..n {
+            xt_y[i] += (x_cols[i][s] - xm[i]) * (y[s] - y_mean);
+        }
+    }
+
+    let mut a = xt_x.clone();
+    let mut b = xt_y.clone();
+    for col in 0..p_dim {
+        let mut max_val = a[col][col].abs();
+        let mut max_row = col;
+        for row in (col + 1)..p_dim {
+            if a[row][col].abs() > max_val {
+                max_val = a[row][col].abs();
+                max_row = row;
+            }
+        }
+        if max_row != col {
+            a.swap(col, max_row);
+            b.swap(col, max_row);
+        }
+        if a[col][col].abs() < 1e-30 { continue; }
+        let pivot = a[col][col];
+        for j in col..p_dim { a[col][j] /= pivot; }
+        b[col] /= pivot;
+        for row in 0..p_dim {
+            if row == col { continue; }
+            let factor = a[row][col];
+            for j in col..p_dim { a[row][j] -= factor * a[col][j]; }
+            b[row] -= factor * b[col];
+        }
+    }
+    let betas = b;
+
+    let intercept = y_mean - betas.iter().enumerate().map(|(i, bv)| bv * xm[i]).sum::<f64>();
+
+    println!("    intercept = {:.6}", intercept);
+    for i in 0..p_dim {
+        println!("    β_{:<10} = {:.6}", x_names[i], betas[i]);
+    }
+
+    let mut ss_res_m = 0.0f64;
+    for s in 0..n {
+        let mut yhat = intercept;
+        for i in 0..p_dim {
+            yhat += betas[i] * x_cols[i][s];
+        }
+        ss_res_m += (y[s] - yhat).powi(2);
+    }
+    let r2_m = 1.0 - ss_res_m / ss_tot;
+    println!("    R² = {:.4}", r2_m);
+
+    println!("\n  === 6. Error Distribution ===\n");
+
+    let bins = [(-0.50, -0.20), (-0.20, -0.10), (-0.10, -0.05), (-0.05, 0.0), (0.0, 0.05), (0.05, 0.10), (0.10, 0.20), (0.20, 0.50)];
+    for &(lo, hi) in &bins {
+        let cnt = pts.iter().filter(|p| p.signed_err >= lo && p.signed_err < hi).count();
+        let pct = cnt as f64 / n as f64 * 100.0;
+        let bar = "█".repeat((pct / 2.0).round() as usize);
+        println!("    [{:+.2}, {:+.2}): {:3} ({:4.1}%) {}", lo, hi, cnt, pct, bar);
+    }
+
+    println!("\n  === 7. Systematic Bias Check ===\n");
+
+    let mean_abs: f64 = pts.iter().map(|p| p.rel_err).sum::<f64>() / n as f64;
+    let bias_ratio = mean_signed.abs() / mean_abs;
+    println!("    MAPE:           {:.1}%", mean_abs * 100.0);
+    println!("    |Mean signed|:  {:.1}%", mean_signed.abs() * 100.0);
+    println!("    Bias ratio:     {:.2} (0=random, 1=pure bias)", bias_ratio);
+
+    if bias_ratio > 0.3 {
+        if mean_signed > 0.0 {
+            println!("    → Naive prediction SYSTEMATICALLY OVER-PREDICTS by {:.1}%", mean_signed.abs() * 100.0);
+        } else {
+            println!("    → Naive prediction SYSTEMATICALLY UNDER-PREDICTS by {:.1}%", mean_signed.abs() * 100.0);
+        }
+    } else {
+        println!("    → Error is predominantly RANDOM (low systematic bias)");
+    }
+
+    println!("\n  === 8. Corrected Prediction (simple bias removal) ===\n");
+
+    let corrected_mape: f64 = pts.iter().map(|p| {
+        let n_corrected = p.n_naive - mean_signed * p.n_naive;
+        ((n_corrected - p.n_actual) / p.n_actual).abs()
+    }).sum::<f64>() / n as f64;
+
+    println!("    Naive MAPE:        {:.1}%", mean_abs * 100.0);
+    println!("    Bias-corrected:    {:.1}%", corrected_mape * 100.0);
+
+    println!("\n  === 9. Per-(pset, topo) Signed Error Heatmap ===\n");
+
+    print!("    {:>10}", "");
+    for &(tname, _) in &topo_builders { print!(" {:>10}", tname); }
+    println!();
+    for &(pname, _) in &param_sets {
+        print!("    {:>10}", pname);
+        for &(tname, _) in &topo_builders {
+            let subset: Vec<f64> = pts.iter()
+                .filter(|p| p.pset == pname && p.topo == tname)
+                .map(|p| p.signed_err)
+                .collect();
+            if subset.is_empty() {
+                print!(" {:>10}", "—");
+            } else {
+                let m: f64 = subset.iter().sum::<f64>() / subset.len() as f64;
+                print!(" {:>+9.1}%", m * 100.0);
+            }
+        }
+        println!();
+    }
+}
