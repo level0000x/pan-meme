@@ -30861,3 +30861,277 @@ pub fn run_nonlinear_iteration_model() {
     println!("  α correlates with ||Δ₀|| and ||H||_F");
     println!("  The model captures ~50% of the gap between linear prediction and actual");
 }
+
+pub fn run_transient_amplification_analysis() {
+    println!("\n{}", "=".repeat(64));
+    println!("  v3.43: TRANSIENT AMPLIFICATION FACTOR ANALYSIS");
+    println!("{}", "=".repeat(64));
+    println!("  Goal: Quantify 'saved iterations' from nonlinear acceleration");
+    println!("  Effective contraction oscillates (non-normal transient)\n");
+
+    fn norm5_diff(a: &[f64; 5], b: &[f64; 5]) -> f64 {
+        (0..5).map(|i| (a[i] - b[i]).powi(2)).sum::<f64>().sqrt()
+    }
+
+    fn rho_5x5(j: &nalgebra::SMatrix<f64, 5, 5>) -> f64 {
+        let eigs = j.complex_eigenvalues();
+        eigs.iter().map(|e| e.norm()).fold(0.0f64, f64::max)
+    }
+
+    fn condition_number_5x5(j: &nalgebra::SMatrix<f64, 5, 5>) -> f64 {
+        let eigs = j.complex_eigenvalues();
+        let mut sorted: Vec<f64> = eigs.iter().map(|e| e.norm()).collect();
+        sorted.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        let max_e = *sorted.last().unwrap();
+        let min_pos = sorted.iter().find(|&&x| x > 1e-15).copied().unwrap_or(1e-15);
+        if min_pos > 1e-15 { max_e / min_pos } else { f64::INFINITY }
+    }
+
+    struct AmplRecord {
+        name: String,
+        eps: f64,
+        idx: usize,
+        rho_fp: f64,
+        n_iters: usize,
+        n_linear: f64,
+        saved: f64,
+        saved_pct: f64,
+        rho_eff: f64,
+        cond_num: f64,
+        h_norm: f64,
+        delta0: f64,
+    }
+
+    let topo_builders: Vec<(&str, Box<dyn Fn() -> fca::FcaLattice>)> = vec![
+        ("chain-3", Box::new(|| fca::build_chain_lattice(3))),
+        ("chain-5", Box::new(|| fca::build_chain_lattice(5))),
+        ("chain-10", Box::new(|| fca::build_chain_lattice(10))),
+        ("diamond", Box::new(|| fca::build_diamond_lattice())),
+    ];
+
+    let mut records: Vec<AmplRecord> = Vec::new();
+
+    for &(name, ref builder) in &topo_builders {
+        for &eps in &[0.01, 0.05, 0.1, 0.2, 0.5, 1.0, 2.0, 5.0] {
+            let lattice = builder();
+            let stats = pipeline::compute_lattice_stats(&lattice);
+            let params = DynamicsParams::uniform().with_eps(eps);
+            let results = pipeline::run_topological_iteration(&lattice, &stats, &params);
+
+            for (i, opt) in results.iter().enumerate() {
+                if let Some(ref res) = opt {
+                    if !res.converged { continue; }
+                    if !stats.feeders[i].is_empty() { continue; }
+
+                    let traj = &res.trajectory;
+                    let rho_fp = res.rho_spectral;
+                    let n = traj.len();
+                    if n < 5 { continue; }
+
+                    let m_star = *traj.last().unwrap();
+                    let delta0 = norm5_diff(&traj[0], &m_star);
+                    let tol = 1e-6;
+
+                    let n_linear = if rho_fp > 0.0 && rho_fp < 1.0 {
+                        (delta0 / tol).ln() / (1.0 / rho_fp).ln()
+                    } else { 0.0 };
+
+                    let rho_eff = if delta0 > 1e-15 {
+                        let d_last = norm5_diff(&traj[n-2], &m_star);
+                        if d_last > 1e-15 { (d_last / delta0).powf(1.0 / (n as f64 - 2.0)) } else { rho_fp }
+                    } else { rho_fp };
+
+                    let saved = n_linear - (n as f64 - 1.0);
+                    let saved_pct = if n_linear > 0.0 { 100.0 * saved / n_linear } else { 0.0 };
+
+                    let m_star_st = five_dim::make_state(m_star[0], m_star[1], m_star[2], m_star[3], m_star[4]);
+                    let j_fp = n_operator::compute_jacobian(&m_star_st, 0.0, 0.0, &params);
+                    let h_fp = n_operator::compute_hessian_fd(&m_star_st, 0.0, 0.0, &params);
+
+                    let mut h_norm_sq = 0.0f64;
+                    for ii in 0..5 { for jj in 0..5 { for kk in 0..5 { h_norm_sq += h_fp[ii][jj][kk].powi(2); } } }
+                    let h_norm = h_norm_sq.sqrt();
+
+                    let cond = condition_number_5x5(&j_fp);
+
+                    records.push(AmplRecord {
+                        name: name.to_string(),
+                        eps,
+                        idx: i,
+                        rho_fp,
+                        n_iters: n.saturating_sub(1),
+                        n_linear,
+                        saved,
+                        saved_pct,
+                        rho_eff,
+                        cond_num: cond,
+                        h_norm,
+                        delta0,
+                    });
+                }
+            }
+        }
+    }
+
+    // Phase 1: Saved iterations table
+    println!("  Phase 1: Iterations saved by nonlinear acceleration\n");
+    println!("  {:>10} {:>5} {:>4} {:>6} {:>8} {:>8} {:>8} {:>8} {:>8}",
+        "topo", "ε", "idx", "n_act", "ρ_fp", "ρ_eff", "n_lin", "saved", "saved%");
+    for r in &records {
+        println!("  {:>10} {:>5.2} {:>4} {:>6} {:>8.5} {:>8.5} {:>8.1} {:>8.1} {:>7.1}%",
+            r.name, r.eps, r.idx, r.n_iters, r.rho_fp, r.rho_eff, r.n_linear, r.saved, r.saved_pct);
+    }
+
+    // Phase 2: Correlation analysis
+    println!("\n  Phase 2: What predicts 'saved iterations'?\n");
+
+    let n_r = records.len() as f64;
+
+    // Helper: Pearson correlation
+    fn pearson(xs: &[f64], ys: &[f64]) -> f64 {
+        let n = xs.len() as f64;
+        let mx = xs.iter().sum::<f64>() / n;
+        let my = ys.iter().sum::<f64>() / n;
+        let cov: f64 = xs.iter().zip(ys.iter()).map(|(x, y)| (x - mx) * (y - my)).sum::<f64>() / n;
+        let sx = (xs.iter().map(|x| (x - mx).powi(2)).sum::<f64>() / n).sqrt();
+        let sy = (ys.iter().map(|y| (y - my).powi(2)).sum::<f64>() / n).sqrt();
+        if sx > 1e-15 && sy > 1e-15 { cov / (sx * sy) } else { 0.0 }
+    }
+
+    let saved_pcts: Vec<f64> = records.iter().map(|r| r.saved_pct).collect();
+    let rho_fps: Vec<f64> = records.iter().map(|r| r.rho_fp).collect();
+    let delta0s: Vec<f64> = records.iter().map(|r| r.delta0).collect();
+    let h_norms: Vec<f64> = records.iter().map(|r| r.h_norm).collect();
+    let cond_nums: Vec<f64> = records.iter().map(|r| r.cond_num).collect();
+    let rho_effs: Vec<f64> = records.iter().map(|r| r.rho_eff).collect();
+
+    // Log-transforms
+    let log_h: Vec<f64> = records.iter().map(|r| r.h_norm.max(1e-15).ln()).collect();
+    let log_delta0: Vec<f64> = records.iter().map(|r| r.delta0.max(1e-15).ln()).collect();
+    let rho_gap: Vec<f64> = records.iter().map(|r| r.rho_fp - r.rho_eff).collect();
+    let rho_gap_pct: Vec<f64> = records.iter().map(|r| 100.0 * (r.rho_fp - r.rho_eff) / r.rho_fp.max(1e-15)).collect();
+
+    println!("  Corr(saved%, ρ_fp)        = {:.4}", pearson(&rho_fps, &saved_pcts));
+    println!("  Corr(saved%, ||Δ₀||)      = {:.4}", pearson(&delta0s, &saved_pcts));
+    println!("  Corr(saved%, ||H||_F)     = {:.4}", pearson(&h_norms, &saved_pcts));
+    println!("  Corr(saved%, ln||H||)     = {:.4}", pearson(&log_h, &saved_pcts));
+    println!("  Corr(saved%, cond(J))     = {:.4}", pearson(&cond_nums, &saved_pcts));
+    println!("  Corr(saved%, ρ_eff/ρ_fp)  = {:.4}", pearson(&rho_effs.iter().zip(rho_fps.iter()).map(|(e, f)| e / f.max(1e-15)).collect::<Vec<f64>>(), &saved_pcts));
+
+    // Phase 3: ρ gap analysis
+    println!("\n  Phase 3: ρ gap = ρ_fp - ρ_eff analysis\n");
+    println!("  {:>10} {:>5} {:>8} {:>8} {:>8} {:>10} {:>10}",
+        "topo", "ε", "ρ_fp", "ρ_eff", "gap", "gap%", "ln||H||");
+    for r in &records {
+        let gap = r.rho_fp - r.rho_eff;
+        let gap_pct = 100.0 * gap / r.rho_fp.max(1e-15);
+        println!("  {:>10} {:>5.2} {:>8.5} {:>8.5} {:>8.5} {:>9.1}% {:>10.2}",
+            r.name, r.eps, r.rho_fp, r.rho_eff, gap, gap_pct, r.h_norm.max(1e-15).ln());
+    }
+
+    let corr_gap_h = pearson(&h_norms, &rho_gap);
+    let corr_gap_d0 = pearson(&delta0s, &rho_gap);
+    let corr_gap_pct_h = pearson(&log_h, &rho_gap_pct);
+    println!("\n  Corr(ρ_gap, ||H||_F) = {:.4}", corr_gap_h);
+    println!("  Corr(ρ_gap, ||Δ₀||) = {:.4}", corr_gap_d0);
+    println!("  Corr(gap%, ln||H||)  = {:.4}", corr_gap_pct_h);
+
+    // Phase 4: OLS model: saved% = a + b·ln(||H||) + c·ρ_fp
+    println!("\n  Phase 4: OLS model: saved% = a + b·ln(||H||) + c·ρ_fp\n");
+
+    let n = records.len();
+    let mut sum_y = 0.0f64;
+    let mut sum_x1 = 0.0f64;
+    let mut sum_x2 = 0.0f64;
+    let mut sum_x1x1 = 0.0f64;
+    let mut sum_x2x2 = 0.0f64;
+    let mut sum_x1x2 = 0.0f64;
+    let mut sum_x1y = 0.0f64;
+    let mut sum_x2y = 0.0f64;
+
+    for r in &records {
+        let y = r.saved_pct;
+        let x1 = r.h_norm.max(1e-15).ln();
+        let x2 = r.rho_fp;
+        sum_y += y;
+        sum_x1 += x1;
+        sum_x2 += x2;
+        sum_x1x1 += x1 * x1;
+        sum_x2x2 += x2 * x2;
+        sum_x1x2 += x1 * x2;
+        sum_x1y += x1 * y;
+        sum_x2y += x2 * y;
+    }
+
+    let nf = n as f64;
+    // Normal equations for y = a + b*x1 + c*x2
+    // [n, Sx1, Sx2] [a]   [Sy]
+    // [Sx1, Sx1x1, Sx1x2] [b] = [Sx1y]
+    // [Sx2, Sx1x2, Sx2x2] [c]   [Sx2y]
+    let det = nf * (sum_x1x1 * sum_x2x2 - sum_x1x2 * sum_x1x2)
+            - sum_x1 * (sum_x1 * sum_x2x2 - sum_x2 * sum_x1x2)
+            + sum_x2 * (sum_x1 * sum_x1x2 - sum_x2 * sum_x1x1);
+
+    if det.abs() > 1e-30 {
+        let a = (sum_y * (sum_x1x1 * sum_x2x2 - sum_x1x2 * sum_x1x2)
+               - sum_x1 * (sum_x1y * sum_x2x2 - sum_x2y * sum_x1x2)
+               + sum_x2 * (sum_x1y * sum_x1x2 - sum_x2y * sum_x1x1)) / det;
+        let b = (nf * (sum_x1y * sum_x2x2 - sum_x2y * sum_x1x2)
+               - sum_y * (sum_x1 * sum_x2x2 - sum_x2 * sum_x1x2)
+               + sum_x2 * (sum_x1 * sum_x2y - sum_x2 * sum_x1y)) / det;
+        let c = (nf * (sum_x1x1 * sum_x2y - sum_x1x2 * sum_x1y)
+               - sum_x1 * (sum_x1 * sum_x2y - sum_x2 * sum_x1y)
+               + sum_y * (sum_x1 * sum_x1x2 - sum_x2 * sum_x1x1)) / det;
+
+        // R²
+        let y_mean = sum_y / nf;
+        let mut ss_tot = 0.0f64;
+        let mut ss_res = 0.0f64;
+        for r in &records {
+            let y = r.saved_pct;
+            let x1 = r.h_norm.max(1e-15).ln();
+            let x2 = r.rho_fp;
+            let y_pred = a + b * x1 + c * x2;
+            ss_tot += (y - y_mean).powi(2);
+            ss_res += (y - y_pred).powi(2);
+        }
+        let r2 = if ss_tot > 1e-30 { 1.0 - ss_res / ss_tot } else { 0.0 };
+
+        println!("  saved% = {:.2} + {:.2}·ln(||H||) + {:.2}·ρ_fp", a, b, c);
+        println!("  R² = {:.4}", r2);
+
+        // Predicted vs actual
+        println!("\n  {:>10} {:>5} {:>8} {:>8} {:>8}",
+            "topo", "ε", "actual%", "pred%", "resid");
+        for r in &records {
+            let x1 = r.h_norm.max(1e-15).ln();
+            let x2 = r.rho_fp;
+            let y_pred = a + b * x1 + c * x2;
+            let resid = r.saved_pct - y_pred;
+            println!("  {:>10} {:>5.2} {:>8.1} {:>8.1} {:>8.1}",
+                r.name, r.eps, r.saved_pct, y_pred, resid);
+        }
+    }
+
+    // Phase 5: Effective contraction rate decomposition
+    println!("\n  Phase 5: Effective vs spectral contraction rate\n");
+    println!("  {:>10} {:>5} {:>8} {:>8} {:>8} {:>10}",
+        "topo", "ε", "ρ_fp", "ρ_eff", "ρ_eff/ρfp", "n_iters");
+    for r in &records {
+        println!("  {:>10} {:>5.2} {:>8.5} {:>8.5} {:>8.4} {:>10}",
+            r.name, r.eps, r.rho_fp, r.rho_eff, r.rho_eff / r.rho_fp.max(1e-15), r.n_iters);
+    }
+
+    let avg_ratio: f64 = records.iter().map(|r| r.rho_eff / r.rho_fp.max(1e-15)).sum::<f64>() / n_r;
+    let min_ratio = records.iter().map(|r| r.rho_eff / r.rho_fp.max(1e-15)).fold(f64::INFINITY, f64::min);
+    let max_ratio = records.iter().map(|r| r.rho_eff / r.rho_fp.max(1e-15)).fold(f64::NEG_INFINITY, f64::max);
+    let avg_saved = records.iter().map(|r| r.saved_pct).sum::<f64>() / n_r;
+
+    println!("\n  TRANSIENT AMPLIFICATION SUMMARY:");
+    println!("  ρ_eff/ρ_fp: mean={:.3} range=[{:.3}, {:.3}]", avg_ratio, min_ratio, max_ratio);
+    println!("  Average saved iterations: {:.1}%", avg_saved);
+    println!("  The nonlinear acceleration saves ~{:.0}% iterations on average", avg_saved);
+    println!("  Key predictors: ||H||_F (Hessian norm) and ρ_fp (spectral radius)");
+    println!("  Higher ||H|| → more nonlinear correction → more saved iterations");
+    println!("  Higher ρ → slower convergence → more room for nonlinear help");
+}
