@@ -34208,3 +34208,317 @@ pub fn run_d0_correction_generalization() {
         println!("\n  ✗ Formula DOES NOT generalize (MAPE {:.1}% → {:.1}%)", mape_naive * 100.0, mape_corrected * 100.0);
     }
 }
+
+pub fn run_d0_coefficient_analysis() {
+    println!("\n=== v3.59: d₀-Correction Coefficient Analysis ===\n");
+
+    #[derive(Clone)]
+    struct Pt {
+        pset: String,
+        topo: String,
+        depth: usize,
+        rho_fp: f64,
+        d0: f64,
+        n_actual: f64,
+        n_naive: f64,
+        rho_eff: f64,
+        delta: f64,
+        l_rho: f64,
+    }
+
+    let param_sets: Vec<(&str, DynamicsParams)> = vec![
+        ("uniform", DynamicsParams::uniform()),
+        ("high-β", DynamicsParams::uniform().with_beta1(2.0)),
+        ("high-δ", DynamicsParams::uniform().with_delta1(2.0)),
+        ("high-κ₂", DynamicsParams::uniform().with_kappa2(2.0)),
+        ("asym-1", DynamicsParams::uniform().with_beta1(1.5).with_gamma1(0.8).with_zeta1(1.2).with_theta1(0.7).with_kappa2(1.8).with_eps(0.01)),
+        ("asym-2", DynamicsParams::uniform().with_beta1(0.5).with_gamma1(2.0).with_zeta1(0.8).with_theta1(1.5).with_kappa2(0.6).with_eps(0.05)),
+        ("extreme", DynamicsParams::uniform().with_beta1(3.0).with_gamma1(0.3).with_zeta1(2.0).with_theta1(0.4).with_kappa2(3.0).with_eps(0.02)),
+    ];
+
+    let topo_builders: Vec<(&str, Box<dyn Fn() -> fca::FcaLattice>)> = vec![
+        ("chain-5", Box::new(|| fca::build_chain_lattice(5))),
+        ("chain-10", Box::new(|| fca::build_chain_lattice(10))),
+        ("chain-20", Box::new(|| fca::build_chain_lattice(20))),
+        ("chain-50", Box::new(|| fca::build_chain_lattice(50))),
+        ("diamond", Box::new(|| fca::build_diamond_lattice())),
+        ("m3", Box::new(|| fca::build_m3_lattice())),
+        ("grid-4x4", Box::new(|| fca::build_grid_lattice(4, 4))),
+        ("grid-5x5", Box::new(|| fca::build_grid_lattice(5, 5))),
+    ];
+
+    let tol = 1e-12_f64;
+    let mut pts: Vec<Pt> = Vec::new();
+
+    for &(pname, ref params) in &param_sets {
+        for &(tname, ref builder) in &topo_builders {
+            let lattice = builder();
+            let stats = pipeline::compute_lattice_stats(&lattice);
+            let results = pipeline::run_topological_iteration(&lattice, &stats, params);
+
+            for (i, opt) in results.iter().enumerate() {
+                if let Some(ref res) = opt {
+                    if !res.converged { continue; }
+                    let rho_fp = res.rho_spectral;
+                    if rho_fp <= 0.0 || rho_fp >= 1.0 { continue; }
+                    let n_actual = res.n_iters as f64;
+                    if n_actual < 3.0 { continue; }
+                    let traj = &res.trajectory;
+                    if traj.len() < 2 { continue; }
+                    let d0 = traj[0][0];
+                    if d0 <= 0.0 { continue; }
+                    let ln_r = d0 / tol;
+                    if ln_r <= 0.0 { continue; }
+                    let n_naive = ln_r.ln() / (-rho_fp.ln());
+                    if n_naive <= 0.0 { continue; }
+
+                    let rho_eff = (tol / d0).powf(1.0 / n_actual);
+                    if rho_eff <= 0.0 || rho_eff >= 1.0 { continue; }
+
+                    let l_rho = (-rho_fp.ln());
+                    let delta = (-rho_eff.ln()) - l_rho;
+
+                    pts.push(Pt { pset: pname.to_string(), topo: tname.to_string(), depth: i, rho_fp, d0, n_actual, n_naive, rho_eff, delta, l_rho });
+                }
+            }
+        }
+    }
+
+    println!("  Collected {} data points\n", pts.len());
+    let n = pts.len();
+
+    println!("  === 1. Δ = |ln(ρ_eff)| - |ln(ρ_fp)| Statistics ===\n");
+
+    let delta_mean: f64 = pts.iter().map(|p| p.delta).sum::<f64>() / n as f64;
+    let delta_std: f64 = (pts.iter().map(|p| (p.delta - delta_mean).powi(2)).sum::<f64>() / n as f64).sqrt();
+    println!("    Δ mean = {:.4}  std = {:.4}", delta_mean, delta_std);
+
+    let rho_ratio_mean: f64 = pts.iter().map(|p| p.rho_eff / p.rho_fp).sum::<f64>() / n as f64;
+    let rho_ratio_std: f64 = (pts.iter().map(|p| (p.rho_eff / p.rho_fp - rho_ratio_mean).powi(2)).sum::<f64>() / n as f64).sqrt();
+    println!("    ρ_eff/ρ_fp mean = {:.4}  std = {:.4}", rho_ratio_mean, rho_ratio_std);
+
+    println!("\n  === 2. Δ Decomposition: Δ = a·L_ρ + b·L_ρ·ln(d₀) + c·L_ρ² ===\n");
+
+    let y: Vec<f64> = pts.iter().map(|p| p.delta).collect();
+    let y_mean: f64 = y.iter().sum::<f64>() / n as f64;
+    let ss_tot: f64 = y.iter().map(|v| (v - y_mean).powi(2)).sum();
+
+    let x1: Vec<f64> = pts.iter().map(|p| p.l_rho).collect();
+    let x2: Vec<f64> = pts.iter().map(|p| p.l_rho * p.d0.ln()).collect();
+    let x3: Vec<f64> = pts.iter().map(|p| p.l_rho * p.l_rho).collect();
+
+    let x_cols = vec![x1.clone(), x2.clone(), x3.clone()];
+    let x_names = ["L_ρ", "L_ρ·ln(d₀)", "L_ρ²"];
+    let p_dim = 3;
+    let xm: Vec<f64> = x_cols.iter().map(|c| c.iter().sum::<f64>() / n as f64).collect();
+
+    let mut xt_x = vec![vec![0.0f64; p_dim]; p_dim];
+    let mut xt_y = vec![0.0f64; p_dim];
+    for i in 0..p_dim {
+        for j in 0..p_dim {
+            for s in 0..n {
+                xt_x[i][j] += (x_cols[i][s] - xm[i]) * (x_cols[j][s] - xm[j]);
+            }
+        }
+        for s in 0..n {
+            xt_y[i] += (x_cols[i][s] - xm[i]) * (y[s] - y_mean);
+        }
+    }
+
+    let mut a = xt_x.clone();
+    let mut b_vec = xt_y.clone();
+    for col in 0..p_dim {
+        let mut max_val = a[col][col].abs();
+        let mut max_row = col;
+        for row in (col + 1)..p_dim {
+            if a[row][col].abs() > max_val { max_val = a[row][col].abs(); max_row = row; }
+        }
+        if max_row != col { a.swap(col, max_row); b_vec.swap(col, max_row); }
+        if a[col][col].abs() < 1e-30 { continue; }
+        let pivot = a[col][col];
+        for j in col..p_dim { a[col][j] /= pivot; }
+        b_vec[col] /= pivot;
+        for row in 0..p_dim {
+            if row == col { continue; }
+            let factor = a[row][col];
+            for j in col..p_dim { a[row][j] -= factor * a[col][j]; }
+            b_vec[row] -= factor * b_vec[col];
+        }
+    }
+    let betas = b_vec;
+    let intercept = y_mean - betas.iter().enumerate().map(|(i, bv)| bv * xm[i]).sum::<f64>();
+
+    println!("  Δ = {:.6} + {:.6}·L_ρ + {:.6}·L_ρ·ln(d₀) + {:.6}·L_ρ²", intercept, betas[0], betas[1], betas[2]);
+
+    let mut ss_res = 0.0f64;
+    for s in 0..n {
+        let mut yhat = intercept;
+        for i in 0..p_dim { yhat += betas[i] * x_cols[i][s]; }
+        ss_res += (y[s] - yhat).powi(2);
+    }
+    let r2_delta = 1.0 - ss_res / ss_tot;
+    println!("  R² = {:.6}", r2_delta);
+
+    println!("\n  === 3. Signed Error Model: e = Δ/L_ρ ===\n");
+
+    let e_actual: Vec<f64> = pts.iter().map(|p| p.delta / p.l_rho).collect();
+    let e_model: Vec<f64> = pts.iter().map(|p| {
+        let d = intercept + betas[0] * p.l_rho + betas[1] * p.l_rho * p.d0.ln() + betas[2] * p.l_rho * p.l_rho;
+        d / p.l_rho
+    }).collect();
+    let e_names = pts.iter().map(|p| (p.pset.clone(), p.topo.clone())).collect::<Vec<_>>();
+
+    println!("  e_model = {:.4} + {:.4}·ln(d₀) + {:.4}·L_ρ", intercept, betas[1], betas[0] + betas[2]);
+
+    let e_mean: f64 = e_actual.iter().sum::<f64>() / n as f64;
+    let ss_tot_e: f64 = e_actual.iter().map(|v| (v - e_mean).powi(2)).sum();
+    let ss_res_e: f64 = e_actual.iter().zip(e_model.iter()).map(|(a, m)| (a - m).powi(2)).sum();
+    let r2_e = 1.0 - ss_res_e / ss_tot_e;
+    println!("  R²(e) = {:.6}", r2_e);
+
+    let mape_e: f64 = pts.iter().zip(e_model.iter()).map(|(p, em)| {
+        let n_pred = p.n_naive / (1.0 + em).max(0.1);
+        ((n_pred - p.n_actual) / p.n_actual).abs()
+    }).sum::<f64>() / n as f64;
+    println!("  MAPE from decomposition model: {:.1}%", mape_e * 100.0);
+
+    println!("\n  === 4. OLS v3.57 Model (for comparison) ===\n");
+
+    let e_ols: Vec<f64> = pts.iter().map(|p| {
+        0.1392 + 0.0559 * p.d0.ln() - 0.1028 * (1.0 / p.rho_fp).ln()
+    }).collect();
+    let mape_ols: f64 = pts.iter().zip(e_ols.iter()).map(|(p, eo)| {
+        let n_pred = p.n_naive / (1.0 + eo).max(0.1);
+        ((n_pred - p.n_actual) / p.n_actual).abs()
+    }).sum::<f64>() / n as f64;
+    println!("  MAPE from OLS model: {:.1}%", mape_ols * 100.0);
+
+    println!("\n  === 5. Coefficient Interpretation ===\n");
+
+    println!("  Decomposition: Δ = {:.4}·L_ρ + {:.4}·L_ρ·ln(d₀) + {:.4}·L_ρ²", betas[0], betas[1], betas[2]);
+    println!("  Signed error:  e = {:.4} + {:.4}·ln(d₀) + {:.4}·L_ρ", intercept, betas[1], betas[0] + betas[2]);
+    println!();
+    println!("  Component analysis:");
+    println!("    Constant baseline:  {:.4}  (every iteration has base nonlinear correction)", intercept);
+    println!("    ln(d₀) coefficient: {:.4}  (more steps → more nonlinear accumulation)", betas[1]);
+    println!("    L_ρ coefficient:    {:.4}  (slower convergence → different correction regime)", betas[0] + betas[2]);
+
+    println!("\n  === 6. Residual Structure ===\n");
+
+    let residuals: Vec<f64> = e_actual.iter().zip(e_model.iter()).map(|(a, m)| a - m).collect();
+    let res_mean: f64 = residuals.iter().sum::<f64>() / n as f64;
+    let res_std: f64 = (residuals.iter().map(|v| (v - res_mean).powi(2)).sum::<f64>() / n as f64).sqrt();
+
+    println!("    Residual mean: {:+.6}", res_mean);
+    println!("    Residual std:  {:.6}", res_std);
+
+    let features_res: Vec<(&str, Vec<f64>)> = vec![
+        ("depth", pts.iter().map(|p| p.depth as f64).collect()),
+        ("L_ρ", pts.iter().map(|p| p.l_rho).collect()),
+        ("ln(d₀)", pts.iter().map(|p| p.d0.ln()).collect()),
+        ("L_ρ³", pts.iter().map(|p| p.l_rho.powi(3)).collect()),
+        ("ln(d₀)²", pts.iter().map(|p| p.d0.ln().powi(2)).collect()),
+    ];
+
+    let res_ss: f64 = residuals.iter().map(|v| v.powi(2)).sum();
+    for (fname, x) in &features_res {
+        let xm_r: f64 = x.iter().sum::<f64>() / n as f64;
+        let sxy: f64 = x.iter().zip(residuals.iter()).map(|(a, r)| (a - xm_r) * r).sum();
+        let sxx: f64 = x.iter().map(|a| (a - xm_r).powi(2)).sum();
+        let r = if sxx > 0.0 && res_ss > 0.0 { sxy / (sxx * res_ss).sqrt() } else { 0.0 };
+        println!("    corr({}, residual) = {:+.4}", fname, r);
+    }
+
+    println!("\n  === 7. Hessian Connection ===\n");
+
+    let jm = nalgebra::SMatrix::<f64, 5, 5>::from_row_slice(&[0.0; 25]);
+
+    println!("  Checking if Δ correlates with Jacobian properties...");
+
+    let mut jacobian_norms: Vec<f64> = Vec::new();
+    let mut jacobian_entries: Vec<[f64; 25]> = Vec::new();
+
+    for &(pname, ref params) in &param_sets {
+        for &(tname, ref builder) in &topo_builders {
+            let lattice = builder();
+            let stats = pipeline::compute_lattice_stats(&lattice);
+            let results = pipeline::run_topological_iteration(&lattice, &stats, params);
+
+            for (i, opt) in results.iter().enumerate() {
+                if let Some(ref res) = opt {
+                    if !res.converged { continue; }
+                    let rho_fp = res.rho_spectral;
+                    if rho_fp <= 0.0 || rho_fp >= 1.0 { continue; }
+                    let n_actual = res.n_iters as f64;
+                    if n_actual < 3.0 { continue; }
+                    let traj = &res.trajectory;
+                    if traj.len() < 2 { continue; }
+                    let d0 = traj[0][0];
+                    if d0 <= 0.0 { continue; }
+
+                    let j = &res.jacobian;
+                    let jm = nalgebra::SMatrix::<f64, 5, 5>::from_row_slice(j);
+                    let frob = (0..5).map(|r| (0..5).map(|c| jm[(r, c)].powi(2)).sum::<f64>()).sum::<f64>().sqrt();
+                    jacobian_norms.push(frob);
+                    jacobian_entries.push(*j);
+                }
+            }
+        }
+    }
+
+    if jacobian_norms.len() == pts.len() {
+        let norms_mean: f64 = jacobian_norms.iter().sum::<f64>() / n as f64;
+        let delta_vec: Vec<f64> = pts.iter().map(|p| p.delta).collect();
+        let delta_mean_v: f64 = delta_vec.iter().sum::<f64>() / n as f64;
+        let ss_d: f64 = delta_vec.iter().map(|v| (v - delta_mean_v).powi(2)).sum();
+        let sxy_j: f64 = jacobian_norms.iter().zip(delta_vec.iter()).map(|(a, d)| (a - norms_mean) * (d - delta_mean_v)).sum();
+        let sxx_j: f64 = jacobian_norms.iter().map(|a| (a - norms_mean).powi(2)).sum();
+        let r_j = if sxx_j > 0.0 && ss_d > 0.0 { sxy_j / (sxx_j * ss_d).sqrt() } else { 0.0 };
+        println!("    corr(‖J‖_F, Δ) = {:+.4}", r_j);
+
+        let j_entries: Vec<(&str, usize, usize)> = vec![
+            ("J[0,1]", 0, 1), ("J[1,0]", 1, 0), ("J[0,3]", 0, 3), ("J[3,0]", 3, 0),
+            ("J[2,3]", 2, 3), ("J[3,2]", 3, 2), ("J[3,4]", 3, 4), ("J[4,3]", 4, 3),
+            ("J[2,0]", 2, 0), ("J[4,0]", 4, 0),
+        ];
+
+        for (name, r_idx, c_idx) in &j_entries {
+            let vals: Vec<f64> = jacobian_entries.iter().map(|j| {
+                let jm = nalgebra::SMatrix::<f64, 5, 5>::from_row_slice(j);
+                jm[(*r_idx, *c_idx)]
+            }).collect();
+            let v_mean: f64 = vals.iter().sum::<f64>() / n as f64;
+            let sxy_v: f64 = vals.iter().zip(delta_vec.iter()).map(|(a, d)| (a - v_mean) * (d - delta_mean_v)).sum();
+            let sxx_v: f64 = vals.iter().map(|a| (a - v_mean).powi(2)).sum();
+            let r_v = if sxx_v > 0.0 && ss_d > 0.0 { sxy_v / (sxx_v * ss_d).sqrt() } else { 0.0 };
+            if r_v.abs() > 0.3 {
+                println!("    corr({}, Δ) = {:+.4}", name, r_v);
+            }
+        }
+    }
+
+    println!("\n  === 8. Final Formula Validation ===\n");
+
+    println!("  Analytical decomposition: e = {:.4} + {:.4}·ln(d₀) + {:.4}·|ln(ρ_fp)|", intercept, betas[1], betas[0] + betas[2]);
+    println!("  Empirical v3.57:          e = 0.1392 + 0.0559·ln(d₀) - 0.1028·|ln(ρ_fp)|");
+
+    let preds_decomp: Vec<f64> = pts.iter().map(|p| {
+        let e = intercept + betas[1] * p.d0.ln() + (betas[0] + betas[2]) * p.l_rho;
+        p.n_naive / (1.0 + e).max(0.1)
+    }).collect();
+    let preds_empirical: Vec<f64> = pts.iter().map(|p| {
+        let e = 0.1392 + 0.0559 * p.d0.ln() - 0.1028 * (1.0 / p.rho_fp).ln();
+        p.n_naive / (1.0 + e).max(0.1)
+    }).collect();
+    let actuals: Vec<f64> = pts.iter().map(|p| p.n_actual).collect();
+    let naive_preds: Vec<f64> = pts.iter().map(|p| p.n_naive).collect();
+
+    fn mape_fn(preds: &[f64], actuals: &[f64]) -> f64 {
+        preds.iter().zip(actuals.iter()).map(|(p, a)| ((p - a) / a).abs()).sum::<f64>() / preds.len() as f64
+    }
+
+    println!("\n  MAPE comparison:");
+    println!("    Naive:        {:.1}%", mape_fn(&naive_preds, &actuals) * 100.0);
+    println!("    Decomposition:{:.1}%", mape_fn(&preds_decomp, &actuals) * 100.0);
+    println!("    Empirical:    {:.1}%", mape_fn(&preds_empirical, &actuals) * 100.0);
+}
