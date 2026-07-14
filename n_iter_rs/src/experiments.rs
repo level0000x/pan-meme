@@ -38286,3 +38286,161 @@ pub fn run_tm_fca_info_state_analysis() {
 
     println!("\n{}", "=".repeat(72));
 }
+
+// ─── B-24 v5: Pattern Transition Matrix Spectral Radius ───────────────────────
+
+pub fn run_tm_fca_pattern_transition() {
+    println!("\n{}", "=".repeat(72));
+    println!("  B-24 v5: Pattern Transition Matrix ρ(M) — Bypassing FCA");
+    println!("{}", "=".repeat(72));
+
+    let n_thresholds = 3;
+    let max_steps = 50000;
+    let sample_every = 2;
+
+    println!("\n  Strategy: Markov transition matrix between unique attribute patterns");
+    println!("  Parameters: d=10, T={}, pattern_size={} bits, max_steps={}",
+        n_thresholds, 10 * n_thresholds, max_steps);
+    println!("  Hypothesis: ρ(M) differs between halting and non-halting TMs");
+
+    // ─── Phase 1: SimpleNonHalter ────────────────────────────────────────
+    println!("\n── Phase 1: SimpleNonHalter (Known Non-Halting) ──\n");
+    let nonhalter = crate::tm_fca::simple_nonhalter();
+    let seq_non = crate::tm_fca::compute_pattern_transition_rho_sequence(
+        &nonhalter, 20, 5000, 1, n_thresholds,
+    );
+
+    // ─── Phase 2: CurrentChampion ─────────────────────────────────────────
+    println!("\n── Phase 2: CurrentChampion (Known Halting) ──\n");
+    let champion = crate::tm_fca::current_champion();
+    let seq_champ = crate::tm_fca::compute_pattern_transition_rho_sequence(
+        &champion, 20, 10000, 2, n_thresholds,
+    );
+
+    // ─── Phase 3: Antihydra ───────────────────────────────────────────────
+    println!("\n── Phase 3: Antihydra (Undecided) ──\n");
+    let antihydra = crate::tm_fca::antihydra();
+    let seq_anti = crate::tm_fca::compute_pattern_transition_rho_sequence(
+        &antihydra, 100, max_steps, sample_every, n_thresholds,
+    );
+
+    // ─── Comparison ──────────────────────────────────────────────────────
+    println!("\n── Cross-TM Comparison ──\n");
+    println!("  {:>20} {:>8} {:>12} {:>12} {:>12}", "TM", "L", "ρ(M)", "n_pats", "entropy");
+    println!("  {:>20} {:>8} {:>12} {:>12} {:>12}", "──", "──", "────", "──────", "───────");
+
+    for (name, seq) in [
+        ("SimpleNonHalter", &seq_non),
+        ("CurrentChampion", &seq_champ),
+        ("Antihydra", &seq_anti),
+    ] {
+        for (l, rho, n_pats, _n_samples, entropy, _t) in seq {
+            println!("  {:>20} {:>8} {:>12.8} {:>12} {:>12.4}",
+                name, l, rho, n_pats, entropy);
+        }
+    }
+
+    let rho_non = seq_non.last().map(|x| x.1).unwrap_or(0.0);
+    let rho_champ = seq_champ.last().map(|x| x.1).unwrap_or(0.0);
+    let rho_anti = seq_anti.last().map(|x| x.1).unwrap_or(0.0);
+
+    println!("\n  ρ(M) comparison at max L:");
+    println!("    SimpleNonHalter:   ρ = {:.8}", rho_non);
+    println!("    CurrentChampion:   ρ = {:.8}", rho_champ);
+    println!("    Antihydra:         ρ = {:.8}", rho_anti);
+
+    if (rho_non - rho_champ).abs() < 1e-8 && (rho_non - rho_anti).abs() < 1e-8 {
+        println!("    → ρ(M) identical across all TMs — Markov approach also fails");
+    } else {
+        println!("    → ρ(M) DIFFERS between TMs!");
+        if rho_champ < rho_non && rho_champ < rho_anti {
+            println!("    → Halting TM has lower ρ(M) — consistent with theory");
+        }
+        println!("    → Antihydra ρ(M) = {:.8} — closest to: {}",
+            rho_anti,
+            if (rho_anti - rho_champ).abs() < (rho_anti - rho_non).abs() {
+                "CurrentChampion (halting)"
+            } else {
+                "SimpleNonHalter (non-halting)"
+            }
+        );
+    }
+
+    println!("\n{}", "=".repeat(72));
+}
+
+// ─── B-24 v7: Recursive Clustering Containment Extraction ─────────────────
+
+pub fn run_tm_fca_cluster_analysis() {
+    println!("\n{}", "=".repeat(72));
+    println!("  B-24 v7: Recursive Clustering Containment Lattice");
+    println!("{}", "=".repeat(72));
+
+    let params = DynamicsParams::uniform();
+    let k_values = [4, 5];
+    let state_sizes = [8, 12, 16, 24];
+    let phase_sizes = [3, 4, 6];
+    let max_steps = 50000;
+    let sample_every = 2;
+    let max_concepts = 10000;
+    let time_limit = 120.0;
+
+    println!("\n  Strategy: windows -> k-gram freq -> cluster states -> cluster phases -> FCA");
+    println!("  k ∈ {:?}, S ∈ {:?}, P ∈ {:?}", k_values, state_sizes, phase_sizes);
+    println!("  Each window gets containment attrs: state_i=true, phase_j=true");
+
+    // Phase 1: SimpleNonHalter
+    println!("\n── Phase 1: SimpleNonHalter (Known Non-Halting) ──\n");
+    let nonhalter = crate::tm_fca::simple_nonhalter();
+    let seq_non = crate::tm_fca::compute_cluster_rho_sequence(
+        &nonhalter, 20, 5000, 1, &k_values, &state_sizes, &phase_sizes, max_concepts, time_limit, &params,
+    );
+
+    // Phase 2: CurrentChampion
+    println!("\n── Phase 2: CurrentChampion (Known Halting) ──\n");
+    let champion = crate::tm_fca::current_champion();
+    let seq_champ = crate::tm_fca::compute_cluster_rho_sequence(
+        &champion, 20, 10000, 2, &k_values, &state_sizes, &phase_sizes, max_concepts, time_limit, &params,
+    );
+
+    // Phase 3: Antihydra
+    println!("\n── Phase 3: Antihydra (Undecided) ──\n");
+    let antihydra = crate::tm_fca::antihydra();
+    let seq_anti = crate::tm_fca::compute_cluster_rho_sequence(
+        &antihydra, 100, max_steps, sample_every, &k_values, &state_sizes, &phase_sizes, max_concepts, time_limit, &params,
+    );
+
+    // Comparison
+    println!("\n── Cross-TM Comparison ──\n");
+    println!("  {:>20} {:>4} {:>4} {:>4} {:>4} {:>8} {:>8} {:>12}", "TM", "k", "L", "S", "P", "Concepts", "Edges", "rho_top");
+    println!("  {:>20} {:>4} {:>4} {:>4} {:>4} {:>8} {:>8} {:>12}", "──", "──", "──", "──", "──", "────────", "─────", "──────");
+
+    for (name, seq) in [("SimpleNonHalter", &seq_non), ("CurrentChampion", &seq_champ), ("Antihydra", &seq_anti)] {
+        for (k, l, ns, np, nc, ne, rho, _bt, _it) in seq {
+            println!("  {:>20} {:>4} {:>4} {:>4} {:>4} {:>8} {:>8} {:>12.8}", name, k, l, ns, np, nc, ne, rho);
+        }
+    }
+
+    // Check best ρ difference
+    let rho_non = seq_non.iter().map(|x| x.6).fold(f64::NAN, |a, b| if b < a || a.is_nan() { b } else { a });
+    let rho_champ = seq_champ.iter().map(|x| x.6).fold(f64::NAN, |a, b| if b < a || a.is_nan() { b } else { a });
+    let rho_anti = seq_anti.iter().map(|x| x.6).fold(f64::NAN, |a, b| if b < a || a.is_nan() { b } else { a });
+
+    println!("\n  Best (lowest) ρ(J) per TM:");
+    println!("    SimpleNonHalter:   ρ = {:.8}", rho_non);
+    println!("    CurrentChampion:   ρ = {:.8}", rho_champ);
+    println!("    Antihydra:         ρ = {:.8}", rho_anti);
+
+    if (rho_non - rho_champ).abs() < 1e-8 && (rho_non - rho_anti).abs() < 1e-8 {
+        println!("    -> ρ(J) still identical across all TMs");
+    } else {
+        println!("    -> ρ(J) DIFFERS between TMs!");
+    }
+
+    // Best params
+    if let Some(best) = seq_anti.iter().max_by(|a, b| a.5.cmp(&b.5)) {
+        println!("\n  Best Antihydra config: k={} L={} S={} P={} conc={} rho={:.8}", best.0, best.1, best.2, best.3, best.4, best.6);
+    }
+
+    println!("\n{}", "=".repeat(72));
+}

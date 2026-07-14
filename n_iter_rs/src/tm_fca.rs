@@ -9,6 +9,7 @@ use crate::fca::{self, FcaLattice, FormalConcept};
 use crate::n_operator::{DynamicsParams, IterResult};
 use crate::pipeline::{self, LatticeStats};
 use std::collections::{HashMap, HashSet};
+use rand::Rng;
 
 // ─── Turing Machine Representation ───────────────────────────────────────────
 
@@ -1043,6 +1044,514 @@ pub fn compute_info_state_rho_sequence_overlap(
             l, lattice.concepts.len(), lattice.edges.len(),
             seen.len(), rho_top, build_time, iter_time
         );
+    }
+
+    sequence
+}
+
+// ─── v5: Pattern Transition Matrix Spectral Radius ────────────────────────────
+
+/// Build a Markov transition matrix between unique attribute patterns.
+///
+/// Strategy (bypasses FCA entirely):
+/// 1. Compute info state vectors and threshold them into attribute patterns
+/// 2. Map each unique pattern to a state index
+/// 3. Build transition count matrix T[i][j] = count(i→j)
+/// 4. Normalize to Markov matrix M (row-stochastic)
+/// 5. Compute ρ(M) = spectral radius
+///
+/// This directly measures TM behavioral complexity without FCA compression.
+pub fn compute_pattern_transition_rho(
+    tm: &TuringMachine,
+    max_steps: u64,
+    window_l: usize,
+    sample_every: u64,
+    n_thresholds: usize,
+) -> (f64, usize, usize, f64, nalgebra::DMatrix<f64>) {
+    let d = 10;
+    let thresholds: Vec<f64> = (1..=n_thresholds)
+        .map(|i| i as f64 / (n_thresholds + 1) as f64)
+        .collect();
+
+    let (configs, _halted, _steps) = tm.simulate(max_steps, window_l);
+    let mut tracker = InfoStateTracker::new(window_l.max(10));
+    let mut prev_state: Option<usize> = None;
+    let mut patterns: Vec<Vec<bool>> = Vec::new();
+
+    for (idx, (state, head, window)) in configs.iter().enumerate() {
+        tracker.record(*state, prev_state);
+        prev_state = Some(*state);
+        if idx as u64 % sample_every != 0 {
+            continue;
+        }
+        let info_vec = compute_info_state(
+            window, *head, window_l, *state, tm.n_states,
+            &tracker.state_history, &tracker.trans_history,
+        );
+        let mut pat = vec![false; d * n_thresholds];
+        for k in 0..d {
+            for t in 0..n_thresholds {
+                if info_vec[k] > thresholds[t] {
+                    pat[k * n_thresholds + t] = true;
+                }
+            }
+        }
+        patterns.push(pat);
+    }
+
+    let mut pattern_to_idx: HashMap<Vec<bool>, usize> = HashMap::new();
+    let mut idx_to_pattern: Vec<Vec<bool>> = Vec::new();
+    let mut pattern_seq: Vec<usize> = Vec::with_capacity(patterns.len());
+
+    for pat in &patterns {
+        let idx = *pattern_to_idx.entry(pat.clone()).or_insert_with(|| {
+            let i = idx_to_pattern.len();
+            idx_to_pattern.push(pat.clone());
+            i
+        });
+        pattern_seq.push(idx);
+    }
+
+    let n_states_pat = idx_to_pattern.len();
+
+    let mut trans_counts = nalgebra::DMatrix::<f64>::zeros(n_states_pat, n_states_pat);
+    for w in pattern_seq.windows(2) {
+        let from = w[0];
+        let to = w[1];
+        trans_counts[(from, to)] += 1.0;
+    }
+
+    let mut markov = trans_counts.clone();
+    for i in 0..n_states_pat {
+        let row_sum = markov.row(i).sum();
+        if row_sum > 0.0 {
+            for j in 0..n_states_pat {
+                markov[(i, j)] /= row_sum;
+            }
+        }
+    }
+
+    let eigen = markov.clone().complex_eigenvalues();
+    let rho = eigen.iter()
+        .map(|c| c.norm())
+        .fold(0.0_f64, f64::max);
+
+    let total_transitions: f64 = trans_counts.sum();
+    let mut stat_dist = vec![0.0; n_states_pat];
+    for i in 0..n_states_pat {
+        stat_dist[i] = trans_counts.row(i).sum() / total_transitions;
+    }
+    let entropy: f64 = stat_dist.iter()
+        .filter(|&&p| p > 0.0)
+        .map(|&p| -p * p.ln())
+        .sum();
+
+    (rho, n_states_pat, patterns.len(), entropy, markov)
+}
+
+/// Compute pattern transition ρ for multiple L values.
+pub fn compute_pattern_transition_rho_sequence(
+    tm: &TuringMachine,
+    max_l: usize,
+    max_steps: u64,
+    sample_every: u64,
+    n_thresholds: usize,
+) -> Vec<(usize, f64, usize, usize, f64, f64)> {
+    let mut sequence = Vec::new();
+
+    for l in [5, 10, 20, 50, 100].iter().filter(|&&x| x <= max_l) {
+        let t0 = std::time::Instant::now();
+        let (rho, n_pats, n_samples, entropy, _markov) =
+            compute_pattern_transition_rho(tm, max_steps, *l, sample_every, n_thresholds);
+        let elapsed = t0.elapsed().as_secs_f64();
+
+        sequence.push((*l, rho, n_pats, n_samples, entropy, elapsed));
+
+        println!(
+            "  L={:3}: ρ={:.8}, n_pats={:4}, n_samples={:5}, entropy={:.4}, time={:.2}s",
+            l, rho, n_pats, n_samples, entropy, elapsed
+        );
+    }
+
+    sequence
+}
+
+// ─── v6: k-gram Formal Context (ISD-native approach) ──────────────────────────
+
+/// Extract k-grams from a window and return them as a vector of bit patterns.
+/// Each k-gram is encoded as a usize (0..2^k).
+fn extract_kgrams(window: &[u8], k: usize) -> Vec<usize> {
+    if window.len() < k {
+        return Vec::new();
+    }
+    let mut grams = Vec::with_capacity(window.len() - k + 1);
+    for i in 0..=window.len() - k {
+        let mut val: usize = 0;
+        for j in 0..k {
+            val = (val << 1) | (window[i + j] as usize);
+        }
+        grams.push(val);
+    }
+    grams
+}
+
+/// Build the formal context using k-grams of the TM tape as attributes.
+///
+/// ISD-native approach: the TM tape is treated as "text", k-grams as "words".
+/// Objects = time windows, Attributes = k-grams, Incidence = k-gram appears in window.
+pub fn build_kgram_formal_context(
+    tm: &TuringMachine,
+    max_steps: u64,
+    window_l: usize,
+    sample_every: u64,
+    k: usize,
+) -> (Vec<Vec<bool>>, Vec<String>, Vec<String>, usize) {
+    let n_kgrams = 1usize << k;
+
+    let (configs, halted, steps) = tm.simulate(max_steps, window_l);
+
+    let mut windows: Vec<(usize, Vec<usize>)> = Vec::new();
+    let mut seen_kgrams: HashSet<usize> = HashSet::new();
+
+    for (idx, (_state, _head, window)) in configs.iter().enumerate() {
+        if idx as u64 % sample_every != 0 {
+            continue;
+        }
+        let grams = extract_kgrams(window, k);
+        for &g in &grams {
+            seen_kgrams.insert(g);
+        }
+        windows.push((idx, grams));
+    }
+
+    let n_objects = windows.len();
+    let active_kgrams: Vec<usize> = {
+        let mut v: Vec<usize> = seen_kgrams.into_iter().collect();
+        v.sort();
+        v
+    };
+    let n_attrs = active_kgrams.len();
+
+    let mut gram_to_idx: HashMap<usize, usize> = HashMap::new();
+    for (i, &g) in active_kgrams.iter().enumerate() {
+        gram_to_idx.insert(g, i);
+    }
+
+    let mut attr_labels: Vec<String> = Vec::with_capacity(n_attrs);
+    for &g in &active_kgrams {
+        attr_labels.push(format!("{:0width$b}", g, width = k));
+    }
+
+    let mut obj_labels: Vec<String> = Vec::with_capacity(n_objects);
+    for (idx, grams) in &windows {
+        obj_labels.push(format!("t{}:{}g", idx, grams.len()));
+    }
+
+    let mut matrix = vec![vec![false; n_attrs]; n_objects];
+    for (obj_idx, (_idx, grams)) in windows.iter().enumerate() {
+        for &g in grams {
+            if let Some(&attr_idx) = gram_to_idx.get(&g) {
+                matrix[obj_idx][attr_idx] = true;
+            }
+        }
+    }
+
+    let mut unique_patterns: HashSet<Vec<bool>> = HashSet::new();
+    for row in &matrix {
+        unique_patterns.insert(row.clone());
+    }
+
+    println!(
+        "    kgram(k={}): {} steps ({}), {} windows, {} attrs (of {} possible), {} unique patterns",
+        k, steps, if halted { "halted" } else { "non-halt" },
+        n_objects, n_attrs, n_kgrams, unique_patterns.len()
+    );
+
+    (matrix, obj_labels, attr_labels, unique_patterns.len())
+}
+
+/// Compute ρ(J) for k-gram FCA lattice at multiple L and k values.
+pub fn compute_kgram_rho_sequence(
+    tm: &TuringMachine,
+    max_l: usize,
+    max_steps: u64,
+    sample_every: u64,
+    k_values: &[usize],
+    max_concepts: usize,
+    time_limit: f64,
+    params: &DynamicsParams,
+) -> Vec<(usize, usize, usize, usize, usize, f64, f64, f64)> {
+    let mut sequence = Vec::new();
+
+    for &k in k_values {
+        for l in [5, 10, 20, 50, 100].iter().filter(|&&x| x <= max_l) {
+            let t0 = std::time::Instant::now();
+            let (matrix, _obj_labels, _attr_labels, n_pats) =
+                build_kgram_formal_context(tm, max_steps, *l, sample_every, k);
+            let lattice = build_lattice(&matrix, max_concepts, time_limit);
+            let build_time = t0.elapsed().as_secs_f64();
+
+            if lattice.concepts.is_empty() {
+                eprintln!("  k={} L={}: empty lattice, skipping", k, l);
+                continue;
+            }
+
+            let t1 = std::time::Instant::now();
+            let (results, stats) = run_lattice_analysis(&lattice, params);
+            let iter_time = t1.elapsed().as_secs_f64();
+            let rho_top = extract_top_rho(&results, &stats).unwrap_or(f64::NAN);
+
+            sequence.push((k, *l, lattice.concepts.len(), lattice.edges.len(),
+                n_pats, rho_top, build_time, iter_time));
+
+            println!(
+                "  k={} L={:3}: concepts={:5}, edges={:5}, uniq_pats={:5}, ρ_top={:.8}, build={:.2}s, iter={:.2}s",
+                k, l, lattice.concepts.len(), lattice.edges.len(),
+                n_pats, rho_top, build_time, iter_time
+            );
+        }
+    }
+
+    sequence
+}
+
+// ─── v7: Recursive Clustering Containment Extraction ────────────────────────
+
+/// Compute a k-gram frequency vector for a tape window.
+fn compute_kgram_freq(window: &[u8], k: usize) -> Vec<f64> {
+    let n_grams = 1usize << k;
+    let mut counts = vec![0.0; n_grams];
+    if window.len() < k {
+        return counts;
+    }
+    let n = (window.len() - k + 1) as f64;
+    for i in 0..=(window.len() - k) {
+        let mut val: usize = 0;
+        for j in 0..k {
+            val = (val << 1) | (window[i + j] as usize);
+        }
+        counts[val] += 1.0;
+    }
+    for g in 0..n_grams {
+        counts[g] /= n;
+    }
+    counts
+}
+
+/// Simple k-means-like clustering.
+fn cluster_vectors(vectors: &[Vec<f64>], n_clusters: usize, max_iters: usize) -> (Vec<usize>, Vec<Vec<f64>>) {
+    let n = vectors.len();
+    let dim = vectors[0].len();
+    if n <= n_clusters {
+        let mut centroids = vectors.to_vec();
+        centroids.truncate(n_clusters);
+        for _ in centroids.len()..n_clusters {
+            centroids.push(vec![0.0; dim]);
+        }
+        let assignments: Vec<usize> = (0..n).map(|i| i.min(n_clusters - 1)).collect();
+        return (assignments, centroids);
+    }
+
+    let mut rng = rand::thread_rng();
+    let mut centroids: Vec<Vec<f64>> = (0..n_clusters)
+        .map(|_| vectors[rng.gen_range(0..n)].clone())
+        .collect();
+    let mut assignments = vec![0usize; n];
+
+    for _iter in 0..max_iters {
+        let mut changed = false;
+        for i in 0..n {
+            let mut best = 0usize;
+            let mut best_dist = f64::MAX;
+            for c in 0..n_clusters {
+                let mut dist = 0.0;
+                for d in 0..dim {
+                    let diff = vectors[i][d] - centroids[c][d];
+                    dist += diff * diff;
+                }
+                if dist < best_dist {
+                    best_dist = dist;
+                    best = c;
+                }
+            }
+            if assignments[i] != best {
+                assignments[i] = best;
+                changed = true;
+            }
+        }
+        if !changed {
+            break;
+        }
+        let mut new_centroids = vec![vec![0.0; dim]; n_clusters];
+        let mut counts = vec![0usize; n_clusters];
+        for i in 0..n {
+            let c = assignments[i];
+            counts[c] += 1;
+            for d in 0..dim {
+                new_centroids[c][d] += vectors[i][d];
+            }
+        }
+        for c in 0..n_clusters {
+            if counts[c] > 0 {
+                for d in 0..dim {
+                    new_centroids[c][d] /= counts[c] as f64;
+                }
+            }
+        }
+        centroids = new_centroids;
+    }
+
+    (assignments, centroids)
+}
+
+/// Build containment hierarchy by recursive clustering.
+///
+/// Level 0: Windows -> k-gram frequency vectors
+/// Level 1: Cluster windows into N_states states
+/// Level 2: Build state transition matrix, cluster states into N_phases phases
+///
+/// Containment: window ⊂ state (membership), state ⊂ phase (membership)
+pub fn build_recursive_clustering_context(
+    tm: &TuringMachine,
+    max_steps: u64,
+    window_l: usize,
+    sample_every: u64,
+    k: usize,
+    n_states: usize,
+    n_phases: usize,
+) -> (Vec<Vec<bool>>, Vec<String>, Vec<String>, (usize, usize, usize)) {
+    let (configs, halted, steps) = tm.simulate(max_steps, window_l);
+
+    let mut freq_vectors: Vec<Vec<f64>> = Vec::new();
+    let mut window_indices: Vec<usize> = Vec::new();
+    for (idx, (_state, _head, window)) in configs.iter().enumerate() {
+        if idx as u64 % sample_every != 0 {
+            continue;
+        }
+        freq_vectors.push(compute_kgram_freq(window, k));
+        window_indices.push(idx);
+    }
+
+    let n_objects = freq_vectors.len();
+    if n_objects < 5 {
+        println!("    cluster: too few objects ({}), skipping", n_objects);
+        return (vec![], vec![], vec![], (0, 0, 0));
+    }
+
+    let actual_states = n_states.min(n_objects);
+    let (state_assign, _state_centroids) = cluster_vectors(&freq_vectors, actual_states, 20);
+
+    let mut trans_counts = vec![vec![0usize; actual_states]; actual_states];
+    for w in state_assign.windows(2) {
+        trans_counts[w[0]][w[1]] += 1;
+    }
+    let mut trans_probs = vec![vec![0.0; actual_states]; actual_states];
+    for i in 0..actual_states {
+        let row_sum: usize = trans_counts[i].iter().sum();
+        if row_sum > 0 {
+            for j in 0..actual_states {
+                trans_probs[i][j] = trans_counts[i][j] as f64 / row_sum as f64;
+            }
+        }
+    }
+
+    let actual_phases = n_phases.min(actual_states);
+    let (phase_assign, _phase_centroids) = if actual_phases < actual_states {
+        cluster_vectors(&trans_probs, actual_phases, 10)
+    } else {
+        ((0..actual_states).collect(), trans_probs.clone())
+    };
+
+    let n_attrs = actual_states + actual_phases;
+
+    let mut attr_labels: Vec<String> = Vec::with_capacity(n_attrs);
+    for s in 0..actual_states {
+        let size = state_assign.iter().filter(|&&a| a == s).count();
+        attr_labels.push(format!("state_{}:{}w", s, size));
+    }
+    for p in 0..actual_phases {
+        let size = phase_assign.iter().filter(|&&a| a == p).count();
+        attr_labels.push(format!("phase_{}:{}s", p, size));
+    }
+
+    let mut obj_labels: Vec<String> = Vec::with_capacity(n_objects);
+    for (i, &idx) in window_indices.iter().enumerate() {
+        let s = state_assign[i];
+        let p = phase_assign[s];
+        obj_labels.push(format!("t{}:s{}p{}", idx, s, p));
+    }
+
+    let mut matrix = vec![vec![false; n_attrs]; n_objects];
+    for i in 0..n_objects {
+        let s = state_assign[i];
+        let p = phase_assign[s];
+        matrix[i][s] = true;
+        matrix[i][actual_states + p] = true;
+    }
+
+    let mut unique_patterns: HashSet<Vec<bool>> = HashSet::new();
+    for row in &matrix {
+        unique_patterns.insert(row.clone());
+    }
+
+    println!(
+        "    cluster(k={} L={}): {} steps ({}), {} windows -> {} states -> {} phases, {} attrs, {} unique pats",
+        k, window_l, steps, if halted { "halted" } else { "non-halt" },
+        n_objects, actual_states, actual_phases, n_attrs, unique_patterns.len()
+    );
+
+    (matrix, obj_labels, attr_labels, (actual_states, actual_phases, unique_patterns.len()))
+}
+
+/// Compute ρ(J) for recursive clustering context at multiple (L, k, S, P) combos.
+pub fn compute_cluster_rho_sequence(
+    tm: &TuringMachine,
+    max_l: usize,
+    max_steps: u64,
+    sample_every: u64,
+    k_values: &[usize],
+    state_sizes: &[usize],
+    phase_sizes: &[usize],
+    max_concepts: usize,
+    time_limit: f64,
+    params: &DynamicsParams,
+) -> Vec<(usize, usize, usize, usize, usize, usize, f64, f64, f64)> {
+    let mut sequence = Vec::new();
+
+    for &k in k_values {
+        for &l in [5, 10, 20, 50, 100].iter().filter(|&&x| x <= max_l) {
+            for &ns in state_sizes {
+                for &np in phase_sizes {
+                    if np > ns {
+                        continue;
+                    }
+                    let t0 = std::time::Instant::now();
+                    let (matrix, _obj_labels, _attr_labels, (ns_act, np_act, _n_pats)) =
+                        build_recursive_clustering_context(tm, max_steps, l, sample_every, k, ns, np);
+                    if matrix.is_empty() {
+                        continue;
+                    }
+                    let lattice = build_lattice(&matrix, max_concepts, time_limit);
+                    let build_time = t0.elapsed().as_secs_f64();
+                    if lattice.concepts.is_empty() {
+                        eprintln!("  cluster k={} L={} S={} P={}: empty lattice", k, l, ns, np);
+                        continue;
+                    }
+                    let t1 = std::time::Instant::now();
+                    let (results, stats) = run_lattice_analysis(&lattice, params);
+                    let iter_time = t1.elapsed().as_secs_f64();
+                    let rho_top = extract_top_rho(&results, &stats).unwrap_or(f64::NAN);
+                    sequence.push((k, l, ns_act, np_act,
+                        lattice.concepts.len(), lattice.edges.len(),
+                        rho_top, build_time, iter_time));
+                    println!(
+                        "  k={} L={:3} S={:2} P={:2}: concepts={:5}, edges={:5}, rho_top={:.8}, build={:.2}s, iter={:.2}s",
+                        k, l, ns_act, np_act, lattice.concepts.len(),
+                        lattice.edges.len(), rho_top, build_time, iter_time
+                    );
+                }
+            }
+        }
     }
 
     sequence
