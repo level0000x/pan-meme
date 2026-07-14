@@ -169,6 +169,7 @@ fn run_single(name: &str) {
         ("run_jacobian_at_initial_state", experiments::run_jacobian_at_initial_state),
         ("run_early_jacobian_rho_estimation", experiments::run_early_jacobian_rho_estimation),
         ("run_two_phase_prediction", experiments::run_two_phase_prediction),
+        ("run_prediction_residual_analysis", experiments::run_prediction_residual_analysis),
     ];
     if let Some((_, f)) = fns.iter().find(|(n, _)| *n == name) {
         f();
@@ -339,4 +340,5 @@ fn run_synthetic_suite() {
     experiments::run_jacobian_at_initial_state();
     experiments::run_early_jacobian_rho_estimation();
     experiments::run_two_phase_prediction();
+    experiments::run_prediction_residual_analysis();
 }

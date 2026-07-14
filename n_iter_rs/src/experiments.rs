@@ -36373,3 +36373,311 @@ pub fn run_two_phase_prediction() {
     println!("    TwoPhase 50% + d₀ corr  ~4%    50%         50%");
     println!("    (Actual values from this experiment above)");
 }
+
+pub fn run_prediction_residual_analysis() {
+    println!("\n=== v3.65: Prediction Residual Analysis ===\n");
+    println!("  Goal: What drives the residual error of the d₀-correction formula?");
+
+    let param_sets: Vec<(&str, DynamicsParams)> = vec![
+        ("uniform", DynamicsParams::uniform()),
+        ("high-β", DynamicsParams::uniform().with_beta1(2.0)),
+        ("high-δ", DynamicsParams::uniform().with_delta1(2.0)),
+        ("high-κ₂", DynamicsParams::uniform().with_kappa2(2.0)),
+        ("asym-1", DynamicsParams::uniform().with_beta1(1.5).with_gamma1(0.8).with_zeta1(1.2).with_theta1(0.7).with_kappa2(1.8).with_eps(0.01)),
+        ("asym-2", DynamicsParams::uniform().with_beta1(0.5).with_gamma1(2.0).with_zeta1(0.8).with_theta1(1.5).with_kappa2(0.6).with_eps(0.05)),
+        ("extreme", DynamicsParams::uniform().with_beta1(3.0).with_gamma1(0.3).with_zeta1(2.0).with_theta1(0.4).with_kappa2(3.0).with_eps(0.02)),
+    ];
+
+    let topo_builders: Vec<(&str, Box<dyn Fn() -> fca::FcaLattice>)> = vec![
+        ("chain-5", Box::new(|| fca::build_chain_lattice(5))),
+        ("chain-10", Box::new(|| fca::build_chain_lattice(10))),
+        ("chain-20", Box::new(|| fca::build_chain_lattice(20))),
+        ("chain-50", Box::new(|| fca::build_chain_lattice(50))),
+        ("diamond", Box::new(|| fca::build_diamond_lattice())),
+        ("m3", Box::new(|| fca::build_m3_lattice())),
+        ("b3", Box::new(|| fca::build_b3_lattice())),
+        ("b4", Box::new(|| fca::build_b4_lattice())),
+        ("grid-4x4", Box::new(|| fca::build_grid_lattice(4, 4))),
+        ("grid-5x5", Box::new(|| fca::build_grid_lattice(5, 5))),
+        ("antichain-10", Box::new(|| fca::build_antichain_lattice(10))),
+    ];
+
+    let tol = 1e-12_f64;
+
+    #[derive(Clone)]
+    struct Pt {
+        topo: String,
+        pset: String,
+        depth: usize,
+        nfeed: usize,
+        nsub: usize,
+        n_concepts: usize,
+        extent_size: usize,
+        intent_size: usize,
+        rho_init: f64,
+        d0: f64,
+        rho_fp: f64,
+        n_actual: f64,
+        n_predicted: f64,
+        signed_err: f64,
+    }
+
+    let mut pts: Vec<Pt> = Vec::new();
+
+    for &(tname, ref builder) in &topo_builders {
+        let lattice = builder();
+        let stats = pipeline::compute_lattice_stats(&lattice);
+
+        let mut sub_concepts: Vec<Vec<usize>> = vec![vec![]; lattice.concepts.len()];
+        for &(p, c) in &lattice.edges {
+            sub_concepts[c].push(p);
+        }
+
+        for &(pname, ref params) in &param_sets {
+            let results = pipeline::run_topological_iteration(&lattice, &stats, params);
+
+            for (ci, opt) in results.iter().enumerate() {
+                if let Some(ref res) = opt {
+                    if !res.converged { continue; }
+                    let rho_fp = res.rho_spectral;
+                    if rho_fp <= 0.0 || rho_fp >= 1.0 { continue; }
+                    let n_actual = res.n_iters as f64;
+                    if n_actual < 3.0 { continue; }
+                    let traj = &res.trajectory;
+                    if traj.is_empty() { continue; }
+                    let d0 = traj[0][0];
+                    if d0 <= 0.0 { continue; }
+
+                    let csize = &lattice.concept_sizes[ci];
+                    let rho_init = (csize.0 as f64 / lattice.n_bigrams.max(1) as f64
+                        + csize.1 as f64 / lattice.n_words.max(1) as f64) / 2.0;
+
+                    let lr_fp = (-rho_fp.ln()).max(0.001);
+                    let e = -0.0386 + 0.0464 * d0.ln() + 0.0583 * lr_fp;
+                    let n_pred = (d0 / tol).ln() / lr_fp / (1.0 + e).max(0.1);
+                    let signed_err = (n_pred - n_actual) / n_actual;
+
+                    pts.push(Pt {
+                        topo: tname.to_string(),
+                        pset: pname.to_string(),
+                        depth: stats.heights[ci],
+                        nfeed: stats.feeders[ci].len(),
+                        nsub: sub_concepts[ci].len(),
+                        n_concepts: lattice.concepts.len(),
+                        extent_size: csize.1,
+                        intent_size: csize.0,
+                        rho_init,
+                        d0,
+                        rho_fp,
+                        n_actual,
+                        n_predicted: n_pred,
+                        signed_err,
+                    });
+                }
+            }
+        }
+    }
+
+    let n = pts.len();
+    println!("\n  Collected {} data points\n", pts.len());
+
+    let y: Vec<f64> = pts.iter().map(|p| p.signed_err).collect();
+    let y_mean: f64 = y.iter().sum::<f64>() / n as f64;
+    let y_std: f64 = (y.iter().map(|v| (v - y_mean).powi(2)).sum::<f64>() / n as f64).sqrt();
+    println!("  Signed error: mean={:.4}  std={:.4}  (positive=overpredict)", y_mean, y_std);
+
+    let abs_errs: Vec<f64> = y.iter().map(|v| v.abs()).collect();
+    let ae_mean: f64 = abs_errs.iter().sum::<f64>() / n as f64;
+    println!("  |Error|: mean={:.4}  (MAPE={:.1}%)", ae_mean, ae_mean * 100.0);
+
+    println!("\n  === 1. Residual vs Features (global) ===\n");
+
+    let features: Vec<(&str, Vec<f64>)> = vec![
+        ("d0", pts.iter().map(|p| p.d0).collect()),
+        ("log(d0)", pts.iter().map(|p| p.d0.ln()).collect()),
+        ("1/d0", pts.iter().map(|p| 1.0 / p.d0).collect()),
+        ("ρ_fp", pts.iter().map(|p| p.rho_fp).collect()),
+        ("|ln(ρ_fp)|", pts.iter().map(|p| (-p.rho_fp.ln()).max(0.001)).collect()),
+        ("log(1/ρ)", pts.iter().map(|p| (1.0 / p.rho_fp).ln()).collect()),
+        ("depth", pts.iter().map(|p| p.depth as f64).collect()),
+        ("log(depth+1)", pts.iter().map(|p| ((p.depth + 1) as f64).ln()).collect()),
+        ("nfeed", pts.iter().map(|p| p.nfeed as f64).collect()),
+        ("nsub", pts.iter().map(|p| p.nsub as f64).collect()),
+        ("log(n_concepts)", pts.iter().map(|p| (p.n_concepts.max(1) as f64).ln()).collect()),
+        ("ρ_init", pts.iter().map(|p| p.rho_init).collect()),
+        ("extent_size", pts.iter().map(|p| p.extent_size as f64).collect()),
+        ("intent_size", pts.iter().map(|p| p.intent_size as f64).collect()),
+        ("n_actual", pts.iter().map(|p| p.n_actual).collect()),
+        ("log(n_actual)", pts.iter().map(|p| p.n_actual.ln()).collect()),
+        ("d0·|ln(ρ)|", pts.iter().map(|p| p.d0 * (-p.rho_fp.ln()).max(0.001)).collect()),
+        ("d0²", pts.iter().map(|p| p.d0 * p.d0).collect()),
+        ("|ln(ρ)|²", pts.iter().map(|p| (-p.rho_fp.ln()).max(0.001).powi(2)).collect()),
+    ];
+
+    let ss_tot: f64 = y.iter().map(|v| (v - y_mean).powi(2)).sum();
+    for (fname, x) in &features {
+        let xm: f64 = x.iter().sum::<f64>() / n as f64;
+        let sxy: f64 = x.iter().zip(y.iter()).map(|(a, b)| (a - xm) * (b - y_mean)).sum();
+        let sxx: f64 = x.iter().map(|a| (a - xm).powi(2)).sum();
+        let r = if sxx > 0.0 && ss_tot > 0.0 { sxy / (sxx * ss_tot).sqrt() } else { 0.0 };
+        let b1 = if sxx > 0.0 { sxy / sxx } else { 0.0 };
+        let b0 = y_mean - b1 * xm;
+        let ss_res: f64 = x.iter().zip(y.iter()).map(|(a, b)| (b - b0 - b1 * a).powi(2)).sum();
+        let r2 = if ss_tot > 0.0 { 1.0 - ss_res / ss_tot } else { 0.0 };
+        println!("    corr({:<18}, residual) = {:+.4}  R²={:.4}", fname, r, r2);
+    }
+
+    println!("\n  === 2. Per-Topology Residual Statistics ===\n");
+
+    let topo_names: Vec<String> = {
+        let mut v: Vec<String> = pts.iter().map(|p| p.topo.clone()).collect();
+        v.sort(); v.dedup(); v
+    };
+
+    for tname in &topo_names {
+        let subset: Vec<f64> = pts.iter().filter(|p| p.topo == *tname).map(|p| p.signed_err).collect();
+        if subset.is_empty() { continue; }
+        let ns = subset.len();
+        let mean: f64 = subset.iter().sum::<f64>() / ns as f64;
+        let std: f64 = (subset.iter().map(|v| (v - mean).powi(2)).sum::<f64>() / ns as f64).sqrt();
+        let abs_mean: f64 = subset.iter().map(|v| v.abs()).sum::<f64>() / ns as f64;
+        let min = subset.iter().cloned().fold(f64::INFINITY, f64::min);
+        let max = subset.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
+        println!("    {:<14} n={:>5}  bias={:+.4}  std={:.4}  MAPE={:.1}%  range=[{:+.4}, {:+.4}]",
+            tname, ns, mean, std, abs_mean * 100.0, min, max);
+    }
+
+    println!("\n  === 3. Per-Topology × Param Set Residual ===\n");
+
+    for tname in &topo_names {
+        for &(pname, _) in &param_sets {
+            let subset: Vec<f64> = pts.iter().filter(|p| p.topo == *tname && p.pset == pname).map(|p| p.signed_err).collect();
+            if subset.is_empty() { continue; }
+            let ns = subset.len();
+            let mean: f64 = subset.iter().sum::<f64>() / ns as f64;
+            let std: f64 = (subset.iter().map(|v| (v - mean).powi(2)).sum::<f64>() / ns as f64).sqrt();
+            let abs_mean: f64 = subset.iter().map(|v| v.abs()).sum::<f64>() / ns as f64;
+            println!("    {:<14} {:<10} n={:>4}  bias={:+.4}  std={:.4}  MAPE={:.1}%",
+                tname, pname, ns, mean, std, abs_mean * 100.0);
+        }
+    }
+
+    println!("\n  === 4. Topology-Dependent Coefficient Refit ===\n");
+
+    let lr_vec: Vec<f64> = pts.iter().map(|p| (-p.rho_fp.ln()).max(0.001)).collect();
+    let ld_vec: Vec<f64> = pts.iter().map(|p| p.d0.ln()).collect();
+
+    println!("  Global formula: e = -0.039 + 0.046·ln(d₀) + 0.058·|ln(ρ)|");
+    println!("  Per-topology refit:\n");
+
+    for tname in &topo_names {
+        let idxs: Vec<usize> = pts.iter().enumerate().filter(|(_, p)| p.topo == *tname).map(|(i, _)| i).collect();
+        if idxs.len() < 20 { continue; }
+
+        let ns = idxs.len();
+        let y_sub: Vec<f64> = idxs.iter().map(|&i| y[i]).collect();
+        let lr_sub: Vec<f64> = idxs.iter().map(|&i| lr_vec[i]).collect();
+        let ld_sub: Vec<f64> = idxs.iter().map(|&i| ld_vec[i]).collect();
+
+        let y_m: f64 = y_sub.iter().sum::<f64>() / ns as f64;
+        let lr_m: f64 = lr_sub.iter().sum::<f64>() / ns as f64;
+        let ld_m: f64 = ld_sub.iter().sum::<f64>() / ns as f64;
+
+        let syy: f64 = y_sub.iter().map(|v| (v - y_m).powi(2)).sum();
+
+        let sll: f64 = lr_sub.iter().map(|v| (v - lr_m).powi(2)).sum();
+        let sdd: f64 = ld_sub.iter().map(|v| (v - ld_m).powi(2)).sum();
+        let sld: f64 = lr_sub.iter().zip(ld_sub.iter()).map(|(a, b)| (a - lr_m) * (b - ld_m)).sum();
+        let sly: f64 = lr_sub.iter().zip(y_sub.iter()).map(|(a, b)| (a - lr_m) * (b - y_m)).sum();
+        let sdy: f64 = ld_sub.iter().zip(y_sub.iter()).map(|(a, b)| (a - ld_m) * (b - y_m)).sum();
+
+        let det = sll * sdd - sld * sld;
+        if det.abs() < 1e-30 { continue; }
+        let b_lr = (sdd * sly - sld * sdy) / det;
+        let b_ld = (sll * sdy - sld * sly) / det;
+        let intercept = y_m - b_lr * lr_m - b_ld * ld_m;
+
+        let ss_res: f64 = idxs.iter().enumerate().map(|(j, &i)| {
+            let pred = intercept + b_lr * lr_vec[i] + b_ld * ld_vec[i];
+            (y[i] - pred).powi(2)
+        }).sum();
+        let r2 = if syy > 0.0 { 1.0 - ss_res / syy } else { 0.0 };
+
+        let mape_global: f64 = idxs.iter().map(|&i| y[i].abs()).sum::<f64>() / ns as f64;
+        let mape_refit: f64 = idxs.iter().enumerate().map(|(j, &i)| {
+            let pred = intercept + b_lr * lr_vec[i] + b_ld * ld_vec[i];
+            (y[i] - pred).abs()
+        }).sum::<f64>() / ns as f64;
+
+        println!("    {:<14} n={:>4}  e={:+.4}{:+.4}·ln(d₀){:+.4}·L_ρ  R²={:.4}  MAPE: global {:.1}%→refit {:.1}%  Δ={:.1}%",
+            tname, ns, intercept, b_ld, b_lr, r2, mape_global * 100.0, mape_refit * 100.0,
+            (mape_global - mape_refit) * 100.0);
+    }
+
+    println!("\n  === 5. Key Drivers of Per-Topology Difficulty ===\n");
+
+    println!("  Topology difficulty = |signed_err| MAPE\n");
+    println!("  Lattice metrics vs difficulty:\n");
+
+    let difficulties: Vec<f64> = topo_names.iter().map(|tname| {
+        let errs: Vec<f64> = pts.iter().filter(|p| p.topo == *tname).map(|p| p.signed_err.abs()).collect();
+        errs.iter().sum::<f64>() / errs.len().max(1) as f64
+    }).collect();
+
+    let topo_metrics: Vec<(&str, Vec<f64>)> = vec![
+        ("n_concepts", topo_names.iter().map(|tname| {
+            pts.iter().find(|p| p.topo == *tname).map(|p| p.n_concepts as f64).unwrap_or(0.0)
+        }).collect()),
+        ("max_depth", topo_names.iter().map(|tname| {
+            pts.iter().filter(|p| p.topo == *tname).map(|p| p.depth).max().unwrap_or(0) as f64
+        }).collect()),
+        ("max_nfeed", topo_names.iter().map(|tname| {
+            pts.iter().filter(|p| p.topo == *tname).map(|p| p.nfeed).max().unwrap_or(0) as f64
+        }).collect()),
+        ("d0_range", topo_names.iter().map(|tname| {
+            let d0s: Vec<f64> = pts.iter().filter(|p| p.topo == *tname).map(|p| p.d0).collect();
+            let min_d = d0s.iter().cloned().fold(f64::INFINITY, f64::min);
+            let max_d = d0s.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
+            max_d - min_d
+        }).collect()),
+        ("d0_unique_count", topo_names.iter().map(|tname| {
+            let mut d0s: Vec<f64> = pts.iter().filter(|p| p.topo == *tname).map(|p| (p.d0 * 10000.0).round() / 10000.0).collect();
+            d0s.sort_by(|a, b| a.partial_cmp(b).unwrap());
+            d0s.dedup_by(|a, b| (*a - *b).abs() < 1e-6);
+            d0s.len() as f64
+        }).collect()),
+        ("depth_variance", topo_names.iter().map(|tname| {
+            let depths: Vec<f64> = pts.iter().filter(|p| p.topo == *tname).map(|p| p.depth as f64).collect();
+            let d_m: f64 = depths.iter().sum::<f64>() / depths.len().max(1) as f64;
+            depths.iter().map(|v| (v - d_m).powi(2)).sum::<f64>() / depths.len().max(1) as f64
+        }).collect()),
+        ("rho_fp_cv", topo_names.iter().map(|tname| {
+            let rhos: Vec<f64> = pts.iter().filter(|p| p.topo == *tname).map(|p| p.rho_fp).collect();
+            let r_m: f64 = rhos.iter().sum::<f64>() / rhos.len().max(1) as f64;
+            let r_s: f64 = (rhos.iter().map(|v| (v - r_m).powi(2)).sum::<f64>() / rhos.len().max(1) as f64).sqrt();
+            if r_m > 0.0 { r_s / r_m } else { 0.0 }
+        }).collect()),
+    ];
+
+    let d_m: f64 = difficulties.iter().sum::<f64>() / topo_names.len() as f64;
+    let ss_tot_d: f64 = difficulties.iter().map(|v| (v - d_m).powi(2)).sum();
+
+    for (mname, mvals) in &topo_metrics {
+        let mv_m: f64 = mvals.iter().sum::<f64>() / topo_names.len() as f64;
+        let sxy_m: f64 = mvals.iter().zip(difficulties.iter()).map(|(a, b)| (a - mv_m) * (b - d_m)).sum();
+        let sxx_m: f64 = mvals.iter().map(|a| (a - mv_m).powi(2)).sum();
+        let r_m = if sxx_m > 0.0 && ss_tot_d > 0.0 { sxy_m / (sxx_m * ss_tot_d).sqrt() } else { 0.0 };
+        println!("    corr({:<18}, difficulty) = {:+.4}", mname, r_m);
+    }
+
+    println!("\n  Topology summary:");
+    for (i, tname) in topo_names.iter().enumerate() {
+        let nc = topo_metrics[0].1[i];
+        let md = topo_metrics[1].1[i];
+        let mf = topo_metrics[2].1[i];
+        let dr = topo_metrics[3].1[i];
+        let du = topo_metrics[4].1[i];
+        println!("    {:<14} concepts={:.0}  max_depth={:.0}  max_nfeed={:.0}  d0_range={:.3}  d0_unique={:.0}  difficulty={:.3}",
+            tname, nc, md, mf, dr, du, difficulties[i]);
+    }
+}
