@@ -171,6 +171,7 @@ fn run_single(name: &str) {
         ("run_two_phase_prediction", experiments::run_two_phase_prediction),
         ("run_prediction_residual_analysis", experiments::run_prediction_residual_analysis),
         ("run_quadratic_d0_correction", experiments::run_quadratic_d0_correction),
+        ("run_expanded_parameter_validation", experiments::run_expanded_parameter_validation),
     ];
     if let Some((_, f)) = fns.iter().find(|(n, _)| *n == name) {
         f();
@@ -343,4 +344,5 @@ fn run_synthetic_suite() {
     experiments::run_two_phase_prediction();
     experiments::run_prediction_residual_analysis();
     experiments::run_quadratic_d0_correction();
+    experiments::run_expanded_parameter_validation();
 }

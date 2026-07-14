@@ -36977,3 +36977,392 @@ pub fn run_quadratic_d0_correction() {
             tname, m_old * 100.0, m_new * 100.0, (m_old - m_new) * 100.0);
     }
 }
+
+pub fn run_expanded_parameter_validation() {
+    println!("\n=== v3.67: Expanded Parameter Validation (20+ sets) ===\n");
+
+    let param_sets: Vec<(&str, DynamicsParams)> = vec![
+        ("uniform", DynamicsParams::uniform()),
+        ("high-β", DynamicsParams::uniform().with_beta1(2.0)),
+        ("high-δ", DynamicsParams::uniform().with_delta1(2.0)),
+        ("high-κ₂", DynamicsParams::uniform().with_kappa2(2.0)),
+        ("asym-1", DynamicsParams::uniform().with_beta1(1.5).with_gamma1(0.8).with_zeta1(1.2).with_theta1(0.7).with_kappa2(1.8).with_eps(0.01)),
+        ("asym-2", DynamicsParams::uniform().with_beta1(0.5).with_gamma1(2.0).with_zeta1(0.8).with_theta1(1.5).with_kappa2(0.6).with_eps(0.05)),
+        ("extreme", DynamicsParams::uniform().with_beta1(3.0).with_gamma1(0.3).with_zeta1(2.0).with_theta1(0.4).with_kappa2(3.0).with_eps(0.02)),
+        ("low-β", DynamicsParams::uniform().with_beta1(0.3)),
+        ("high-γ", DynamicsParams::uniform().with_gamma1(2.5)),
+        ("high-ζ", DynamicsParams::uniform().with_zeta1(2.5)),
+        ("low-θ", DynamicsParams::uniform().with_theta1(0.2)),
+        ("high-ε", DynamicsParams::uniform().with_eps(0.1)),
+        ("low-ε", DynamicsParams::uniform().with_eps(0.005)),
+        ("β+γ", DynamicsParams::uniform().with_beta1(1.8).with_gamma1(1.8)),
+        ("δ+ζ", DynamicsParams::uniform().with_delta1(1.8).with_zeta1(1.8)),
+        ("θ+κ", DynamicsParams::uniform().with_theta1(1.8).with_kappa2(1.8)),
+        ("β-γ+", DynamicsParams::uniform().with_beta1(0.4).with_gamma1(2.2)),
+        ("δ-ζ+", DynamicsParams::uniform().with_delta1(0.4).with_zeta1(2.2)),
+        ("mid-1", DynamicsParams::uniform().with_beta1(0.8).with_gamma1(0.8).with_delta1(0.8).with_zeta1(0.8).with_theta1(0.8).with_kappa2(0.8)),
+        ("mid-2", DynamicsParams::uniform().with_beta1(1.2).with_gamma1(1.2).with_delta1(1.2).with_zeta1(1.2).with_theta1(1.2).with_kappa2(1.2)),
+        ("random-1", DynamicsParams::uniform().with_beta1(0.7).with_gamma1(1.6).with_delta1(0.5).with_zeta1(1.9).with_theta1(1.1).with_kappa2(0.9).with_eps(0.03)),
+        ("random-2", DynamicsParams::uniform().with_beta1(2.1).with_gamma1(0.5).with_delta1(1.7).with_zeta1(0.6).with_theta1(1.8).with_kappa2(2.2).with_eps(0.015)),
+        ("random-3", DynamicsParams::uniform().with_beta1(1.1).with_gamma1(1.1).with_delta1(2.3).with_zeta1(0.4).with_theta1(0.9).with_kappa2(1.4).with_eps(0.04)),
+        ("random-4", DynamicsParams::uniform().with_beta1(0.9).with_gamma1(0.4).with_delta1(1.0).with_zeta1(2.1).with_theta1(2.0).with_kappa2(0.7).with_eps(0.025)),
+    ];
+
+    let topo_builders: Vec<(&str, Box<dyn Fn() -> fca::FcaLattice>)> = vec![
+        ("chain-5", Box::new(|| fca::build_chain_lattice(5))),
+        ("chain-10", Box::new(|| fca::build_chain_lattice(10))),
+        ("chain-20", Box::new(|| fca::build_chain_lattice(20))),
+        ("chain-50", Box::new(|| fca::build_chain_lattice(50))),
+        ("diamond", Box::new(|| fca::build_diamond_lattice())),
+        ("m3", Box::new(|| fca::build_m3_lattice())),
+        ("b3", Box::new(|| fca::build_b3_lattice())),
+        ("b4", Box::new(|| fca::build_b4_lattice())),
+        ("grid-4x4", Box::new(|| fca::build_grid_lattice(4, 4))),
+        ("grid-5x5", Box::new(|| fca::build_grid_lattice(5, 5))),
+        ("antichain-10", Box::new(|| fca::build_antichain_lattice(10))),
+    ];
+
+    let tol = 1e-12_f64;
+
+    #[derive(Clone)]
+    struct Pt {
+        pset: String,
+        topo: String,
+        d0: f64,
+        rho_fp: f64,
+        n_actual: f64,
+    }
+
+    let mut pts: Vec<Pt> = Vec::new();
+
+    for &(tname, ref builder) in &topo_builders {
+        let lattice = builder();
+        let stats = pipeline::compute_lattice_stats(&lattice);
+        for &(pname, ref params) in &param_sets {
+            let results = pipeline::run_topological_iteration(&lattice, &stats, params);
+            for (ci, opt) in results.iter().enumerate() {
+                if let Some(ref res) = opt {
+                    if !res.converged { continue; }
+                    let rho_fp = res.rho_spectral;
+                    if rho_fp <= 0.0 || rho_fp >= 1.0 { continue; }
+                    let n_actual = res.n_iters as f64;
+                    if n_actual < 3.0 { continue; }
+                    let traj = &res.trajectory;
+                    if traj.is_empty() { continue; }
+                    let d0 = traj[0][0];
+                    if d0 <= 0.0 { continue; }
+                    pts.push(Pt { pset: pname.to_string(), topo: tname.to_string(), d0, rho_fp, n_actual });
+                }
+            }
+        }
+    }
+
+    let n = pts.len();
+    println!("  Collected {} data points from {} parameter sets × {} topologies\n",
+        n, param_sets.len(), topo_builders.len());
+
+    let pset_names: Vec<String> = {
+        let mut v: Vec<String> = pts.iter().map(|p| p.pset.clone()).collect();
+        v.sort(); v.dedup(); v
+    };
+
+    fn mape_fn(preds: &[f64], actuals: &[f64]) -> f64 {
+        preds.iter().zip(actuals.iter()).map(|(p, a)| ((p - a) / a).abs()).sum::<f64>() / preds.len() as f64
+    }
+
+    let actuals: Vec<f64> = pts.iter().map(|p| p.n_actual).collect();
+
+    println!("  === 1. v3.57 Original Formula Performance on 24 Sets ===\n");
+
+    let preds_v357: Vec<f64> = pts.iter().map(|p| {
+        let lr = (-p.rho_fp.ln()).max(0.001);
+        let e = -0.0386 + 0.0464 * p.d0.ln() + 0.0583 * lr;
+        (p.d0 / tol).ln() / lr / (1.0 + e).max(0.1)
+    }).collect();
+
+    let mape_v357 = mape_fn(&preds_v357, &actuals);
+    println!("  v3.57 (2-term, original coefficients): MAPE={:.2}%", mape_v357 * 100.0);
+
+    let preds_naive: Vec<f64> = pts.iter().map(|p| {
+        let lr = (-p.rho_fp.ln()).max(0.001);
+        (p.d0 / tol).ln() / lr
+    }).collect();
+    println!("  Naive (no correction):                  MAPE={:.2}%", mape_fn(&preds_naive, &actuals) * 100.0);
+
+    println!("\n  === 2. Re-fit All Models on Expanded 24-Set Data ===\n");
+
+    let y: Vec<f64> = pts.iter().map(|p| {
+        let lr = (-p.rho_fp.ln()).max(0.001);
+        let n_naive = (p.d0 / tol).ln() / lr;
+        (n_naive - p.n_actual) / p.n_actual
+    }).collect();
+    let y_mean: f64 = y.iter().sum::<f64>() / n as f64;
+
+    let x1: Vec<f64> = pts.iter().map(|p| p.d0.ln()).collect();
+    let x2: Vec<f64> = pts.iter().map(|p| (-p.rho_fp.ln()).max(0.001)).collect();
+    let x3: Vec<f64> = pts.iter().map(|p| (-p.rho_fp.ln()).max(0.001).powi(2)).collect();
+    let x4: Vec<f64> = pts.iter().map(|p| {
+        let lr = (-p.rho_fp.ln()).max(0.001);
+        p.d0.ln() * lr
+    }).collect();
+
+    fn fit_ols(x_cols: &[Vec<f64>], y: &[f64], n: usize, x_names: &[&str]) -> (f64, Vec<f64>) {
+        let p_dim = x_cols.len();
+        let y_mean: f64 = y.iter().sum::<f64>() / n as f64;
+        let xm: Vec<f64> = x_cols.iter().map(|c| c.iter().sum::<f64>() / n as f64).collect();
+
+        let mut xt_x = vec![vec![0.0f64; p_dim]; p_dim];
+        let mut xt_y = vec![0.0f64; p_dim];
+        for i in 0..p_dim {
+            for j in 0..p_dim {
+                for s in 0..n { xt_x[i][j] += (x_cols[i][s] - xm[i]) * (x_cols[j][s] - xm[j]); }
+            }
+            for s in 0..n { xt_y[i] += (x_cols[i][s] - xm[i]) * (y[s] - y_mean); }
+        }
+
+        let mut a = xt_x;
+        let mut b_vec = xt_y;
+        for col in 0..p_dim {
+            let mut max_val = a[col][col].abs();
+            let mut max_row = col;
+            for row in (col + 1)..p_dim {
+                if a[row][col].abs() > max_val { max_val = a[row][col].abs(); max_row = row; }
+            }
+            if max_row != col { a.swap(col, max_row); b_vec.swap(col, max_row); }
+            if a[col][col].abs() < 1e-30 { continue; }
+            let pivot = a[col][col];
+            for j in col..p_dim { a[col][j] /= pivot; }
+            b_vec[col] /= pivot;
+            for row in 0..p_dim {
+                if row == col { continue; }
+                let factor = a[row][col];
+                for j in col..p_dim { a[row][j] -= factor * a[col][j]; }
+                b_vec[row] -= factor * b_vec[col];
+            }
+        }
+        let intercept = y_mean - b_vec.iter().enumerate().map(|(i, bv)| bv * xm[i]).sum::<f64>();
+
+        println!("    e = {:.4}", intercept);
+        for i in 0..p_dim {
+            println!("      + {:.6}·{}", b_vec[i], x_names[i]);
+        }
+        (intercept, b_vec)
+    }
+
+    println!("  2-term model: e = a + b·ln(d₀) + c·|ln(ρ)|");
+    let (i2, b2) = fit_ols(&[x1.clone(), x2.clone()], &y, n, &["ln(d₀)", "|ln(ρ)|"]);
+
+    println!("\n  3-term model: e = a + b·ln(d₀) + c·|ln(ρ)| + d·|ln(ρ)|²");
+    let (i3, b3) = fit_ols(&[x1.clone(), x2.clone(), x3.clone()], &y, n, &["ln(d₀)", "|ln(ρ)|", "|ln(ρ)|²"]);
+
+    println!("\n  4-term model: e = a + b·ln(d₀) + c·|ln(ρ)| + d·|ln(ρ)|² + f·ln(d₀)·|ln(ρ)|");
+    let (i4, b4) = fit_ols(&[x1.clone(), x2.clone(), x3.clone(), x4.clone()], &y, n, &["ln(d₀)", "|ln(ρ)|", "|ln(ρ)|²", "ln(d₀)·|ln(ρ)|"]);
+
+    let preds_2term: Vec<f64> = pts.iter().enumerate().map(|(idx, p)| {
+        let lr = (-p.rho_fp.ln()).max(0.001);
+        let e = i2 + b2[0] * x1[idx] + b2[1] * x2[idx];
+        (p.d0 / tol).ln() / lr / (1.0 + e).max(0.1)
+    }).collect();
+
+    let preds_3term: Vec<f64> = pts.iter().enumerate().map(|(idx, p)| {
+        let lr = (-p.rho_fp.ln()).max(0.001);
+        let e = i3 + b3[0] * x1[idx] + b3[1] * x2[idx] + b3[2] * x3[idx];
+        (p.d0 / tol).ln() / lr / (1.0 + e).max(0.1)
+    }).collect();
+
+    let preds_4term: Vec<f64> = pts.iter().enumerate().map(|(idx, p)| {
+        let lr = (-p.rho_fp.ln()).max(0.001);
+        let e = i4 + b4[0] * x1[idx] + b4[1] * x2[idx] + b4[2] * x3[idx] + b4[3] * x4[idx];
+        (p.d0 / tol).ln() / lr / (1.0 + e).max(0.1)
+    }).collect();
+
+    println!("\n  Sample-in MAPE:");
+    println!("    v3.57 original:  {:.2}%", mape_v357 * 100.0);
+    println!("    2-term refit:    {:.2}%", mape_fn(&preds_2term, &actuals) * 100.0);
+    println!("    3-term:          {:.2}%", mape_fn(&preds_3term, &actuals) * 100.0);
+    println!("    4-term:          {:.2}%", mape_fn(&preds_4term, &actuals) * 100.0);
+
+    println!("\n  === 3. LOO Cross-Validation (leave-one-SET-out, 24 folds) ===\n");
+
+    fn loo_set_out(
+        pts: &[Pt], x_cols: &[Vec<f64>], y: &[f64], pset_names: &[String], tol: f64, actuals: &[f64],
+    ) -> f64 {
+        let p_dim = x_cols.len();
+        let mut loo_preds: Vec<f64> = Vec::new();
+
+        for held_out in pset_names {
+            let train: Vec<usize> = pts.iter().enumerate().filter(|(_, p)| p.pset != *held_out).map(|(i, _)| i).collect();
+            let test: Vec<usize> = pts.iter().enumerate().filter(|(_, p)| p.pset == *held_out).map(|(i, _)| i).collect();
+
+            let nt = train.len();
+            let yt: Vec<f64> = train.iter().map(|&i| y[i]).collect();
+            let yt_m: f64 = yt.iter().sum::<f64>() / nt as f64;
+            let xct: Vec<Vec<f64>> = x_cols.iter().map(|col| train.iter().map(|&i| col[i]).collect()).collect();
+            let xmt: Vec<f64> = xct.iter().map(|c| c.iter().sum::<f64>() / nt as f64).collect();
+
+            let mut xt_x = vec![vec![0.0f64; p_dim]; p_dim];
+            let mut xt_y = vec![0.0f64; p_dim];
+            for i in 0..p_dim {
+                for j in 0..p_dim {
+                    for &s in &train { xt_x[i][j] += (x_cols[i][s] - xmt[i]) * (x_cols[j][s] - xmt[j]); }
+                }
+                for &s in &train { xt_y[i] += (x_cols[i][s] - xmt[i]) * (y[s] - yt_m); }
+            }
+
+            let mut at = xt_x;
+            let mut bt = xt_y;
+            for col in 0..p_dim {
+                let mut max_val = at[col][col].abs();
+                let mut max_row = col;
+                for row in (col + 1)..p_dim {
+                    if at[row][col].abs() > max_val { max_val = at[row][col].abs(); max_row = row; }
+                }
+                if max_row != col { at.swap(col, max_row); bt.swap(col, max_row); }
+                if at[col][col].abs() < 1e-30 { continue; }
+                let pivot = at[col][col];
+                for j in col..p_dim { at[col][j] /= pivot; }
+                bt[col] /= pivot;
+                for row in 0..p_dim {
+                    if row == col { continue; }
+                    let factor = at[row][col];
+                    for j in col..p_dim { at[row][j] -= factor * at[col][j]; }
+                    bt[row] -= factor * bt[col];
+                }
+            }
+            let int_t = yt_m - bt.iter().enumerate().map(|(i, bv)| bv * xmt[i]).sum::<f64>();
+
+            for &i in &test {
+                let lr = (-pts[i].rho_fp.ln()).max(0.001);
+                let mut e = int_t;
+                for k in 0..p_dim { e += bt[k] * x_cols[k][i]; }
+                let n_pred = (pts[i].d0 / tol).ln() / lr / (1.0 + e).max(0.1);
+                loo_preds.push(n_pred);
+            }
+        }
+        mape_fn(&loo_preds, &actuals)
+    }
+
+    let loo_2 = loo_set_out(&pts, &[x1.clone(), x2.clone()], &y, &pset_names, tol, &actuals);
+    let loo_3 = loo_set_out(&pts, &[x1.clone(), x2.clone(), x3.clone()], &y, &pset_names, tol, &actuals);
+    let loo_4 = loo_set_out(&pts, &[x1.clone(), x2.clone(), x3.clone(), x4.clone()], &y, &pset_names, tol, &actuals);
+
+    println!("  LOO MAPE (leave-one-SET-out, 24 folds):");
+    println!("    2-term:  {:.2}%", loo_2 * 100.0);
+    println!("    3-term:  {:.2}%", loo_3 * 100.0);
+    println!("    4-term:  {:.2}%", loo_4 * 100.0);
+
+    println!("\n  === 4. LOO Cross-Validation (leave-one-TOPOLOGY-out, 11 folds) ===\n");
+
+    let topo_names: Vec<String> = {
+        let mut v: Vec<String> = pts.iter().map(|p| p.topo.clone()).collect();
+        v.sort(); v.dedup(); v
+    };
+
+    fn loo_topo_out(
+        pts: &[Pt], x_cols: &[Vec<f64>], y: &[f64], topo_names: &[String], tol: f64, actuals: &[f64],
+    ) -> f64 {
+        let p_dim = x_cols.len();
+        let mut loo_preds: Vec<f64> = Vec::new();
+
+        for held_out in topo_names {
+            let train: Vec<usize> = pts.iter().enumerate().filter(|(_, p)| p.topo != *held_out).map(|(i, _)| i).collect();
+            let test: Vec<usize> = pts.iter().enumerate().filter(|(_, p)| p.topo == *held_out).map(|(i, _)| i).collect();
+
+            let nt = train.len();
+            let yt: Vec<f64> = train.iter().map(|&i| y[i]).collect();
+            let yt_m: f64 = yt.iter().sum::<f64>() / nt as f64;
+            let xct: Vec<Vec<f64>> = x_cols.iter().map(|col| train.iter().map(|&i| col[i]).collect()).collect();
+            let xmt: Vec<f64> = xct.iter().map(|c| c.iter().sum::<f64>() / nt as f64).collect();
+
+            let mut xt_x = vec![vec![0.0f64; p_dim]; p_dim];
+            let mut xt_y = vec![0.0f64; p_dim];
+            for i in 0..p_dim {
+                for j in 0..p_dim {
+                    for &s in &train { xt_x[i][j] += (x_cols[i][s] - xmt[i]) * (x_cols[j][s] - xmt[j]); }
+                }
+                for &s in &train { xt_y[i] += (x_cols[i][s] - xmt[i]) * (y[s] - yt_m); }
+            }
+
+            let mut at = xt_x;
+            let mut bt = xt_y;
+            for col in 0..p_dim {
+                let mut max_val = at[col][col].abs();
+                let mut max_row = col;
+                for row in (col + 1)..p_dim {
+                    if at[row][col].abs() > max_val { max_val = at[row][col].abs(); max_row = row; }
+                }
+                if max_row != col { at.swap(col, max_row); bt.swap(col, max_row); }
+                if at[col][col].abs() < 1e-30 { continue; }
+                let pivot = at[col][col];
+                for j in col..p_dim { at[col][j] /= pivot; }
+                bt[col] /= pivot;
+                for row in 0..p_dim {
+                    if row == col { continue; }
+                    let factor = at[row][col];
+                    for j in col..p_dim { at[row][j] -= factor * at[col][j]; }
+                    bt[row] -= factor * bt[col];
+                }
+            }
+            let int_t = yt_m - bt.iter().enumerate().map(|(i, bv)| bv * xmt[i]).sum::<f64>();
+
+            for &i in &test {
+                let lr = (-pts[i].rho_fp.ln()).max(0.001);
+                let mut e = int_t;
+                for k in 0..p_dim { e += bt[k] * x_cols[k][i]; }
+                let n_pred = (pts[i].d0 / tol).ln() / lr / (1.0 + e).max(0.1);
+                loo_preds.push(n_pred);
+            }
+        }
+        mape_fn(&loo_preds, &actuals)
+    }
+
+    let loo_topo_2 = loo_topo_out(&pts, &[x1.clone(), x2.clone()], &y, &topo_names, tol, &actuals);
+    let loo_topo_3 = loo_topo_out(&pts, &[x1.clone(), x2.clone(), x3.clone()], &y, &topo_names, tol, &actuals);
+    let loo_topo_4 = loo_topo_out(&pts, &[x1.clone(), x2.clone(), x3.clone(), x4.clone()], &y, &topo_names, tol, &actuals);
+
+    println!("  LOO MAPE (leave-one-TOPOLOGY-out, 11 folds):");
+    println!("    2-term:  {:.2}%", loo_topo_2 * 100.0);
+    println!("    3-term:  {:.2}%", loo_topo_3 * 100.0);
+    println!("    4-term:  {:.2}%", loo_topo_4 * 100.0);
+
+    println!("\n  === 5. Model Comparison Summary ===\n");
+    println!("    Model                Sample-in  LOO-Set  LOO-Topo");
+    println!("    ───────────────────  ─────────  ───────  ────────");
+    println!("    Naive                {:.1}%      -        -", mape_fn(&preds_naive, &actuals) * 100.0);
+    println!("    v3.57 original       {:.1}%      -        -", mape_v357 * 100.0);
+    println!("    2-term refit         {:.1}%      {:.1}%     {:.1}%", mape_fn(&preds_2term, &actuals) * 100.0, loo_2 * 100.0, loo_topo_2 * 100.0);
+    println!("    3-term               {:.1}%      {:.1}%     {:.1}%", mape_fn(&preds_3term, &actuals) * 100.0, loo_3 * 100.0, loo_topo_3 * 100.0);
+    println!("    4-term               {:.1}%      {:.1}%     {:.1}%", mape_fn(&preds_4term, &actuals) * 100.0, loo_4 * 100.0, loo_topo_4 * 100.0);
+
+    println!("\n  === 6. Coefficient Stability (v3.57 2-term: 7-set vs 24-set) ===\n");
+    println!("    7-set (v3.57):   e = -0.0386 + 0.0464·ln(d₀) + 0.0583·|ln(ρ)|");
+    println!("    24-set (refit):  e = {:+.4} {:+.4}·ln(d₀) {:+.4}·|ln(ρ)|", i2, b2[0], b2[1]);
+
+    let pct_i = ((i2 - (-0.0386_f64)) / 0.0386_f64 * 100.0);
+    let pct_b0 = ((b2[0] - 0.0464) / 0.0464 * 100.0);
+    let pct_b1 = ((b2[1] - 0.0583) / 0.0583 * 100.0);
+    println!("    Δ intercept: {:+.1}%,  Δ ln(d₀): {:+.1}%,  Δ |ln(ρ)|: {:+.1}%", pct_i, pct_b0, pct_b1);
+
+    println!("\n  === 7. Per-Set MAPE Distribution ===\n");
+
+    let mut set_mapes: Vec<(String, f64)> = pset_names.iter().map(|pname| {
+        let idxs: Vec<usize> = pts.iter().enumerate().filter(|(_, p)| p.pset == *pname).map(|(i, _)| i).collect();
+        let e: f64 = idxs.iter().map(|&i| ((preds_2term[i] - actuals[i]) / actuals[i]).abs()).sum::<f64>() / idxs.len() as f64;
+        (pname.clone(), e)
+    }).collect();
+    set_mapes.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap());
+
+    println!("    Set               MAPE(2-term)");
+    println!("    ────────────────  ────────────");
+    for (pname, mape) in &set_mapes {
+        println!("    {:<18} {:.2}%", pname, mape * 100.0);
+    }
+    let mape_min = set_mapes.iter().map(|(_, m)| *m).fold(f64::INFINITY, f64::min);
+    let mape_max = set_mapes.iter().map(|(_, m)| *m).fold(f64::NEG_INFINITY, f64::max);
+    let mape_median = {
+        let mut vals: Vec<f64> = set_mapes.iter().map(|(_, m)| *m).collect();
+        vals.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        vals[vals.len() / 2]
+    };
+    println!("\n    Min={:.2}%  Median={:.2}%  Max={:.2}%", mape_min * 100.0, mape_median * 100.0, mape_max * 100.0);
+}
