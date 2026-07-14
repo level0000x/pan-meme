@@ -38062,3 +38062,227 @@ pub fn run_d0_from_fca_structure() {
     println!("  If yes → d₀ prediction is fully closed-form without iteration.");
     println!("  If no  → d₀ requires the initial state computation (cheap but not free).");
 }
+
+// ─── B-24: TM → FCA → ρ(J) Halting Analysis ──────────────────────────────────
+
+pub fn run_tm_fca_diagnostic() {
+    println!("\n{}", "=".repeat(72));
+    println!("  B-24: ρ(J) Sensitivity to Lattice Size (Diagnostic)");
+    println!("{}", "=".repeat(72));
+
+    let params = DynamicsParams::uniform();
+
+    println!("\n  Chain lattices (different sizes):");
+    println!("  {:>8} {:>12} {:>12}", "n_nodes", "Concepts", "ρ_top");
+    println!("  {:>8} {:>12} {:>12}", "-------", "--------", "------");
+
+    for n in [2, 3, 4, 5, 10, 20, 50, 100] {
+        let lattice = crate::fca::build_chain_lattice(n);
+        let stats = crate::pipeline::compute_lattice_stats(&lattice);
+        let results = crate::pipeline::run_topological_iteration(&lattice, &stats, &params);
+        let rho = crate::tm_fca::extract_top_rho(&results, &stats);
+        println!("  {:>8} {:>12} {:>12.8}", n, lattice.concepts.len(),
+            rho.unwrap_or(f64::NAN));
+    }
+
+    println!("\n  Diamond lattice:");
+    let lattice = crate::fca::build_diamond_lattice();
+    let stats = crate::pipeline::compute_lattice_stats(&lattice);
+    let results = crate::pipeline::run_topological_iteration(&lattice, &stats, &params);
+    let rho = crate::tm_fca::extract_top_rho(&results, &stats);
+    println!("  Concepts: {}, ρ_top = {:?}", lattice.concepts.len(), rho);
+
+    println!("\n{}", "=".repeat(72));
+}
+
+pub fn run_tm_fca_halting_analysis() {
+
+    let params = DynamicsParams::uniform();
+
+    // ─── Phase 0: Transition Graph Baselines ──────────────────────────────
+    println!("\n── Phase 0: Transition Graph ρ(J) Baselines ──\n");
+
+    for (tm, label) in [
+        (&crate::tm_fca::simple_halter(), "SimpleHalter"),
+        (&crate::tm_fca::simple_nonhalter(), "SimpleNonHalter"),
+        (&crate::tm_fca::bb5_champion(), "BB5Champion"),
+        (&crate::tm_fca::current_champion(), "CurrentChampion"),
+        (&crate::tm_fca::antihydra(), "Antihydra"),
+    ] {
+        if let Some((n_conc, n_edges, rho)) =
+            crate::tm_fca::compute_transition_graph_rho(tm, 500, 30.0, &params)
+        {
+            println!("  {:>18}: concepts={:3}, edges={:3}, ρ_top={:.8}",
+                label, n_conc, n_edges, rho);
+        }
+    }
+
+    // ─── Phase 1: Simple Validation ───────────────────────────────────────
+    println!("\n── Phase 1: Simple Halter vs Non-Halter (trace-based) ──\n");
+
+    let halter = crate::tm_fca::simple_halter();
+    let nonhalter = crate::tm_fca::simple_nonhalter();
+
+    for (tm, label) in [(&halter, "SimpleHalter"), (&nonhalter, "SimpleNonHalter")] {
+        println!("  {} ({} states):", label, tm.n_states);
+        let seq = crate::tm_fca::compute_rho_sequence(tm, 5, 1000, 1, 1000, 60.0, &params);
+        let rho_seq: Vec<(usize, f64)> = seq.iter()
+            .map(|(l, _, _, r, _, _)| (*l, *r)).collect();
+        let cert = crate::tm_fca::IsdCertificate::from_sequence(
+            label, &tm.std_format, &rho_seq, 1e-3,
+        );
+        cert.display();
+        println!();
+    }
+
+    // ─── Phase 2: BB(5) Champion ──────────────────────────────────────────
+    println!("\n── Phase 2: BB(5) Champion (Known Halter, 47M steps) ──\n");
+
+    let bb5 = crate::tm_fca::bb5_champion();
+    println!("  BB(5) Champion ({} states):", bb5.n_states);
+    let seq_bb5 = crate::tm_fca::compute_rho_sequence(&bb5, 5, 5000, 5, 1000, 60.0, &params);
+    let rho_bb5: Vec<(usize, f64)> = seq_bb5.iter()
+        .map(|(l, _, _, r, _, _)| (*l, *r)).collect();
+    let cert_bb5 = crate::tm_fca::IsdCertificate::from_sequence(
+        "BB5Champion", &bb5.std_format, &rho_bb5, 1e-3,
+    );
+    cert_bb5.display();
+
+    // ─── Phase 3: BB(6) Current Champion ──────────────────────────────────
+    println!("\n── Phase 3: BB(6) Current Champion (Known Halter, >2↑↑↑5) ──\n");
+
+    let champion = crate::tm_fca::current_champion();
+    println!("  Current Champion ({} states):", champion.n_states);
+    let seq_champ = crate::tm_fca::compute_rho_sequence(&champion, 5, 50000, 2, 2000, 120.0, &params);
+    let rho_champ: Vec<(usize, f64)> = seq_champ.iter()
+        .map(|(l, _, _, r, _, _)| (*l, *r)).collect();
+    let cert_champ = crate::tm_fca::IsdCertificate::from_sequence(
+        "CurrentChampion", &champion.std_format, &rho_champ, 1e-3,
+    );
+    cert_champ.display();
+
+    // ─── Phase 4: Antihydra ───────────────────────────────────────────────
+    println!("\n── Phase 4: Antihydra (Undecided BB(6) Cryptid) ──\n");
+
+    let antihydra = crate::tm_fca::antihydra();
+    println!("  Antihydra ({} states, undecided, Collatz-like):", antihydra.n_states);
+    let seq_anti = crate::tm_fca::compute_rho_sequence(&antihydra, 5, 50000, 2, 2000, 120.0, &params);
+    let rho_anti: Vec<(usize, f64)> = seq_anti.iter()
+        .map(|(l, _, _, r, _, _)| (*l, *r)).collect();
+    let cert_anti = crate::tm_fca::IsdCertificate::from_sequence(
+        "Antihydra", &antihydra.std_format, &rho_anti, 1e-3,
+    );
+    cert_anti.display();
+
+    println!("\n{}", "=".repeat(72));
+}
+
+// ─── B-24 v3: Information State Lattice Halting Analysis ───────────────────────
+
+pub fn run_tm_fca_info_state_analysis() {
+    println!("\n{}", "=".repeat(72));
+    println!("  B-24 v4: Overlapping Threshold Lattice ρ(J) Halting Analysis");
+    println!("{}", "=".repeat(72));
+
+    let params = DynamicsParams::uniform();
+    let n_thresholds = 3;  // T=3 thresholds per dimension → 0.25, 0.50, 0.75
+    let max_steps = 50000;
+    let sample_every = 2;
+    let max_concepts = 10000;
+    let time_limit = 120.0;
+
+    println!("\n  Strategy: overlapping threshold attributes (non-mutually-exclusive)");
+    println!("  Parameters: d=10, T={}, total_attrs={}, max_steps={}", n_thresholds, 10 * n_thresholds, max_steps);
+    println!("  Thresholds: 0.25, 0.50, 0.75 — nested, NOT mutually exclusive");
+    println!("  Each object: 0-{} true attributes (varies with info state values)", 10 * n_thresholds);
+
+    // ─── Phase 1: Simple Non-Halter ────────────────────────────────────────
+    println!("\n── Phase 1: SimpleNonHalter (Known Non-Halting) ──\n");
+
+    let nonhalter = crate::tm_fca::simple_nonhalter();
+    println!("  SimpleNonHalter ({} states):", nonhalter.n_states);
+    let seq_non = crate::tm_fca::compute_info_state_rho_sequence_overlap(
+        &nonhalter, 20, 5000, 1, n_thresholds, max_concepts, time_limit, &params,
+    );
+    if !seq_non.is_empty() {
+        println!("\n  Summary for SimpleNonHalter:");
+        for (l, n_conc, n_edges, rho, _, _, n_pats) in &seq_non {
+            println!("    L={:3}: concepts={:5}, edges={:5}, uniq_pats={:5}, ρ_top={:.8}",
+                l, n_conc, n_edges, n_pats, rho);
+        }
+    }
+
+    // ─── Phase 2: Current Champion ─────────────────────────────────────────
+    println!("\n── Phase 2: CurrentChampion (Known Halting, >>2↑↑↑5) ──\n");
+
+    let champion = crate::tm_fca::current_champion();
+    println!("  CurrentChampion ({} states):", champion.n_states);
+    let seq_champ = crate::tm_fca::compute_info_state_rho_sequence_overlap(
+        &champion, 20, 10000, 2, n_thresholds, max_concepts, time_limit, &params,
+    );
+    if !seq_champ.is_empty() {
+        println!("\n  Summary for CurrentChampion:");
+        for (l, n_conc, n_edges, rho, _, _, n_pats) in &seq_champ {
+            println!("    L={:3}: concepts={:5}, edges={:5}, uniq_pats={:5}, ρ_top={:.8}",
+                l, n_conc, n_edges, n_pats, rho);
+        }
+    }
+
+    // ─── Phase 3: Antihydra ─────────────────────────────────────────────────
+    println!("\n── Phase 3: Antihydra (Undecided BB(6) Cryptid) ──\n");
+
+    let antihydra = crate::tm_fca::antihydra();
+    println!("  Antihydra ({} states, Collatz-like):", antihydra.n_states);
+    let seq_anti = crate::tm_fca::compute_info_state_rho_sequence_overlap(
+        &antihydra, 20, max_steps, sample_every, n_thresholds, max_concepts, time_limit, &params,
+    );
+    if !seq_anti.is_empty() {
+        println!("\n  Summary for Antihydra:");
+        for (l, n_conc, n_edges, rho, _, _, n_pats) in &seq_anti {
+            println!("    L={:3}: concepts={:5}, edges={:5}, uniq_pats={:5}, ρ_top={:.8}",
+                l, n_conc, n_edges, n_pats, rho);
+        }
+    }
+
+    // ─── Phase 4: Multi-scale scan for Antihydra ───────────────────────────
+    println!("\n── Phase 4: Antihydra Multi-Scale Scan (L=5,10,20,50,100) ──\n");
+
+    let seq_multi = crate::tm_fca::compute_info_state_rho_sequence_overlap(
+        &antihydra, 100, max_steps, sample_every, n_thresholds, max_concepts, time_limit, &params,
+    );
+    if !seq_multi.is_empty() {
+        println!("\n  Multi-scale summary for Antihydra:");
+        println!("  {:>4} {:>8} {:>8} {:>8} {:>12}", "L", "Concepts", "Edges", "Pats", "ρ_top");
+        println!("  {:>4} {:>8} {:>8} {:>8} {:>12}", "──", "────────", "─────", "────", "──────");
+        for (l, n_conc, n_edges, rho, _, _, n_pats) in &seq_multi {
+            println!("  {:>4} {:>8} {:>8} {:>8} {:>12.8}",
+                l, n_conc, n_edges, n_pats, rho);
+        }
+
+        if seq_multi.len() >= 2 {
+            let mut monotonic = true;
+            for i in 1..seq_multi.len() {
+                if seq_multi[i].3 > seq_multi[i-1].3 {
+                    monotonic = false;
+                }
+            }
+            println!("\n  ρ_L monotonicity: {}", if monotonic { "YES (decreasing)" } else { "NO (non-monotonic)" });
+        }
+
+        // Check if ρ differs between TMs
+        let rho_non = seq_non.last().map(|x| x.3).unwrap_or(0.0);
+        let rho_champ = seq_champ.last().map(|x| x.3).unwrap_or(0.0);
+        let rho_anti = seq_anti.last().map(|x| x.3).unwrap_or(0.0);
+        println!("\n  ρ comparison (L=20):");
+        println!("    SimpleNonHalter:   ρ = {:.8}", rho_non);
+        println!("    CurrentChampion:   ρ = {:.8}", rho_champ);
+        println!("    Antihydra:         ρ = {:.8}", rho_anti);
+        if (rho_non - rho_champ).abs() > 1e-6 || (rho_non - rho_anti).abs() > 1e-6 {
+            println!("    → ρ DIFFERS between TMs! (v4 improvement over v1-v3)");
+        } else {
+            println!("    → ρ still identical across TMs (no improvement)");
+        }
+    }
+
+    println!("\n{}", "=".repeat(72));
+}
