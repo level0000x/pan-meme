@@ -31269,3 +31269,247 @@ pub fn run_lattice_size_scaling() {
     println!("  ρ_eff/ρ_fp stays in 85-94% range across all sizes");
     println!("  Per-depth analysis shows propagation delay O(depth/|ln ρ|)");
 }
+
+pub fn run_cascade_amplification_model() {
+    println!("\n{}", "=".repeat(64));
+    println!("  v3.45: CASCADE AMPLIFICATION SCALING LAW");
+    println!("{}", "=".repeat(64));
+    println!("  Goal: Fit ρ_eff/ρ_fp = f(depth, ε) empirical model\n");
+
+    #[derive(Clone)]
+    struct AmpRec {
+        topo: String, depth: usize, eps: f64,
+        rho_fp: f64, rho_eff: f64, ratio: f64,
+        n_iters: usize,
+    }
+
+    let mut records: Vec<AmpRec> = Vec::new();
+
+    let chain_lens: Vec<usize> = vec![3, 5, 7, 10, 15, 20, 30, 50];
+    let eps_vals: Vec<f64> = vec![0.01, 0.05, 0.1, 0.5, 1.0];
+
+    println!("  Phase 1: Collect data across chain lengths × ε values\n");
+
+    for &n in &chain_lens {
+        for &eps in &eps_vals {
+            let lattice = fca::build_chain_lattice(n);
+            let stats = pipeline::compute_lattice_stats(&lattice);
+            let params = DynamicsParams::uniform().with_eps(eps);
+            let results = pipeline::run_topological_iteration(&lattice, &stats, &params);
+
+            for (i, opt) in results.iter().enumerate() {
+                if let Some(ref res) = opt {
+                    if !stats.feeders[i].is_empty() { continue; }
+
+                    let traj = &res.trajectory;
+                    let nt = traj.len();
+                    if nt < 3 { continue; }
+                    let rho_fp = res.rho_spectral;
+                    let m_star = *traj.last().unwrap();
+                    let delta0 = (0..5).map(|j| (traj[0][j] - m_star[j]).powi(2)).sum::<f64>().sqrt();
+                    let delta_last = (0..5).map(|j| (traj[nt-2][j] - m_star[j]).powi(2)).sum::<f64>().sqrt();
+                    let rho_eff = if delta0 > 1e-15 && delta_last > 1e-15 {
+                        (delta_last / delta0).powf(1.0 / (nt as f64 - 2.0))
+                    } else { rho_fp };
+
+                    records.push(AmpRec {
+                        topo: format!("chain-{}", n),
+                        depth: n,
+                        eps,
+                        rho_fp,
+                        rho_eff,
+                        ratio: rho_eff / rho_fp.max(1e-15),
+                        n_iters: nt - 1,
+                    });
+                }
+            }
+        }
+    }
+
+    for &eps in &eps_vals {
+        let lattice = fca::build_diamond_lattice();
+        let stats = pipeline::compute_lattice_stats(&lattice);
+        let params = DynamicsParams::uniform().with_eps(eps);
+        let results = pipeline::run_topological_iteration(&lattice, &stats, &params);
+
+        let max_depth = stats.heights.iter().copied().max().unwrap_or(0);
+
+        for (i, opt) in results.iter().enumerate() {
+            if let Some(ref res) = opt {
+                if !stats.feeders[i].is_empty() { continue; }
+
+                let traj = &res.trajectory;
+                let nt = traj.len();
+                if nt < 3 { continue; }
+                let rho_fp = res.rho_spectral;
+                let m_star = *traj.last().unwrap();
+                let delta0 = (0..5).map(|j| (traj[0][j] - m_star[j]).powi(2)).sum::<f64>().sqrt();
+                let delta_last = (0..5).map(|j| (traj[nt-2][j] - m_star[j]).powi(2)).sum::<f64>().sqrt();
+                let rho_eff = if delta0 > 1e-15 && delta_last > 1e-15 {
+                    (delta_last / delta0).powf(1.0 / (nt as f64 - 2.0))
+                } else { rho_fp };
+
+                records.push(AmpRec {
+                    topo: "diamond".to_string(),
+                    depth: max_depth,
+                    eps,
+                    rho_fp,
+                    rho_eff,
+                    ratio: rho_eff / rho_fp.max(1e-15),
+                    n_iters: nt - 1,
+                });
+            }
+        }
+    }
+
+    let n_r = records.len();
+    println!("  Collected {} data points\n", n_r);
+
+    println!("  {:>10} {:>5} {:>5} {:>8} {:>8} {:>8} {:>8}",
+        "topo", "depth", "ε", "ρ_fp", "ρ_eff", "ratio", "n_iters");
+    for r in &records {
+        println!("  {:>10} {:>5} {:>5.2} {:>8.5} {:>8.5} {:>8.4} {:>8}",
+            r.topo, r.depth, r.eps, r.rho_fp, r.rho_eff, r.ratio, r.n_iters);
+    }
+
+    println!("\n  Phase 2: Fit amplification model\n");
+
+    let baseline_ratio: f64 = records.iter()
+        .filter(|r| r.depth <= 3)
+        .map(|r| r.ratio)
+        .sum::<f64>() / records.iter().filter(|r| r.depth <= 3).count() as f64;
+    println!("  Baseline ratio (depth≤3): {:.4}", baseline_ratio);
+    println!("  Baseline amplification: 1 - ratio = {:.4}\n", 1.0 - baseline_ratio);
+
+    let cascade: Vec<f64> = records.iter().map(|r| {
+        let raw = 1.0 - r.ratio;
+        (raw - (1.0 - baseline_ratio)).max(1e-10)
+    }).collect();
+    let ln_depth: Vec<f64> = records.iter().map(|r| ((r.depth - 1).max(1) as f64).ln()).collect();
+    let ln_eps: Vec<f64> = records.iter().map(|r| r.eps.ln()).collect();
+
+    let n = n_r as f64;
+    let x_bar: f64 = ln_depth.iter().sum::<f64>() / n;
+    let z_bar: f64 = ln_eps.iter().sum::<f64>() / n;
+    let y_bar: f64 = cascade.iter().map(|v| v.ln()).sum::<f64>() / n;
+
+    let mut sxx_c = 0.0f64;
+    let mut szz_c = 0.0f64;
+    let mut sxz_c = 0.0f64;
+    let mut sxy_c = 0.0f64;
+    let mut syz_c = 0.0f64;
+
+    for i in 0..n_r {
+        let xp = ln_depth[i] - x_bar;
+        let zp = ln_eps[i] - z_bar;
+        let yp = cascade[i].ln() - y_bar;
+        sxx_c += xp * xp;
+        szz_c += zp * zp;
+        sxz_c += xp * zp;
+        sxy_c += xp * yp;
+        syz_c += zp * yp;
+    }
+
+    let det_c = sxx_c * szz_c - sxz_c * sxz_c;
+    if det_c.abs() > 1e-15 {
+        let alpha_fit = (sxy_c * szz_c - syz_c * sxz_c) / det_c;
+        let beta_fit = (syz_c * sxx_c - sxy_c * sxz_c) / det_c;
+        let a_raw = y_bar - alpha_fit * x_bar - beta_fit * z_bar;
+        let a_fit = a_raw.exp();
+
+        println!("  Cascade model: cascade = {:.4} · (depth-1)^{:.4} · ε^{:.4}", a_fit, alpha_fit, beta_fit);
+        println!("  Full model: 1-ratio = {:.4} + {:.4}·(depth-1)^{:.4}·ε^{:.4}",
+            1.0 - baseline_ratio, a_fit, alpha_fit, beta_fit);
+
+        let mut ss_tot = 0.0f64;
+        let mut ss_res = 0.0f64;
+        for i in 0..n_r {
+            let y_actual = cascade[i].ln();
+            let y_pred = a_raw + alpha_fit * ln_depth[i] + beta_fit * ln_eps[i];
+            ss_res += (y_actual - y_pred).powi(2);
+            ss_tot += (y_actual - y_bar).powi(2);
+        }
+        let r2_cascade = 1.0 - ss_res / ss_tot;
+        println!("  R² (cascade model) = {:.4}", r2_cascade);
+
+        let mut ss_tot_full = 0.0f64;
+        let mut ss_res_full = 0.0f64;
+        let ratio_mean: f64 = records.iter().map(|r| r.ratio).sum::<f64>() / n;
+        for (i, r) in records.iter().enumerate() {
+            let ratio_pred = 1.0 - (1.0 - baseline_ratio) - a_fit * ((r.depth - 1).max(1) as f64).powf(alpha_fit) * r.eps.powf(beta_fit);
+            ss_res_full += (r.ratio - ratio_pred).powi(2);
+            ss_tot_full += (r.ratio - ratio_mean).powi(2);
+        }
+        let r2_full = 1.0 - ss_res_full / ss_tot_full;
+        println!("  R² (full ratio model) = {:.4}", r2_full);
+
+        println!("\n  {:>10} {:>5} {:>5} {:>8} {:>8} {:>8} {:>8}",
+            "topo", "depth", "ε", "ratio", "pred", "resid", "cascade%");
+        for (i, r) in records.iter().enumerate() {
+            let cascade_pred = a_fit * ((r.depth - 1).max(1) as f64).powf(alpha_fit) * r.eps.powf(beta_fit);
+            let ratio_pred = 1.0 - (1.0 - baseline_ratio) - cascade_pred;
+            let cascade_pct = if (1.0 - r.ratio) > 1e-10 { cascade[i] / (1.0 - r.ratio) * 100.0 } else { 0.0 };
+            println!("  {:>10} {:>5} {:>5.2} {:>8.4} {:>8.4} {:>8.4} {:>7.1}%",
+                r.topo, r.depth, r.eps, r.ratio, ratio_pred, r.ratio - ratio_pred, cascade_pct);
+        }
+
+        println!("\n  CASCADE AMPLIFICATION MODEL SUMMARY:");
+        println!("  1-ratio = {:.4} [baseline] + {:.4}·(depth-1)^{:.4}·ε^{:.4} [cascade]",
+            1.0 - baseline_ratio, a_fit, alpha_fit, beta_fit);
+        println!("  R²(cascade) = {:.4}, R²(full) = {:.4}", r2_cascade, r2_full);
+        if alpha_fit > 0.0 {
+            println!("  α = {:.3} > 0: each layer adds {:.0}% more nonlinear correction", alpha_fit, alpha_fit * 100.0);
+        }
+        if beta_fit > 0.0 {
+            println!("  β = {:.3} > 0: stronger nonlinearity amplifies cascade", beta_fit);
+        }
+        println!("  Depth-50 extrapolation at ε=1: cascade={:.4}, total amplification={:.4}",
+            a_fit * 49.0_f64.powf(alpha_fit), 1.0 - baseline_ratio + a_fit * 49.0_f64.powf(alpha_fit));
+    } else {
+        println!("  [SINGULAR] Cannot fit model — collinear predictors");
+    }
+
+    println!("\n  Phase 3: Log-linear model on full dataset\n");
+
+    let ln_amp: Vec<f64> = records.iter().map(|r| (1.0 - r.ratio).max(1e-10).ln()).collect();
+    let x_bar2: f64 = ln_depth.iter().sum::<f64>() / n;
+    let z_bar2: f64 = ln_eps.iter().sum::<f64>() / n;
+    let y_bar2: f64 = ln_amp.iter().sum::<f64>() / n;
+
+    let mut sxx2 = 0.0f64;
+    let mut szz2 = 0.0f64;
+    let mut sxz2 = 0.0f64;
+    let mut sxy2 = 0.0f64;
+    let mut syz2 = 0.0f64;
+
+    for i in 0..n_r {
+        let xp = ln_depth[i] - x_bar2;
+        let zp = ln_eps[i] - z_bar2;
+        let yp = ln_amp[i] - y_bar2;
+        sxx2 += xp * xp;
+        szz2 += zp * zp;
+        sxz2 += xp * zp;
+        sxy2 += xp * yp;
+        syz2 += zp * yp;
+    }
+
+    let det2 = sxx2 * szz2 - sxz2 * sxz2;
+    if det2.abs() > 1e-15 {
+        let alpha2 = (sxy2 * szz2 - syz2 * sxz2) / det2;
+        let beta2 = (syz2 * sxx2 - sxy2 * sxz2) / det2;
+        let a2_raw = y_bar2 - alpha2 * x_bar2 - beta2 * z_bar2;
+        let a2 = a2_raw.exp();
+
+        let mut ss_tot2 = 0.0f64;
+        let mut ss_res2 = 0.0f64;
+        for i in 0..n_r {
+            let y_pred = a2_raw + alpha2 * ln_depth[i] + beta2 * ln_eps[i];
+            ss_res2 += (ln_amp[i] - y_pred).powi(2);
+            ss_tot2 += (ln_amp[i] - y_bar2).powi(2);
+        }
+        let r2_log = 1.0 - ss_res2 / ss_tot2;
+
+        println!("  Log-linear model: 1-ratio = {:.4} · (depth-1)^{:.4} · ε^{:.4}", a2, alpha2, beta2);
+        println!("  R²(log) = {:.4}", r2_log);
+    }
+}
