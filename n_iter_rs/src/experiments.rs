@@ -33185,3 +33185,308 @@ pub fn run_adaptive_cascade_correction() {
         println!("  ✗ Neither model improves on original: MAPE old={:.1}%, ε={:.1}%, ρ={:.1}%", mape_old, mape_eps, mape_rho);
     }
 }
+
+pub fn run_cycle_weight_cascade_prediction() {
+    println!("\n=== v3.55: Cycle-Weight Cascade Prediction ===\n");
+
+    #[derive(Clone)]
+    struct Pt {
+        pset: String,
+        topo: String,
+        depth: usize,
+        rho_fp: f64,
+        d0: f64,
+        n_actual: f64,
+        n_naive: f64,
+        cw: [f64; 9],
+    }
+
+    let param_sets: Vec<(&str, DynamicsParams)> = vec![
+        ("uniform", DynamicsParams::uniform()),
+        ("high-β", DynamicsParams::uniform().with_beta1(2.0)),
+        ("high-δ", DynamicsParams::uniform().with_delta1(2.0)),
+        ("high-κ₂", DynamicsParams::uniform().with_kappa2(2.0)),
+        ("asym-1", DynamicsParams::uniform().with_beta1(1.5).with_gamma1(0.8).with_zeta1(1.2).with_theta1(0.7).with_kappa2(1.8).with_eps(0.01)),
+        ("asym-2", DynamicsParams::uniform().with_beta1(0.5).with_gamma1(2.0).with_zeta1(0.8).with_theta1(1.5).with_kappa2(0.6).with_eps(0.05)),
+        ("extreme", DynamicsParams::uniform().with_beta1(3.0).with_gamma1(0.3).with_zeta1(2.0).with_theta1(0.4).with_kappa2(3.0).with_eps(0.02)),
+    ];
+
+    let topo_builders: Vec<(&str, Box<dyn Fn() -> fca::FcaLattice>)> = vec![
+        ("chain-5", Box::new(|| fca::build_chain_lattice(5))),
+        ("chain-10", Box::new(|| fca::build_chain_lattice(10))),
+        ("diamond", Box::new(|| fca::build_diamond_lattice())),
+        ("m3", Box::new(|| fca::build_m3_lattice())),
+    ];
+
+    let tol = 1e-12_f64;
+    let mut pts: Vec<Pt> = Vec::new();
+
+    for &(pname, ref params) in &param_sets {
+        for &(tname, ref builder) in &topo_builders {
+            let lattice = builder();
+            let stats = pipeline::compute_lattice_stats(&lattice);
+            let results = pipeline::run_topological_iteration(&lattice, &stats, params);
+
+            for (i, opt) in results.iter().enumerate() {
+                if let Some(ref res) = opt {
+                    if !res.converged { continue; }
+                    let rho_fp = res.rho_spectral;
+                    if rho_fp <= 0.0 || rho_fp >= 1.0 { continue; }
+                    let n_actual = res.n_iters as f64;
+                    if n_actual < 3.0 { continue; }
+                    let traj = &res.trajectory;
+                    if traj.len() < 2 { continue; }
+                    let d0 = traj[0][0];
+                    if d0 <= 0.0 { continue; }
+
+                    let ln_r = d0 / tol;
+                    if ln_r <= 0.0 { continue; }
+                    let n_naive = ln_r.ln() / (-rho_fp.ln());
+                    if n_naive <= 0.0 { continue; }
+
+                    let jm = nalgebra::SMatrix::<f64, 5, 5>::from_row_slice(&res.jacobian);
+                    let c0 = jm[(0,1)] * jm[(1,0)];
+                    let c1 = jm[(0,3)] * jm[(3,0)];
+                    let c2 = jm[(2,3)] * jm[(3,2)];
+                    let c3 = jm[(3,4)] * jm[(4,3)];
+                    let tc0 = jm[(0,1)] * jm[(1,3)] * jm[(3,0)];
+                    let tc1 = jm[(0,3)] * jm[(3,2)] * jm[(2,0)];
+                    let tc2 = jm[(0,3)] * jm[(3,4)] * jm[(4,0)];
+                    let fc0 = jm[(0,1)] * jm[(1,3)] * jm[(3,4)] * jm[(4,0)];
+                    let fc1 = jm[(0,1)] * jm[(1,3)] * jm[(3,2)] * jm[(2,0)];
+
+                    pts.push(Pt {
+                        pset: pname.to_string(),
+                        topo: tname.to_string(),
+                        depth: i,
+                        rho_fp,
+                        d0,
+                        n_actual,
+                        n_naive,
+                        cw: [c0, c1, c2, c3, tc0, tc1, tc2, fc0, fc1],
+                    });
+                }
+            }
+        }
+    }
+
+    println!("  Collected {} data points\n", pts.len());
+
+    fn predict_naive(p: &Pt) -> f64 { p.n_naive }
+
+    let predict_old = |p: &Pt| -> f64 {
+        let d = p.depth.max(1) as f64;
+        let eps = 0.05_f64;
+        let amp = 0.118 * d.powf(0.23) * eps.powf(0.29);
+        let ratio = (1.0 - amp).max(0.1);
+        let rho_c = p.rho_fp * ratio;
+        if rho_c > 0.0 && rho_c < 1.0 {
+            (p.d0 / tol).ln() / (-rho_c.ln())
+        } else { p.n_naive }
+    };
+
+    fn mape(v: &[f64]) -> f64 {
+        if v.is_empty() { return 0.0; }
+        v.iter().sum::<f64>() / v.len() as f64
+    }
+
+    let errs_naive: Vec<f64> = pts.iter().map(|p| ((predict_naive(p) - p.n_actual) / p.n_actual).abs()).collect();
+    let errs_old: Vec<f64> = pts.iter().map(|p| ((predict_old(p) - p.n_actual) / p.n_actual).abs()).collect();
+
+    println!("  Baseline MAPE:");
+    println!("    Naive:       {:.1}%", mape(&errs_naive) * 100.0);
+    println!("    v3.45:       {:.1}%", mape(&errs_old) * 100.0);
+
+    let n = pts.len();
+    let y: Vec<f64> = pts.iter().map(|p| {
+        let ratio = p.n_actual / p.n_naive;
+        (1.0 - ratio).abs().max(1e-15).ln()
+    }).collect();
+
+    let d_feat: Vec<f64> = pts.iter().map(|p| (p.depth.max(1) as f64).ln()).collect();
+
+    let cw_names = ["c0", "c1", "c2", "c3", "tc0", "tc1", "tc2", "fc0", "fc1"];
+
+    println!("\n  Step 1: Univariate correlations with log(1-ratio)\n");
+    let y_mean: f64 = y.iter().sum::<f64>() / n as f64;
+    let ss_tot: f64 = y.iter().map(|v| (v - y_mean).powi(2)).sum();
+
+    for k in 0..9 {
+        let x: Vec<f64> = pts.iter().map(|p| p.cw[k].abs().max(1e-20).ln()).collect();
+        let x_mean: f64 = x.iter().sum::<f64>() / n as f64;
+        let sxy: f64 = x.iter().zip(y.iter()).map(|(a, b)| (a - x_mean) * (b - y_mean)).sum();
+        let sxx: f64 = x.iter().map(|a| (a - x_mean).powi(2)).sum();
+        let r = if sxx > 0.0 { sxy / (sxx * ss_tot).sqrt() } else { 0.0 };
+        println!("    corr(log|{}|, log(1-ratio)) = {:.4}", cw_names[k], r);
+    }
+
+    let dm: f64 = d_feat.iter().sum::<f64>() / n as f64;
+    let sdxy: f64 = d_feat.iter().zip(y.iter()).map(|(a, b)| (a - dm) * (b - y_mean)).sum();
+    let sdxx: f64 = d_feat.iter().map(|a| (a - dm).powi(2)).sum();
+    let r_d = if sdxx > 0.0 { sdxy / (sdxx * ss_tot).sqrt() } else { 0.0 };
+    println!("    corr(log(d), log(1-ratio))     = {:.4}", r_d);
+
+    println!("\n  Step 2: OLS with all 9 cycle weights + depth\n");
+
+    let mut x_cols: Vec<Vec<f64>> = Vec::new();
+    for k in 0..9 {
+        x_cols.push(pts.iter().map(|p| p.cw[k].abs().max(1e-20).ln()).collect());
+    }
+    x_cols.push(d_feat.clone());
+
+    let p_dim = x_cols.len();
+    let x_means: Vec<f64> = x_cols.iter().map(|c| c.iter().sum::<f64>() / n as f64).collect();
+
+    let mut xt_x = vec![vec![0.0f64; p_dim]; p_dim];
+    let mut xt_y = vec![0.0f64; p_dim];
+    for i in 0..p_dim {
+        for j in 0..p_dim {
+            for s in 0..n {
+                xt_x[i][j] += (x_cols[i][s] - x_means[i]) * (x_cols[j][s] - x_means[j]);
+            }
+        }
+        for s in 0..n {
+            xt_y[i] += (x_cols[i][s] - x_means[i]) * (y[s] - y_mean);
+        }
+    }
+
+    fn solve_normal_eq(a: &mut [Vec<f64>], b: &mut [f64]) -> Vec<f64> {
+        let n = b.len();
+        for col in 0..n {
+            let mut max_val = a[col][col].abs();
+            let mut max_row = col;
+            for row in (col + 1)..n {
+                if a[row][col].abs() > max_val {
+                    max_val = a[row][col].abs();
+                    max_row = row;
+                }
+            }
+            if max_row != col {
+                a.swap(col, max_row);
+                b.swap(col, max_row);
+            }
+            if a[col][col].abs() < 1e-30 { continue; }
+            let pivot = a[col][col];
+            for j in col..n { a[col][j] /= pivot; }
+            b[col] /= pivot;
+            for row in 0..n {
+                if row == col { continue; }
+                let factor = a[row][col];
+                for j in col..n { a[row][j] -= factor * a[col][j]; }
+                b[row] -= factor * b[col];
+            }
+        }
+        b.to_vec()
+    }
+
+    let betas = solve_normal_eq(&mut xt_x, &mut xt_y);
+
+    let intercept = y_mean - betas.iter().enumerate().map(|(i, b)| b * x_means[i]).sum::<f64>();
+
+    println!("  Full model coefficients:");
+    println!("    intercept = {:.6}", intercept);
+    for k in 0..9 {
+        println!("    β_{:<4} = {:.6}", cw_names[k], betas[k]);
+    }
+    println!("    β_depth = {:.6}", betas[9]);
+
+    let mut ss_res = 0.0f64;
+    let mut preds_full: Vec<f64> = Vec::new();
+    for s in 0..n {
+        let mut yhat = intercept;
+        for k in 0..10 {
+            yhat += betas[k] * x_cols[k][s];
+        }
+        let ratio_pred = 1.0 - yhat.exp();
+        let n_pred = pts[s].n_naive / ratio_pred.abs().max(0.01);
+        preds_full.push(n_pred);
+        ss_res += (y[s] - yhat).powi(2);
+    }
+    let r2_full = 1.0 - ss_res / ss_tot;
+
+    let errs_full: Vec<f64> = pts.iter().zip(preds_full.iter()).map(|(p, pred)| ((pred - p.n_actual) / p.n_actual).abs()).collect();
+    let mape_full = mape(&errs_full);
+
+    println!("\n    R² = {:.4}", r2_full);
+    println!("    MAPE = {:.1}%", mape_full * 100.0);
+
+    println!("\n  Step 3: Reduced model (top-3 correlated cycles + depth)\n");
+
+    let mut corr_pairs: Vec<(usize, f64)> = (0..9).map(|k| {
+        let x: Vec<f64> = pts.iter().map(|p| p.cw[k].abs().max(1e-20).ln()).collect();
+        let xm: f64 = x.iter().sum::<f64>() / n as f64;
+        let sxy: f64 = x.iter().zip(y.iter()).map(|(a, b)| (a - xm) * (b - y_mean)).sum();
+        let sxx: f64 = x.iter().map(|a| (a - xm).powi(2)).sum();
+        let r = if sxx > 0.0 { sxy.abs() / (sxx * ss_tot).sqrt() } else { 0.0 };
+        (k, r)
+    }).collect();
+    corr_pairs.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
+
+    let top3: Vec<usize> = corr_pairs.iter().take(3).map(|p| p.0).collect();
+    println!("  Top-3 correlated cycles: {:?}", top3.iter().map(|&k| cw_names[k]).collect::<Vec<_>>());
+
+    let mut x_red: Vec<Vec<f64>> = top3.iter().map(|&k| pts.iter().map(|p| p.cw[k].abs().max(1e-20).ln()).collect()).collect();
+    x_red.push(d_feat.clone());
+
+    let p_red = x_red.len();
+    let xm_red: Vec<f64> = x_red.iter().map(|c| c.iter().sum::<f64>() / n as f64).collect();
+
+    let mut xtx_r = vec![vec![0.0f64; p_red]; p_red];
+    let mut xty_r = vec![0.0f64; p_red];
+    for i in 0..p_red {
+        for j in 0..p_red {
+            for s in 0..n {
+                xtx_r[i][j] += (x_red[i][s] - xm_red[i]) * (x_red[j][s] - xm_red[j]);
+            }
+        }
+        for s in 0..n {
+            xty_r[i] += (x_red[i][s] - xm_red[i]) * (y[s] - y_mean);
+        }
+    }
+
+    let betas_r = solve_normal_eq(&mut xtx_r, &mut xty_r);
+    let int_r = y_mean - betas_r.iter().enumerate().map(|(i, b)| b * xm_red[i]).sum::<f64>();
+
+    println!("  Reduced model coefficients:");
+    println!("    intercept = {:.6}", int_r);
+    for (idx, &k) in top3.iter().enumerate() {
+        println!("    β_{:<4} = {:.6}", cw_names[k], betas_r[idx]);
+    }
+    println!("    β_depth = {:.6}", betas_r[3]);
+
+    let mut ss_res_r = 0.0f64;
+    let mut preds_red: Vec<f64> = Vec::new();
+    for s in 0..n {
+        let mut yhat = int_r;
+        for idx in 0..p_red {
+            yhat += betas_r[idx] * x_red[idx][s];
+        }
+        let ratio_pred = 1.0 - yhat.exp();
+        let n_pred = pts[s].n_naive / ratio_pred.abs().max(0.01);
+        preds_red.push(n_pred);
+        ss_res_r += (y[s] - yhat).powi(2);
+    }
+    let r2_red = 1.0 - ss_res_r / ss_tot;
+    let errs_red: Vec<f64> = pts.iter().zip(preds_red.iter()).map(|(p, pred)| ((pred - p.n_actual) / p.n_actual).abs()).collect();
+    let mape_red = mape(&errs_red);
+
+    println!("\n    R² = {:.4}", r2_red);
+    println!("    MAPE = {:.1}%", mape_red * 100.0);
+
+    println!("\n  Step 4: Per-pset analysis (reduced model)\n");
+
+    let pset_names: Vec<&str> = param_sets.iter().map(|p| p.0).collect();
+    for pname in &pset_names {
+        let idxs: Vec<usize> = pts.iter().enumerate().filter(|(_, p)| p.pset == *pname).map(|(i, _)| i).collect();
+        if idxs.is_empty() { continue; }
+        let e_n: Vec<f64> = idxs.iter().map(|&i| ((preds_red[i] - pts[i].n_actual) / pts[i].n_actual).abs()).collect();
+        let e_b: Vec<f64> = idxs.iter().map(|&i| ((predict_naive(&pts[i]) - pts[i].n_actual) / pts[i].n_actual).abs()).collect();
+        println!("    {:<10} CW-reduced: {:.1}%  naive: {:.1}%", pname, mape(&e_n) * 100.0, mape(&e_b) * 100.0);
+    }
+
+    println!("\n  Summary:");
+    println!("    Naive:       {:.1}%", mape(&errs_naive) * 100.0);
+    println!("    v3.45:       {:.1}%", mape(&errs_old) * 100.0);
+    println!("    CW-full(10): {:.1}%  R²={:.4}", mape_full * 100.0, r2_full);
+    println!("    CW-reduced:  {:.1}%  R²={:.4}", mape_red * 100.0, r2_red);
+}

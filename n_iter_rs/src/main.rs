@@ -264,4 +264,5 @@ fn run_synthetic_suite(_max_concepts: usize, _time_limit: f64, _output_dir: &Pat
     experiments::run_nonlinearity_cascade_separation();
     experiments::run_nonuniform_cascade_validation();
     experiments::run_adaptive_cascade_correction();
+    experiments::run_cycle_weight_cascade_prediction();
 }
