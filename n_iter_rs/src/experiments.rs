@@ -29789,3 +29789,129 @@ pub fn run_optimal_parameter_search() {
     println!("  ε ↑ further reduces ρ but with diminishing returns");
     println!("  Optimal region: low δ₁, high γ₁, moderate ε");
 }
+
+pub fn run_epsilon_interaction_analysis() {
+    println!("\n{}", "=".repeat(64));
+    println!("  v3.37: ε PARAMETER INTERACTION ANALYSIS");
+    println!("{}", "=".repeat(64));
+    println!("  Why does ε ↑ increase ρ at high δ₁/low γ₁?\n");
+
+    fn rho_for(lattice: &fca::FcaLattice, stats: &pipeline::LatticeStats, params: &DynamicsParams) -> Option<(f64, nalgebra::SMatrix<f64, 5, 5>, [f64; 5])> {
+        let results = pipeline::run_topological_iteration(lattice, stats, params);
+        for (i, opt) in results.iter().enumerate() {
+            if let Some(ref res) = opt {
+                if !res.converged { continue; }
+                if !stats.feeders[i].is_empty() { continue; }
+                let j = jac_from_arr(&res.jacobian);
+                let s = res.trajectory.last().unwrap();
+                return Some((res.rho_spectral, j, *s));
+            }
+        }
+        None
+    }
+
+    let lattice = fca::build_chain_lattice(5);
+    let stats = pipeline::compute_lattice_stats(&lattice);
+
+    println!("  Phase 1: ρ(ε) curves at different δ₁/γ₁ ratios\n");
+
+    let regimes: Vec<(&str, f64, f64)> = vec![
+        ("uniform", 1.0, 1.0),
+        ("high-δ", 2.0, 1.0),
+        ("low-γ", 1.0, 0.1),
+        ("high-δ/low-γ", 2.0, 0.1),
+        ("optimal", 2.0, 0.02),
+    ];
+
+    let eps_vals: Vec<f64> = vec![0.001, 0.005, 0.01, 0.05, 0.1, 0.2, 0.5, 1.0];
+
+    print!("  {:>16}", "ε");
+    for &eps in &eps_vals {
+        print!(" {:>8.3}", eps);
+    }
+    println!(" | dρ/dε");
+    println!("  {}", "-".repeat(100));
+
+    for &(name, d1, g1) in &regimes {
+        print!("  {:>16}", name);
+        let mut rhos: Vec<f64> = Vec::new();
+        for &eps in &eps_vals {
+            let params = DynamicsParams::uniform().with_delta1(d1).with_gamma1(g1).with_eps(eps);
+            if let Some((rho, _, _)) = rho_for(&lattice, &stats, &params) {
+                rhos.push(rho);
+                print!(" {:>8.4}", rho);
+            } else {
+                print!(" {:>8}", "N/C");
+                rhos.push(f64::NAN);
+            }
+        }
+        let trend = if rhos.len() >= 2 && !rhos[0].is_nan() && !rhos[rhos.len()-1].is_nan() {
+            rhos[rhos.len()-1] - rhos[0]
+        } else { f64::NAN };
+        println!(" | {:+.4}", trend);
+    }
+
+    println!("\n  Phase 2: Jacobian entry decomposition at optimal (δ₁=2, γ₁=0.02)");
+    println!("  How each J[i,j] changes with ε\n");
+
+    println!("  {:>8} {:>10} {:>10} {:>10} {:>10} {:>10} {:>10} {:>10} {:>10} {:>10} {:>10}",
+        "ε", "J[0,1]", "J[0,3]", "J[1,0]", "J[1,3]", "J[2,0]", "J[2,3]", "J[3,0]", "J[3,2]", "J[4,0]", "J[4,3]");
+    for &eps in &[0.001, 0.01, 0.1, 0.5] {
+        let params = DynamicsParams::uniform().with_delta1(2.0).with_gamma1(0.02).with_eps(eps);
+        if let Some((_, j, s)) = rho_for(&lattice, &stats, &params) {
+            println!("  {:.4} {:.6} {:.6} {:.6} {:.6} {:.6} {:.6} {:.6} {:.6} {:.6} {:.6}",
+                eps, j[(0,1)], j[(0,3)], j[(1,0)], j[(1,3)], j[(2,0)], j[(2,3)], j[(3,0)], j[(3,2)], j[(4,0)], j[(4,3)]);
+        }
+    }
+
+    println!("\n  Phase 3: State variable decomposition at optimal");
+    println!("  How d, b, ρ, r, s change with ε\n");
+
+    println!("  {:>8} {:>10} {:>10} {:>10} {:>10} {:>10}", "ε", "d", "b", "ρ", "r", "s");
+    for &eps in &[0.001, 0.01, 0.1, 0.5] {
+        let params = DynamicsParams::uniform().with_delta1(2.0).with_gamma1(0.02).with_eps(eps);
+        if let Some((rho, _, s)) = rho_for(&lattice, &stats, &params) {
+            println!("  {:.4} {:.8} {:.8} {:.8} {:.8} {:.8}",
+                eps, s[0], s[1], s[2], s[3], s[4]);
+        }
+    }
+
+    println!("\n  Phase 4: Cycle weight decomposition at optimal");
+    println!("  How c₀, c₁, c₂, c₃ change with ε\n");
+
+    for &eps in &[0.001, 0.01, 0.1, 0.5] {
+        let params = DynamicsParams::uniform().with_delta1(2.0).with_gamma1(0.02).with_eps(eps);
+        if let Some((rho, j, _)) = rho_for(&lattice, &stats, &params) {
+            let c0 = j[(0,1)] * j[(1,0)];
+            let c1 = j[(0,3)] * j[(3,0)];
+            let c2 = j[(2,3)] * j[(3,2)];
+            let c3 = j[(3,4)] * j[(4,3)];
+            let tc0 = j[(0,1)] * j[(1,3)] * j[(3,0)];
+            let tc1 = j[(0,3)] * j[(3,2)] * j[(2,0)];
+            let tc2 = j[(0,3)] * j[(3,4)] * j[(4,0)];
+            let s2 = -(c0 + c1 + c2 + c3);
+            let s3 = tc0 + tc1 + tc2;
+            println!("  ε={:.3}: c₀={:.6} c₁={:.6} c₂={:.6} c₃={:.6} | σ₂={:.6} σ₃={:.8} | ρ={:.6}",
+                eps, c0, c1, c2, c3, s2, s3, rho);
+        }
+    }
+
+    println!("\n  Phase 5: Comparison - uniform vs optimal at same ε");
+    for &eps in &[0.001, 0.01, 0.1, 0.5] {
+        let p_u = DynamicsParams::uniform().with_eps(eps);
+        let p_o = DynamicsParams::uniform().with_delta1(2.0).with_gamma1(0.02).with_eps(eps);
+        let (ru, ju, su) = rho_for(&lattice, &stats, &p_u).unwrap();
+        let (ro, jo, so) = rho_for(&lattice, &stats, &p_o).unwrap();
+        let cu0 = ju[(0,1)] * ju[(1,0)];
+        let co0 = jo[(0,1)] * jo[(1,0)];
+        let cu1 = ju[(0,3)] * ju[(3,0)];
+        let co1 = jo[(0,3)] * jo[(3,0)];
+        println!("  ε={:.3}: uniform ρ={:.6} (c₀={:.6} c₁={:.6} d={:.6}) vs optimal ρ={:.6} (c₀={:.6} c₁={:.6} d={:.6})",
+            eps, ru, cu0, cu1, su[0], ro, co0, co1, so[0]);
+    }
+
+    println!("\n  ε INTERACTION SUMMARY:");
+    println!("  At optimal δ₁/γ₁: ε ↑ increases ρ (counter-intuitive)");
+    println!("  Root cause: low γ₁ weakens d→b coupling");
+    println!("  ε ↑ increases d but not b → asymmetric state → larger J entries → larger ρ");
+}
