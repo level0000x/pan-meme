@@ -166,6 +166,7 @@ fn run_single(name: &str) {
         ("run_d0_coefficient_analysis", experiments::run_d0_coefficient_analysis),
         ("run_analytical_d0_prediction", experiments::run_analytical_d0_prediction),
         ("run_rho_fp_topology_prediction", experiments::run_rho_fp_topology_prediction),
+        ("run_jacobian_at_initial_state", experiments::run_jacobian_at_initial_state),
     ];
     if let Some((_, f)) = fns.iter().find(|(n, _)| *n == name) {
         f();
@@ -333,4 +334,5 @@ fn run_synthetic_suite() {
     experiments::run_d0_coefficient_analysis();
     experiments::run_analytical_d0_prediction();
     experiments::run_rho_fp_topology_prediction();
+    experiments::run_jacobian_at_initial_state();
 }
