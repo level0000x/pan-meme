@@ -248,4 +248,5 @@ fn run_synthetic_suite(_max_concepts: usize, _time_limit: f64, _output_dir: &Pat
     experiments::run_optimal_parameter_search();
     experiments::run_epsilon_interaction_analysis();
     experiments::run_epsilon_zero_asymptotics();
+    experiments::run_iteration_count_prediction();
 }

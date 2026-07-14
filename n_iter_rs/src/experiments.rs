@@ -30046,3 +30046,134 @@ pub fn run_epsilon_zero_asymptotics() {
     println!("  c₀ ∝ ε (d↔b cycle vanishes linearly)");
     println!("  Optimal ε is NOT zero — finite ε needed for functioning system");
 }
+
+pub fn run_iteration_count_prediction() {
+    println!("\n{}", "=".repeat(64));
+    println!("  v3.39: ITERATION COUNT PREDICTION FROM SPECTRAL RADIUS");
+    println!("{}", "=".repeat(64));
+    println!("  Goal: predict n_iters from ρ_spectral analytically\n");
+
+    fn rho_and_niters(lattice: &fca::FcaLattice, stats: &pipeline::LatticeStats, params: &DynamicsParams) -> Vec<(f64, usize, usize, f64, [f64; 5])> {
+        let results = pipeline::run_topological_iteration(lattice, stats, params);
+        let mut out = Vec::new();
+        for (i, opt) in results.iter().enumerate() {
+            if let Some(ref res) = opt {
+                if !res.converged { continue; }
+                out.push((res.rho_spectral, res.n_iters, stats.heights[i], res.tau_inv, *res.trajectory.last().unwrap()));
+            }
+        }
+        out
+    }
+
+    let topo_builders: Vec<(&str, Box<dyn Fn() -> fca::FcaLattice>)> = vec![
+        ("chain-3", Box::new(|| fca::build_chain_lattice(3))),
+        ("chain-5", Box::new(|| fca::build_chain_lattice(5))),
+        ("chain-8", Box::new(|| fca::build_chain_lattice(8))),
+        ("diamond", Box::new(|| fca::build_diamond_lattice())),
+    ];
+
+    println!("  Phase 1: n_iters vs ρ across topologies and ε\n");
+
+    struct NiterRec { topo: String, eps: f64, depth: usize, rho: f64, n_iters: usize, tau_inv: f64 }
+    let mut recs: Vec<NiterRec> = Vec::new();
+
+    for &(name, ref builder) in &topo_builders {
+        for &eps in &[0.001, 0.01, 0.05, 0.1, 0.2, 0.5] {
+            let lattice = builder();
+            let stats = pipeline::compute_lattice_stats(&lattice);
+            let params = DynamicsParams::uniform().with_eps(eps);
+            for (rho, n_iters, depth, tau_inv, _) in rho_and_niters(&lattice, &stats, &params) {
+                recs.push(NiterRec { topo: name.to_string(), eps, depth, rho, n_iters, tau_inv });
+            }
+        }
+    }
+
+    println!("  {:>10} {:>6} {:>5} {:>10} {:>6} {:>10} {:>12} {:>12}",
+        "topo", "ε", "depth", "ρ", "n_iter", "τ_inv", "-1/ln(ρ)", "pred");
+    for r in recs.iter().step_by(3) {
+        let log_rho = r.rho.ln().abs();
+        let neg_inv_log = if log_rho > 1e-15 { 1.0 / log_rho } else { f64::INFINITY };
+        let pred = neg_inv_log * (r.tau_inv / 0.01).ln();
+        println!("  {:>10} {:.4} {:>5} {:.8} {:>6} {:.8} {:.10} {:.10}",
+            r.topo, r.eps, r.depth, r.rho, r.n_iters, r.tau_inv, neg_inv_log, pred);
+    }
+
+    println!("\n  Phase 2: n_iters ≈ a + b·ln(1/τ_inv)/ln(1/ρ) fit\n");
+
+    let mut data: Vec<(f64, f64, f64)> = recs.iter().map(|r| {
+        let log_rho = r.rho.ln().abs();
+        let x = if log_rho > 1e-15 { (r.tau_inv / 0.01).ln() / log_rho } else { 0.0 };
+        (x, r.n_iters as f64, r.rho)
+    }).collect();
+
+    let mut best_a = 0.0;
+    let mut best_b = 0.0;
+    let mut best_err = f64::MAX;
+
+    for a_idx in 0..200 {
+        let a = -5.0 + a_idx as f64 * 0.5;
+        for b_idx in 1..200 {
+            let b = b_idx as f64 * 0.5;
+            let mut err = 0.0;
+            for &(x, y, _) in &data {
+                let pred = a + b * x;
+                err += (pred - y).powi(2);
+            }
+            if err < best_err {
+                best_err = err;
+                best_a = a;
+                best_b = b;
+            }
+        }
+    }
+
+    println!("  Best fit: n_iters ≈ {:.2} + {:.2} · ln(1/τ_inv)/ln(1/ρ)", best_a, best_b);
+
+    let mut max_rel_err: f64 = 0.0;
+    for &(x, y, rho) in &data {
+        let pred = best_a + best_b * x;
+        let rel = if y > 0.0 { ((pred - y) / y).abs() } else { 0.0 };
+        max_rel_err = max_rel_err.max(rel);
+    }
+    println!("  Max relative error: {:.4}", max_rel_err);
+
+    println!("\n  Phase 3: Linear regression n_iters = α·ln(1/τ_inv)/ln(1/ρ) + β");
+
+    let n = data.len() as f64;
+    let sum_x: f64 = data.iter().map(|d| d.0).sum();
+    let sum_y: f64 = data.iter().map(|d| d.1).sum();
+    let sum_xx: f64 = data.iter().map(|d| d.0 * d.0).sum();
+    let sum_xy: f64 = data.iter().map(|d| d.0 * d.1).sum();
+
+    let slope = (n * sum_xy - sum_x * sum_y) / (n * sum_xx - sum_x * sum_x);
+    let intercept = (sum_y - slope * sum_x) / n;
+
+    println!("  OLS: n_iters = {:.4} · ln(1/τ_inv)/ln(1/ρ) + {:.4}", slope, intercept);
+
+    let mut residuals: Vec<f64> = Vec::new();
+    for &(x, y, _) in &data {
+        let pred = slope * x + intercept;
+        residuals.push(pred - y);
+    }
+    let rmse = (residuals.iter().map(|r| r.powi(2)).sum::<f64>() / n).sqrt();
+    let max_resid = residuals.iter().map(|r| r.abs()).fold(0.0f64, f64::max);
+    println!("  RMSE = {:.4}, max |residual| = {:.4}", rmse, max_resid);
+
+    println!("\n  Phase 4: Per-depth analysis");
+    let depths: Vec<usize> = recs.iter().map(|r| r.depth).collect::<std::collections::HashSet<_>>().into_iter().collect();
+    let mut depths_sorted = depths;
+    depths_sorted.sort();
+
+    for &d in &depths_sorted {
+        let subset: Vec<_> = recs.iter().filter(|r| r.depth == d).collect();
+        if subset.is_empty() { continue; }
+        let avg_rho: f64 = subset.iter().map(|r| r.rho).sum::<f64>() / subset.len() as f64;
+        let avg_n: f64 = subset.iter().map(|r| r.n_iters as f64).sum::<f64>() / subset.len() as f64;
+        let avg_tau: f64 = subset.iter().map(|r| r.tau_inv).sum::<f64>() / subset.len() as f64;
+        println!("  depth={}: avg_ρ={:.4} avg_n_iters={:.1} avg_τ_inv={:.6}", d, avg_rho, avg_n, avg_tau);
+    }
+
+    println!("\n  ITERATION COUNT PREDICTION SUMMARY:");
+    println!("  n_iters ≈ {:.1}·ln(1/τ_inv)/ln(1/ρ) + {:.1}", slope, intercept);
+    println!("  Predicts iteration count from spectral radius + convergence threshold");
+}
