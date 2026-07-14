@@ -32981,3 +32981,207 @@ pub fn run_nonuniform_cascade_validation() {
         println!("  ✗ Cascade formula NOT universal — parameter-dependent correction needed");
     }
 }
+
+pub fn run_adaptive_cascade_correction() {
+    println!("\n{}", "=".repeat(64));
+    println!("  v3.54: ρ_fp-ADAPTIVE CASCADE CORRECTION");
+    println!("{}", "=".repeat(64));
+    println!("  Replace ε^β with (1-ρ_fp)^β for parameter-adaptive cascade\n");
+
+    let param_sets: Vec<(&str, DynamicsParams)> = vec![
+        ("uniform", DynamicsParams::uniform()),
+        ("high-β", DynamicsParams::uniform().with_beta1(2.0)),
+        ("high-δ", DynamicsParams::uniform().with_delta1(2.0)),
+        ("high-γ", DynamicsParams::uniform().with_gamma1(2.0)),
+        ("high-κ₂", DynamicsParams::uniform().with_kappa2(2.0)),
+        ("asym-1", DynamicsParams::uniform().with_beta1(1.5).with_gamma1(0.8).with_zeta1(1.2).with_theta1(0.7).with_kappa2(1.8)),
+        ("asym-2", DynamicsParams::uniform().with_beta1(0.5).with_gamma1(2.0).with_zeta1(0.8).with_theta1(1.5).with_kappa2(0.6)),
+        ("extreme", DynamicsParams::uniform().with_beta1(3.0).with_gamma1(0.3).with_zeta1(2.0).with_theta1(0.4).with_kappa2(3.0)),
+        ("low-ε", DynamicsParams::uniform().with_eps(0.001)),
+        ("high-ε", DynamicsParams::uniform().with_eps(5.0)),
+        ("balanced", DynamicsParams::uniform().with_beta1(1.0).with_delta1(1.0).with_gamma1(1.0).with_zeta1(1.0).with_theta1(1.0).with_kappa2(1.0)),
+        ("random-1", DynamicsParams::uniform().with_beta1(0.7).with_delta1(1.8).with_gamma1(0.4).with_zeta1(1.5).with_theta1(1.2).with_kappa2(0.9).with_eps(0.03)),
+    ];
+
+    let topo_builders: Vec<(&str, Box<dyn Fn() -> fca::FcaLattice>)> = vec![
+        ("chain-3", Box::new(|| fca::build_chain_lattice(3))),
+        ("chain-5", Box::new(|| fca::build_chain_lattice(5))),
+        ("chain-7", Box::new(|| fca::build_chain_lattice(7))),
+        ("chain-10", Box::new(|| fca::build_chain_lattice(10))),
+        ("chain-15", Box::new(|| fca::build_chain_lattice(15))),
+        ("chain-20", Box::new(|| fca::build_chain_lattice(20))),
+        ("chain-30", Box::new(|| fca::build_chain_lattice(30))),
+        ("chain-50", Box::new(|| fca::build_chain_lattice(50))),
+        ("grid-3x3", Box::new(|| fca::build_grid_lattice(3, 3))),
+        ("grid-4x4", Box::new(|| fca::build_grid_lattice(4, 4))),
+        ("diamond", Box::new(|| fca::build_diamond_lattice())),
+    ];
+
+    #[derive(Clone)]
+    struct FitPoint {
+        pset: String, topo: String, depth: usize, eps: f64, rho_fp: f64,
+        d0: f64, n_actual: usize, n_naive: f64,
+    }
+    let mut fit_data: Vec<FitPoint> = Vec::new();
+
+    for &(pname, ref params) in &param_sets {
+        for &(tname, ref builder) in &topo_builders {
+            let lattice = builder();
+            let stats = pipeline::compute_lattice_stats(&lattice);
+            let max_depth = stats.heights.iter().copied().max().unwrap_or(1);
+            let results = pipeline::run_topological_iteration(&lattice, &stats, params);
+
+            for (i, opt) in results.iter().enumerate() {
+                if let Some(ref res) = opt {
+                    if !stats.feeders[i].is_empty() { continue; }
+                    let traj = &res.trajectory;
+                    let nt = traj.len();
+                    if nt < 3 { continue; }
+                    let rho_fp = res.rho_spectral;
+                    let m_star = *traj.last().unwrap();
+                    let d0 = (0..5).map(|j| (traj[0][j] - m_star[j]).powi(2)).sum::<f64>().sqrt();
+                    let tol = 1e-12_f64;
+                    let ln_ratio = d0 / tol;
+                    let n_naive = if rho_fp < 1.0 && rho_fp > 0.0 && ln_ratio > 0.0 {
+                        ln_ratio.ln() / (-rho_fp.ln())
+                    } else { 0.0 };
+                    fit_data.push(FitPoint {
+                        pset: pname.to_string(), topo: tname.to_string(), depth: max_depth,
+                        eps: params.eps, rho_fp, d0, n_actual: nt - 1, n_naive,
+                    });
+                }
+            }
+        }
+    }
+
+    println!("  {} data points for fitting\n", fit_data.len());
+
+    println!("  Phase 1: Fit ε-model vs ρ_fp-model on training set\n");
+
+    let training: Vec<&FitPoint> = fit_data.iter()
+        .filter(|r| r.n_actual > 0 && r.n_naive > 0.0 && r.rho_fp > 0.0 && r.rho_fp < 1.0 && r.depth >= 2)
+        .collect();
+
+    let ln_amp: Vec<f64> = training.iter().map(|r| {
+        let rho_eff = r.rho_fp.powf(r.n_naive / r.n_actual.max(1) as f64);
+        let rho_ratio = rho_eff / r.rho_fp.max(1e-15);
+        (1.0 - rho_ratio).max(1e-10).min(0.99).ln()
+    }).collect();
+
+    let ln_depth: Vec<f64> = training.iter().map(|r| ((r.depth - 1).max(1) as f64).ln()).collect();
+    let ln_eps: Vec<f64> = training.iter().map(|r| r.eps.max(1e-10).ln()).collect();
+    let ln_one_minus_rho: Vec<f64> = training.iter().map(|r| (1.0 - r.rho_fp).max(1e-10).ln()).collect();
+
+    fn fit_ols_2d(x1: &[f64], x2: &[f64], y: &[f64]) -> (f64, f64, f64, f64) {
+        let n = x1.len() as f64;
+        let x1_bar = x1.iter().sum::<f64>() / n;
+        let x2_bar = x2.iter().sum::<f64>() / n;
+        let y_bar = y.iter().sum::<f64>() / n;
+        let (mut s11, mut s22, mut s12, mut s1y, mut s2y) = (0.0f64, 0.0, 0.0, 0.0, 0.0);
+        for i in 0..x1.len() {
+            let p1 = x1[i] - x1_bar;
+            let p2 = x2[i] - x2_bar;
+            let py = y[i] - y_bar;
+            s11 += p1 * p1;
+            s22 += p2 * p2;
+            s12 += p1 * p2;
+            s1y += p1 * py;
+            s2y += p2 * py;
+        }
+        let det = s11 * s22 - s12 * s12;
+        if det.abs() < 1e-15 { return (0.0, 0.0, 0.0, 0.0); }
+        let b1 = (s1y * s22 - s2y * s12) / det;
+        let b2 = (s2y * s11 - s1y * s12) / det;
+        let b0 = y_bar - b1 * x1_bar - b2 * x2_bar;
+        let ss_res: f64 = (0..x1.len()).map(|i| (y[i] - b0 - b1 * x1[i] - b2 * x2[i]).powi(2)).sum();
+        let ss_tot: f64 = y.iter().map(|&yi| (yi - y_bar).powi(2)).sum();
+        let r2 = if ss_tot > 1e-15 { 1.0 - ss_res / ss_tot } else { 0.0 };
+        (b0, b1, b2, r2)
+    }
+
+    let (ln_a_eps, alpha_eps, beta_eps, r2_eps) = fit_ols_2d(&ln_depth, &ln_eps, &ln_amp);
+    let a_eps = ln_a_eps.exp();
+
+    let (ln_a_rho, alpha_rho, beta_rho, r2_rho) = fit_ols_2d(&ln_depth, &ln_one_minus_rho, &ln_amp);
+    let a_rho = ln_a_rho.exp();
+
+    println!("  Model A (ε-based):  1-ratio = {:.4}·d^{:.4}·ε^{:.4}  R²={:.4}", a_eps, alpha_eps, beta_eps, r2_eps);
+    println!("  Model B (ρ-based):  1-ratio = {:.4}·d^{:.4}·(1-ρ_fp)^{:.4}  R²={:.4}", a_rho, alpha_rho, beta_rho, r2_rho);
+
+    println!("\n  Phase 2: End-to-end prediction comparison on FULL dataset\n");
+
+    let old_params = (0.118f64, 0.23f64, 0.29f64);
+
+    println!("  {:>12} {:>10} {:>5} {:>5} {:>8} {:>6} {:>8} {:>8} {:>8} {:>8} {:>8}",
+        "pset", "topo", "depth", "ε", "ρ_fp", "n_act", "n_naive", "n_old", "n_eps", "n_ρ", "best");
+    let mut errs_naive = Vec::new();
+    let mut errs_old = Vec::new();
+    let mut errs_eps = Vec::new();
+    let mut errs_rho = Vec::new();
+
+    for fp in &fit_data {
+        if fp.n_actual == 0 || fp.n_naive <= 0.0 || fp.rho_fp <= 0.0 || fp.rho_fp >= 1.0 { continue; }
+        let tol = 1e-12_f64;
+        let ln_r = fp.d0 / tol;
+        if ln_r <= 0.0 { continue; }
+
+        let amp_old = old_params.0 * ((fp.depth - 1).max(1) as f64).powf(old_params.1) * fp.eps.powf(old_params.2);
+        let rho_old = fp.rho_fp * (1.0 - amp_old).max(0.1);
+        let n_old = if rho_old > 0.0 && rho_old < 1.0 { ln_r.ln() / (-rho_old.ln()) } else { 0.0 };
+
+        let amp_eps_new = a_eps * ((fp.depth - 1).max(1) as f64).powf(alpha_eps) * fp.eps.max(1e-10).powf(beta_eps);
+        let rho_eps = fp.rho_fp * (1.0 - amp_eps_new).max(0.01).min(0.999);
+        let n_eps = if rho_eps > 0.0 && rho_eps < 1.0 { ln_r.ln() / (-rho_eps.ln()) } else { 0.0 };
+
+        let amp_rho_new = a_rho * ((fp.depth - 1).max(1) as f64).powf(alpha_rho) * (1.0 - fp.rho_fp).max(1e-10).powf(beta_rho);
+        let rho_rho = fp.rho_fp * (1.0 - amp_rho_new).max(0.01).min(0.999);
+        let n_rho = if rho_rho > 0.0 && rho_rho < 1.0 { ln_r.ln() / (-rho_rho.ln()) } else { 0.0 };
+
+        let err_n = (fp.n_naive - fp.n_actual as f64).abs() / fp.n_actual as f64;
+        let err_o = (n_old - fp.n_actual as f64).abs() / fp.n_actual as f64;
+        let err_e = (n_eps - fp.n_actual as f64).abs() / fp.n_actual as f64;
+        let err_r = (n_rho - fp.n_actual as f64).abs() / fp.n_actual as f64;
+
+        errs_naive.push(err_n);
+        errs_old.push(err_o);
+        errs_eps.push(err_e);
+        errs_rho.push(err_r);
+
+        let best_name = {
+            let mut best = ("naive", err_n);
+            if err_o < best.1 { best = ("old", err_o); }
+            if err_e < best.1 { best = ("ε-new", err_e); }
+            if err_r < best.1 { best = ("ρ-new", err_r); }
+            best.0
+        };
+
+        println!("  {:>12} {:>10} {:>5} {:>5.2} {:>8.4} {:>6} {:>8.1} {:>8.1} {:>8.1} {:>8.1} {:>8}",
+            fp.pset, fp.topo, fp.depth, fp.eps, fp.rho_fp, fp.n_actual,
+            fp.n_naive, n_old, n_eps, n_rho, best_name);
+    }
+
+    let n_pts = errs_naive.len();
+    let mape = |v: &[f64]| -> f64 { v.iter().sum::<f64>() / v.len().max(1) as f64 * 100.0 };
+
+    println!("\n  GLOBAL COMPARISON ({} data points):", n_pts);
+    println!("  {:>25} {:>10} {:>10} {:>10} {:>10}", "Metric", "Naive", "Old(v3.45)", "ε-new", "ρ-new");
+    println!("  {:>25} {:>10.1}% {:>10.1}% {:>10.1}% {:>10.1}%", "MAPE", mape(&errs_naive), mape(&errs_old), mape(&errs_eps), mape(&errs_rho));
+
+    println!("\n  ADAPTIVE CASCADE CORRECTION:");
+    println!("  Old formula:  1-ratio = {:.4}·d^{:.4}·ε^{:.4}", old_params.0, old_params.1, old_params.2);
+    println!("  ε-model:      1-ratio = {:.4}·d^{:.4}·ε^{:.4}  R²={:.4}", a_eps, alpha_eps, beta_eps, r2_eps);
+    println!("  ρ-model:      1-ratio = {:.4}·d^{:.4}·(1-ρ_fp)^{:.4}  R²={:.4}", a_rho, alpha_rho, beta_rho, r2_rho);
+
+    let mape_naive = mape(&errs_naive);
+    let mape_old = mape(&errs_old);
+    let mape_eps = mape(&errs_eps);
+    let mape_rho = mape(&errs_rho);
+
+    if mape_rho < mape_old && mape_rho < mape_eps {
+        println!("  ✓ ρ_fp-model is best: MAPE {:.1}% (old: {:.1}%, ε: {:.1}%)", mape_rho, mape_old, mape_eps);
+    } else if mape_eps < mape_old {
+        println!("  → ε-model (refit) is best: MAPE {:.1}% (old: {:.1}%, ρ: {:.1}%)", mape_eps, mape_old, mape_rho);
+    } else {
+        println!("  ✗ Neither model improves on original: MAPE old={:.1}%, ε={:.1}%, ρ={:.1}%", mape_old, mape_eps, mape_rho);
+    }
+}
