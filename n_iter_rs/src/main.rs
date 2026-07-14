@@ -241,4 +241,5 @@ fn run_synthetic_suite(_max_concepts: usize, _time_limit: f64, _output_dir: &Pat
     experiments::run_walk_decomposition();
     experiments::run_analytical_jacobian_verification();
     experiments::run_analytical_fixed_point();
+    experiments::run_top_concept_spectral_radius();
 }

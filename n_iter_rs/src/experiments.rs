@@ -29064,3 +29064,206 @@ pub fn run_analytical_fixed_point() {
     println!("  ε=0: cubic d³-d²-2d+1=0, root d₀≈{:.10}", d_cubic);
     println!("  Full pipeline: ε → d (1D Newton) → state → J → σ → ρ");
 }
+
+pub fn run_top_concept_spectral_radius() {
+    println!("\n{}", "=".repeat(64));
+    println!("  v3.32: TOP CONCEPT SPECTRAL RADIUS CLOSED FORM");
+    println!("{}", "=".repeat(64));
+    println!("  Goal: ε → ρ_spectral(ε) direct analytical formula");
+    println!("  For top concept: d=b, ρ=s, uniform params, b_up=ρ_up=0\n");
+
+    let d_cubic: f64 = 0.445_041_867_912_629;
+
+    fn solve_d(eps: f64, d0: f64) -> f64 {
+        let f = |d: f64| {
+            let r_a = d * d / (1.0 - d) - eps;
+            let rho = (d + eps) * (1.0 - d) / d;
+            let r_c = (rho + eps) / (2.0 * rho + eps + d);
+            r_a - r_c
+        };
+        let mut d = d0;
+        for _ in 0..100 {
+            let h = 1e-8;
+            let fp = (f(d + h) - f(d - h)) / (2.0 * h);
+            if fp.abs() < 1e-30 { break; }
+            d -= f(d) / fp;
+        }
+        d
+    }
+
+    fn top_jacobian(d: f64, eps: f64) -> [f64; 25] {
+        let rho = (d + eps) * (1.0 - d) / d;
+        let r = d * d / (1.0 - d) - eps;
+        let den = r + d + eps;
+        let den_r = 2.0 * rho + d + eps;
+        let mut j = [0.0f64; 25];
+        j[0*5+1] = -d / den;
+        j[0*5+3] = (1.0 - d) / den;
+        j[1*5+0] = -d / den;
+        j[1*5+3] = (1.0 - d) / den;
+        j[2*5+0] = (1.0 - rho) / den;
+        j[2*5+3] = -rho / den;
+        j[3*5+0] = -r / den_r;
+        j[3*5+2] = (1.0 - r) / den_r;
+        j[3*5+4] = -r / den_r;
+        j[4*5+0] = (1.0 - rho) / den;
+        j[4*5+3] = -rho / den;
+        j
+    }
+
+    fn cycle_weights(j: &[f64; 25]) -> (f64, f64, f64, f64, f64, f64, f64, f64, f64) {
+        let c0 = j[0*5+1] * j[1*5+0];
+        let c1 = j[0*5+3] * j[3*5+0];
+        let c2 = j[2*5+3] * j[3*5+2];
+        let c3 = j[3*5+4] * j[4*5+3];
+        let tc0 = j[0*5+1] * j[1*5+3] * j[3*5+0];
+        let tc1 = j[0*5+3] * j[3*5+2] * j[2*5+0];
+        let tc2 = j[0*5+3] * j[3*5+4] * j[4*5+0];
+        let fc0 = j[0*5+1] * j[1*5+3] * j[3*5+4] * j[4*5+0];
+        let fc1 = j[0*5+1] * j[1*5+3] * j[3*5+2] * j[2*5+0];
+        (c0, c1, c2, c3, tc0, tc1, tc2, fc0, fc1)
+    }
+
+    fn rho_from_sigmas(s2: f64, s3: f64, s4: f64) -> f64 {
+        let j = nalgebra::SMatrix::<f64, 4, 4>::new(
+            0.0, 1.0, 0.0, 0.0,
+            0.0, 0.0, 1.0, 0.0,
+            0.0, 0.0, 0.0, 1.0,
+            -s4, s3, -s2, 0.0,
+        );
+        let eigs = j.complex_eigenvalues();
+        eigs.iter().map(|e| e.norm()).fold(0.0f64, f64::max)
+    }
+
+    println!("  Phase 1: Cycle weights and σ verification vs numerical");
+    let epsilons: Vec<f64> = vec![0.001, 0.01, 0.05, 0.1, 0.2, 0.5];
+    for &eps in &epsilons {
+        let d = solve_d(eps, d_cubic);
+        let rho = (d + eps) * (1.0 - d) / d;
+        let r = d * d / (1.0 - d) - eps;
+        let j_arr = top_jacobian(d, eps);
+        let (c0, c1, c2, c3, tc0, tc1, tc2, fc0, fc1) = cycle_weights(&j_arr);
+        let sigma2 = -(c0 + c1 + c2 + c3);
+        let sigma3 = tc0 + tc1 + tc2;
+        let sigma4 = c0 * (c2 + c3) - fc0 - fc1;
+        let rho_ana = rho_from_sigmas(sigma2, sigma3, sigma4);
+        println!("  ε={:.3} d={:.6} ρ_st={:.6} | c0={:.6} c1={:.6} c2={:.6} c3={:.6} | s2={:.6} s3={:.6} s4={:.8} | ρ_spec={:.6}",
+            eps, d, rho, c0, c1, c2, c3, sigma2, sigma3, sigma4, rho_ana);
+    }
+
+    println!("\n  Phase 2: Verify analytical ρ vs numerical iteration");
+    let topo_builders: Vec<(&str, Box<dyn Fn() -> fca::FcaLattice>)> = vec![
+        ("chain-5", Box::new(|| fca::build_chain_lattice(5))),
+        ("diamond", Box::new(|| fca::build_diamond_lattice())),
+    ];
+    let mut all_ok = true;
+    for &(name, ref builder) in &topo_builders {
+        for &eps in &[0.001, 0.01, 0.05, 0.1, 0.2, 0.5] {
+            let lattice = builder();
+            let stats = pipeline::compute_lattice_stats(&lattice);
+            let params = DynamicsParams::uniform().with_eps(eps);
+            let results = pipeline::run_topological_iteration(&lattice, &stats, &params);
+            for (i, opt) in results.iter().enumerate() {
+                if let Some(ref res) = opt {
+                    if !res.converged { continue; }
+                    if !stats.feeders[i].is_empty() { continue; }
+                    let rho_num = res.rho_spectral;
+                    let j_num = jac_from_arr(&res.jacobian);
+                    let eigs_num = sorted_eigs(&j_num);
+                    let nonzero: Vec<_> = eigs_num.iter().filter(|e| e.norm() > 1e-15).collect();
+
+                    let d = solve_d(eps, d_cubic);
+                    let j_arr = top_jacobian(d, eps);
+                    let (c0, c1, c2, c3, tc0, tc1, tc2, fc0, fc1) = cycle_weights(&j_arr);
+                    let s2 = -(c0 + c1 + c2 + c3);
+                    let s3 = tc0 + tc1 + tc2;
+                    let s4 = c0 * (c2 + c3) - fc0 - fc1;
+                    let rho_ana = rho_from_sigmas(s2, s3, s4);
+
+                    let err = rel_err(rho_ana, rho_num);
+                    if err > 1e-6 {
+                        println!("  {} ε={:.3}: ρ_ana={:.10} ρ_num={:.10} err={:.2e} NONZERO_EIGS={}",
+                            name, eps, rho_ana, rho_num, err, nonzero.len());
+                        all_ok = false;
+                    }
+                }
+            }
+        }
+    }
+    if all_ok {
+        println!("  ALL ρ_ana ≡ ρ_num: exact (all err < 1e-6)");
+    }
+
+    println!("\n  Phase 3: Fine ε grid for closed-form fit");
+    let eps_grid: Vec<f64> = (1..=500).map(|i| i as f64 * 0.001).collect();
+    #[derive(Debug)]
+    struct SpecRec { eps: f64, d: f64, rho_state: f64, rho_spec: f64, sigma2: f64, sigma3: f64, sigma4: f64 }
+    let mut recs: Vec<SpecRec> = Vec::new();
+
+    for &eps in &eps_grid {
+        let d = solve_d(eps, d_cubic);
+        let rho = (d + eps) * (1.0 - d) / d;
+        let j_arr = top_jacobian(d, eps);
+        let (c0, c1, c2, c3, tc0, tc1, tc2, fc0, fc1) = cycle_weights(&j_arr);
+        let s2 = -(c0 + c1 + c2 + c3);
+        let s3 = tc0 + tc1 + tc2;
+        let s4 = c0 * (c2 + c3) - fc0 - fc1;
+        let rho_spec = rho_from_sigmas(s2, s3, s4);
+        recs.push(SpecRec { eps, d, rho_state: rho, rho_spec, sigma2: s2, sigma3: s3, sigma4: s4 });
+    }
+
+    println!("  {:>6} {:>10} {:>10} {:>10} {:>10} {:>10} {:>12}",
+        "ε", "d", "ρ_state", "ρ_spec", "σ₂", "σ₃", "σ₄");
+    for r in recs.iter().filter(|r| (r.eps * 1000.0).round() % 50.0 == 0.0) {
+        println!("  {:.3} {:.8} {:.8} {:.8} {:.8} {:.8} {:.10}",
+            r.eps, r.d, r.rho_state, r.rho_spec, r.sigma2, r.sigma3, r.sigma4);
+    }
+
+    println!("\n  Phase 4: Closed-form fit search");
+    let fits: Vec<(&str, Box<dyn Fn(&SpecRec) -> f64>)> = vec![
+        ("ρ = a - b·ε", Box::new(|r| {
+            0.5547 - 0.338 * r.eps
+        })),
+        ("ρ = √(-σ₂)", Box::new(|r| {
+            (-r.sigma2).max(0.0).sqrt()
+        })),
+        ("ρ = (σ₃)^(1/3)", Box::new(|r| {
+            r.sigma3.abs().powf(1.0 / 3.0)
+        })),
+        ("ρ = (-σ₂+√(σ₂²+4σ₃))/2", Box::new(|r| {
+            let disc = r.sigma2 * r.sigma2 + 4.0 * r.sigma3;
+            if disc >= 0.0 { (-r.sigma2 + disc.sqrt()) / 2.0 } else { 0.0 }
+        })),
+        ("ρ = (σ₄/σ₃)^(1/1)", Box::new(|r| {
+            if r.sigma3.abs() > 1e-15 { (r.sigma4 / r.sigma3).abs() } else { 0.0 }
+        })),
+    ];
+
+    for (name, fit_fn) in &fits {
+        let mut max_err: f64 = 0.0;
+        let mut sum_err: f64 = 0.0;
+        let mut count = 0usize;
+        for r in &recs {
+            let pred = fit_fn(r);
+            if pred < 1e-15 { continue; }
+            let err = rel_err(pred, r.rho_spec);
+            max_err = max_err.max(err);
+            sum_err += err;
+            count += 1;
+        }
+        println!("  {:>35}: max_err={:.4e} mean_err={:.4e}", name, max_err, sum_err / count.max(1) as f64);
+    }
+
+    println!("\n  Phase 5: σ₄/σ₃ ratio analysis");
+    for r in recs.iter().filter(|r| (r.eps * 1000.0).round() % 50.0 == 0.0) {
+        let ratio = if r.sigma3.abs() > 1e-15 { r.sigma4 / r.sigma3 } else { 0.0 };
+        let s4_s3_ratio = r.sigma4 / r.sigma3;
+        let rho_ratio = r.rho_spec / r.d;
+        println!("  ε={:.3} σ₄/σ₃={:.8} ρ_spec/d={:.8} σ₂/d²={:.6} σ₃/d³={:.6}",
+            r.eps, s4_s3_ratio, rho_ratio, r.sigma2 / (r.d * r.d), r.sigma3 / (r.d * r.d * r.d));
+    }
+
+    println!("\n  TOP CONCEPT SPECTRAL RADIUS SUMMARY:");
+    println!("  9 cycle weights → σ₂,σ₃,σ₄ → companion → ρ");
+    println!("  Pipeline: ε → d (1D Newton) → state → J → cycles → σ → ρ");
+}
