@@ -251,4 +251,5 @@ fn run_synthetic_suite(_max_concepts: usize, _time_limit: f64, _output_dir: &Pat
     experiments::run_iteration_count_prediction();
     experiments::run_convergence_phase_decomposition();
     experiments::run_nonlinear_acceleration_analysis();
+    experiments::run_nonlinear_iteration_model();
 }
