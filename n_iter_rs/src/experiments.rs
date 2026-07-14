@@ -29521,3 +29521,161 @@ pub fn run_nonuniform_param_spectral() {
     println!("  v3.30 Jacobian complement formulas valid with non-uniform params");
     println!("  σ values vary smoothly with parameters");
 }
+
+pub fn run_parameter_sensitivity() {
+    println!("\n{}", "=".repeat(64));
+    println!("  v3.35: PARAMETER SENSITIVITY ANALYSIS");
+    println!("{}", "=".repeat(64));
+    println!("  Goal: ∂ρ/∂pᵢ for each parameter via finite differences\n");
+
+    fn rho_for_params(lattice: &fca::FcaLattice, stats: &pipeline::LatticeStats, params: &DynamicsParams) -> Option<(f64, nalgebra::SMatrix<f64, 5, 5>, usize)> {
+        let results = pipeline::run_topological_iteration(lattice, stats, params);
+        for (i, opt) in results.iter().enumerate() {
+            if let Some(ref res) = opt {
+                if !res.converged { continue; }
+                if !stats.feeders[i].is_empty() { continue; }
+                return Some((res.rho_spectral, jac_from_arr(&res.jacobian), i));
+            }
+        }
+        None
+    }
+
+    let base_params = DynamicsParams::uniform();
+    let h = 1e-6;
+    let lattice = fca::build_chain_lattice(5);
+    let stats = pipeline::compute_lattice_stats(&lattice);
+
+    let param_names = ["β₁", "δ₁", "γ₁", "η₁", "κ₁", "κ₂", "ε"];
+    let param_fns: Vec<Box<dyn Fn(&DynamicsParams, f64) -> DynamicsParams>> = vec![
+        Box::new(|p, v| p.with_beta1(v)),
+        Box::new(|p, v| p.with_delta1(v)),
+        Box::new(|p, v| p.with_gamma1(v)),
+        Box::new(|p, v| p.with_eta1(v)),
+        Box::new(|p, v| p.with_kappa1(v)),
+        Box::new(|p, v| p.with_kappa2(v)),
+        Box::new(|p, v| p.with_eps(v)),
+    ];
+
+    println!("  Phase 1: ∂ρ/∂pᵢ at uniform params (chain-5, ε=0.01)\n");
+
+    let base_eps = base_params.eps;
+    let (rho_base, _, _) = rho_for_params(&lattice, &stats, &base_params).unwrap();
+    println!("  Base ρ = {:.10}\n", rho_base);
+
+    let mut sensitivities: Vec<(f64, &str)> = Vec::new();
+
+    for (pi, (name, set_fn)) in param_names.iter().zip(param_fns.iter()).enumerate() {
+        let val = match pi {
+            0 => base_params.beta1,
+            1 => base_params.delta1,
+            2 => base_params.gamma1,
+            3 => base_params.zeta1,
+            4 => base_params.kappa1,
+            5 => base_params.kappa2,
+            6 => base_params.eps,
+            _ => unreachable!(),
+        };
+
+        let p_plus = set_fn(&base_params, val + h);
+        let p_minus = set_fn(&base_params, val - h);
+
+        let (rho_plus, _, _) = rho_for_params(&lattice, &stats, &p_plus).unwrap();
+        let (rho_minus, _, _) = rho_for_params(&lattice, &stats, &p_minus).unwrap();
+
+        let drho_dp = (rho_plus - rho_minus) / (2.0 * h);
+        let elasticity = drho_dp * val / rho_base;
+
+        sensitivities.push((elasticity.abs(), name));
+        println!("  ∂ρ/∂{} = {:+.6}  (elasticity = {:+.6})", name, drho_dp, elasticity);
+    }
+
+    sensitivities.sort_by(|a, b| b.0.partial_cmp(&a.0).unwrap());
+    println!("\n  Parameter ranking by |elasticity|:");
+    for (rank, (elas, name)) in sensitivities.iter().enumerate() {
+        let bar = "█".repeat((elas * 50.0) as usize);
+        println!("  {}. {} |η|={:.4} {}", rank + 1, name, elas, bar);
+    }
+
+    println!("\n  Phase 2: ∂ρ/∂ε across ε values");
+    let eps_values: Vec<f64> = vec![0.001, 0.005, 0.01, 0.05, 0.1, 0.2, 0.5];
+
+    println!("  {:>8} {:>10} {:>12} {:>12}", "ε", "ρ", "∂ρ/∂ε", "elasticity");
+    for &eps in &eps_values {
+        let params = base_params.with_eps(eps);
+        let (rho, _, _) = rho_for_params(&lattice, &stats, &params).unwrap();
+
+        let p_plus = params.with_eps(eps + h);
+        let p_minus = params.with_eps(eps - h);
+        let (rp, _, _) = rho_for_params(&lattice, &stats, &p_plus).unwrap();
+        let (rm, _, _) = rho_for_params(&lattice, &stats, &p_minus).unwrap();
+        let drho_deps = (rp - rm) / (2.0 * h);
+        let elas = drho_deps * eps / rho;
+
+        println!("  {:.4} {:.10} {:+.10} {:+.6}", eps, rho, drho_deps, elas);
+    }
+
+    println!("\n  Phase 3: Cycle weight sensitivities ∂cⱼ/∂ε");
+    println!("  How each cycle weight responds to ε change\n");
+
+    for &eps in &[0.01, 0.1, 0.5] {
+        let params = base_params.with_eps(eps);
+        let p_plus = params.with_eps(eps + h);
+        let p_minus = params.with_eps(eps - h);
+
+        let (_, j_base, _) = rho_for_params(&lattice, &stats, &params).unwrap();
+        let (_, j_plus, _) = rho_for_params(&lattice, &stats, &p_plus).unwrap();
+        let (_, j_minus, _) = rho_for_params(&lattice, &stats, &p_minus).unwrap();
+
+        let cw_base = {
+            let (c0, c1, c2, c3, tc0, tc1, tc2, fc0, fc1) = (
+                j_base[(0,1)] * j_base[(1,0)], j_base[(0,3)] * j_base[(3,0)],
+                j_base[(2,3)] * j_base[(3,2)], j_base[(3,4)] * j_base[(4,3)],
+                j_base[(0,1)] * j_base[(1,3)] * j_base[(3,0)],
+                j_base[(0,3)] * j_base[(3,2)] * j_base[(2,0)],
+                j_base[(0,3)] * j_base[(3,4)] * j_base[(4,0)],
+                j_base[(0,1)] * j_base[(1,3)] * j_base[(3,4)] * j_base[(4,0)],
+                j_base[(0,1)] * j_base[(1,3)] * j_base[(3,2)] * j_base[(2,0)],
+            );
+            [c0, c1, c2, c3, tc0, tc1, tc2, fc0, fc1]
+        };
+        let cw_plus = {
+            let j = j_plus;
+            let (c0, c1, c2, c3, tc0, tc1, tc2, fc0, fc1) = (
+                j[(0,1)] * j[(1,0)], j[(0,3)] * j[(3,0)],
+                j[(2,3)] * j[(3,2)], j[(3,4)] * j[(4,3)],
+                j[(0,1)] * j[(1,3)] * j[(3,0)],
+                j[(0,3)] * j[(3,2)] * j[(2,0)],
+                j[(0,3)] * j[(3,4)] * j[(4,0)],
+                j[(0,1)] * j[(1,3)] * j[(3,4)] * j[(4,0)],
+                j[(0,1)] * j[(1,3)] * j[(3,2)] * j[(2,0)],
+            );
+            [c0, c1, c2, c3, tc0, tc1, tc2, fc0, fc1]
+        };
+        let cw_minus = {
+            let j = j_minus;
+            let (c0, c1, c2, c3, tc0, tc1, tc2, fc0, fc1) = (
+                j[(0,1)] * j[(1,0)], j[(0,3)] * j[(3,0)],
+                j[(2,3)] * j[(3,2)], j[(3,4)] * j[(4,3)],
+                j[(0,1)] * j[(1,3)] * j[(3,0)],
+                j[(0,3)] * j[(3,2)] * j[(2,0)],
+                j[(0,3)] * j[(3,4)] * j[(4,0)],
+                j[(0,1)] * j[(1,3)] * j[(3,4)] * j[(4,0)],
+                j[(0,1)] * j[(1,3)] * j[(3,2)] * j[(2,0)],
+            );
+            [c0, c1, c2, c3, tc0, tc1, tc2, fc0, fc1]
+        };
+
+        let cnames = ["c₀", "c₁", "c₂", "c₃", "tc₀", "tc₁", "tc₂", "fc₀", "fc₁"];
+        print!("  ε={:.2}: ", eps);
+        for (ci, name) in cnames.iter().enumerate() {
+            let dc = (cw_plus[ci] - cw_minus[ci]) / (2.0 * h);
+            print!("∂{}/∂ε={:+.4} ", name, dc);
+        }
+        println!();
+    }
+
+    println!("\n  PARAMETER SENSITIVITY SUMMARY:");
+    println!("  ∂ρ/∂pᵢ computed via finite differences");
+    println!("  Elasticity ranking identifies most influential parameters");
+    println!("  Cycle weight decomposition reveals which graph features respond to each parameter");
+}

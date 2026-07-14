@@ -243,4 +243,6 @@ fn run_synthetic_suite(_max_concepts: usize, _time_limit: f64, _output_dir: &Pat
     experiments::run_analytical_fixed_point();
     experiments::run_top_concept_spectral_radius();
     experiments::run_full_lattice_spectral_analysis();
+    experiments::run_nonuniform_param_spectral();
+    experiments::run_parameter_sensitivity();
 }
