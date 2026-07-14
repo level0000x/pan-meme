@@ -172,6 +172,7 @@ fn run_single(name: &str) {
         ("run_prediction_residual_analysis", experiments::run_prediction_residual_analysis),
         ("run_quadratic_d0_correction", experiments::run_quadratic_d0_correction),
         ("run_expanded_parameter_validation", experiments::run_expanded_parameter_validation),
+        ("run_d0_only_robust_prediction", experiments::run_d0_only_robust_prediction),
     ];
     if let Some((_, f)) = fns.iter().find(|(n, _)| *n == name) {
         f();

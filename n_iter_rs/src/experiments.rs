@@ -37366,3 +37366,316 @@ pub fn run_expanded_parameter_validation() {
     };
     println!("\n    Min={:.2}%  Median={:.2}%  Max={:.2}%", mape_min * 100.0, mape_median * 100.0, mape_max * 100.0);
 }
+
+pub fn run_d0_only_robust_prediction() {
+    println!("\n=== v3.68: d₀-Only Cross-Regime Robust Prediction ===\n");
+
+    let param_sets: Vec<(&str, DynamicsParams)> = vec![
+        ("uniform", DynamicsParams::uniform()),
+        ("high-β", DynamicsParams::uniform().with_beta1(2.0)),
+        ("high-δ", DynamicsParams::uniform().with_delta1(2.0)),
+        ("high-κ₂", DynamicsParams::uniform().with_kappa2(2.0)),
+        ("asym-1", DynamicsParams::uniform().with_beta1(1.5).with_gamma1(0.8).with_zeta1(1.2).with_theta1(0.7).with_kappa2(1.8).with_eps(0.01)),
+        ("asym-2", DynamicsParams::uniform().with_beta1(0.5).with_gamma1(2.0).with_zeta1(0.8).with_theta1(1.5).with_kappa2(0.6).with_eps(0.05)),
+        ("extreme", DynamicsParams::uniform().with_beta1(3.0).with_gamma1(0.3).with_zeta1(2.0).with_theta1(0.4).with_kappa2(3.0).with_eps(0.02)),
+        ("low-β", DynamicsParams::uniform().with_beta1(0.3)),
+        ("high-γ", DynamicsParams::uniform().with_gamma1(2.5)),
+        ("high-ζ", DynamicsParams::uniform().with_zeta1(2.5)),
+        ("low-θ", DynamicsParams::uniform().with_theta1(0.2)),
+        ("high-ε", DynamicsParams::uniform().with_eps(0.1)),
+        ("low-ε", DynamicsParams::uniform().with_eps(0.005)),
+        ("β+γ", DynamicsParams::uniform().with_beta1(1.8).with_gamma1(1.8)),
+        ("δ+ζ", DynamicsParams::uniform().with_delta1(1.8).with_zeta1(1.8)),
+        ("θ+κ", DynamicsParams::uniform().with_theta1(1.8).with_kappa2(1.8)),
+        ("β-γ+", DynamicsParams::uniform().with_beta1(0.4).with_gamma1(2.2)),
+        ("δ-ζ+", DynamicsParams::uniform().with_delta1(0.4).with_zeta1(2.2)),
+        ("mid-1", DynamicsParams::uniform().with_beta1(0.8).with_gamma1(0.8).with_delta1(0.8).with_zeta1(0.8).with_theta1(0.8).with_kappa2(0.8)),
+        ("mid-2", DynamicsParams::uniform().with_beta1(1.2).with_gamma1(1.2).with_delta1(1.2).with_zeta1(1.2).with_theta1(1.2).with_kappa2(1.2)),
+        ("random-1", DynamicsParams::uniform().with_beta1(0.7).with_gamma1(1.6).with_delta1(0.5).with_zeta1(1.9).with_theta1(1.1).with_kappa2(0.9).with_eps(0.03)),
+        ("random-2", DynamicsParams::uniform().with_beta1(2.1).with_gamma1(0.5).with_delta1(1.7).with_zeta1(0.6).with_theta1(1.8).with_kappa2(2.2).with_eps(0.015)),
+        ("random-3", DynamicsParams::uniform().with_beta1(1.1).with_gamma1(1.1).with_delta1(2.3).with_zeta1(0.4).with_theta1(0.9).with_kappa2(1.4).with_eps(0.04)),
+        ("random-4", DynamicsParams::uniform().with_beta1(0.9).with_gamma1(0.4).with_delta1(1.0).with_zeta1(2.1).with_theta1(2.0).with_kappa2(0.7).with_eps(0.025)),
+    ];
+
+    let topo_builders: Vec<(&str, Box<dyn Fn() -> fca::FcaLattice>)> = vec![
+        ("chain-5", Box::new(|| fca::build_chain_lattice(5))),
+        ("chain-10", Box::new(|| fca::build_chain_lattice(10))),
+        ("chain-20", Box::new(|| fca::build_chain_lattice(20))),
+        ("chain-50", Box::new(|| fca::build_chain_lattice(50))),
+        ("diamond", Box::new(|| fca::build_diamond_lattice())),
+        ("m3", Box::new(|| fca::build_m3_lattice())),
+        ("b3", Box::new(|| fca::build_b3_lattice())),
+        ("b4", Box::new(|| fca::build_b4_lattice())),
+        ("grid-4x4", Box::new(|| fca::build_grid_lattice(4, 4))),
+        ("grid-5x5", Box::new(|| fca::build_grid_lattice(5, 5))),
+        ("antichain-10", Box::new(|| fca::build_antichain_lattice(10))),
+    ];
+
+    let tol = 1e-12_f64;
+
+    #[derive(Clone)]
+    struct Pt {
+        pset: String,
+        topo: String,
+        d0: f64,
+        rho_fp: f64,
+        n_actual: f64,
+    }
+
+    let mut pts: Vec<Pt> = Vec::new();
+
+    for &(tname, ref builder) in &topo_builders {
+        let lattice = builder();
+        let stats = pipeline::compute_lattice_stats(&lattice);
+        for &(pname, ref params) in &param_sets {
+            let results = pipeline::run_topological_iteration(&lattice, &stats, params);
+            for (ci, opt) in results.iter().enumerate() {
+                if let Some(ref res) = opt {
+                    if !res.converged { continue; }
+                    let rho_fp = res.rho_spectral;
+                    if rho_fp <= 0.0 || rho_fp >= 1.0 { continue; }
+                    let n_actual = res.n_iters as f64;
+                    if n_actual < 3.0 { continue; }
+                    let traj = &res.trajectory;
+                    if traj.is_empty() { continue; }
+                    let d0 = traj[0][0];
+                    if d0 <= 0.0 { continue; }
+                    pts.push(Pt { pset: pname.to_string(), topo: tname.to_string(), d0, rho_fp, n_actual });
+                }
+            }
+        }
+    }
+
+    let n = pts.len();
+    println!("  {} data points from {} sets × {} topologies\n", n, param_sets.len(), topo_builders.len());
+
+    fn mape_fn(preds: &[f64], actuals: &[f64]) -> f64 {
+        preds.iter().zip(actuals.iter()).map(|(p, a)| ((p - a) / a).abs()).sum::<f64>() / preds.len() as f64
+    }
+
+    let actuals: Vec<f64> = pts.iter().map(|p| p.n_actual).collect();
+
+    let y_err: Vec<f64> = pts.iter().map(|p| {
+        let lr = (-p.rho_fp.ln()).max(0.001);
+        let n_naive = (p.d0 / tol).ln() / lr;
+        (n_naive - p.n_actual) / p.n_actual
+    }).collect();
+
+    println!("  === 1. Baseline Models ===\n");
+
+    let preds_naive: Vec<f64> = pts.iter().map(|p| {
+        let lr = (-p.rho_fp.ln()).max(0.001);
+        (p.d0 / tol).ln() / lr
+    }).collect();
+    println!("  Naive (d₀+ρ, no correction): MAPE={:.2}%", mape_fn(&preds_naive, &actuals) * 100.0);
+
+    let preds_v357: Vec<f64> = pts.iter().map(|p| {
+        let lr = (-p.rho_fp.ln()).max(0.001);
+        let e = -0.0386 + 0.0464 * p.d0.ln() + 0.0583 * lr;
+        (p.d0 / tol).ln() / lr / (1.0 + e).max(0.1)
+    }).collect();
+    println!("  v3.57 (2-term, d₀+ρ):        MAPE={:.2}%", mape_fn(&preds_v357, &actuals) * 100.0);
+
+    println!("\n  === 2. d₀-Only Models (NO ρ_fp needed) ===\n");
+
+    let ln_d0: Vec<f64> = pts.iter().map(|p| p.d0.ln()).collect();
+    let ln_d0_sq: Vec<f64> = ln_d0.iter().map(|x| x * x).collect();
+    let inv_ln_d0: Vec<f64> = ln_d0.iter().map(|x| 1.0 / x).collect();
+
+    fn fit_predict(x_cols: &[Vec<f64>], y: &[f64], n: usize, x_names: &[&str], pts: &[Pt], tol: f64) -> (Vec<f64>, f64, Vec<f64>) {
+        let p_dim = x_cols.len();
+        let y_mean: f64 = y.iter().sum::<f64>() / n as f64;
+        let xm: Vec<f64> = x_cols.iter().map(|c| c.iter().sum::<f64>() / n as f64).collect();
+
+        let mut xt_x = vec![vec![0.0f64; p_dim]; p_dim];
+        let mut xt_y = vec![0.0f64; p_dim];
+        for i in 0..p_dim {
+            for j in 0..p_dim {
+                for s in 0..n { xt_x[i][j] += (x_cols[i][s] - xm[i]) * (x_cols[j][s] - xm[j]); }
+            }
+            for s in 0..n { xt_y[i] += (x_cols[i][s] - xm[i]) * (y[s] - y_mean); }
+        }
+
+        let mut a = xt_x;
+        let mut b_vec = xt_y;
+        for col in 0..p_dim {
+            let mut max_val = a[col][col].abs();
+            let mut max_row = col;
+            for row in (col + 1)..p_dim {
+                if a[row][col].abs() > max_val { max_val = a[row][col].abs(); max_row = row; }
+            }
+            if max_row != col { a.swap(col, max_row); b_vec.swap(col, max_row); }
+            if a[col][col].abs() < 1e-30 { continue; }
+            let pivot = a[col][col];
+            for j in col..p_dim { a[col][j] /= pivot; }
+            b_vec[col] /= pivot;
+            for row in 0..p_dim {
+                if row == col { continue; }
+                let factor = a[row][col];
+                for j in col..p_dim { a[row][j] -= factor * a[col][j]; }
+                b_vec[row] -= factor * b_vec[col];
+            }
+        }
+        let intercept = y_mean - b_vec.iter().enumerate().map(|(i, bv)| bv * xm[i]).sum::<f64>();
+
+        println!("    e = {:.4}", intercept);
+        for i in 0..p_dim {
+            println!("      + {:.6}·{}", b_vec[i], x_names[i]);
+        }
+
+        let preds: Vec<f64> = pts.iter().enumerate().map(|(idx, p)| {
+            let lr = (-p.rho_fp.ln()).max(0.001);
+            let mut e = intercept;
+            for k in 0..p_dim { e += b_vec[k] * x_cols[k][idx]; }
+            (p.d0 / tol).ln() / lr / (1.0 + e).max(0.1)
+        }).collect();
+
+        (preds, intercept, b_vec)
+    }
+
+    println!("  Model A: e = a + b·ln(d₀)");
+    let (preds_a, _, _) = fit_predict(&[ln_d0.clone()], &y_err, n, &["ln(d₀)"], &pts, tol);
+    println!("    MAPE={:.2}%\n", mape_fn(&preds_a, &actuals) * 100.0);
+
+    println!("  Model B: e = a + b·ln(d₀) + c·ln²(d₀)");
+    let (preds_b, _, _) = fit_predict(&[ln_d0.clone(), ln_d0_sq.clone()], &y_err, n, &["ln(d₀)", "ln²(d₀)"], &pts, tol);
+    println!("    MAPE={:.2}%\n", mape_fn(&preds_b, &actuals) * 100.0);
+
+    println!("  Model C: e = a + b·ln(d₀) + c/ln(d₀)");
+    let (preds_c, _, _) = fit_predict(&[ln_d0.clone(), inv_ln_d0.clone()], &y_err, n, &["ln(d₀)", "1/ln(d₀)"], &pts, tol);
+    println!("    MAPE={:.2}%\n", mape_fn(&preds_c, &actuals) * 100.0);
+
+    println!("  === 3. ρ-Only Models (NO d₀ needed) ===\n");
+
+    let lr_vec: Vec<f64> = pts.iter().map(|p| (-p.rho_fp.ln()).max(0.001)).collect();
+    let lr_sq: Vec<f64> = lr_vec.iter().map(|x| x * x).collect();
+
+    println!("  Model D: e = a + c·|ln(ρ)|");
+    let (preds_d, _, _) = fit_predict(&[lr_vec.clone()], &y_err, n, &["|ln(ρ)|"], &pts, tol);
+    println!("    MAPE={:.2}%\n", mape_fn(&preds_d, &actuals) * 100.0);
+
+    println!("  Model E: e = a + c·|ln(ρ)| + d·|ln(ρ)|²");
+    let (preds_e, _, _) = fit_predict(&[lr_vec.clone(), lr_sq.clone()], &y_err, n, &["|ln(ρ)|", "|ln(ρ)|²"], &pts, tol);
+    println!("    MAPE={:.2}%\n", mape_fn(&preds_e, &actuals) * 100.0);
+
+    println!("  === 4. Combined 2-term vs d₀-only: Is ρ Worth the Instability? ===\n");
+
+    let pset_names: Vec<String> = {
+        let mut v: Vec<String> = pts.iter().map(|p| p.pset.clone()).collect();
+        v.sort(); v.dedup(); v
+    };
+
+    fn loo_cv(
+        pts: &[Pt], x_cols: &[Vec<f64>], y: &[f64], groups: &[String],
+        group_key: &dyn Fn(&Pt) -> &str, tol: f64, actuals: &[f64],
+    ) -> f64 {
+        let p_dim = x_cols.len();
+        let mut loo_preds: Vec<f64> = Vec::new();
+
+        for held_out in groups {
+            let train: Vec<usize> = pts.iter().enumerate().filter(|(_, p)| group_key(p) != *held_out).map(|(i, _)| i).collect();
+            let test: Vec<usize> = pts.iter().enumerate().filter(|(_, p)| group_key(p) == *held_out).map(|(i, _)| i).collect();
+
+            let nt = train.len();
+            let yt: Vec<f64> = train.iter().map(|&i| y[i]).collect();
+            let yt_m: f64 = yt.iter().sum::<f64>() / nt as f64;
+            let xmt: Vec<f64> = x_cols.iter().map(|col| train.iter().map(|&i| col[i]).sum::<f64>() / nt as f64).collect();
+
+            let mut xt_x = vec![vec![0.0f64; p_dim]; p_dim];
+            let mut xt_y = vec![0.0f64; p_dim];
+            for i in 0..p_dim {
+                for j in 0..p_dim {
+                    for &s in &train { xt_x[i][j] += (x_cols[i][s] - xmt[i]) * (x_cols[j][s] - xmt[j]); }
+                }
+                for &s in &train { xt_y[i] += (x_cols[i][s] - xmt[i]) * (y[s] - yt_m); }
+            }
+
+            let mut at = xt_x;
+            let mut bt = xt_y;
+            for col in 0..p_dim {
+                let mut max_val = at[col][col].abs();
+                let mut max_row = col;
+                for row in (col + 1)..p_dim {
+                    if at[row][col].abs() > max_val { max_val = at[row][col].abs(); max_row = row; }
+                }
+                if max_row != col { at.swap(col, max_row); bt.swap(col, max_row); }
+                if at[col][col].abs() < 1e-30 { continue; }
+                let pivot = at[col][col];
+                for j in col..p_dim { at[col][j] /= pivot; }
+                bt[col] /= pivot;
+                for row in 0..p_dim {
+                    if row == col { continue; }
+                    let factor = at[row][col];
+                    for j in col..p_dim { at[row][j] -= factor * at[col][j]; }
+                    bt[row] -= factor * bt[col];
+                }
+            }
+            let int_t = yt_m - bt.iter().enumerate().map(|(i, bv)| bv * xmt[i]).sum::<f64>();
+
+            for &i in &test {
+                let lr = (-pts[i].rho_fp.ln()).max(0.001);
+                let mut e = int_t;
+                for k in 0..p_dim { e += bt[k] * x_cols[k][i]; }
+                let n_pred = (pts[i].d0 / tol).ln() / lr / (1.0 + e).max(0.1);
+                loo_preds.push(n_pred);
+            }
+        }
+        mape_fn(&loo_preds, actuals)
+    }
+
+
+    println!("  LOO-Set (24 folds):");
+    let loo_d0_set = loo_cv(&pts, &[ln_d0.clone()], &y_err, &pset_names, &|p| &p.pset, tol, &actuals);
+    let loo_2t_set = loo_cv(&pts, &[ln_d0.clone(), lr_vec.clone()], &y_err, &pset_names, &|p| &p.pset, tol, &actuals);
+    let loo_d0sq_set = loo_cv(&pts, &[ln_d0.clone(), ln_d0_sq.clone()], &y_err, &pset_names, &|p| &p.pset, tol, &actuals);
+    let loo_rho_set = loo_cv(&pts, &[lr_vec.clone()], &y_err, &pset_names, &|p| &p.pset, tol, &actuals);
+
+    println!("    d₀-only (1 var):       {:.2}%", loo_d0_set * 100.0);
+    println!("    d₀+ln²(d₀) (2 vars):  {:.2}%", loo_d0sq_set * 100.0);
+    println!("    |ln(ρ)|-only (1 var):  {:.2}%", loo_rho_set * 100.0);
+    println!("    d₀+|ln(ρ)| (2 vars):  {:.2}%", loo_2t_set * 100.0);
+
+    let topo_names: Vec<String> = {
+        let mut v: Vec<String> = pts.iter().map(|p| p.topo.clone()).collect();
+        v.sort(); v.dedup(); v
+    };
+
+    println!("\n  LOO-Topo (11 folds):");
+    let loo_d0_topo = loo_cv(&pts, &[ln_d0.clone()], &y_err, &topo_names, &|p| &p.topo, tol, &actuals);
+    let loo_2t_topo = loo_cv(&pts, &[ln_d0.clone(), lr_vec.clone()], &y_err, &topo_names, &|p| &p.topo, tol, &actuals);
+    let loo_d0sq_topo = loo_cv(&pts, &[ln_d0.clone(), ln_d0_sq.clone()], &y_err, &topo_names, &|p| &p.topo, tol, &actuals);
+    let loo_rho_topo = loo_cv(&pts, &[lr_vec.clone()], &y_err, &topo_names, &|p| &p.topo, tol, &actuals);
+
+    println!("    d₀-only (1 var):       {:.2}%", loo_d0_topo * 100.0);
+    println!("    d₀+ln²(d₀) (2 vars):  {:.2}%", loo_d0sq_topo * 100.0);
+    println!("    |ln(ρ)|-only (1 var):  {:.2}%", loo_rho_topo * 100.0);
+    println!("    d₀+|ln(ρ)| (2 vars):  {:.2}%", loo_2t_topo * 100.0);
+
+    println!("\n  === 5. Per-Set MAPE: d₀-only vs v3.57 ===\n");
+
+    let mut set_comp: Vec<(String, f64, f64)> = pset_names.iter().map(|pname| {
+        let idxs: Vec<usize> = pts.iter().enumerate().filter(|(_, p)| p.pset == *pname).map(|(i, _)| i).collect();
+        let e_d0: f64 = idxs.iter().map(|&i| ((preds_a[i] - actuals[i]) / actuals[i]).abs()).sum::<f64>() / idxs.len() as f64;
+        let e_2t: f64 = idxs.iter().map(|&i| ((preds_v357[i] - actuals[i]) / actuals[i]).abs()).sum::<f64>() / idxs.len() as f64;
+        (pname.clone(), e_d0, e_2t)
+    }).collect();
+    set_comp.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap());
+
+    println!("    Set               d₀-only   v3.57(2t)  Δ(d₀-2t)");
+    println!("    ────────────────  ────────  ─────────  ─────────");
+    for (pname, e_d0, e_2t) in &set_comp {
+        println!("    {:<18} {:.2}%    {:.2}%    {:+.2}%", pname, e_d0 * 100.0, e_2t * 100.0, (e_d0 - e_2t) * 100.0);
+    }
+
+    println!("\n  === 6. Summary: The ρ-Robustness Tradeoff ===\n");
+    println!("    Model                  Sample-in  LOO-Set  LOO-Topo  ρ needed?");
+    println!("    ─────────────────────  ─────────  ───────  ────────  ─────────");
+    println!("    Naive (d₀+ρ)           {:.1}%      -        -         Yes", mape_fn(&preds_naive, &actuals) * 100.0);
+    println!("    v3.57 (d₀+ρ, fixed)   {:.1}%      -        -         Yes", mape_fn(&preds_v357, &actuals) * 100.0);
+    println!("    d₀-only (refit)        {:.1}%      {:.1}%     {:.1}%      **No**", mape_fn(&preds_a, &actuals) * 100.0, loo_d0_set * 100.0, loo_d0_topo * 100.0);
+    println!("    d₀+ln²(d₀) (refit)    {:.1}%      {:.1}%     {:.1}%      **No**", mape_fn(&preds_b, &actuals) * 100.0, loo_d0sq_set * 100.0, loo_d0sq_topo * 100.0);
+    println!("    |ln(ρ)|-only (refit)   {:.1}%      {:.1}%     {:.1}%      Yes", mape_fn(&preds_d, &actuals) * 100.0, loo_rho_set * 100.0, loo_rho_topo * 100.0);
+    println!("    d₀+|ln(ρ)| (refit)    {:.1}%      {:.1}%     {:.1}%      Yes", mape_fn(&preds_v357, &actuals) * 100.0, loo_2t_set * 100.0, loo_2t_topo * 100.0);
+
+    println!("\n  Key insight: Compare d₀-only LOO vs d₀+ρ LOO to quantify ρ's marginal instability cost.");
+}
