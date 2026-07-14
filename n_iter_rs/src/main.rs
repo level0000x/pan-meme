@@ -259,4 +259,5 @@ fn run_synthetic_suite(_max_concepts: usize, _time_limit: f64, _output_dir: &Pat
     experiments::run_cascade_corrected_prediction();
     experiments::run_cross_topology_prediction();
     experiments::run_large_scale_cascade_validation();
+    experiments::run_cascade_refit_expanded();
 }

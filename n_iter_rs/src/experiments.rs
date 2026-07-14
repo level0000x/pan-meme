@@ -32219,3 +32219,249 @@ pub fn run_large_scale_cascade_validation() {
         println!("\n  ✗ Cascade correction does NOT improve at large scales");
     }
 }
+
+pub fn run_cascade_refit_expanded() {
+    println!("\n{}", "=".repeat(64));
+    println!("  v3.50: CASCADE PARAMETER REFIT (EXPANDED DATASET)");
+    println!("{}", "=".repeat(64));
+    println!("  Refit cascade model with chain-100 + grid-5×5/6×6 data\n");
+
+    #[derive(Clone)]
+    struct CascadePoint {
+        topo: String, depth: usize, eps: f64,
+        rho_fp: f64, ratio: f64,
+    }
+
+    let mut data: Vec<CascadePoint> = Vec::new();
+    let eps_vals: Vec<f64> = vec![0.01, 0.05, 0.1, 0.5, 1.0];
+
+    let topo_builders: Vec<(&str, Box<dyn Fn() -> fca::FcaLattice>)> = vec![
+        ("chain-3", Box::new(|| fca::build_chain_lattice(3))),
+        ("chain-5", Box::new(|| fca::build_chain_lattice(5))),
+        ("chain-7", Box::new(|| fca::build_chain_lattice(7))),
+        ("chain-10", Box::new(|| fca::build_chain_lattice(10))),
+        ("chain-15", Box::new(|| fca::build_chain_lattice(15))),
+        ("chain-20", Box::new(|| fca::build_chain_lattice(20))),
+        ("chain-30", Box::new(|| fca::build_chain_lattice(30))),
+        ("chain-50", Box::new(|| fca::build_chain_lattice(50))),
+        ("chain-100", Box::new(|| fca::build_chain_lattice(100))),
+        ("grid-3x3", Box::new(|| fca::build_grid_lattice(3, 3))),
+        ("grid-4x4", Box::new(|| fca::build_grid_lattice(4, 4))),
+        ("grid-5x5", Box::new(|| fca::build_grid_lattice(5, 5))),
+        ("grid-6x6", Box::new(|| fca::build_grid_lattice(6, 6))),
+        ("diamond", Box::new(|| fca::build_diamond_lattice())),
+    ];
+
+    for &(name, ref builder) in &topo_builders {
+        for &eps in &eps_vals {
+            let lattice = builder();
+            let stats = pipeline::compute_lattice_stats(&lattice);
+            let max_depth = stats.heights.iter().copied().max().unwrap_or(1);
+            let params = DynamicsParams::uniform().with_eps(eps);
+            let results = pipeline::run_topological_iteration(&lattice, &stats, &params);
+
+            for (i, opt) in results.iter().enumerate() {
+                if let Some(ref res) = opt {
+                    if !stats.feeders[i].is_empty() { continue; }
+                    let traj = &res.trajectory;
+                    let nt = traj.len();
+                    if nt < 3 { continue; }
+                    let rho_fp = res.rho_spectral;
+                    let m_star = *traj.last().unwrap();
+                    let delta0 = (0..5).map(|j| (traj[0][j] - m_star[j]).powi(2)).sum::<f64>().sqrt();
+                    let delta_last = (0..5).map(|j| (traj[nt-2][j] - m_star[j]).powi(2)).sum::<f64>().sqrt();
+                    let rho_eff = if delta0 > 1e-15 && delta_last > 1e-15 {
+                        (delta_last / delta0).powf(1.0 / (nt as f64 - 2.0))
+                    } else { rho_fp };
+
+                    data.push(CascadePoint {
+                        topo: name.to_string(), depth: max_depth, eps,
+                        rho_fp, ratio: rho_eff / rho_fp.max(1e-15),
+                    });
+                }
+            }
+        }
+    }
+
+    let n = data.len();
+    println!("  {} data points across {} topologies × {} ε\n",
+        n, topo_builders.len(), eps_vals.len());
+
+    let one_minus_ratio: Vec<f64> = data.iter().map(|r| (1.0 - r.ratio).max(1e-10)).collect();
+    let ln_depth: Vec<f64> = data.iter().map(|r| ((r.depth - 1).max(1) as f64).ln()).collect();
+    let ln_eps: Vec<f64> = data.iter().map(|r| r.eps.ln()).collect();
+    let ln_amp: Vec<f64> = one_minus_ratio.iter().map(|v| v.ln()).collect();
+
+    let nf = n as f64;
+    let x_bar = ln_depth.iter().sum::<f64>() / nf;
+    let z_bar = ln_eps.iter().sum::<f64>() / nf;
+    let y_bar = ln_amp.iter().sum::<f64>() / nf;
+
+    let (mut sxx, mut szz, mut sxz, mut sxy, mut syz) = (0.0f64, 0.0, 0.0, 0.0, 0.0);
+    for i in 0..n {
+        let xp = ln_depth[i] - x_bar;
+        let zp = ln_eps[i] - z_bar;
+        let yp = ln_amp[i] - y_bar;
+        sxx += xp * xp;
+        szz += zp * zp;
+        sxz += xp * zp;
+        sxy += xp * yp;
+        syz += zp * yp;
+    }
+
+    let det = sxx * szz - sxz * sxz;
+    if det.abs() < 1e-15 {
+        println!("  [SINGULAR] Cannot fit model");
+        return;
+    }
+
+    let alpha_new = (sxy * szz - syz * sxz) / det;
+    let beta_new = (syz * sxx - sxy * sxz) / det;
+    let a_raw = y_bar - alpha_new * x_bar - beta_new * z_bar;
+    let a_new = a_raw.exp();
+
+    let mut ss_res = 0.0f64;
+    let mut ss_tot = 0.0f64;
+    for i in 0..n {
+        let y_pred = a_raw + alpha_new * ln_depth[i] + beta_new * ln_eps[i];
+        ss_res += (ln_amp[i] - y_pred).powi(2);
+        ss_tot += (ln_amp[i] - y_bar).powi(2);
+    }
+    let r2_new = 1.0 - ss_res / ss_tot;
+
+    let (a_old, alpha_old, beta_old) = (0.118f64, 0.23f64, 0.29f64);
+
+    println!("  COMPARISON: OLD vs NEW cascade parameters");
+    println!("  {:>12} {:>10} {:>10} {:>10}", "Parameter", "Old(v3.45)", "New(v3.50)", "Change");
+    println!("  {:>12} {:>10.4} {:>10.4} {:>10.1}%", "A", a_old, a_new, (a_new - a_old) / a_old * 100.0);
+    println!("  {:>12} {:>10.4} {:>10.4} {:>10.1}%", "α (depth)", alpha_old, alpha_new, (alpha_new - alpha_old) / alpha_old * 100.0);
+    println!("  {:>12} {:>10.4} {:>10.4} {:>10.1}%", "β (ε)", beta_old, beta_new, (beta_new - beta_old) / beta_old * 100.0);
+    println!("  {:>12} {:>10} {:>10.4}", "R²(log)", "—", r2_new);
+
+    println!("\n  Phase 2: End-to-end prediction comparison\n");
+
+    let topo_builders2: Vec<(&str, Box<dyn Fn() -> fca::FcaLattice>)> = vec![
+        ("chain-3", Box::new(|| fca::build_chain_lattice(3))),
+        ("chain-5", Box::new(|| fca::build_chain_lattice(5))),
+        ("chain-7", Box::new(|| fca::build_chain_lattice(7))),
+        ("chain-10", Box::new(|| fca::build_chain_lattice(10))),
+        ("chain-15", Box::new(|| fca::build_chain_lattice(15))),
+        ("chain-20", Box::new(|| fca::build_chain_lattice(20))),
+        ("chain-30", Box::new(|| fca::build_chain_lattice(30))),
+        ("chain-50", Box::new(|| fca::build_chain_lattice(50))),
+        ("chain-100", Box::new(|| fca::build_chain_lattice(100))),
+        ("grid-3x3", Box::new(|| fca::build_grid_lattice(3, 3))),
+        ("grid-4x4", Box::new(|| fca::build_grid_lattice(4, 4))),
+        ("grid-5x5", Box::new(|| fca::build_grid_lattice(5, 5))),
+        ("grid-6x6", Box::new(|| fca::build_grid_lattice(6, 6))),
+        ("diamond", Box::new(|| fca::build_diamond_lattice())),
+    ];
+
+    #[derive(Clone)]
+    struct PredRec {
+        topo: String, depth: usize, eps: f64,
+        n_actual: usize, n_naive: f64, n_old: f64, n_new: f64,
+    }
+
+    let mut preds: Vec<PredRec> = Vec::new();
+
+    for &(name, ref builder) in &topo_builders2 {
+        for &eps in &eps_vals {
+            let lattice = builder();
+            let stats = pipeline::compute_lattice_stats(&lattice);
+            let max_depth = stats.heights.iter().copied().max().unwrap_or(1);
+            let params = DynamicsParams::uniform().with_eps(eps);
+            let results = pipeline::run_topological_iteration(&lattice, &stats, &params);
+
+            for (i, opt) in results.iter().enumerate() {
+                if let Some(ref res) = opt {
+                    if !stats.feeders[i].is_empty() { continue; }
+                    let traj = &res.trajectory;
+                    let nt = traj.len();
+                    if nt < 3 { continue; }
+                    let rho_fp = res.rho_spectral;
+                    let m_star = *traj.last().unwrap();
+                    let d0 = (0..5).map(|j| (traj[0][j] - m_star[j]).powi(2)).sum::<f64>().sqrt();
+                    let tol = 1e-12_f64;
+                    let ln_ratio = d0 / tol;
+                    let n_naive = if rho_fp < 1.0 && rho_fp > 0.0 && ln_ratio > 0.0 {
+                        ln_ratio.ln() / (-rho_fp.ln())
+                    } else { 0.0 };
+
+                    let amp_old = a_old * ((max_depth - 1).max(1) as f64).powf(alpha_old) * eps.powf(beta_old);
+                    let rho_old = rho_fp * (1.0 - amp_old).max(0.1);
+                    let n_old = if rho_old < 1.0 && rho_old > 0.0 && ln_ratio > 0.0 {
+                        ln_ratio.ln() / (-rho_old.ln())
+                    } else { 0.0 };
+
+                    let amp_new = a_new * ((max_depth - 1).max(1) as f64).powf(alpha_new) * eps.powf(beta_new);
+                    let rho_new = rho_fp * (1.0 - amp_new).max(0.1);
+                    let n_new = if rho_new < 1.0 && rho_new > 0.0 && ln_ratio > 0.0 {
+                        ln_ratio.ln() / (-rho_new.ln())
+                    } else { 0.0 };
+
+                    preds.push(PredRec {
+                        topo: name.to_string(), depth: max_depth, eps,
+                        n_actual: nt - 1, n_naive, n_old, n_new,
+                    });
+                }
+            }
+        }
+    }
+
+    let np = preds.len();
+    let mape_naive: f64 = preds.iter()
+        .filter(|r| r.n_actual > 0 && r.n_naive > 0.0)
+        .map(|r| (r.n_naive - r.n_actual as f64).abs() / r.n_actual as f64)
+        .sum::<f64>() / preds.iter().filter(|r| r.n_actual > 0 && r.n_naive > 0.0).count() as f64 * 100.0;
+    let mape_old: f64 = preds.iter()
+        .filter(|r| r.n_actual > 0 && r.n_old > 0.0)
+        .map(|r| (r.n_old - r.n_actual as f64).abs() / r.n_actual as f64)
+        .sum::<f64>() / preds.iter().filter(|r| r.n_actual > 0 && r.n_old > 0.0).count() as f64 * 100.0;
+    let mape_new: f64 = preds.iter()
+        .filter(|r| r.n_actual > 0 && r.n_new > 0.0)
+        .map(|r| (r.n_new - r.n_actual as f64).abs() / r.n_actual as f64)
+        .sum::<f64>() / preds.iter().filter(|r| r.n_actual > 0 && r.n_new > 0.0).count() as f64 * 100.0;
+
+    let n_mean: f64 = preds.iter().map(|r| r.n_actual as f64).sum::<f64>() / np as f64;
+    let ss_tot: f64 = preds.iter().map(|r| (r.n_actual as f64 - n_mean).powi(2)).sum();
+    let ss_res_naive: f64 = preds.iter().map(|r| (r.n_actual as f64 - r.n_naive).powi(2)).sum();
+    let ss_res_old: f64 = preds.iter().map(|r| (r.n_actual as f64 - r.n_old).powi(2)).sum();
+    let ss_res_new: f64 = preds.iter().map(|r| (r.n_actual as f64 - r.n_new).powi(2)).sum();
+    let r2_naive = if ss_tot > 1e-15 { 1.0 - ss_res_naive / ss_tot } else { 0.0 };
+    let r2_old = if ss_tot > 1e-15 { 1.0 - ss_res_old / ss_tot } else { 0.0 };
+    let r2_new_e2e = if ss_tot > 1e-15 { 1.0 - ss_res_new / ss_tot } else { 0.0 };
+
+    println!("  END-TO-END PREDICTION COMPARISON ({} data points):", np);
+    println!("  {:>25} {:>10} {:>10} {:>10}", "Metric", "Naive", "Old(v3.45)", "New(v3.50)");
+    println!("  {:>25} {:>10.1}% {:>10.1}% {:>10.1}%", "MAPE", mape_naive, mape_old, mape_new);
+    println!("  {:>25} {:>10.4} {:>10.4} {:>10.4}", "R²", r2_naive, r2_old, r2_new_e2e);
+
+    println!("\n  Per-topology MAPE (old → new):");
+    let mut topo_names: Vec<String> = preds.iter().map(|r| r.topo.clone()).collect::<std::collections::HashSet<_>>().into_iter().collect();
+    topo_names.sort();
+    for topo in &topo_names {
+        let subset: Vec<&PredRec> = preds.iter().filter(|r| &r.topo == topo).collect();
+        let mape_o: f64 = subset.iter()
+            .filter(|r| r.n_actual > 0 && r.n_old > 0.0)
+            .map(|r| (r.n_old - r.n_actual as f64).abs() / r.n_actual as f64)
+            .sum::<f64>() / subset.iter().filter(|r| r.n_actual > 0 && r.n_old > 0.0).count().max(1) as f64 * 100.0;
+        let mape_n: f64 = subset.iter()
+            .filter(|r| r.n_actual > 0 && r.n_new > 0.0)
+            .map(|r| (r.n_new - r.n_actual as f64).abs() / r.n_actual as f64)
+            .sum::<f64>() / subset.iter().filter(|r| r.n_actual > 0 && r.n_new > 0.0).count().max(1) as f64 * 100.0;
+        let delta = mape_n - mape_o;
+        let arrow = if delta < -0.5 { "↓" } else if delta > 0.5 { "↑" } else { "=" };
+        println!("  {:>12}: old={:>5.1}% new={:>5.1}% Δ={:>+.1}% {}", topo, mape_o, mape_n, delta, arrow);
+    }
+
+    println!("\n  CASCADE PARAMETER REFIT SUMMARY:");
+    println!("  Original (v3.45): A={:.4} α={:.4} β={:.4}", a_old, alpha_old, beta_old);
+    println!("  Refitted (v3.50): A={:.4} α={:.4} β={:.4}", a_new, alpha_new, beta_new);
+    println!("  R²(cascade model): {:.4}", r2_new);
+    if mape_new < mape_old {
+        println!("  ✓ Refit improves MAPE: {:.1}%→{:.1}% (Δ={:.1}%)", mape_old, mape_new, mape_new - mape_old);
+    } else {
+        println!("  ✗ Refit does NOT improve MAPE: {:.1}%→{:.1}%", mape_old, mape_new);
+    }
+}
