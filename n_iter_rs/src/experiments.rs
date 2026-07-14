@@ -32671,3 +32671,176 @@ pub fn run_per_level_cascade_decomposition() {
     println!("  The per-level decomposition reveals the microscopic mechanism");
     println!("  behind the macroscopic cascade amplification formula.");
 }
+
+pub fn run_nonlinearity_cascade_separation() {
+    println!("\n{}", "=".repeat(64));
+    println!("  v3.52: NONLINEARITY vs CASCADE EFFECT SEPARATION");
+    println!("{}", "=".repeat(64));
+    println!("  Compare isolated (b_up=0) vs coupled iteration per concept\n");
+
+    let eps_vals: Vec<f64> = vec![0.01, 0.1, 0.5, 1.0];
+    let topo_builders: Vec<(&str, Box<dyn Fn() -> fca::FcaLattice>)> = vec![
+        ("chain-10", Box::new(|| fca::build_chain_lattice(10))),
+        ("chain-20", Box::new(|| fca::build_chain_lattice(20))),
+        ("chain-50", Box::new(|| fca::build_chain_lattice(50))),
+        ("grid-4x4", Box::new(|| fca::build_grid_lattice(4, 4))),
+        ("grid-5x5", Box::new(|| fca::build_grid_lattice(5, 5))),
+        ("diamond", Box::new(|| fca::build_diamond_lattice())),
+    ];
+
+    #[derive(Clone)]
+    struct SepRec {
+        topo: String, depth: usize, eps: f64,
+        rho_iso: f64, rho_coup: f64, rho_fp_iso: f64, rho_fp_coup: f64,
+        delta_iso: f64, delta_coup: f64, delta_cascade: f64,
+    }
+
+    let mut records: Vec<SepRec> = Vec::new();
+
+    for &(name, ref builder) in &topo_builders {
+        for &eps in &eps_vals {
+            let lattice = builder();
+            let stats = pipeline::compute_lattice_stats(&lattice);
+            let params = DynamicsParams::uniform().with_eps(eps);
+            let max_depth = stats.heights.iter().copied().max().unwrap_or(1);
+
+            let coupled_results = pipeline::run_topological_iteration(&lattice, &stats, &params);
+
+            let n_concepts = lattice.concepts.len();
+            let mut iso_results: Vec<Option<n_operator::IterResult>> = vec![None; n_concepts];
+            let mut sorted: Vec<usize> = (0..n_concepts).collect();
+            sorted.sort_by_key(|&i| std::cmp::Reverse(stats.heights[i]));
+
+            for &ci in &sorted {
+                let m0 = pipeline::init_state(ci, &lattice, &stats);
+                let result = n_operator::run_iteration(&m0, 0.0, 0.0, &params, 500, 1e-12);
+                iso_results[ci] = Some(result);
+            }
+
+            for depth_lev in 0..=max_depth {
+                let concepts_at_level: Vec<usize> = (0..n_concepts)
+                    .filter(|&i| stats.heights[i] == depth_lev)
+                    .collect();
+                if concepts_at_level.is_empty() { continue; }
+
+                let mut iso_rates: Vec<f64> = Vec::new();
+                let mut coup_rates: Vec<f64> = Vec::new();
+                let mut iso_fps: Vec<f64> = Vec::new();
+                let mut coup_fps: Vec<f64> = Vec::new();
+
+                for &ci in &concepts_at_level {
+                    if let (Some(ref iso), Some(ref coup)) = (&iso_results[ci], &coupled_results[ci]) {
+                        let collect_rates = |traj: &[[f64; 5]], m_star_arr: &[f64; 5]| -> Vec<f64> {
+                            let nt = traj.len();
+                            if nt < 4 { return vec![]; }
+                            let mut rates = Vec::new();
+                            for k in 1..nt-1 {
+                                let dk = (0..5).map(|j| (traj[k][j] - m_star_arr[j]).powi(2)).sum::<f64>().sqrt();
+                                let dk1 = (0..5).map(|j| (traj[k+1][j] - m_star_arr[j]).powi(2)).sum::<f64>().sqrt();
+                                if dk > 1e-15 && dk1 > 1e-15 {
+                                    let ratio = dk1 / dk;
+                                    if ratio > 0.0 && ratio < 1.0 { rates.push(ratio); }
+                                }
+                            }
+                            rates
+                        };
+
+                        let iso_mstar = five_dim::to_array(&iso.m_star);
+                        let coup_mstar = five_dim::to_array(&coup.m_star);
+                        iso_rates.extend(collect_rates(&iso.trajectory, &iso_mstar));
+                        coup_rates.extend(collect_rates(&coup.trajectory, &coup_mstar));
+                        iso_fps.push(iso.rho_spectral);
+                        coup_fps.push(coup.rho_spectral);
+                    }
+                }
+
+                if !iso_rates.is_empty() && !coup_rates.is_empty() {
+                    iso_rates.sort_by(|a, b| a.partial_cmp(b).unwrap());
+                    coup_rates.sort_by(|a, b| a.partial_cmp(b).unwrap());
+                    let rho_iso = iso_rates[iso_rates.len() / 2];
+                    let rho_coup = coup_rates[coup_rates.len() / 2];
+                    let rho_fp_iso = iso_fps.iter().copied().fold(0.0f64, f64::max);
+                    let rho_fp_coup = coup_fps.iter().copied().fold(0.0f64, f64::max);
+
+                    let delta_iso = 1.0 - rho_iso / rho_fp_iso.max(1e-15);
+                    let delta_coup = 1.0 - rho_coup / rho_fp_coup.max(1e-15);
+                    let delta_cascade = 1.0 - rho_coup / rho_iso.max(1e-15);
+
+                    records.push(SepRec {
+                        topo: name.to_string(), depth: depth_lev, eps,
+                        rho_iso, rho_coup, rho_fp_iso, rho_fp_coup,
+                        delta_iso, delta_coup, delta_cascade,
+                    });
+                }
+            }
+        }
+    }
+
+    println!("  {} records across {} topologies × {} ε × depth levels\n",
+        records.len(), topo_builders.len(), eps_vals.len());
+
+    println!("  {:>12} {:>5} {:>5} {:>8} {:>8} {:>8} {:>8} {:>8} {:>8} {:>8}",
+        "topo", "depth", "ε", "ρ_iso", "ρ_coup", "ρ_fp", "δ_iso", "δ_coup", "δ_casc", "δ_casc%");
+    for r in &records {
+        let cascade_pct = if r.delta_iso.abs() > 1e-10 { r.delta_cascade / r.delta_iso * 100.0 } else { 0.0 };
+        println!("  {:>12} {:>5} {:>5.2} {:>8.4} {:>8.4} {:>8.4} {:>8.4} {:>8.4} {:>8.4} {:>7.1}%",
+            r.topo, r.depth, r.eps, r.rho_iso, r.rho_coup, r.rho_fp_iso,
+            r.delta_iso, r.delta_coup, r.delta_cascade, cascade_pct);
+    }
+
+    println!("\n  AGGREGATE ANALYSIS:\n");
+
+    let mean_delta_iso: f64 = records.iter().filter(|r| r.delta_iso > 0.0).map(|r| r.delta_iso).sum::<f64>()
+        / records.iter().filter(|r| r.delta_iso > 0.0).count().max(1) as f64;
+    let mean_delta_coup: f64 = records.iter().filter(|r| r.delta_coup > 0.0).map(|r| r.delta_coup).sum::<f64>()
+        / records.iter().filter(|r| r.delta_coup > 0.0).count().max(1) as f64;
+    let mean_delta_cascade: f64 = records.iter().filter(|r| r.delta_cascade.abs() > 1e-10).map(|r| r.delta_cascade).sum::<f64>()
+        / records.iter().filter(|r| r.delta_cascade.abs() > 1e-10).count().max(1) as f64;
+
+    println!("  Mean δ_iso (nonlinearity only):  {:.4}", mean_delta_iso);
+    println!("  Mean δ_coup (total correction):  {:.4}", mean_delta_coup);
+    println!("  Mean δ_cascade (cascade only):   {:.4}", mean_delta_cascade);
+    println!("  Cascade fraction of total:       {:.1}%", mean_delta_cascade / mean_delta_coup.max(1e-10) * 100.0);
+    println!("  Nonlinearity fraction:           {:.1}%", (mean_delta_coup - mean_delta_cascade) / mean_delta_coup.max(1e-10) * 100.0);
+
+    println!("\n  Per-depth breakdown:\n");
+    let mut depth_bins: Vec<usize> = records.iter().map(|r| r.depth).collect::<std::collections::HashSet<_>>().into_iter().collect();
+    depth_bins.sort();
+
+    println!("  {:>5} {:>10} {:>10} {:>10} {:>10} {:>10}", "depth", "δ_iso", "δ_coup", "δ_casc", "casc_%", "n");
+    for &d in &depth_bins {
+        let subset: Vec<&SepRec> = records.iter().filter(|r| r.depth == d && r.delta_iso > 0.0).collect();
+        if subset.is_empty() { continue; }
+        let n = subset.len();
+        let m_iso: f64 = subset.iter().map(|r| r.delta_iso).sum::<f64>() / n as f64;
+        let m_coup: f64 = subset.iter().map(|r| r.delta_coup).sum::<f64>() / n as f64;
+        let m_casc: f64 = subset.iter().map(|r| r.delta_cascade).sum::<f64>() / n as f64;
+        let pct = if m_iso.abs() > 1e-10 { m_casc / m_iso * 100.0 } else { 0.0 };
+        println!("  {:>5} {:>10.4} {:>10.4} {:>10.4} {:>9.1}% {:>10}", d, m_iso, m_coup, m_casc, pct, n);
+    }
+
+    println!("\n  Per-ε breakdown:\n");
+    println!("  {:>5} {:>10} {:>10} {:>10} {:>10}", "ε", "δ_iso", "δ_coup", "δ_casc", "casc_%");
+    for &eps in &eps_vals {
+        let subset: Vec<&SepRec> = records.iter().filter(|r| (r.eps - eps).abs() < 0.001 && r.delta_iso > 0.0).collect();
+        if subset.is_empty() { continue; }
+        let n = subset.len();
+        let m_iso: f64 = subset.iter().map(|r| r.delta_iso).sum::<f64>() / n as f64;
+        let m_coup: f64 = subset.iter().map(|r| r.delta_coup).sum::<f64>() / n as f64;
+        let m_casc: f64 = subset.iter().map(|r| r.delta_cascade).sum::<f64>() / n as f64;
+        let pct = if m_iso.abs() > 1e-10 { m_casc / m_iso * 100.0 } else { 0.0 };
+        println!("  {:>5.2} {:>10.4} {:>10.4} {:>10.4} {:>9.1}%", eps, m_iso, m_coup, m_casc, pct);
+    }
+
+    println!("\n  SEPARATION SUMMARY:");
+    println!("  δ_total = δ_nonlinearity + δ_cascade");
+    println!("  δ_nonlinearity: from Hessian/trajectory nonlinearity (present even in isolation)");
+    println!("  δ_cascade: from upstream coupling (only present in lattice iteration)");
+    if mean_delta_cascade > 0.0 && mean_delta_iso > 0.0 {
+        println!("  Nonlinearity dominates: δ_nonlin={:.3} ({:.0}%) vs δ_cascade={:.3} ({:.0}%)",
+            mean_delta_iso - mean_delta_cascade,
+            (mean_delta_iso - mean_delta_cascade) / mean_delta_iso * 100.0,
+            mean_delta_cascade,
+            mean_delta_cascade / mean_delta_iso * 100.0);
+    }
+}
