@@ -237,4 +237,8 @@ fn run_synthetic_suite(_max_concepts: usize, _time_limit: f64, _output_dir: &Pat
     experiments::run_invisible_dof_parameter_dependence();
     experiments::run_cross_topology_nonnormality();
     experiments::run_gmax_cycle_weight_prediction();
+    experiments::run_cycle_to_spectrum_prediction();
+    experiments::run_walk_decomposition();
+    experiments::run_analytical_jacobian_verification();
+    experiments::run_analytical_fixed_point();
 }
