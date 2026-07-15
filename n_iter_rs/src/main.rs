@@ -182,6 +182,10 @@ fn run_single(name: &str) {
         ("run_tm_fca_cluster", experiments::run_tm_fca_cluster_analysis),
         ("run_tm_fca_block", experiments::run_tm_fca_block_decomposition),
         ("run_tm_fca_ps", experiments::run_tm_fca_pattern_structure),
+        ("run_tm_fca_spectral", experiments::run_tm_fca_spectral_diagnostics),
+        ("run_tm_fca_all", experiments::run_tm_fca_definitive),
+        ("run_tm_fca_tevo", experiments::run_tm_fca_time_evolution),
+        ("run_tm_fca_osc", experiments::run_tm_fca_oscillation),
     ];
     if let Some((_, f)) = fns.iter().find(|(n, _)| *n == name) {
         f();

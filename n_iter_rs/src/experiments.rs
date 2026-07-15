@@ -38101,8 +38101,8 @@ pub fn run_tm_fca_pattern_structure() {
     println!("{}", "=".repeat(72));
 
     let params = DynamicsParams::uniform();
-    let max_levels = [1, 2, 3, 4];
-    let k_configs = [(2, 4)]; // k_min=2, k_max=4: 2,3,4-grams
+    let max_levels = [1, 2, 3, 4, 5];
+    let k_configs = [(2, 5)]; // k_min=2, k_max=5: 2,3,4,5-grams
     let max_concepts = 50000;
     let time_limit = 300.0;
 
@@ -38285,6 +38285,557 @@ pub fn run_tm_fca_block_decomposition() {
         max_concepts_champ, if max_concepts_champ > 10 { "✓" } else { "✗" });
     println!("    Antihydra:       max concepts = {} {}",
         max_concepts_anti, if max_concepts_anti > 10 { "✓" } else { "✗" });
+
+    println!("\n{}", "=".repeat(72));
+}
+
+pub fn run_tm_fca_spectral_diagnostics() {
+    println!("\n{}", "=".repeat(72));
+    println!("  B-24 v10: Random Matrix Spectral Diagnostics");
+    println!("{}", "=".repeat(72));
+
+    let params = DynamicsParams::uniform();
+    let max_concepts = 50000;
+    let time_limit = 300.0;
+
+    println!("\n  Strategy: Full eigenvalue decomposition → spacing statistics → RMT");
+    println!("  Compare: GOE (Wigner-Dyson) vs Poisson vs actual TM spectra");
+    println!("  Key: Eigenvalue spacing ratios distinguish integrable from chaotic dynamics");
+
+    let nonhalter = crate::tm_fca::simple_nonhalter();
+    let champion = crate::tm_fca::current_champion();
+    let antihydra = crate::tm_fca::antihydra();
+
+    let (diag_nh, diag_cc, diag_ah) = crate::tm_fca::run_full_spectral_diagnostics(
+        &nonhalter, &champion, &antihydra,
+        50000, 20, 2, 4, 2, 4,
+        max_concepts, time_limit, &params,
+    );
+
+    // Display results
+    let dias: [&crate::tm_fca::SpectralDiagnostic; 3] = [&diag_nh, &diag_cc, &diag_ah];
+
+    println!("\n── Full Eigenvalue Summary ──\n");
+    println!("  {:>20} {:>10} {:>10} {:>8} {:>8} {:>12} {:>12} {:>12} {:>12}",
+        "TM", "Concepts", "Eigenvals", "Real", "Complex", "ρ_max", "ρ_mean", "ρ_median", "ρ_std");
+    println!("  {:>20} {:>10} {:>10} {:>8} {:>8} {:>12} {:>12} {:>12} {:>12}",
+        "──", "────────", "──────────", "────", "───────", "──────", "──────", "──────", "──────");
+
+    for d in &dias {
+        println!("  {:>20} {:>10} {:>10} {:>8} {:>8} {:>12.8} {:>12.8} {:>12.8} {:>12.8}",
+            d.name, d.n_concepts, d.n_eigenvalues, d.n_real, d.n_complex,
+            d.rho_max, d.rho_mean, d.rho_median, d.rho_std);
+    }
+
+    // Eigenvalue histogram
+    println!("\n── Eigenvalue Distribution ──");
+    for d in &dias {
+        if d.eigenvalues.is_empty() { continue; }
+        print!("  {:>20}: [", d.name);
+        for (i, &e) in d.eigenvalues.iter().enumerate() {
+            if i % 8 == 0 && i > 0 { print!("\n{:>25}", " "); }
+            print!("{:.6}", e);
+            if i < d.eigenvalues.len() - 1 { print!(", "); }
+        }
+        println!("]");
+    }
+
+    // Spacing statistics
+    println!("\n── Nearest-Neighbor Spacing Statistics ──");
+    println!("  {:>20} {:>10} {:>10} {:>12} {:>12} {:>12} {:>12}",
+        "TM", "Spacings", "Ratios", "Sp_mean", "Sp_std", "Ratio_mean", "KS_GOE|Pois");
+    println!("  {:>20} {:>10} {:>10} {:>12} {:>12} {:>12} {:>12}",
+        "──", "───────", "──────", "───────", "───────", "───────", "──────────");
+
+    for d in &dias {
+        let ks_str = if !d.ks_goe.is_nan() {
+            format!("{:.4}|{:.4}", d.ks_goe, d.ks_poisson)
+        } else { "N/A".to_string() };
+        println!("  {:>20} {:>10} {:>10} {:>12.6} {:>12.6} {:>12.6} {:>12}",
+            d.name, d.spacings.len(), d.ratios.len(),
+            d.spacing_mean, d.spacing_std, d.ratio_mean, ks_str);
+    }
+
+    // RMT interpretation
+    println!("\n── RMT Interpretation ──");
+    println!("  Reference: GOE ratio_mean ≈ 0.5359  (correlated, chaotic)");
+    println!("             Poisson ratio_mean ≈ 0.386  (uncorrelated, integrable)");
+
+    for d in &dias {
+        let cha = d.ratio_mean;
+        let goe_dist = (cha - 0.5359).abs();
+        let pois_dist = (cha - 0.386).abs();
+        let regime = if goe_dist < pois_dist {
+            "GOE-like (chaotic)"
+        } else {
+            "Poisson-like (integrable)"
+        };
+        let conf = if goe_dist.min(pois_dist) < 0.08 { "strong" } else { "weak" };
+        println!("  {:>20}: ratio_mean={:.6} → {} (ΔGOE={:.4}, ΔPois={:.4}) [{:.6}]",
+            d.name, cha, regime, goe_dist, pois_dist, conf);
+    }
+
+    // Spacing histogram (text-based)
+    println!("\n── Spacing Distribution (text histogram) ──");
+    for d in &dias {
+        if d.spacings.is_empty() { continue; }
+        let n = d.spacings.len();
+        let max_s = d.spacings.last().copied().unwrap_or(2.0);
+        let bin_w = (max_s + 0.1) / 20.0;
+
+        println!("  {:>20}:", d.name);
+        let mut bins = vec![0u32; 20];
+        for &s in &d.spacings {
+            let idx = ((s / bin_w) as usize).min(19);
+            bins[idx] += 1;
+        }
+        for i in 0..20 {
+            let low = i as f64 * bin_w;
+            let high = low + bin_w;
+            let bar = "*".repeat((bins[i] as usize * 40 / n.max(1)).max(1));
+            println!("    [{:.1}-{:.1}) {:>3} {}", low, high, bins[i], bar);
+        }
+    }
+
+    // ρ(J) distinction check
+    println!("\n── ρ(J) Summary ──");
+    let rhos = [diag_nh.rho_max, diag_cc.rho_max, diag_ah.rho_max];
+    let all_same = (rhos[0] - rhos[1]).abs() < 1e-8 && (rhos[0] - rhos[2]).abs() < 1e-8;
+    println!("  SimpleNonHalter: ρ = {:.8}", rhos[0]);
+    println!("  CurrentChampion: ρ = {:.8}", rhos[1]);
+    println!("  Antihydra:       ρ = {:.8}", rhos[2]);
+    if all_same {
+        println!("  → ρ(J) identical across all TMs (as expected)");
+        println!("  → But check spacing/ratio statistics above for differentiation!");
+    } else {
+        println!("  *** ρ(J) DIFFERS between TMs! ***");
+    }
+
+    println!("\n{}", "=".repeat(72));
+}
+
+/// Definitive B-24 experiment: expanded PS (k2-5, L5, L=50) + KS entropy + spectral.
+pub fn run_tm_fca_definitive() {
+    use crate::tm_fca::{self, TuringMachine};
+
+    println!("\n{}", "=".repeat(72));
+    println!("  B-24 v12: Multi-TM Validation — 7 BB(6) TMs × 3 Indicators");
+    println!("{}", "=".repeat(72));
+
+    let params = DynamicsParams::uniform();
+    let max_level = 5;
+    let (k_min, k_max) = (2, 5);
+    let max_concepts = 50000;
+    let time_limit = 600.0;
+    let window_l = 50;
+
+    struct TmPlan {
+        name: &'static str,
+        steps: u64,
+        sample: u64,
+        class: &'static str,
+    }
+
+    let tms: Vec<(TuringMachine, TmPlan)> = vec![
+        (tm_fca::simple_nonhalter(), TmPlan { name: "SimpleNonHalter", steps: 5000, sample: 2, class: "non-halt (p2)" }),
+        (tm_fca::periodic3_nonhalter(), TmPlan { name: "Periodic3NH", steps: 5000, sample: 2, class: "non-halt (p3)" }),
+        (tm_fca::translator_nonhalter(), TmPlan { name: "TranslatorNH", steps: 5000, sample: 2, class: "non-halt (shift)" }),
+        (tm_fca::bb4_champion(), TmPlan { name: "BB4Champion", steps: 2000, sample: 4, class: "halt (107)" }),
+        (tm_fca::bb5_champion(), TmPlan { name: "BB5Champion", steps: 10000, sample: 4, class: "halt (47M)" }),
+        (tm_fca::antihydra(), TmPlan { name: "Antihydra", steps: 50000, sample: 4, class: "undecided" }),
+        (tm_fca::current_champion(), TmPlan { name: "CurrentChamp", steps: 10000, sample: 4, class: "halt (>2↑5)" }),
+    ];
+
+    println!("\n  Strategy: Test all 7 TMs on identical pipeline:");
+    println!("    PS: k∈[{},{}], levels 1-{}, L={}", k_min, k_max, max_level, window_l);
+    println!("    KS entropy: block sizes 1-5");
+    println!("    Spectral: full Jacobian eigenvalue decomposition");
+
+    // ─── Part 1: KS Entropy ────────────────────────────────────────────
+    println!("\n── Part 1: Kolmogorov-Sinai Entropy ──\n");
+    println!("  {:>20} {:>10} {:>10} {:>10} {:>10} {:>10} {:>10} {:>12}",
+        "TM", "Steps", "H(1)", "H(2)", "H(3)", "H(4)", "H(5)", "Rate h");
+    println!("  {:>20} {:>10} {:>10} {:>10} {:>10} {:>10} {:>10} {:>12}",
+        "──", "─────", "────", "────", "────", "────", "────", "──────");
+
+    let mut ks_rates: Vec<(&str, f64)> = Vec::new();
+    for (tm, plan) in &tms {
+        let (h_vals, rate, sim_steps) = tm_fca::compute_ks_entropy(tm, plan.steps, window_l, 5);
+        ks_rates.push((plan.name, rate));
+        let h = |i: usize| if i < h_vals.len() { h_vals[i] } else { f64::NAN };
+        println!("  {:>20} {:>10} {:>10.4} {:>10.4} {:>10.4} {:>10.4} {:>10.4} {:>12.6}",
+            plan.name, sim_steps, h(0), h(1), h(2), h(3), h(4), rate);
+    }
+
+    // ─── Part 2: Pattern Structure ─────────────────────────────────────
+    println!("\n── Part 2: Pattern Structure (k2-5, L5) ──\n");
+
+    let mut ps_concepts: Vec<(&str, usize, usize, usize)> = Vec::new();
+    for (tm, plan) in &tms {
+        let seq = tm_fca::compute_pattern_rho_sequence(
+            tm, window_l, plan.steps, plan.sample, &[max_level], &[(k_min, k_max)],
+            max_concepts, time_limit, &params,
+        );
+        let max_c = seq.iter().max_by_key(|x| x.4).map(|x| x.4).unwrap_or(0);
+        let max_edges = seq.iter().max_by_key(|x| x.5).map(|x| x.5).unwrap_or(0);
+        let max_attrs = seq.iter().max_by_key(|x| x.6).map(|x| x.6).unwrap_or(0);
+        ps_concepts.push((plan.name, max_c, max_edges, max_attrs));
+    }
+
+    // ─── Part 3: Spectral Diagnostics (all TMs) ────────────────────────
+    println!("\n── Part 3: Spectral Diagnostics ──\n");
+
+    let mut spectral_results: Vec<(String, tm_fca::SpectralDiagnostic)> = Vec::new();
+    for (tm, plan) in &tms {
+        let (mat, _, _, _, _, _) = tm_fca::build_pattern_structure_context(
+            tm, window_l as u64 * 200, window_l, 4, max_level, k_min, k_max,
+        );
+        let lattice = tm_fca::build_lattice(&mat, max_concepts, time_limit);
+        println!("    {:>20}: {} concepts, {} edges", plan.name, lattice.concepts.len(), lattice.edges.len());
+        let diag = tm_fca::compute_spectral_diagnostics(&lattice, plan.name, &params);
+        spectral_results.push((plan.name.to_string(), diag));
+    }
+
+    // ─── Part 4: Integrated Summary ────────────────────────────────────
+    println!("\n{}", "=".repeat(72));
+    println!("  B-24 v12: Multi-TM Integrated Matrix");
+    println!("{}", "=".repeat(72));
+
+    println!("\n  ┌─ 7 TM × 3 Indicators Matrix ──────────────────────────────┐");
+    println!("  │ {:>20} {:>10} {:>10} {:>8} {:>12} │", "TM", "Concept", "KS h", "ratio_m", "Class");
+    println!("  │ {:>20} {:>10} {:>10} {:>8} {:>12} │", "──", "───────", "─────", "───────", "─────");
+
+    let mut combined: Vec<(&str, usize, f64, f64, &str)> = Vec::new();
+    for (_, plan) in &tms {
+        let nc = ps_concepts.iter().find(|(n, _, _, _)| *n == plan.name).map(|x| x.1).unwrap_or(0);
+        let h = ks_rates.iter().find(|(n, _)| *n == plan.name).map(|x| x.1).unwrap_or(0.0);
+        let r = spectral_results.iter().find(|(n, _)| n == plan.name).map(|x| x.1.ratio_mean).unwrap_or(f64::NAN);
+        combined.push((plan.name, nc, h, r, plan.class));
+    }
+    combined.sort_by(|a, b| a.2.partial_cmp(&b.2).unwrap());
+
+    for (name, nc, h, r, class) in &combined {
+        println!("  │ {:>20} {:>10} {:>10.4} {:>8.4} {:>12} │", name, nc, h, r, class);
+    }
+    println!("  └──────────────────────────────────────────────────────────────┘");
+
+    // Class separation check
+    println!("\n  ┌─ Class Separation Check ───────────────────────────────────┐");
+    let nonhalt: Vec<_> = combined.iter().filter(|x| x.4.contains("non-halt")).collect();
+    let halt: Vec<_> = combined.iter().filter(|x| x.4.contains("halt")).collect();
+    let undec: Vec<_> = combined.iter().filter(|x| x.4.contains("undecided")).collect();
+
+    let nh_max_h = nonhalt.iter().map(|x| x.2).fold(0.0, f64::max);
+    let h_min_h = halt.iter().map(|x| x.2).fold(f64::INFINITY, f64::min);
+    let nh_max_c = nonhalt.iter().map(|x| x.1).max().unwrap_or(0);
+    let h_min_c = halt.iter().map(|x| x.1).min().unwrap_or(0);
+
+    if !nonhalt.is_empty() && !halt.is_empty() {
+        println!("  │  Non-halt KS h range:   [{:.4} .. {:.4}]                     │",
+            nonhalt.iter().map(|x| x.2).fold(f64::INFINITY, f64::min), nh_max_h);
+        println!("  │  Halting KS h range:    [{:.4} .. {:.4}]                     │",
+            h_min_h, halt.iter().map(|x| x.2).fold(0.0, f64::max));
+        println!("  │  Non-halt Concepts:     [{:>3} .. {:>3}]                        │",
+            nonhalt.iter().map(|x| x.1).min().unwrap_or(0), nh_max_c);
+        println!("  │  Halting Concepts:      [{:>3} .. {:>3}]                        │",
+            h_min_c, halt.iter().map(|x| x.1).max().unwrap_or(0));
+    }
+
+    let ks_gap = nh_max_h < h_min_h;
+    let c_gap = nh_max_c < h_min_c;
+    println!("  │                                                             │");
+    println!("  │  KS entropy gap:        {} {}                                    │",
+        if ks_gap { "✓" } else { "✗" },
+        if ks_gap { "(non-halt < halt)" } else { "(OVERLAP)" });
+    println!("  │  Concept count gap:     {} {}                                    │",
+        if c_gap { "✓" } else { "✗" },
+        if c_gap { "(non-halt < halt)" } else { "(OVERLAP)" });
+    if !undec.is_empty() {
+        println!("  │  Undecided (Antihydra): h={:.4}  ── between classes          │", undec[0].2);
+    }
+    println!("  └──────────────────────────────────────────────────────────────┘");
+
+    // ρ(J) verification
+    println!("\n  ┌─ ρ(J) Universal Constant ───────────────────────────────────┐");
+    for (name, diag) in &spectral_results {
+        println!("  │  {:>20}: ρ(J) = {:.8}                            │", name, diag.rho_max);
+    }
+    println!("  └──────────────────────────────────────────────────────────────┘");
+
+    println!("\n{}", "=".repeat(72));
+}
+
+pub fn run_tm_fca_time_evolution() {
+    use crate::tm_fca::{self, TuringMachine};
+
+    println!("\n{}", "=".repeat(72));
+    println!("  B-24 v13: Time-Evolution Complexity Tracking");
+    println!("  Tracking ISD indicators across time to detect phase transitions");
+    println!("{}", "=".repeat(72));
+
+    let max_concepts = 50000;
+    let time_limit = 120.0;
+    let window_l = 50;
+    let max_level = 5;
+    let (k_min, k_max) = (2, 5);
+
+    let checkpoints: Vec<u64> = vec![
+        200, 500, 1000, 2000, 5000, 10000,
+    ];
+
+    struct TmPlan {
+        name: &'static str,
+        steps: u64,
+        class: &'static str,
+    }
+
+    let tms: Vec<(TuringMachine, TmPlan)> = vec![
+        (tm_fca::simple_nonhalter(), TmPlan { name: "SimpleNonHalter", steps: 5000, class: "non-halt (p2)" }),
+        (tm_fca::translator_nonhalter(), TmPlan { name: "TranslatorNH", steps: 10000, class: "non-halt (shift)" }),
+        (tm_fca::bb5_champion(), TmPlan { name: "BB5Champion", steps: 10000, class: "halt (47M)" }),
+        (tm_fca::antihydra(), TmPlan { name: "Antihydra", steps: 10000, class: "undecided" }),
+        (tm_fca::current_champion(), TmPlan { name: "CurrentChamp", steps: 10000, class: "halt (>2↑5)" }),
+    ];
+
+    let mut all_results: Vec<(&str, &str, Vec<(u64, usize, f64, f64)>)> = Vec::new();
+
+    for (tm, plan) in &tms {
+        println!("\n── {} ({}) ──", plan.name, plan.class);
+
+        let cps: Vec<u64> = checkpoints.iter()
+            .filter(|&&c| c <= plan.steps)
+            .copied()
+            .collect();
+
+        let evolution = tm_fca::compute_time_evolution(
+            tm, plan.steps, &cps, window_l, max_level, k_min, k_max,
+            max_concepts, time_limit,
+        );
+
+        println!("  {:>10} {:>12} {:>12} {:>12}", "Step", "Concepts", "KS Rate", "H(1)");
+        println!("  {:>10} {:>12} {:>12} {:>12}", "────", "────────", "───────", "────");
+        for (step, nc, h, h1) in &evolution {
+            println!("  {:>10} {:>12} {:>12.2e} {:>12.6}", step, nc, h, h1);
+        }
+
+        all_results.push((plan.name, plan.class, evolution));
+    }
+
+    println!("\n{}", "=".repeat(72));
+    println!("  B-24 v13: Growth Curve Summary");
+    println!("{}", "=".repeat(72));
+
+    println!("\n  ┌─ Concept Count Growth Comparison ────────────────────────────┐");
+    let header: Vec<String> = std::iter::once("TM".to_string())
+        .chain(checkpoints.iter().map(|c| format!("{:>7}", c)))
+        .collect();
+    println!("  │ {:>20} │ {} │", header[0], header[1..].join(" │ "));
+    println!("  │ {:>20} ┼ {} │", "────", "─".repeat(checkpoints.len() * 10));
+    for (name, _class, evo) in &all_results {
+        let mut row = format!("  │ {:>20} │", name);
+        for &cp in &checkpoints {
+            let nc = evo.iter()
+                .find(|(s, _, _, _)| *s == cp)
+                .map(|(_, nc, _, _)| *nc)
+                .unwrap_or(0);
+            row.push_str(&format!(" {:>7} │", nc));
+        }
+        println!("{}", row);
+    }
+    println!("  └──────────────────────────────────────────────────────────────┘");
+
+    println!("\n  ┌─ H(1) Entropy Growth Comparison ─────────────────────────────┐");
+    println!("  │ {:>20} │ {} │", header[0], header[1..].join(" │ "));
+    println!("  │ {:>20} ┼ {} │", "────", "─".repeat(checkpoints.len() * 10));
+    for (name, _class, evo) in &all_results {
+        let mut row = format!("  │ {:>20} │", name);
+        for &cp in &checkpoints {
+            let h1 = evo.iter()
+                .find(|(s, _, _, _)| *s == cp)
+                .map(|(_, _, _, h1)| *h1)
+                .unwrap_or(0.0);
+            row.push_str(&format!(" {:>7.4} │", h1));
+        }
+        println!("{}", row);
+    }
+    println!("  └──────────────────────────────────────────────────────────────┘");
+
+    let max_cp = *checkpoints.last().unwrap_or(&10000);
+
+    println!("\n  ┌─ Phase Transition Detection ─────────────────────────────────┐");
+    for (name, class, evo) in &all_results {
+        if evo.len() < 2 { continue; }
+        let max_c = evo.iter().map(|(_, nc, _, _)| *nc).max().unwrap_or(0);
+        let max_h1 = evo.iter().map(|(_, _, _, h1)| *h1).max_by(|a, b| a.partial_cmp(b).unwrap()).unwrap_or(0.0);
+        let last_c = evo.last().map(|(_, nc, _, _)| *nc).unwrap_or(0);
+        let first_c = evo.first().map(|(_, nc, _, _)| *nc).unwrap_or(0);
+        let growth = if first_c > 0 { last_c as f64 / first_c as f64 } else { 1.0 };
+        let saturating = growth < 1.5;
+
+        let max_step = evo.iter().filter(|(_, nc, _, _)| *nc == max_c).map(|(s, _, _, _)| *s).max().unwrap_or(0);
+
+        let pattern = if saturating && max_c <= 5 {
+            "(TRIVIAL)"
+        } else if saturating {
+            "(PLATEAU)"
+        } else if max_step == max_cp {
+            "(GROWING)"
+        } else {
+            "(PEAKED)"
+        };
+
+        println!("  │  {:>20} [{:>12}]: concepts {:>3}→{:>3} ({:.1}x), H(1) last={:.4} {}",
+            name, class, first_c, last_c, growth, max_h1, pattern);
+    }
+    println!("  └──────────────────────────────────────────────────────────────┘");
+
+    println!("\n{}", "=".repeat(72));
+}
+
+pub fn run_tm_fca_oscillation() {
+    use crate::tm_fca::{self, TuringMachine};
+
+    println!("\n{}", "=".repeat(72));
+    println!("  B-24 v14: Dense Time Evolution + Phase Transition Detection");
+    println!("  Antihydra oscillation fine-structure + H(1) phase boundary");
+    println!("{}", "=".repeat(72));
+
+    let max_concepts = 50000;
+    let time_limit = 120.0;
+    let window_l = 50;
+    let max_level = 5;
+    let (k_min, k_max) = (2, 5);
+
+    let dense_checkpoints: Vec<u64> = (1..=25).map(|i| (i * 400) as u64).collect();
+
+    struct TmPlan {
+        name: &'static str,
+        steps: u64,
+        class: &'static str,
+    }
+
+    let tms: Vec<(TuringMachine, TmPlan)> = vec![
+        (tm_fca::simple_nonhalter(), TmPlan { name: "SimpleNonHalter", steps: 5000, class: "non-halt (p2)" }),
+        (tm_fca::antihydra(), TmPlan { name: "Antihydra", steps: 10000, class: "undecided" }),
+        (tm_fca::current_champion(), TmPlan { name: "CurrentChamp", steps: 10000, class: "halt (>2↑5)" }),
+    ];
+
+    let mut all_results: Vec<(&str, &str, Vec<(u64, usize, f64, f64, usize, f64)>)> = Vec::new();
+
+    for (tm, plan) in &tms {
+        let max_t = plan.steps;
+        let cps: Vec<u64> = dense_checkpoints.iter()
+            .filter(|&&c| c <= max_t)
+            .copied()
+            .collect();
+
+        let evolution = tm_fca::compute_time_evolution_rich(
+            tm, max_t, &cps, window_l, max_level, k_min, k_max,
+            max_concepts, time_limit,
+        );
+
+        all_results.push((plan.name, plan.class, evolution));
+    }
+
+    println!("\n  Part 1: Antihydra Dense Oscillation Profile");
+    println!("  ────────────────────────────────────────────");
+    if let Some((_, _, evo)) = all_results.iter().find(|(n, _, _)| *n == "Antihydra") {
+        println!("  {:>8} {:>12} {:>12} {:>12} {:>12}", "Step", "Concepts", "H(1)", "MaxDepth", "MeanDepth");
+        println!("  {:>8} {:>12} {:>12} {:>12} {:>12}", "────", "────────", "────", "────────", "─────────");
+        for (step, nc, _, h1, md, mean_d) in evo {
+            println!("  {:>8} {:>12} {:>12.6} {:>12} {:>12.4}", step, nc, h1, md, mean_d);
+        }
+
+        println!("\n  Oscillation Analysis:");
+        let ncs: Vec<usize> = evo.iter().map(|(_, nc, _, _, _, _)| *nc).collect();
+        let (min_c, max_c) = (*ncs.iter().min().unwrap_or(&0), *ncs.iter().max().unwrap_or(&0));
+        let amp = max_c - min_c;
+        let zeros: Vec<u64> = evo.windows(2)
+            .filter(|w| w[0].1 != w[1].1)
+            .map(|w| w[1].0)
+            .collect();
+        println!("    Concept range: {} → {} (amplitude={})", min_c, max_c, amp);
+        println!("    Change points ({} total): {:?}", zeros.len(), zeros);
+        if zeros.len() >= 2 {
+            let intervals: Vec<u64> = zeros.windows(2).map(|w| w[1] - w[0]).collect();
+            let mean_int = intervals.iter().sum::<u64>() as f64 / intervals.len() as f64;
+            println!("    Inter-change intervals: {:?}", intervals);
+            println!("    Mean interval: {:.0} steps", mean_int);
+        }
+    }
+
+    println!("\n  Part 2: H(1) Phase Boundary Detection");
+    println!("  ──────────────────────────────────────");
+    for (name, class, evo) in &all_results {
+        if evo.len() < 3 { continue; }
+        let dh1: Vec<f64> = evo.windows(2)
+            .map(|w| {
+                let dt = (w[1].0 - w[0].0) as f64;
+                if dt > 0.0 { (w[1].3 - w[0].3) / dt * 1000.0 } else { 0.0 }
+            })
+            .collect();
+
+        let peak_idx = dh1.iter()
+            .enumerate()
+            .max_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap())
+            .map(|(i, _)| i)
+            .unwrap_or(0);
+        let peak_step = evo[peak_idx].0;
+        let peak_val = dh1[peak_idx];
+
+        let valleys: Vec<usize> = dh1.windows(3)
+            .enumerate()
+            .filter(|(_, w)| w[0] > w[1] && w[1] < w[2])
+            .map(|(i, _)| i + 1)
+            .collect();
+
+        let zero_x: Vec<u64> = dh1.iter()
+            .enumerate()
+            .filter(|(_, &d)| d.abs() < 0.001)
+            .map(|(i, _)| evo[i].0)
+            .collect();
+
+        let sign_changes: Vec<u64> = dh1.windows(2)
+            .enumerate()
+            .filter(|(_, w)| w[0].signum() != w[1].signum() && w[0].signum() != 0.0 && w[1].signum() != 0.0)
+            .map(|(i, _)| evo[i + 1].0)
+            .collect();
+
+        println!("  {:>20} [{}]:", name, class);
+        println!("    dH(1)/dt max: {:.6} at t={}", peak_val, peak_step);
+        if let Some(&first) = sign_changes.first() {
+            println!("    H(1) sign changes (phase boundary): {:?}", sign_changes);
+            println!("    Exploration→Ordering transition: t ≈ {}", first);
+        }
+    }
+
+    println!("\n  Part 3: Lattice Depth Evolution (Concepts+Density change)");
+    println!("  ──────────────────────────────────────────────────────────");
+    for (name, _class, evo) in &all_results {
+        if evo.len() < 2 { continue; }
+        let first = &evo[0];
+        let last = evo.last().unwrap();
+        let density = last.4 as f64 / (last.0 as f64).max(1.0);
+        println!("  {:>20}: Depth {}→{} | density(mean_d/nc) {:.3}→{:.3}",
+            name,
+            first.4, last.4,
+            first.5 / (first.1 as f64).max(1.0),
+            last.5 / (last.1 as f64).max(1.0),
+        );
+    }
+
+    println!("\n  Part 4: Cross-TM Comparison at Dense Resolution");
+    println!("  ────────────────────────────────────────────────");
+    let key_steps = [1000u64, 3000, 5000, 7000, 10000];
+    for &step in &key_steps {
+        print!("  t={:>6}: ", step);
+        for (name, _class, evo) in &all_results {
+            if let Some(d) = evo.iter().find(|(s, _, _, _, _, _)| *s == step) {
+                print!("{:>12} |ℭ|={:>3} ", name, d.1);
+            }
+        }
+        println!();
+    }
 
     println!("\n{}", "=".repeat(72));
 }

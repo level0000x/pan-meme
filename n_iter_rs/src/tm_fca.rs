@@ -617,6 +617,33 @@ pub fn simple_nonhalter() -> TuringMachine {
     ).unwrap()
 }
 
+/// 3-state guaranteed non-halter: period-3 cycle, always writes 1.
+/// More complex than the 2-state period-2 simple non-halter.
+pub fn periodic3_nonhalter() -> TuringMachine {
+    TuringMachine::parse(
+        "Periodic3NonHalter",
+        "1RB1RA_1RC1RB_1RA1RC"
+    ).unwrap()
+}
+
+/// BB(4) champion: known halter, halts in 107 steps.
+/// Represents an intermediate-complexity halting TM.
+pub fn bb4_champion() -> TuringMachine {
+    TuringMachine::parse(
+        "BB4Champion",
+        "1RB1LB_1LA0RC_1RZ1LD_1RD0RA"
+    ).unwrap()
+}
+
+/// 4-state translator-type non-halter: moves right forever.
+/// Generates a richer tape pattern than simple period-2.
+pub fn translator_nonhalter() -> TuringMachine {
+    TuringMachine::parse(
+        "TranslatorNH",
+        "1RB1LA_1LA0RB_1RB1RC_1LA1RD"
+    ).unwrap()
+}
+
 // ─── v3: Information State Lattice (B-24.3) ──────────────────────────────────
 
 /// Compute the 10-dimensional information state vector for a TM at a given step.
@@ -1904,6 +1931,202 @@ pub fn compute_pattern_rho_sequence(
     sequence
 }
 
+// ─── v10: Random Matrix Spectral Diagnostics (B-24.7) ─────────────────────────
+
+/// Full spectral diagnostics on a lattice: collect all eigenvalues,
+/// compute spacing statistics, compare with Wigner-Dyson / Poisson.
+#[derive(Debug, Clone)]
+pub struct SpectralDiagnostic {
+    pub name: String,
+    pub n_concepts: usize,
+    pub n_edges: usize,
+    pub n_eigenvalues: usize,
+    pub n_real: usize,
+    pub n_complex: usize,
+    pub rho_max: f64,
+    pub rho_mean: f64,
+    pub rho_median: f64,
+    pub rho_std: f64,
+    /// Real eigenvalue magnitudes, sorted ascending
+    pub eigenvalues: Vec<f64>,
+    /// Nearest-neighbor spacing (NNS) between consecutive eigenvalues
+    pub spacings: Vec<f64>,
+    /// NNS mean, std, min, max
+    pub spacing_mean: f64,
+    pub spacing_std: f64,
+    /// Ratio statistics r_n = min(s_n,s_{n+1})/max(s_n,s_{n+1})
+    pub ratios: Vec<f64>,
+    pub ratio_mean: f64,
+    /// Wigner-Dyson GOE reference: mean ratio ≈ 0.5359
+    /// Poisson reference: mean ratio ≈ 0.386
+    /// KS distance to GOE
+    pub ks_goe: f64,
+    pub ks_poisson: f64,
+}
+
+impl SpectralDiagnostic {
+    /// GOE Wigner surmise CDF: F(s) = 1 - exp(-π s²/4)
+    fn goe_cdf(x: f64) -> f64 { 1.0 - (-std::f64::consts::PI * x * x / 4.0).exp() }
+    /// Poisson CDF: F(s) = 1 - exp(-s)
+    fn poisson_cdf(x: f64) -> f64 { 1.0 - (-x).exp() }
+
+    /// KS distance = max |empirical_cdf - theoretical_cdf|
+    fn ks_distance(sorted: &[f64], cdf: fn(f64) -> f64) -> f64 {
+        let n = sorted.len() as f64;
+        sorted.iter().enumerate().fold(0.0, |max_d, (i, &x)| {
+            let ecdf = (i + 1) as f64 / n;
+            let d = (ecdf - cdf(x)).abs();
+            if d > max_d { d } else { max_d }
+        })
+    }
+}
+
+pub fn compute_spectral_diagnostics(
+    lattice: &FcaLattice,
+    name: &str,
+    params: &DynamicsParams,
+) -> SpectralDiagnostic {
+    let n_concepts = lattice.concepts.len();
+    if n_concepts == 0 {
+        return SpectralDiagnostic {
+            name: name.to_string(), n_concepts: 0, n_edges: 0,
+            n_eigenvalues: 0, n_real: 0, n_complex: 0,
+            rho_max: f64::NAN, rho_mean: f64::NAN, rho_median: f64::NAN, rho_std: f64::NAN,
+            eigenvalues: Vec::new(), spacings: Vec::new(),
+            spacing_mean: f64::NAN, spacing_std: f64::NAN,
+            ratios: Vec::new(), ratio_mean: f64::NAN,
+            ks_goe: f64::NAN, ks_poisson: f64::NAN,
+        };
+    }
+
+    let stats = pipeline::compute_lattice_stats(lattice);
+    let results = pipeline::run_topological_iteration(lattice, &stats, params);
+
+    // Collect ALL eigenvalue magnitudes from ALL concepts
+    let mut all_eigs: Vec<f64> = Vec::new();
+    let mut n_real = 0usize;
+    let mut n_complex = 0usize;
+
+    for opt in &results {
+        if let Some(r) = opt {
+            let j_arr = r.jacobian;
+            let mut j = nalgebra::Matrix5::zeros();
+            for row in 0..5 {
+                for col in 0..5 {
+                    j[(row, col)] = j_arr[row * 5 + col];
+                }
+            }
+            let eigs = j.complex_eigenvalues();
+            for c in &eigs {
+                let mag = c.norm();
+                if mag > 1e-15 {
+                    all_eigs.push(mag);
+                }
+                if c.im.abs() < 1e-12 { n_real += 1; } else { n_complex += 1; }
+            }
+        }
+    }
+
+    let n_eigenvalues = all_eigs.len();
+    all_eigs.sort_by(|a, b| a.partial_cmp(b).unwrap());
+
+    let rho_max = all_eigs.last().copied().unwrap_or(f64::NAN);
+    let rho_mean = if n_eigenvalues > 0 { all_eigs.iter().sum::<f64>() / n_eigenvalues as f64 } else { f64::NAN };
+    let rho_median = if n_eigenvalues > 0 { all_eigs[n_eigenvalues / 2] } else { f64::NAN };
+    let rho_std = if n_eigenvalues > 1 {
+        let mean = rho_mean;
+        (all_eigs.iter().map(|x| (x - mean).powi(2)).sum::<f64>() / n_eigenvalues as f64).sqrt()
+    } else { f64::NAN };
+
+    // Nearest-neighbor spacings (unfolded: divide by local mean spacing)
+    let mut spacings: Vec<f64> = Vec::new();
+    if n_eigenvalues >= 2 {
+        let raw_spacings: Vec<f64> = all_eigs.windows(2).map(|w| w[1] - w[0]).collect();
+        let raw_mean = raw_spacings.iter().sum::<f64>() / raw_spacings.len() as f64;
+        spacings = raw_spacings.iter().map(|s| s / raw_mean).collect();
+    }
+
+    let spacing_mean = if !spacings.is_empty() { spacings.iter().sum::<f64>() / spacings.len() as f64 } else { f64::NAN };
+    let spacing_std = if spacings.len() > 1 {
+        let m = spacing_mean;
+        (spacings.iter().map(|x| (x - m).powi(2)).sum::<f64>() / spacings.len() as f64).sqrt()
+    } else { f64::NAN };
+
+    // Adjacent eigenvalue ratios r_n = min(s_n, s_{n+1}) / max(s_n, s_{n+1})
+    let mut ratios: Vec<f64> = Vec::new();
+    if spacings.len() >= 2 {
+        for w in spacings.windows(2) {
+            let (a, b) = if w[0] <= w[1] { (w[0], w[1]) } else { (w[1], w[0]) };
+            if b > 1e-15 { ratios.push(a / b); }
+        }
+    }
+    let ratio_mean = if !ratios.is_empty() { ratios.iter().sum::<f64>() / ratios.len() as f64 } else { f64::NAN };
+
+    // KS distance to GOE / Poisson
+    let mut spacings_sorted = spacings.clone();
+    spacings_sorted.sort_by(|a, b| a.partial_cmp(b).unwrap());
+
+    let ks_goe = if spacings_sorted.len() >= 5 {
+        SpectralDiagnostic::ks_distance(&spacings_sorted, SpectralDiagnostic::goe_cdf)
+    } else { f64::NAN };
+    let ks_poisson = if spacings_sorted.len() >= 5 {
+        SpectralDiagnostic::ks_distance(&spacings_sorted, SpectralDiagnostic::poisson_cdf)
+    } else { f64::NAN };
+
+    SpectralDiagnostic {
+        name: name.to_string(),
+        n_concepts,
+        n_edges: lattice.edges.len(),
+        n_eigenvalues,
+        n_real,
+        n_complex,
+        rho_max, rho_mean, rho_median, rho_std,
+        eigenvalues: all_eigs,
+        spacings: spacings_sorted,
+        spacing_mean, spacing_std,
+        ratios,
+        ratio_mean,
+        ks_goe, ks_poisson,
+    }
+}
+
+/// Run spectral diagnostics on pattern-structure FCA lattice for all 3 BB(6) TMs.
+pub fn run_full_spectral_diagnostics(
+    nonhalter: &TuringMachine,
+    champion: &TuringMachine,
+    antihydra: &TuringMachine,
+    max_steps: u64,
+    window_l: usize,
+    sample_every: u64,
+    max_level: usize,
+    k_min: usize,
+    k_max: usize,
+    max_concepts: usize,
+    time_limit: f64,
+    params: &DynamicsParams,
+) -> (SpectralDiagnostic, SpectralDiagnostic, SpectralDiagnostic) {
+    println!("  Building pattern-structure lattices...\n");
+
+    let (m_nh, _, _, _, _, _) = build_pattern_structure_context(nonhalter, max_steps, window_l, sample_every, max_level, k_min, k_max);
+    let lattice_nh = build_lattice(&m_nh, max_concepts, time_limit);
+    println!("    SimpleNonHalter: {} concepts, {} edges", lattice_nh.concepts.len(), lattice_nh.edges.len());
+
+    let (m_cc, _, _, _, _, _) = build_pattern_structure_context(champion, max_steps, window_l, sample_every, max_level, k_min, k_max);
+    let lattice_cc = build_lattice(&m_cc, max_concepts, time_limit);
+    println!("    CurrentChampion: {} concepts, {} edges", lattice_cc.concepts.len(), lattice_cc.edges.len());
+
+    let (m_ah, _, _, _, _, _) = build_pattern_structure_context(antihydra, max_steps, window_l, sample_every, max_level, k_min, k_max);
+    let lattice_ah = build_lattice(&m_ah, max_concepts, time_limit);
+    println!("    Antihydra:       {} concepts, {} edges", lattice_ah.concepts.len(), lattice_ah.edges.len());
+
+    println!("\n  Computing full spectral diagnostics...\n");
+    let diag_nh = compute_spectral_diagnostics(&lattice_nh, "SimpleNonHalter", params);
+    let diag_cc = compute_spectral_diagnostics(&lattice_cc, "CurrentChampion", params);
+    let diag_ah = compute_spectral_diagnostics(&lattice_ah, "Antihydra", params);
+
+    (diag_nh, diag_cc, diag_ah)
+}
+
 // ─── Certificate Construction (per B-24 §4) ─────────────────────────────────
 
 /// ISD Certificate for a Turing machine (B-24 §4.1).
@@ -2016,6 +2239,318 @@ impl IsdCertificate {
             if self.verify() { "PASS" } else { "FAIL" });
         println!("└─────────────────────────────────────────────────┘");
     }
+}
+
+// ─── v11: Kolmogorov-Sinai Entropy (Dynamical Systems, B-24.8) ───────────────
+
+/// Compute block entropy H(L) for binary tape sequences.
+/// H(L) = -Σ p(s) log₂ p(s) over all length-L blocks occurring in the tape.
+/// Returns H(1), H(2), …, H(max_len) and the entropy rate estimate.
+pub fn compute_ks_entropy(
+    tm: &TuringMachine,
+    max_steps: u64,
+    window_l: usize,
+    max_block_len: usize,
+) -> (Vec<f64>, f64, u64) {
+    let (configs, _halted, steps) = tm.simulate(max_steps, window_l);
+    let tape_len = if let Some((_, _, w)) = configs.first() { w.len() } else { return (vec![], 0.0, 0); };
+    let n_samples = configs.len().min(1000);
+
+    let mut h_vals = Vec::with_capacity(max_block_len);
+
+    for len in 1..=max_block_len {
+        if len > tape_len { break; }
+        let mut counts: HashMap<usize, usize> = HashMap::new();
+        let mut total = 0usize;
+
+        for (ti, (_, _, window)) in configs.iter().enumerate() {
+            if ti >= n_samples { break; }
+            for start in 0..=(window.len().saturating_sub(len)) {
+                let mut val = 0usize;
+                for k in 0..len {
+                    val = (val << 1) | (window[start + k] as usize);
+                }
+                *counts.entry(val).or_insert(0) += 1;
+                total += 1;
+            }
+        }
+
+        if total == 0 { break; }
+
+        let entropy: f64 = counts.values().map(|&c| {
+            let p = c as f64 / total as f64;
+            -p * p.log2()
+        }).sum();
+
+        h_vals.push(entropy);
+    }
+
+    // Entropy rate h = lim_{L→∞} H(L)/L, estimated as H(L) - H(L-1) for largest L
+    let rate = if h_vals.len() >= 2 {
+        let last = h_vals[h_vals.len() - 1];
+        let prev = h_vals[h_vals.len() - 2];
+        (last - prev).max(0.0)
+    } else {
+        h_vals.first().copied().unwrap_or(0.0)
+    };
+
+    (h_vals, rate, steps)
+}
+
+// ─── Time Evolution: Partial Trajectory Analysis ─────────────────────────────
+
+pub fn compute_ks_entropy_from_configs(
+    configs: &[(usize, isize, Vec<u8>)],
+    use_first: usize,
+    max_block_len: usize,
+) -> (Vec<f64>, f64) {
+    if configs.is_empty() {
+        return (vec![], 0.0);
+    }
+    let tape_len = configs[0].2.len();
+    let n_samples = use_first.min(configs.len());
+
+    let mut h_vals = Vec::with_capacity(max_block_len);
+    for len in 1..=max_block_len {
+        if len > tape_len {
+            break;
+        }
+        let mut counts: HashMap<usize, usize> = HashMap::new();
+        let mut total = 0usize;
+        for ti in 0..n_samples {
+            let window = &configs[ti].2;
+            for start in 0..=(window.len().saturating_sub(len)) {
+                let mut val = 0usize;
+                for k in 0..len {
+                    val = (val << 1) | (window[start + k] as usize);
+                }
+                *counts.entry(val).or_insert(0) += 1;
+                total += 1;
+            }
+        }
+        if total == 0 {
+            break;
+        }
+        let h: f64 = counts.values().map(|&c| {
+            if c == 0 {
+                0.0
+            } else {
+                let p = c as f64 / total as f64;
+                -p * p.log2()
+            }
+        }).sum::<f64>() / len as f64;
+        h_vals.push(h);
+    }
+
+    let rate = if h_vals.len() >= 2 {
+        let last = h_vals[h_vals.len() - 1];
+        let prev = h_vals[h_vals.len() - 2];
+        (last - prev).max(0.0)
+    } else {
+        h_vals.first().copied().unwrap_or(0.0)
+    };
+
+    (h_vals, rate)
+}
+
+pub fn build_pattern_structure_context_from_configs(
+    configs: &[(usize, isize, Vec<u8>)],
+    use_first: usize,
+    sample_every: u64,
+    max_level: usize,
+    k_min: usize,
+    k_max: usize,
+) -> (Vec<Vec<bool>>, Vec<String>, Vec<String>, usize, usize, usize) {
+    let mut all_blocks: Vec<(usize, usize, usize, usize)> = Vec::new();
+    let mut block_labels: Vec<String> = Vec::new();
+    let mut pattern_map: HashMap<usize, Vec<usize>> = HashMap::new();
+    let mut all_patterns: HashSet<usize> = HashSet::new();
+
+    for (time_idx, (_state, _head, window)) in configs.iter().enumerate() {
+        if time_idx >= use_first {
+            break;
+        }
+        if time_idx as u64 % sample_every != 0 {
+            continue;
+        }
+        for level in 1..=max_level {
+            let blocks = extract_blocks(window, level);
+            for (content, label) in &blocks {
+                if !pattern_map.contains_key(content) {
+                    let pats = extract_block_kgrams(*content, level, k_min, k_max);
+                    for &p in &pats {
+                        all_patterns.insert(p);
+                    }
+                    pattern_map.insert(*content, pats);
+                }
+                let block_idx: usize = label
+                    .strip_prefix(&format!("L{}_B", level))
+                    .and_then(|s| s.parse().ok())
+                    .unwrap_or(0);
+                all_blocks.push((level, *content, time_idx, block_idx));
+                block_labels.push(format!("t{}:{}", time_idx, label));
+            }
+        }
+    }
+
+    let n_objects = all_blocks.len();
+    let mut sorted_pats: Vec<usize> = all_patterns.iter().copied().collect();
+    sorted_pats.sort();
+    let mut pat_to_idx: HashMap<usize, usize> = HashMap::new();
+    let mut attr_labels: Vec<String> = Vec::new();
+    for &p in &sorted_pats {
+        pat_to_idx.insert(p, attr_labels.len());
+        let k = p >> 16;
+        let val = p & 0xFFFF;
+        attr_labels.push(format!("k{}_p{:0width$b}", k, val, width = k));
+    }
+    let n_attrs = attr_labels.len();
+
+    if n_objects == 0 || n_attrs == 0 {
+        return (vec![], vec![], vec![], 0, 0, 0);
+    }
+
+    let mut matrix: Vec<Vec<bool>> = vec![vec![false; n_attrs]; n_objects];
+    for (obj_idx, (_, content, _, _)) in all_blocks.iter().enumerate() {
+        if let Some(pats) = pattern_map.get(content) {
+            for &p in pats {
+                if let Some(&attr_idx) = pat_to_idx.get(&p) {
+                    matrix[obj_idx][attr_idx] = true;
+                }
+            }
+        }
+    }
+
+    (
+        matrix,
+        block_labels,
+        attr_labels,
+        sorted_pats.len(),
+        n_objects,
+        n_attrs,
+    )
+}
+
+/// Track ISD complexity indicators across time for a single TM.
+/// Returns vectors of (step, concepts, ks_rate, h1) for each checkpoint.
+/// ks_rate = H(5)-H(4), h1 = raw H(1) entropy per bit.
+pub fn compute_time_evolution(
+    tm: &TuringMachine,
+    max_steps: u64,
+    checkpoints: &[u64],
+    window_l: usize,
+    max_level: usize,
+    k_min: usize,
+    k_max: usize,
+    max_concepts: usize,
+    time_limit: f64,
+) -> Vec<(u64, usize, f64, f64)> {
+    let (configs, _halted, _steps) = tm.simulate(max_steps, window_l);
+
+    let mut results = Vec::new();
+
+    for &cp in checkpoints {
+        let use_n = (cp as usize).min(configs.len());
+
+        let (h_vals, ks_rate) = compute_ks_entropy_from_configs(&configs, use_n, 5);
+        let h1 = h_vals.first().copied().unwrap_or(0.0);
+
+        let (matrix, _, _, _, _, _) = build_pattern_structure_context_from_configs(
+            &configs, use_n, 4, max_level, k_min, k_max,
+        );
+
+        let n_concepts = if matrix.is_empty() || matrix[0].len() == 0 {
+            0
+        } else {
+            let lattice = build_lattice(&matrix, max_concepts, time_limit);
+            lattice.concepts.len()
+        };
+
+        results.push((cp, n_concepts, ks_rate, h1));
+    }
+
+    results
+}
+
+pub fn compute_lattice_depth_stats(lattice: &FcaLattice) -> (usize, Vec<usize>, f64) {
+    let n = lattice.concepts.len();
+    if n == 0 {
+        return (0, vec![], 0.0);
+    }
+
+    let mut children: Vec<Vec<usize>> = vec![vec![]; n];
+    let mut in_degree: Vec<usize> = vec![0; n];
+    for &(parent, child) in &lattice.edges {
+        if parent < n && child < n {
+            children[parent].push(child);
+            in_degree[child] += 1;
+        }
+    }
+
+    let root = (0..n).min_by_key(|&i| in_degree[i]).unwrap_or(0);
+
+    let mut depth = vec![0usize; n];
+    let mut queue = std::collections::VecDeque::new();
+    queue.push_back(root);
+    depth[root] = 0;
+
+    while let Some(u) = queue.pop_front() {
+        for &v in &children[u] {
+            if depth[v] == 0 && v != root {
+                depth[v] = depth[u] + 1;
+                queue.push_back(v);
+            }
+        }
+    }
+
+    let max_d = *depth.iter().max().unwrap_or(&0);
+    let mut hist = vec![0usize; max_d + 1];
+    for &d in &depth {
+        hist[d] += 1;
+    }
+    let mean_d = depth.iter().sum::<usize>() as f64 / n as f64;
+
+    (max_d, hist, mean_d)
+}
+
+pub fn compute_time_evolution_rich(
+    tm: &TuringMachine,
+    max_steps: u64,
+    checkpoints: &[u64],
+    window_l: usize,
+    max_level: usize,
+    k_min: usize,
+    k_max: usize,
+    max_concepts: usize,
+    time_limit: f64,
+) -> Vec<(u64, usize, f64, f64, usize, f64)> {
+    let (configs, _halted, _steps) = tm.simulate(max_steps, window_l);
+
+    let mut results = Vec::new();
+
+    for &cp in checkpoints {
+        let use_n = (cp as usize).min(configs.len());
+
+        let (h_vals, ks_rate) = compute_ks_entropy_from_configs(&configs, use_n, 5);
+        let h1 = h_vals.first().copied().unwrap_or(0.0);
+
+        let (matrix, _, _, _, _, _) = build_pattern_structure_context_from_configs(
+            &configs, use_n, 4, max_level, k_min, k_max,
+        );
+
+        let (n_concepts, max_depth, mean_depth) = if matrix.is_empty() || matrix[0].len() == 0 {
+            (0, 0, 0.0)
+        } else {
+            let lattice = build_lattice(&matrix, max_concepts, time_limit);
+            let nc = lattice.concepts.len();
+            let (md, _, mean_d) = compute_lattice_depth_stats(&lattice);
+            (nc, md, mean_d)
+        };
+
+        results.push((cp, n_concepts, ks_rate, h1, max_depth, mean_depth));
+    }
+
+    results
 }
 
 // ─── Tests ───────────────────────────────────────────────────────────────────
