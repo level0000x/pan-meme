@@ -186,6 +186,9 @@ fn run_single(name: &str) {
         ("run_tm_fca_all", experiments::run_tm_fca_definitive),
         ("run_tm_fca_tevo", experiments::run_tm_fca_time_evolution),
         ("run_tm_fca_osc", experiments::run_tm_fca_oscillation),
+        ("run_tm_fca_turn", experiments::run_tm_fca_turnover),
+        ("run_tm_fca_ccf", experiments::run_tm_fca_ccf_matrix),
+        ("run_tm_fca_robust", experiments::run_tm_fca_robustness),
     ];
     if let Some((_, f)) = fns.iter().find(|(n, _)| *n == name) {
         f();

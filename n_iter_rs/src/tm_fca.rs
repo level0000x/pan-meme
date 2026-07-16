@@ -2553,6 +2553,98 @@ pub fn compute_time_evolution_rich(
     results
 }
 
+pub fn compute_time_evolution_with_turnover(
+    tm: &TuringMachine,
+    max_steps: u64,
+    checkpoints: &[u64],
+    window_l: usize,
+    max_level: usize,
+    k_min: usize,
+    k_max: usize,
+    max_concepts: usize,
+    time_limit: f64,
+) -> Vec<(u64, usize, f64, f64, usize, f64, f64, f64)> {
+    let (configs, _halted, _steps) = tm.simulate(max_steps, window_l);
+
+    let mut results: Vec<(u64, usize, f64, f64, usize, f64, Option<Vec<Vec<usize>>>)> = Vec::new();
+
+    for &cp in checkpoints {
+        let use_n = (cp as usize).min(configs.len());
+
+        let (h_vals, ks_rate) = compute_ks_entropy_from_configs(&configs, use_n, 5);
+        let h1 = h_vals.first().copied().unwrap_or(0.0);
+
+        let (matrix, _, _, _, _, _) = build_pattern_structure_context_from_configs(
+            &configs, use_n, 4, max_level, k_min, k_max,
+        );
+
+        let (n_concepts, max_depth, mean_depth, intents) = if matrix.is_empty() || matrix[0].len() == 0 {
+            (0, 0, 0.0, None)
+        } else {
+            let lattice = build_lattice(&matrix, max_concepts, time_limit);
+            let nc = lattice.concepts.len();
+            let (md, _, mean_d) = compute_lattice_depth_stats(&lattice);
+            let intents: Vec<Vec<usize>> = lattice.concepts.iter()
+                .map(|c| {
+                    let mut v = c.intent.clone();
+                    v.sort();
+                    v
+                })
+                .collect();
+            (nc, md, mean_d, Some(intents))
+        };
+
+        results.push((cp, n_concepts, ks_rate, h1, max_depth, mean_depth, intents));
+    }
+
+    let mut output: Vec<(u64, usize, f64, f64, usize, f64, f64, f64)> = Vec::new();
+
+    for i in 0..results.len() {
+        let (step, nc, ks, h1, md, mean_d, ref _intents) = results[i];
+
+        let jaccard = if i > 0 {
+            if let (Some(prev), Some(curr)) = (&results[i - 1].6, &results[i].6) {
+                let prev_set: HashSet<Vec<usize>> = prev.iter().cloned().collect();
+                let curr_set: HashSet<Vec<usize>> = curr.iter().cloned().collect();
+                let inter = prev_set.intersection(&curr_set).count();
+                let union = prev_set.union(&curr_set).count();
+                if union > 0 { inter as f64 / union as f64 } else { 1.0 }
+            } else {
+                0.0
+            }
+        } else {
+            1.0
+        };
+
+        let (ncs, h1s): (Vec<f64>, Vec<f64>) = results.iter()
+            .map(|(_, n, _, h, _, _, _)| (*n as f64, *h))
+            .unzip();
+
+        let xc = if i < results.len() - 1 {
+            let n_now = nc as f64;
+            let h_next = results[i + 1].3;
+            let (n_mean, h_mean): (f64, f64) = (
+                ncs.iter().sum::<f64>() / ncs.len() as f64,
+                h1s.iter().sum::<f64>() / h1s.len() as f64,
+            );
+            let num = (n_now - n_mean) * (h_next - h_mean);
+            let dn: f64 = ncs.iter().map(|x| (x - n_mean).powi(2)).sum::<f64>().sqrt();
+            let dh: f64 = h1s.iter().map(|x| (x - h_mean).powi(2)).sum::<f64>().sqrt();
+            if dn > 0.0 && dh > 0.0 {
+                num / (dn * dh)
+            } else {
+                0.0
+            }
+        } else {
+            0.0
+        };
+
+        output.push((step, nc, ks, h1, md, mean_d, jaccard, xc));
+    }
+
+    output
+}
+
 // ─── Tests ───────────────────────────────────────────────────────────────────
 
 #[cfg(test)]
