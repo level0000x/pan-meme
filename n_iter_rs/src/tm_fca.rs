@@ -1297,6 +1297,413 @@ pub fn build_kgram_formal_context(
     (matrix, obj_labels, attr_labels, unique_patterns.len())
 }
 
+/// Build formal context using MULTI-SCALE k-grams as attributes.
+///
+/// B-24.20: Instead of a single k, use k ∈ [k_min, k_max] simultaneously.
+/// Each attribute is (k, kgram_value), encoded as attr_id = (k << 12) | kgram_value.
+/// Objects = time windows. Zero free parameters — k range is a structural choice.
+///
+/// The hypothesis: multi-scale k-grams enrich the attribute space, increasing
+/// lattice size beyond the 10-concept threshold where ρ(J) can deviate from 0.54891053.
+pub fn build_multiscale_kgram_context(
+    tm: &TuringMachine,
+    max_steps: u64,
+    window_l: usize,
+    sample_every: u64,
+    k_min: usize,
+    k_max: usize,
+) -> (Vec<Vec<bool>>, Vec<String>, Vec<String>, usize) {
+    let (configs, halted, steps) = tm.simulate(max_steps, window_l);
+
+    let mut windows: Vec<(usize, Vec<(usize, usize)>)> = Vec::new();
+    let mut seen_attrs: HashSet<(usize, usize)> = HashSet::new();
+
+    for (idx, (_state, _head, window)) in configs.iter().enumerate() {
+        if idx as u64 % sample_every != 0 { continue; }
+        let mut all_grams: Vec<(usize, usize)> = Vec::new();
+        for k in k_min..=k_max {
+            let grams = extract_kgrams(window, k);
+            for g in grams {
+                let a = (k, g);
+                seen_attrs.insert(a);
+                all_grams.push(a);
+            }
+        }
+        windows.push((idx, all_grams));
+    }
+
+    let n_objects = windows.len();
+    let mut sorted_attrs: Vec<(usize, usize)> = seen_attrs.into_iter().collect();
+    sorted_attrs.sort_by_key(|&(k, v)| (k, v));
+
+    let mut attr_to_idx: HashMap<(usize, usize), usize> = HashMap::new();
+    let mut attr_labels: Vec<String> = Vec::new();
+    for &(k, v) in &sorted_attrs {
+        attr_to_idx.insert((k, v), attr_labels.len());
+        attr_labels.push(format!("k{}_{:0width$b}", k, v, width = k));
+    }
+    let n_attrs = attr_labels.len();
+
+    let mut obj_labels: Vec<String> = Vec::with_capacity(n_objects);
+    for (idx, grams) in &windows {
+        obj_labels.push(format!("t{}:{}kg", idx, grams.len()));
+    }
+
+    let mut matrix = vec![vec![false; n_attrs]; n_objects];
+    for (obj_idx, (_idx, grams)) in windows.iter().enumerate() {
+        for &(k, v) in grams {
+            if let Some(&attr_idx) = attr_to_idx.get(&(k, v)) {
+                matrix[obj_idx][attr_idx] = true;
+            }
+        }
+    }
+
+    let mut unique_patterns: HashSet<Vec<bool>> = HashSet::new();
+    for row in &matrix { unique_patterns.insert(row.clone()); }
+
+    let total_kgrams_possible: usize = (k_min..=k_max).map(|k| 1usize << k).sum();
+    println!(
+        "    multiscale(k{}-{}): {} steps ({}), {} windows, {} attrs (of {} possible), {} unique patterns",
+        k_min, k_max, steps, if halted { "halted" } else { "non-halt" },
+        n_objects, n_attrs, total_kgrams_possible, unique_patterns.len()
+    );
+
+    (matrix, obj_labels, attr_labels, unique_patterns.len())
+}
+
+/// Build a TRANSPOSED formal context: objects = unique k-gram patterns, attributes = time windows.
+///
+/// B-24.18: Transposed FCA (Patterns-as-Objects).
+/// This is the dual of build_kgram_formal_context:
+///   - Objects = unique k-gram patterns (encoded as strings like "01011")
+///   - Attributes = sampled time windows
+///   - Entry (i,j) = 1 if pattern_i appears in time window j
+///
+/// Uses standard binary FCA only — NO Pattern Structure similarity operator, NO free parameters.
+/// The transposition avoids the k-gram co-occurrence correlation degeneracy of v6.
+
+// ─── v25: Prefix Containment Tree ──────────────────────────────────────────
+
+/// B-24.21 gaze framework: prefix containment tree signature for a TM.
+///
+/// The containment tree T_k is a fixed complete binary tree of depth k.
+/// A k-gram "11010" activates all its prefixes: "1101", "110", "11", "1", ε.
+/// This is pure ⊑ (containment) — no Galois closure, no NextClosure.
+///
+/// Returns for each sampled time step:
+///   - activated nodes this step
+///   - cumulative activated set (概念 vs 要素)
+///   - withdrawn nodes (activated at t-1 but not at t)
+///   - containment depths of activated nodes
+pub fn build_prefix_tree_signature(
+    tm: &TuringMachine,
+    max_steps: u64,
+    window_l: usize,
+    sample_every: u64,
+    k: usize,
+) -> PrefixTreeSignature {
+    let (configs, _halted, _steps) = tm.simulate(max_steps, window_l);
+    let depth_count = k + 1; // depths 0..k
+
+    // Precompute node index: node with binary prefix `bits` at depth d
+    // Total nodes = 2^(k+1) - 1
+    let total_nodes = (1usize << (k + 1)) - 1;
+    // Map: (depth, prefix_value) -> node_index (0..total_nodes-1)
+    // Root ε = index 0, then BFS order: depth 1: "0"=1, "1"=2, depth 2: "00"=3, "01"=4, etc.
+    // A cleaner mapping: node(depth, value) = (1<<depth) - 1 + value
+
+    // Extract k-grams and activate prefixes per window
+    let mut per_step_activated: Vec<Vec<usize>> = Vec::new();
+    let mut per_step_new: Vec<Vec<usize>> = Vec::new();
+    let mut per_step_withdrawn: Vec<Vec<usize>> = Vec::new();
+    let mut cumulative: HashSet<usize> = HashSet::new();
+    let mut prev_activated: HashSet<usize> = HashSet::new();
+
+    for (idx, (_state, _head, window)) in configs.iter().enumerate() {
+        if idx as u64 % sample_every != 0 { continue; }
+        let grams = extract_kgrams(window, k);
+
+        // Activate all prefixes of these k-grams
+         let mut step_nodes: HashSet<usize> = HashSet::new();
+         for g in grams {
+             let mut prefix = g;
+             for d in (0..=k).rev() {
+                 let node_idx = (1usize << d) - 1 + prefix;
+                 step_nodes.insert(node_idx);
+                 prefix >>= 1; // next shorter prefix
+             }
+         }
+
+        let new_nodes: Vec<usize> = step_nodes.iter()
+            .filter(|&n| !cumulative.contains(n))
+            .copied()
+            .collect();
+        let withdrawn: Vec<usize> = prev_activated.iter()
+            .filter(|&n| !step_nodes.contains(n))
+            .copied()
+            .collect();
+
+        per_step_activated.push(step_nodes.iter().copied().collect());
+        per_step_new.push(new_nodes.clone());
+        per_step_withdrawn.push(withdrawn.clone());
+
+        for &n in &new_nodes { cumulative.insert(n); }
+        prev_activated = step_nodes;
+    }
+
+    // Depth distribution of cumulative activated set
+    let mut depth_counts = vec![0usize; depth_count];
+    let mut depth_possible = vec![0usize; depth_count];
+    for d in 0..=k {
+        depth_possible[d] = 1usize << d;
+    }
+    for &n in &cumulative {
+        // for node n, find its depth
+        let mut depth = 0usize;
+        let mut base = 0usize;
+        for d in 0..=k {
+            let start = (1usize << d) - 1;
+            let end = (1usize << (d + 1)) - 1;
+            if n >= start && n < end {
+                depth = d;
+                break;
+            }
+        }
+        depth_counts[depth] += 1;
+    }
+
+    // Compute signatures per step
+    let mut sigs: Vec<StepSignature> = Vec::new();
+    for i in 0..per_step_activated.len() {
+        let n_activated = per_step_activated[i].len();
+        let n_new = per_step_new[i].len();
+        let n_withdrawn = per_step_withdrawn[i].len();
+        let n_cumulative = cumulative_at_step(&per_step_activated, i);
+
+        // avg depth
+        let mut depth_sum = 0usize;
+        for &n in &per_step_activated[i] {
+            for d in 0..=k {
+                let start = (1usize << d) - 1;
+                let end = (1usize << (d + 1)) - 1;
+                if n >= start && n < end {
+                    depth_sum += d;
+                    break;
+                }
+            }
+        }
+        let avg_depth = if n_activated > 0 {
+            depth_sum as f64 / n_activated as f64
+        } else { 0.0 };
+
+        sigs.push(StepSignature {
+            step_idx: i,
+            n_activated,
+            n_new,
+            n_withdrawn,
+            n_cumulative,
+            avg_depth,
+        });
+    }
+
+    PrefixTreeSignature {
+        k,
+        total_nodes,
+        n_steps: sigs.len(),
+        cumulative_nodes: cumulative.len(),
+        depth_counts,
+        depth_possible,
+        per_step: sigs,
+    }
+}
+
+fn cumulative_at_step(per_step: &[Vec<usize>], up_to: usize) -> usize {
+    let mut seen: HashSet<usize> = HashSet::new();
+    for i in 0..=up_to {
+        for &n in &per_step[i] { seen.insert(n); }
+    }
+    seen.len()
+}
+
+/// Structure returned by build_prefix_tree_signature
+#[derive(Debug, Clone)]
+pub struct PrefixTreeSignature {
+    pub k: usize,
+    pub total_nodes: usize,
+    pub n_steps: usize,
+    pub cumulative_nodes: usize,
+    pub depth_counts: Vec<usize>,
+    pub depth_possible: Vec<usize>,
+    pub per_step: Vec<StepSignature>,
+}
+
+#[derive(Debug, Clone)]
+pub struct StepSignature {
+    pub step_idx: usize,
+    pub n_activated: usize,
+    pub n_new: usize,
+    pub n_withdrawn: usize,
+    pub n_cumulative: usize,
+    pub avg_depth: f64,
+}
+
+pub fn build_transposed_formal_context(
+    configs: &[(usize, isize, Vec<u8>)],
+    use_first: usize,
+    sample_every: u64,
+    k: usize,
+) -> (Vec<Vec<bool>>, Vec<String>, Vec<String>, usize) {
+    // Step 1: Extract k-grams from each sampled time window
+    // map from pattern (usize encoding) to set of time window indices where it appears
+    let mut pattern_windows: std::collections::HashMap<usize, std::collections::HashSet<usize>> =
+        std::collections::HashMap::new();
+    let mut window_indices: Vec<(usize, u64)> = Vec::new(); // (array_idx, actual_step)
+
+    for (time_idx, (_state, _head, window)) in configs.iter().enumerate() {
+        if time_idx >= use_first {
+            break;
+        }
+        if time_idx as u64 % sample_every != 0 {
+            continue;
+        }
+        let win_idx = window_indices.len();
+        window_indices.push((time_idx, time_idx as u64));
+
+        let grams = extract_kgrams(window, k);
+        for g in grams {
+            pattern_windows.entry(g).or_insert_with(std::collections::HashSet::new).insert(win_idx);
+        }
+    }
+
+    let n_windows = window_indices.len();
+    if n_windows == 0 {
+        return (vec![], vec![], vec![], 0);
+    }
+
+    // Step 2: Build object list (unique patterns) and attribute list (time windows)
+    let mut sorted_patterns: Vec<usize> = pattern_windows.keys().copied().collect();
+    sorted_patterns.sort();
+    let n_patterns = sorted_patterns.len();
+
+    if n_patterns == 0 {
+        return (vec![], vec![], vec![], 0);
+    }
+
+    // Object labels: binary representation of the pattern
+    let obj_labels: Vec<String> = sorted_patterns.iter()
+        .map(|&p| format!("{:0width$b}", p, width = k))
+        .collect();
+
+    // Attribute labels: step numbers
+    let attr_labels: Vec<String> = window_indices.iter()
+        .map(|(_, step)| format!("t{}", step))
+        .collect();
+
+    // Step 3: Build the binary matrix (patterns × windows)
+    let mut matrix: Vec<Vec<bool>> = vec![vec![false; n_windows]; n_patterns];
+    for (i, &pat) in sorted_patterns.iter().enumerate() {
+        if let Some(windows) = pattern_windows.get(&pat) {
+            for &w in windows {
+                matrix[i][w] = true;
+            }
+        }
+    }
+
+    (matrix, obj_labels, attr_labels, n_patterns)
+}
+
+// ─── v24: Fuzzy FCA — Hamming-tolerance k-gram matching ──────────────────────
+
+/// Hamming distance between two k-bit patterns.
+#[inline]
+fn hamming(a: usize, b: usize) -> u32 {
+    (a ^ b).count_ones()
+}
+
+/// Given a k-gram pattern and Hamming radius h, return all patterns
+/// within Hamming distance ≤ h (including the original).
+fn hamming_neighbors(pattern: usize, k: usize, h: u32) -> Vec<usize> {
+    let max_val = 1usize << k;
+    let mut neighbors = Vec::new();
+    for candidate in 0..max_val {
+        if hamming(pattern, candidate) <= h {
+            neighbors.push(candidate);
+        }
+    }
+    neighbors
+}
+
+/// Build formal context with Hamming-tolerance fuzzy k-gram matching.
+///
+/// B-24.21: Instead of exact k-gram matching, a window "fuzzily contains"
+/// all k-grams within Hamming distance ≤ h of any k-gram it actually contains.
+///
+/// This implements "共同属于" (joint belonging): a window doesn't need the
+/// exact k-gram, just something close enough. h=0 recovers the standard
+/// binary FCA (known to degenerate). h≥1 introduces fuzzy tolerance.
+///
+/// Zero free parameter: h is a discrete structural choice (0,1,2,...).
+pub fn build_fuzzy_kgram_context(
+    tm: &TuringMachine,
+    max_steps: u64,
+    window_l: usize,
+    sample_every: u64,
+    k: usize,
+    h: u32,
+) -> (Vec<Vec<bool>>, Vec<String>, Vec<String>, usize) {
+    let (configs, _halted, steps) = tm.simulate(max_steps, window_l);
+
+    let n_attrs = 1usize << k;
+    let mut obj_vecs: Vec<(usize, Vec<bool>)> = Vec::new();
+
+    // Precompute hamming-neighbor masks for all 2^k patterns
+    let mut neighbor_map: Vec<Vec<usize>> = vec![Vec::new(); n_attrs];
+    let neighbor_count: usize = neighbor_map.iter().map(|v| v.len()).sum();
+    if h == 0 {
+        for p in 0..n_attrs { neighbor_map[p] = vec![p]; }
+    } else {
+        for p in 0..n_attrs { neighbor_map[p] = hamming_neighbors(p, k, h); }
+    }
+
+    let mut total_hits = 0usize;
+    for (idx, (_state, _head, window)) in configs.iter().enumerate() {
+        if idx as u64 % sample_every != 0 { continue; }
+        let grams = extract_kgrams(window, k);
+        let mut row = vec![false; n_attrs];
+        for g in grams {
+            for &neighbor in &neighbor_map[g] {
+                row[neighbor] = true;
+            }
+        }
+        total_hits += row.iter().filter(|&&b| b).count();
+        obj_vecs.push((idx, row));
+    }
+
+    let n_objects = obj_vecs.len();
+    let density = if n_objects > 0 { total_hits as f64 / (n_objects * n_attrs) as f64 } else { 0.0 };
+
+    let obj_labels: Vec<String> = obj_vecs.iter()
+        .map(|(idx, _)| format!("t{}", idx))
+        .collect();
+
+    let attr_labels: Vec<String> = (0..n_attrs)
+        .map(|p| format!("k{}_{:0width$b}", k, p, width = k))
+        .collect();
+
+    let matrix: Vec<Vec<bool>> = obj_vecs.into_iter().map(|(_, r)| r).collect();
+
+    let mut unique_patterns: HashSet<Vec<bool>> = HashSet::new();
+    for row in &matrix { unique_patterns.insert(row.clone()); }
+
+    println!(
+        "    fuzzy(k={} h={}): {} steps, {} objs, {} attrs, density={:.3}, {} uniq rows, {} neighbors total",
+        k, h, steps, n_objects, n_attrs, density, unique_patterns.len(),
+        neighbor_map.iter().map(|v| v.len()).sum::<usize>()
+    );
+
+    (matrix, obj_labels, attr_labels, unique_patterns.len())
+}
+
 /// Compute ρ(J) for k-gram FCA lattice at multiple L and k values.
 pub fn compute_kgram_rho_sequence(
     tm: &TuringMachine,

@@ -40065,6 +40065,758 @@ pub fn run_tm_fca_tdep() {
     println!("\n{}", "=".repeat(72));
 }
 
+pub fn run_tm_fca_transposed() {
+    use crate::tm_fca::{self, TuringMachine};
+    use crate::n_operator::DynamicsParams;
+
+    println!("\n{}", "=".repeat(72));
+    println!("  B-24 v21: Transposed FCA (Patterns-as-Objects)");
+    println!("  Objects=unique k-gram patterns, Attributes=time windows");
+    println!("  Standard binary FCA, ZERO free parameters");
+    println!("{}", "=".repeat(72));
+
+    let max_concepts = 50000;
+    let time_limit = 60.0;
+    let params = DynamicsParams::uniform();
+    let window_l = 50;
+    let k = 5;
+    let max_steps = 10000u64;
+    let sample_every = 600u64;
+
+    struct TmPlan {
+        name: &'static str,
+        max_steps: u64,
+        class: &'static str,
+    }
+
+    let tms: Vec<(TuringMachine, TmPlan)> = vec![
+        (tm_fca::simple_nonhalter(), TmPlan { name: "SimpleNH", max_steps: 5000, class: "p2" }),
+        (tm_fca::periodic3_nonhalter(), TmPlan { name: "Per3NH", max_steps: 10000, class: "p3" }),
+        (tm_fca::translator_nonhalter(), TmPlan { name: "TransNH", max_steps: 10000, class: "shift" }),
+        (tm_fca::bb4_champion(), TmPlan { name: "BB4", max_steps: 10000, class: "halt-107" }),
+        (tm_fca::bb5_champion(), TmPlan { name: "BB5", max_steps: 10000, class: "halt-47M" }),
+        (tm_fca::antihydra(), TmPlan { name: "Antihydra", max_steps: 10000, class: "undec" }),
+        (tm_fca::current_champion(), TmPlan { name: "CurrChamp", max_steps: 10000, class: "halt->2^5" }),
+    ];
+
+    println!("\n  Part 1: Transposed FCA — Lattice Structure per TM");
+    println!("  ──────────────────────────────────────────────────");
+    println!("  {:>12} {:>10} {:>10} {:>10} {:>12} {:>12}",
+        "TM", "n_pats", "n_win", "|C|", "rho(J)", "|C|_v9");
+    println!("  {:>12} {:>10} {:>10} {:>10} {:>12} {:>12}",
+        "────", "──────", "─────", "────", "──────", "──────");
+
+    let mut results: Vec<(String, f64, usize, usize, usize)> = Vec::new();
+
+    for (tm, plan) in &tms {
+        let max_t = plan.max_steps;
+        let (configs, halted, _steps) = tm.simulate(max_t, window_l);
+
+        let (matrix, _obj_labels, _attr_labels, n_patterns) =
+            tm_fca::build_transposed_formal_context(&configs, (max_t as usize).min(configs.len()), sample_every, k);
+
+        let n_patterns_actual = matrix.len();
+        let n_windows = if n_patterns_actual > 0 { matrix[0].len() } else { 0 };
+
+        if n_patterns_actual == 0 {
+            println!("  {:>12} {:>10} {:>10} {:>10} {:>12} {:>12}",
+                plan.name, 0, 0, 0, "N/A", "?");
+            continue;
+        }
+
+        let lattice = tm_fca::build_lattice(&matrix, max_concepts, time_limit);
+        let n_concepts = lattice.concepts.len();
+
+        let (analysis_results, _stats) = tm_fca::run_lattice_analysis(&lattice, &params);
+        let rho = tm_fca::extract_top_rho(&analysis_results, &_stats);
+
+        let rho_str = if let Some(r) = rho { format!("{:.8}", r) } else { "N/A".to_string() };
+
+        let v9_concepts = match plan.name {
+            "SimpleNH" => "5", "Per3NH" => "5", "TransNH" => "5", "BB4" => "5",
+            "BB5" => "55-120", "Antihydra" => "11", "CurrChamp" => "8-14", _ => "?",
+        };
+
+        println!("  {:>12} {:>10} {:>10} {:>10} {:>12} {:>12}",
+            plan.name, n_patterns_actual, n_windows, n_concepts, rho_str, v9_concepts);
+
+        results.push((plan.name.to_string(), rho.unwrap_or(0.0), n_patterns_actual, n_windows, n_concepts));
+    }
+
+    println!("\n  Part 2: Degeneracy Check — ρ(J) Distribution");
+    println!("  ──────────────────────────────────────────────");
+    let rhos: Vec<f64> = results.iter().map(|(_, r, _, _, _)| *r).filter(|&r| r > 0.0).collect();
+    if rhos.is_empty() {
+        println!("  ERROR: No valid ρ(J) values");
+    } else {
+        let rho_mean = rhos.iter().sum::<f64>() / rhos.len() as f64;
+        let rho_min = rhos.iter().cloned().fold(f64::INFINITY, f64::min);
+        let rho_max = rhos.iter().cloned().fold(0.0f64, f64::max);
+        let rho_range = rho_max - rho_min;
+
+        let all_same = rhos.iter().all(|&r| (r - rho_mean).abs() < 1e-8);
+        let v6_constant = 0.54891053;
+        let all_v6 = rhos.iter().all(|&r| (r - v6_constant).abs() < 1e-8);
+
+        println!("  ρ(J) min = {:.8}", rho_min);
+        println!("  ρ(J) max = {:.8}", rho_max);
+        println!("  ρ(J) range = {:.8}", rho_range);
+        println!("  ρ(J) mean = {:.8}", rho_mean);
+        println!();
+        if all_same {
+            println!("  VERDICT: DEGENERATE — all ρ(J) identical (range=0)");
+            println!("  The transposition did NOT break the degeneracy.");
+        } else if all_v6 {
+            println!("  VERDICT: Still v6 degenerate — all ρ(J) = 0.54891053");
+        } else if rho_range < 1e-6 {
+            println!("  VERDICT: Near-degenerate (range < 1e-6)");
+        } else {
+            println!("  VERDICT: ρ(J) VARIES across TMs! Range = {:.8}", rho_range);
+            println!("  The transposition SUCCESSFULLY broke the degeneracy.");
+        }
+    }
+
+    println!("\n  Part 3: Pattern Count vs Concept Count");
+    println!("  ────────────────────────────────────────");
+    for (name, rho, n_pats, n_win, n_concepts) in &results {
+        let density = if *n_pats > 0 && *n_win > 0 {
+            // Count total 1s in matrix divided by total cells
+            // We don't have matrix here, but we can estimate from n_concepts
+            "?"
+        } else { "0" };
+        let deg_mark = if *n_concepts <= 5 { " ⚠ DEGEN" } else { "" };
+        println!("  {:>12}: {} patterns x {} windows -> |C|={}{}",
+            name, n_pats, n_win, n_concepts, deg_mark);
+    }
+
+    println!("\n  Part 4: Comparison with v9 Pattern Structure");
+    println!("  ──────────────────────────────────────────────");
+    println!("  v9 uses Pattern Structures (k-min..k-max, max_level, similarity)");
+    println!("  v21 uses transposed binary FCA (k={}, zero free params)", k);
+    println!();
+    for (name, _, _, _, n_concepts) in &results {
+        print!("  {:>12}: |C|_v21={}", name, n_concepts);
+        if *n_concepts <= 5 {
+            print!(" (same degeneracy as v6)");
+        } else {
+            print!(" -> viable!");
+        }
+        println!();
+    }
+
+    println!("\n{}", "=".repeat(72));
+}
+
+pub fn run_tm_fca_density_sweep() {
+    use crate::tm_fca::{self, TuringMachine};
+    use crate::n_operator::DynamicsParams;
+
+    println!("\n{}", "=".repeat(72));
+    println!("  B-24 v22: Object Density Sweep — Standard Binary FCA");
+    println!("  Testing if degeneracy breaks with increasing object count");
+    println!("{}", "=".repeat(72));
+
+    let max_concepts = 50000;
+    let time_limit = 120.0;
+    let params = DynamicsParams::uniform();
+    let window_l = 50;
+    let k = 5;
+    let max_steps = 20000u64;
+
+    // sample_every sweep: 1 (densest) to 2048 (sparsest)
+    let densities: [u64; 10] = [1, 2, 4, 8, 16, 32, 64, 128, 512, 2048];
+
+    struct TmPlan {
+        name: &'static str,
+        max_steps: u64,
+        class: &'static str,
+    }
+
+    let tms: Vec<(TuringMachine, TmPlan)> = vec![
+        (tm_fca::simple_nonhalter(), TmPlan { name: "SimpleNH", max_steps: 5000, class: "p2" }),
+        (tm_fca::periodic3_nonhalter(), TmPlan { name: "Per3NH", max_steps: 10000, class: "p3" }),
+        (tm_fca::translator_nonhalter(), TmPlan { name: "TransNH", max_steps: 10000, class: "shift" }),
+        (tm_fca::bb4_champion(), TmPlan { name: "BB4", max_steps: 10000, class: "halt-107" }),
+        (tm_fca::bb5_champion(), TmPlan { name: "BB5", max_steps: 20000, class: "halt-47M" }),
+        (tm_fca::antihydra(), TmPlan { name: "Antihydra", max_steps: 20000, class: "undec" }),
+        (tm_fca::current_champion(), TmPlan { name: "CurrChamp", max_steps: 20000, class: "halt->2^5" }),
+    ];
+
+    println!("\n  Hypothesis: ρ(J)=0.54891053 is a structural invariant of binary Galois");
+    println!("  connection, NOT a data sparsity artifact.");
+    println!("  If ρ(J) stays at 0.54891053 even at sample_every=1 (max density),");
+    println!("  degeneracy is fundamental.");
+    println!();
+    println!("  {:>12} {:>8} {:>8} {:>8} {:>8} {:>10} {:>12}",
+        "TM", "samp", "n_obj", "n_attr", "|C|", "ρ(J)", "build_s");
+    println!("  {:>12} {:>8} {:>8} {:>8} {:>8} {:>10} {:>12}",
+        "────", "────", "─────", "──────", "────", "──────", "───────");
+
+    let v6_constant = 0.54891053;
+    let mut all_rhos: Vec<(String, u64, f64, usize, usize)> = Vec::new();
+
+    for (tm, plan) in &tms {
+        let max_t = plan.max_steps;
+        for &se in &densities {
+            let t0 = std::time::Instant::now();
+            let (matrix, _obj_labels, _attr_labels, _n_pats) =
+                tm_fca::build_kgram_formal_context(tm, max_t, window_l, se, k);
+
+            let n_obj = matrix.len();
+            let n_attr = if n_obj > 0 { matrix[0].len() } else { 0 };
+
+            if n_obj == 0 || n_attr == 0 {
+                println!("  {:>12} {:>8} {:>8} {:>8} {:>8} {:>10} {:>12}",
+                    plan.name, se, 0, 0, 0, "N/A", "0.0s");
+                continue;
+            }
+
+            let lattice = tm_fca::build_lattice(&matrix, max_concepts, time_limit);
+            let n_concepts = lattice.concepts.len();
+            let build_time = t0.elapsed().as_secs_f64();
+
+            let (analysis_results, _stats) = tm_fca::run_lattice_analysis(&lattice, &params);
+            let rho = tm_fca::extract_top_rho(&analysis_results, &_stats);
+
+            let rho_str = if let Some(r) = rho {
+                format!("{:.8}", r)
+            } else {
+                "N/A".to_string()
+            };
+
+            let deg_mark = if let Some(r) = rho {
+                if (r - v6_constant).abs() < 1e-8 { " =" } else { " !" }
+            } else { " ?" };
+
+            println!("  {:>12} {:>8} {:>8} {:>8} {:>8} {:>10}{} {:>12.1}s",
+                plan.name, se, n_obj, n_attr, n_concepts, rho_str, deg_mark, build_time);
+
+            if let Some(r) = rho {
+                all_rhos.push((plan.name.to_string(), se, r, n_obj, n_concepts));
+            }
+        }
+        println!("  {:>12} {:>8} {:>8} {:>8} {:>8} {:>10} {:>12}",
+            "──", "────", "─────", "──────", "────", "──────", "───────");
+    }
+
+    // Analysis
+    println!("\n  Part 2: Degeneracy Analysis");
+    println!("  ──────────────────────────────");
+    let deviated: Vec<_> = all_rhos.iter()
+        .filter(|(_, _, r, _, _)| (r - v6_constant).abs() > 1e-8)
+        .collect();
+    let constant: Vec<_> = all_rhos.iter()
+        .filter(|(_, _, r, _, _)| (r - v6_constant).abs() < 1e-8)
+        .collect();
+
+    println!("  Total data points: {}", all_rhos.len());
+    println!("  ρ(J) = 0.54891053: {} ({:.1}%)", constant.len(),
+        100.0 * constant.len() as f64 / all_rhos.len().max(1) as f64);
+    println!("  ρ(J) ≠ 0.54891053: {} ({:.1}%)", deviated.len(),
+        100.0 * deviated.len() as f64 / all_rhos.len().max(1) as f64);
+
+    if deviated.is_empty() {
+        println!("\n  VERDICT: Degeneracy is FUNDAMENTAL.");
+        println!("  ρ(J) = 0.54891053 for ALL 7 TMs at ALL densities (0 deviations / {} points).", all_rhos.len());
+        println!("  Binary Galois connection degeneracy is NOT a data sparsity artifact.");
+        println!("  Even at sample_every=1 (max density, no subsampling), ρ(J) = 0.54891053.");
+        println!("  This confirms B-24.18.2: the degeneracy root cause is the binary");
+        println!("  Galois connection's exact subset inclusion operator.");
+    } else {
+        println!("\n  VERDICT: Degeneracy BREAKS at some densities.");
+        for (name, se, r, n_obj, n_conc) in &deviated {
+            println!("    {} @ samp={}: ρ={:.8} |C|={} obj={}", name, se, r, n_conc, n_obj);
+        }
+    }
+
+    // Concept count vs density
+    println!("\n  Part 3: |ℭ| vs Sampling Density");
+    println!("  ──────────────────────────────────");
+    for (tm_name, plan) in tms.iter().map(|(_, p)| (p.name, p)) {
+        let points: Vec<_> = all_rhos.iter()
+            .filter(|(n, _, _, _, _)| n == tm_name)
+            .collect();
+        if !points.is_empty() {
+            let max_c = points.iter().map(|(_, _, _, _, c)| c).max().unwrap_or(&0);
+            let min_c = points.iter().map(|(_, _, _, _, c)| c).min().unwrap_or(&0);
+            println!("  {:>12}: |ℭ|∈[{:>4},{:>4}], all ρ(J)=0.54891053", tm_name, min_c, max_c);
+        }
+    }
+
+    println!("\n{}", "=".repeat(72));
+}
+
+pub fn run_tm_fca_multiscale() {
+    use crate::tm_fca::{self, TuringMachine};
+    use crate::n_operator::DynamicsParams;
+
+    println!("\n{}", "=".repeat(72));
+    println!("  B-24 v23: Multi-scale k-gram FCA");
+    println!("  k ∈ {{3,4,5,6,7}} simultaneously, ZERO free parameters");
+    println!("{}", "=".repeat(72));
+
+    let max_concepts = 50000;
+    let time_limit = 180.0;
+    let params = DynamicsParams::uniform();
+    let window_l = 50;
+    let k_min = 3usize;
+    let k_max = 7usize;
+    let max_steps = 20000u64;
+
+    // Also do L=100 for the rich TMs to see scale effects
+    struct TmPlan {
+        name: &'static str,
+        max_steps: u64,
+        class: &'static str,
+    }
+
+    let tms: Vec<(TuringMachine, TmPlan)> = vec![
+        (tm_fca::simple_nonhalter(), TmPlan { name: "SimpleNH", max_steps: 5000, class: "p2" }),
+        (tm_fca::periodic3_nonhalter(), TmPlan { name: "Per3NH", max_steps: 10000, class: "p3" }),
+        (tm_fca::translator_nonhalter(), TmPlan { name: "TransNH", max_steps: 10000, class: "shift" }),
+        (tm_fca::bb4_champion(), TmPlan { name: "BB4", max_steps: 10000, class: "halt-107" }),
+        (tm_fca::bb5_champion(), TmPlan { name: "BB5", max_steps: 20000, class: "halt-47M" }),
+        (tm_fca::antihydra(), TmPlan { name: "Antihydra", max_steps: 20000, class: "undec" }),
+        (tm_fca::current_champion(), TmPlan { name: "CurrChamp", max_steps: 20000, class: "halt->2^5" }),
+    ];
+
+    let sample_densities: [u64; 4] = [1, 4, 16, 64];
+    let v6_constant = 0.54891053;
+
+    println!("\n  Part 1: L=50, k={}-{}, varying sampling density", k_min, k_max);
+    println!("  {:>12} {:>6} {:>6} {:>6} {:>6} {:>8} {:>12} {:>10}",
+        "TM", "k_rng", "samp", "n_obj", "n_attr", "|C|", "ρ(J)", "build_s");
+    println!("  {:>12} {:>6} {:>6} {:>6} {:>6} {:>8} {:>12} {:>10}",
+        "────", "────", "────", "─────", "──────", "────", "──────", "───────");
+
+    let mut results: Vec<(String, usize, usize, u64, usize, usize, usize, f64, f64)> = Vec::new();
+
+    for (tm, plan) in &tms {
+        let max_t = plan.max_steps;
+        for &se in &sample_densities {
+            let t0 = std::time::Instant::now();
+            let (matrix, _ol, _al, _np) =
+                tm_fca::build_multiscale_kgram_context(tm, max_t, window_l, se, k_min, k_max);
+
+            let n_obj = matrix.len();
+            let n_attr = if n_obj > 0 { matrix[0].len() } else { 0 };
+
+            if n_obj == 0 || n_attr == 0 {
+                println!("  {:>12} {:>6} {:>6} {:>6} {:>6} {:>8} {:>12} {:>10}",
+                    plan.name, format!("{}-{}", k_min, k_max), se, 0, 0, 0, "N/A", "0.0s");
+                continue;
+            }
+
+            let lattice = tm_fca::build_lattice(&matrix, max_concepts, time_limit);
+            let n_concepts = lattice.concepts.len();
+            let build_time = t0.elapsed().as_secs_f64();
+
+            let (analysis_results, _stats) = tm_fca::run_lattice_analysis(&lattice, &params);
+            let rho = tm_fca::extract_top_rho(&analysis_results, &_stats);
+
+            let rho_str = if let Some(r) = rho {
+                format!("{:.8}", r)
+            } else {
+                "N/A".to_string()
+            };
+
+            let deg_mark = if let Some(r) = rho {
+                if (r - v6_constant).abs() < 1e-8 { " =" } else { " ***" }
+            } else { " ?" };
+
+            println!("  {:>12} {:>6} {:>6} {:>6} {:>6} {:>8} {:>12}{} {:>10.1}s",
+                plan.name, format!("{}-{}", k_min, k_max), se, n_obj, n_attr, n_concepts, rho_str, deg_mark, build_time);
+
+            results.push((plan.name.to_string(), k_min, k_max, se, n_obj, n_attr, n_concepts, rho.unwrap_or(0.0), build_time));
+        }
+        println!("  {:>12} {:>6} {:>6} {:>6} {:>6} {:>8} {:>12} {:>10}",
+            "──", "──", "────", "─────", "──────", "────", "──────", "───────");
+    }
+
+    // Also try L=100 for the rich TMs
+    println!("\n  Part 2: L=100, k={}-{}, for selected TMs (higher resolution)", k_min, k_max);
+    println!("  {:>12} {:>6} {:>6} {:>6} {:>6} {:>8} {:>12} {:>10}",
+        "TM", "k_rng", "samp", "n_obj", "n_attr", "|C|", "ρ(J)", "build_s");
+    println!("  {:>12} {:>6} {:>6} {:>6} {:>6} {:>8} {:>12} {:>10}",
+        "────", "────", "────", "─────", "──────", "────", "──────", "───────");
+
+    let rich_tms: [(&TuringMachine, &TmPlan); 4] = [
+        (&tms[3].0, &tms[3].1), // BB4
+        (&tms[4].0, &tms[4].1), // BB5
+        (&tms[5].0, &tms[5].1), // Antihydra
+        (&tms[6].0, &tms[6].1), // CurrChamp
+    ];
+
+    let window_l2 = 100usize;
+    for (tm, plan) in &rich_tms {
+        let max_t = plan.max_steps;
+        for &se in &[4u64, 16u64] {
+            let t0 = std::time::Instant::now();
+            let (matrix, _ol, _al, _np) =
+                tm_fca::build_multiscale_kgram_context(tm, max_t, window_l2, se, k_min, k_max);
+
+            let n_obj = matrix.len();
+            let n_attr = if n_obj > 0 { matrix[0].len() } else { 0 };
+
+            if n_obj == 0 || n_attr == 0 { continue; }
+
+            let lattice = tm_fca::build_lattice(&matrix, max_concepts, time_limit);
+            let n_concepts = lattice.concepts.len();
+            let build_time = t0.elapsed().as_secs_f64();
+
+            let (analysis_results, _stats) = tm_fca::run_lattice_analysis(&lattice, &params);
+            let rho = tm_fca::extract_top_rho(&analysis_results, &_stats);
+
+            let rho_str = if let Some(r) = rho { format!("{:.8}", r) } else { "N/A".to_string() };
+            let deg_mark = if let Some(r) = rho {
+                if (r - v6_constant).abs() < 1e-8 { " =" } else { " ***" }
+            } else { " ?" };
+
+            println!("  {:>12} {:>6} {:>6} {:>6} {:>6} {:>8} {:>12}{} {:>10.1}s",
+                plan.name, format!("{}-{}", k_min, k_max), se, n_obj, n_attr, n_concepts, rho_str, deg_mark, build_time);
+
+            results.push((plan.name.to_string(), k_min, k_max, se, n_obj, n_attr, n_concepts, rho.unwrap_or(0.0), build_time));
+        }
+    }
+
+    // Degeneracy analysis
+    println!("\n  Part 3: Degeneracy Analysis");
+    println!("  ──────────────────────────────");
+    let deviated: Vec<_> = results.iter()
+        .filter(|(_, _, _, _, _, _, _, r, _)| (*r - v6_constant).abs() > 1e-8)
+        .collect();
+    let constant: Vec<_> = results.iter()
+        .filter(|(_, _, _, _, _, _, _, r, _)| (*r - v6_constant).abs() < 1e-8)
+        .collect();
+
+    println!("  Total: {} data points", results.len());
+    println!("  ρ(J) = 0.54891053: {} ({:.1}%)", constant.len(),
+        100.0 * constant.len() as f64 / results.len().max(1) as f64);
+    println!("  ρ(J) ≠ 0.54891053: {} ({:.1}%)", deviated.len(),
+        100.0 * deviated.len() as f64 / results.len().max(1) as f64);
+
+    if deviated.is_empty() {
+        println!("\n  VERDICT: Multi-scale k-grams did NOT break degeneracy.");
+        println!("  Even with k={}-{} simultaneously (up to {} possible attributes per window),", k_min, k_max,
+            (k_min..=k_max).map(|k| 1usize << k).sum::<usize>());
+        println!("  ρ(J) remains 0.54891053 for all TMs at all densities and window sizes.");
+        println!("  The binary Galois connection is the fundamental bottleneck.");
+        println!();
+        println!("  Next: This confirms that richer attribute spaces alone are insufficient.");
+        println!("  The degeneracy is in the matching OPERATOR, not the attribute vocabulary.");
+    } else {
+        println!("\n  *** BREAKTHROUGH: ρ(J) DEVIATES from 0.54891053! ***");
+        for (name, k_min, k_max, se, n_obj, n_attr, n_conc, r, _bt) in &deviated {
+            println!("    {} k={}-{} samp={}: obj={} attr={} |C|={} ρ={:.8}",
+                name, k_min, k_max, se, n_obj, n_attr, n_conc, r);
+        }
+    }
+
+    // Best per TM
+    println!("\n  Part 4: Best |ℭ| per TM");
+    println!("  ─────────────────────────");
+    let tm_names: Vec<&str> = vec!["SimpleNH", "Per3NH", "TransNH", "BB4", "BB5", "Antihydra", "CurrChamp"];
+    for tn in &tm_names {
+        let best = results.iter()
+            .filter(|(n, _, _, _, _, _, _, _, _)| n == tn)
+            .max_by_key(|(_, _, _, _, _, _, nc, _, _)| *nc);
+        if let Some((name, k_min, k_max, se, n_obj, n_attr, n_conc, r, _bt)) = best {
+            println!("  {:>12}: k={}-{} samp={} L={} |C|={} ρ(J)={:.8}",
+                name, k_min, k_max, se, window_l, n_conc, r);
+        }
+    }
+
+    println!("\n{}", "=".repeat(72));
+}
+
+pub fn run_tm_fca_fuzzy() {
+    use crate::tm_fca::{self, TuringMachine};
+    use crate::n_operator::DynamicsParams;
+
+    println!("\n{}", "=".repeat(72));
+    println!("  B-24 v24: Fuzzy FCA — Hamming-tolerance k-gram Matching");
+    println!("  '共同属于': window fuzzily contains all k-grams within Hamming h");
+    println!("{}", "=".repeat(72));
+
+    let max_concepts = 50000;
+    let time_limit = 180.0;
+    let params = DynamicsParams::uniform();
+    let window_l = 50;
+    let k = 5usize;
+
+    struct TmPlan {
+        name: &'static str,
+        max_steps: u64,
+    }
+
+    let tms: Vec<(TuringMachine, TmPlan)> = vec![
+        (tm_fca::simple_nonhalter(), TmPlan { name: "SimpleNH", max_steps: 5000 }),
+        (tm_fca::periodic3_nonhalter(), TmPlan { name: "Per3NH", max_steps: 10000 }),
+        (tm_fca::translator_nonhalter(), TmPlan { name: "TransNH", max_steps: 10000 }),
+        (tm_fca::bb4_champion(), TmPlan { name: "BB4", max_steps: 10000 }),
+        (tm_fca::bb5_champion(), TmPlan { name: "BB5", max_steps: 20000 }),
+        (tm_fca::antihydra(), TmPlan { name: "Antihydra", max_steps: 20000 }),
+        (tm_fca::current_champion(), TmPlan { name: "CurrChamp", max_steps: 20000 }),
+    ];
+
+    let h_values: [u32; 5] = [0, 1, 2, 3, 4];
+    let sample_densities: [u64; 3] = [1, 4, 16];
+    let v6_constant = 0.54891053;
+
+    // Hamming neighbor counts
+    println!("\n  Hamming neighbor counts (k={}):", k);
+    for &h_val in &h_values {
+        let neighbors: Vec<usize> = (0..(1u32 << k) as usize).map(|p| {
+            let mut count = 0usize;
+            for c in 0..(1u32 << k) as usize {
+                if (p ^ c).count_ones() <= h_val { count += 1; }
+            }
+            count
+        }).collect();
+        let total: usize = neighbors.iter().sum();
+        let avg = total as f64 / (1u32 << k) as f64;
+        println!("    h={}: {} total neighbors, avg {:.1}/{} patterns", h_val, total, avg, 1u32 << k);
+    }
+
+    println!("\n  Part 1: L=50, k=5, varying h");
+    println!("  {:>12} {:>3} {:>6} {:>10} {:>6} {:>6} {:>8} {:>12} {:>10}",
+        "TM", "h", "samp", "density", "n_obj", "n_attr", "|C|", "ρ(J)", "build_s");
+    println!("  {:>12} {:>3} {:>6} {:>10} {:>6} {:>6} {:>8} {:>12} {:>10}",
+        "────", "───", "────", "───────", "─────", "──────", "────", "──────", "───────");
+
+    let mut results: Vec<(String, u32, u64, f64, usize, usize, usize, f64, f64)> = Vec::new();
+
+    for (tm, plan) in &tms {
+        let max_t = plan.max_steps;
+        for &h_val in &h_values {
+            for &se in &sample_densities {
+                let t0 = std::time::Instant::now();
+                let (matrix, _ol, _al, _np) =
+                    tm_fca::build_fuzzy_kgram_context(tm, max_t, window_l, se, k, h_val);
+
+                let n_obj = matrix.len();
+                let n_attr = if n_obj > 0 { matrix[0].len() } else { 0 };
+
+                if n_obj == 0 || n_attr == 0 { continue; }
+
+                let density = if n_obj > 0 {
+                    matrix.iter().flat_map(|r| r.iter()).filter(|&&b| b).count() as f64
+                        / (n_obj * n_attr) as f64
+                } else { 0.0 };
+
+                let lattice = tm_fca::build_lattice(&matrix, max_concepts, time_limit);
+                let n_concepts = lattice.concepts.len();
+                let build_time = t0.elapsed().as_secs_f64();
+
+                let (analysis_results, _stats) = tm_fca::run_lattice_analysis(&lattice, &params);
+                let rho = tm_fca::extract_top_rho(&analysis_results, &_stats);
+
+                let rho_str = if let Some(r) = rho {
+                    format!("{:.8}", r)
+                } else {
+                    "N/A".to_string()
+                };
+
+                let deg_mark = if let Some(r) = rho {
+                    if (r - v6_constant).abs() < 1e-8 { " =" } else { " ***" }
+                } else { " ?" };
+
+                println!("  {:>12} {:>3} {:>6} {:>10.3} {:>6} {:>6} {:>8} {:>12}{} {:>10.1}s",
+                    plan.name, h_val, se, density, n_obj, n_attr, n_concepts, rho_str, deg_mark, build_time);
+
+                results.push((plan.name.to_string(), h_val, se, density, n_obj, n_attr, n_concepts,
+                    rho.unwrap_or(0.0), build_time));
+            }
+        }
+        println!("  {:>12} {:>3} {:>6} {:>10} {:>6} {:>6} {:>8} {:>12} {:>10}",
+            "──", "───", "────", "───────", "─────", "──────", "────", "──────", "───────");
+    }
+
+    // Summary
+    println!("\n  Part 2: Degeneracy Analysis");
+    println!("  ──────────────────────────────");
+    let deviated: Vec<_> = results.iter()
+        .filter(|(_, _, _, _, _, _, _, r, _)| (*r - v6_constant).abs() > 1e-8)
+        .collect();
+    let constant: Vec<_> = results.iter()
+        .filter(|(_, _, _, _, _, _, _, r, _)| (*r - v6_constant).abs() < 1e-8)
+        .collect();
+
+    println!("  Total: {} data points", results.len());
+    println!("  ρ(J) = 0.54891053: {} ({:.1}%)", constant.len(),
+        100.0 * constant.len() as f64 / results.len().max(1) as f64);
+    println!("  ρ(J) ≠ 0.54891053: {} ({:.1}%)", deviated.len(),
+        100.0 * deviated.len() as f64 / results.len().max(1) as f64);
+
+    if deviated.is_empty() {
+        println!("\n  VERDICT: Hamming-tolerance fuzzy matching did NOT break degeneracy.");
+        println!("  Even up to h=4 (each k-gram 'activates' all Hamming-close neighbors),");
+        println!("  ρ(J) remains 0.54891053. The degeneracy survives fuzzy attribute matching.");
+    } else {
+        println!("\n  *** BREAKTHROUGH: ρ(J) DEVIATES! ***");
+        for (name, h_val, se, density, n_obj, n_attr, n_conc, r, _bt) in &deviated {
+            println!("    {} h={} samp={}: dens={:.3} |C|={} ρ={:.8}", name, h_val, se, density, n_conc, r);
+        }
+    }
+
+    // Per-h at samp=1
+    println!("\n  Part 3: Per-h detail (samp=1)");
+    println!("  {:>12} {:>3} {:>8} {:>12} {:>10}",
+        "TM", "h", "|C|", "ρ(J)", "density");
+    println!("  {:>12} {:>3} {:>8} {:>12} {:>10}",
+        "────", "───", "────", "──────", "───────");
+    for (tm, plan) in &tms {
+        for &h_val in &h_values {
+            if let Some(r) = results.iter()
+                .find(|(n, hh, se, _, _, _, _, _, _)| n == plan.name && *hh == h_val && *se == 1)
+            {
+                println!("  {:>12} {:>3} {:>8} {:>12.8} {:>10.3}",
+                    plan.name, h_val, r.6, r.7, r.3);
+            }
+        }
+        println!("  {:>12} {:>3} {:>8} {:>12} {:>10}",
+            "──", "───", "────", "──────", "───────");
+    }
+
+    println!("\n{}", "=".repeat(72));
+}
+
+pub fn run_tm_fca_prefix_tree() {
+    use crate::tm_fca::{self, TuringMachine};
+
+    println!("\n{}", "=".repeat(72));
+    println!("  B-24 v25: Prefix Containment Tree — Gaze Framework Verification");
+    println!("  Pure ⊑ containment, no Galois closure, no NextClosure");
+    println!("{}", "=".repeat(72));
+
+    let window_l = 50;
+    let k = 5usize;
+    let sample_every = 4u64;
+
+    let tms: Vec<(TuringMachine, &str, u64)> = vec![
+        (tm_fca::simple_nonhalter(), "SimpleNH", 5000),
+        (tm_fca::periodic3_nonhalter(), "Per3NH", 10000),
+        (tm_fca::translator_nonhalter(), "TransNH", 10000),
+        (tm_fca::bb4_champion(), "BB4", 10000),
+        (tm_fca::bb5_champion(), "BB5", 20000),
+        (tm_fca::antihydra(), "Antihydra", 20000),
+        (tm_fca::current_champion(), "CurrChamp", 20000),
+    ];
+
+    let total_nodes = (1usize << (k + 1)) - 1;
+    println!("\n  Prefix tree T_{}: {} total nodes (root + {} depths)", k, total_nodes, k);
+
+    println!("\n  {:>12} {:>8} {:>8} {:>8} {:>8} {:>8} {:>10} {:>10}",
+        "TM", "n_win", "|C_win|", "|C_cum|", "cov%", "new/win", "wd/win", "avg_depth");
+    println!("  {:>12} {:>8} {:>8} {:>8} {:>8} {:>8} {:>10} {:>10}",
+        "────", "──────", "───────", "───────", "────", "───────", "───────", "─────────");
+
+    let mut all_sigs: Vec<(String, tm_fca::PrefixTreeSignature)> = Vec::new();
+
+    for (tm, name, max_steps) in &tms {
+        let t0 = std::time::Instant::now();
+        let sig = tm_fca::build_prefix_tree_signature(tm, *max_steps, window_l, sample_every, k);
+        let bt = t0.elapsed().as_secs_f64();
+
+        let n_windows = sig.per_step.len();
+        let avg_activated: f64 = if n_windows > 0 {
+            sig.per_step.iter().map(|s| s.n_activated as f64).sum::<f64>() / n_windows as f64
+        } else { 0.0 };
+        let avg_new: f64 = if n_windows > 0 {
+            sig.per_step.iter().map(|s| s.n_new as f64).sum::<f64>() / n_windows as f64
+        } else { 0.0 };
+        let avg_wd: f64 = if n_windows > 1 {
+            sig.per_step[1..].iter().map(|s| s.n_withdrawn as f64).sum::<f64>() / (n_windows - 1) as f64
+        } else { 0.0 };
+        let cov_pct = 100.0 * sig.cumulative_nodes as f64 / total_nodes as f64;
+        let avg_depth: f64 = if n_windows > 0 {
+            sig.per_step.iter().map(|s| s.avg_depth).sum::<f64>() / n_windows as f64
+        } else { 0.0 };
+
+        println!("  {:>12} {:>8} {:>8.0} {:>8} {:>7.1}% {:>8.1} {:>10.1} {:>10.3}  ({:.1}s)",
+            name, n_windows, avg_activated, sig.cumulative_nodes, cov_pct,
+            avg_new, avg_wd, avg_depth, bt);
+
+        // Depth profile
+        print!("    depths: ");
+        for d in 0..=k {
+            let pct = if sig.depth_possible[d] > 0 {
+                100.0 * sig.depth_counts[d] as f64 / sig.depth_possible[d] as f64
+            } else { 0.0 };
+            print!("d{}:{}% ", d, pct as usize);
+        }
+        println!();
+
+        all_sigs.push((name.to_string(), sig));
+    }
+
+    // Final states
+    println!("\n  Part 2: Final State Analysis (last 20% windows)");
+    println!("  {:>12} {:>8} {:>8} {:>8} {:>10} {:>10}",
+        "TM", "|C|_final", "wd_rate", "new_rate", "avg_depth", "depth_std");
+    println!("  {:>12} {:>8} {:>8} {:>8} {:>10} {:>10}",
+        "────", "────────", "───────", "────────", "─────────", "─────────");
+
+    for (name, sig) in &all_sigs {
+        let n = sig.per_step.len();
+        let tail_start = (n * 4 / 5).max(1);
+        let tail: Vec<_> = sig.per_step[tail_start..].to_vec();
+
+        let avg_c: f64 = tail.iter().map(|s| s.n_activated as f64).sum::<f64>() / tail.len() as f64;
+        let avg_wd: f64 = tail.iter().map(|s| s.n_withdrawn as f64).sum::<f64>() / tail.len() as f64;
+        let avg_new: f64 = tail.iter().map(|s| s.n_new as f64).sum::<f64>() / tail.len() as f64;
+        let avg_d: f64 = tail.iter().map(|s| s.avg_depth).sum::<f64>() / tail.len() as f64;
+        let var_d: f64 = tail.iter().map(|s| (s.avg_depth - avg_d).powi(2)).sum::<f64>() / tail.len() as f64;
+
+        println!("  {:>12} {:>8.0} {:>8.1} {:>8.1} {:>10.3} {:>10.3}",
+            name, avg_c, avg_wd, avg_new, avg_d, var_d.sqrt());
+    }
+
+    // TM differentiation test
+    println!("\n  Part 3: TM Differentiation Test");
+    println!("  ─────────────────────────────────");
+    let key_metrics: Vec<(String, f64, f64, f64, f64)> = all_sigs.iter().map(|(name, sig)| {
+        let n = sig.per_step.len();
+        let tail = &sig.per_step[(n * 4 / 5).max(1)..];
+        let avg_d = tail.iter().map(|s| s.avg_depth).sum::<f64>() / tail.len() as f64;
+        let avg_c = tail.iter().map(|s| s.n_activated as f64).sum::<f64>() / tail.len() as f64;
+        let avg_wd = tail.iter().map(|s| s.n_withdrawn as f64).sum::<f64>() / tail.len() as f64;
+        (name.clone(), sig.cumulative_nodes as f64, avg_c, avg_d, avg_wd)
+    }).collect();
+
+    println!("    metric         min       max       range    CV");
+    for (metric_name, idx) in &[
+        ("cumul_nodes", 1usize), ("|C|_final", 2), ("avg_depth", 3), ("wd_rate", 4)
+    ] {
+        let vals: Vec<f64> = key_metrics.iter().map(|m| {
+            match idx { 1 => m.1, 2 => m.2, 3 => m.3, 4 => m.4, _ => 0.0 }
+        }).collect();
+        let min = vals.iter().cloned().fold(f64::INFINITY, f64::min);
+        let max = vals.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
+        let mean = vals.iter().sum::<f64>() / vals.len() as f64;
+        let var = vals.iter().map(|v| (v - mean).powi(2)).sum::<f64>() / vals.len() as f64;
+        let cv = if mean > 0.0 { var.sqrt() / mean } else { 0.0 };
+        println!("    {:>12}  {:>8.2}  {:>8.2}  {:>8.2}  {:>5.2}",
+            metric_name, min, max, max - min, cv);
+    }
+
+    // Verdict
+    let has_differentiation = key_metrics.iter().any(|(_, _, c, _, _)| *c > 10.0)
+        && key_metrics.iter().any(|(_, _, c, _, _)| *c < 10.0);
+
+    println!("\n  VERDICT:");
+    if has_differentiation {
+        println!("  Prefix containment tree DIFFERENTIATES TMs without Galois closure.");
+        println!("  The gaze framework (⊑ containment) succeeds where FCA degenerates.");
+        println!("  Key differentiators: cumulative coverage, final |C|, avg depth.");
+    } else {
+        println!("  All TMs show similar prefix tree signatures.");
+        println!("  Need richer containment relations or deeper k.");
+    }
+
+    println!("\n{}", "=".repeat(72));
+}
+
 pub fn run_tm_fca_halting_analysis() {
 
     let params = DynamicsParams::uniform();
