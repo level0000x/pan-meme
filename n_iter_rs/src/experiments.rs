@@ -39294,13 +39294,20 @@ pub fn run_tm_fca_robustness() {
         let ccf = wccfs.get(ref_idx).map(|c| c).unwrap();
         let has_signal = ccf.iter().any(|&v| v.abs() > 0.05);
         let ccf_type = if !has_signal {
-            let nc_span: f64 = wncs.iter().cloned().fold(f64::INFINITY, f64::min);
-            let nc_max: f64 = wncs.iter().cloned().fold(0.0, f64::max);
-            if nc_max - nc_span > 0.5 { "NULLₑ" } else { "NULLₛ" }
+            let nc_min = wncs.iter().cloned().fold(f64::INFINITY, f64::min);
+            let nc_max = wncs.iter().cloned().fold(0.0f64, f64::max);
+            if nc_max - nc_min > 0.5 { "NULLₑ" } else { "NULLₛ" }
         } else {
-            let peak = ccf.iter().enumerate()
-                .max_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap()).unwrap();
-            if *peak.1 > 0.0 { "MONO+" } else { "NONMONO" }
+            let peak_idx = ccf.iter()
+                .map(|&v| v.abs())
+                .enumerate()
+                .max_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap())
+                .map(|(i, _)| i)
+                .unwrap_or(0);
+            let monotonic = ccf.windows(2).all(|w| w[1] >= w[0] - 0.01);
+            if monotonic && ccf[peak_idx] > 0.0 { "MONO+" }
+            else if monotonic && ccf[peak_idx] < 0.0 { "MONO-" }
+            else { "NONMONO" }
         };
 
         let nc_final = wncs.get(ref_idx).copied().unwrap_or(0.0);
@@ -39335,6 +39342,724 @@ pub fn run_tm_fca_robustness() {
         let h1_std = (wh1s.iter().map(|x| (x - h1_mean).powi(2)).sum::<f64>() / wh1s.len() as f64).sqrt();
         let h1_cv = if h1_mean > 0.0 { h1_std / h1_mean } else { 0.0 };
         println!("  {:>8}: |ℭ| CV={:.3}  H(1) CV={:.3}", name, nc_cv, h1_cv);
+    }
+
+    println!("\n{}", "=".repeat(72));
+}
+
+pub fn run_tm_fca_resonance() {
+    use crate::tm_fca::{self, TuringMachine};
+
+    println!("\n{}", "=".repeat(72));
+    println!("  B-24 v18: Scale Selectivity Resonance Mapping");
+    println!("  Scanning window size L=20..100 to locate CCF signal resonance peaks");
+    println!("{}", "=".repeat(72));
+
+    let max_concepts = 50000;
+    let time_limit = 120.0;
+    let max_level = 5;
+    let (k_min, k_max) = (2, 5);
+
+    let window_sizes: Vec<usize> = (20..=100).step_by(5).collect();
+    let n_windows = window_sizes.len();
+    let checkpoints: Vec<u64> = (1..=12).map(|i| (i * 600) as u64).collect();
+
+    struct TmPlan {
+        name: &'static str,
+        steps: u64,
+        class: &'static str,
+        halts: bool,
+        halt_steps: u64,
+    }
+
+    let tms: Vec<(TuringMachine, TmPlan)> = vec![
+        (tm_fca::simple_nonhalter(), TmPlan { name: "SimpleNH", steps: 5000, class: "non-halt(p2)", halts: false, halt_steps: 0 }),
+        (tm_fca::bb5_champion(), TmPlan { name: "BB5", steps: 10000, class: "halt(47M)", halts: true, halt_steps: 47_000_000 }),
+        (tm_fca::antihydra(), TmPlan { name: "Antihydra", steps: 10000, class: "undecided", halts: false, halt_steps: 0 }),
+        (tm_fca::current_champion(), TmPlan { name: "CurrChamp", steps: 10000, class: "halt(>2^5)", halts: true, halt_steps: u64::MAX }),
+    ];
+
+    println!("\n  Part 1: CCF Type Phase Diagram in (L, TM) Space");
+    println!("  {} L values x {} TMs x {} checkpoints = {} lattice builds", n_windows, tms.len(), checkpoints.len(), n_windows * tms.len() * checkpoints.len());
+    println!();
+
+    let mut all_results: Vec<(String, Vec<(usize, String, f64, usize, f64, f64, f64)>)> = Vec::new();
+
+    for (tm, plan) in &tms {
+        print!("  Computing {} ({})...", plan.name, plan.class);
+        let _ = std::io::Write::flush(&mut std::io::stdout());
+
+        let mut tm_results: Vec<(usize, String, f64, usize, f64, f64, f64)> = Vec::new();
+
+        for &wl in &window_sizes {
+            let max_t = plan.steps;
+            let cps: Vec<u64> = checkpoints.iter()
+                .filter(|&&c| c <= max_t)
+                .copied()
+                .collect();
+            if cps.len() < 3 {
+                tm_results.push((wl, "SKIP".to_string(), 0.0, 0, 0.0, 0.0, 0.0));
+                continue;
+            }
+
+            let evo = tm_fca::compute_time_evolution_with_turnover(
+                tm, max_t, &cps, wl, max_level, k_min, k_max,
+                max_concepts, time_limit,
+            );
+
+            let ncs: Vec<f64> = evo.iter().map(|(_, n, _, _, _, _, _, _)| *n as f64).collect();
+            let h1s: Vec<f64> = evo.iter().map(|(_, _, _, h, _, _, _, _)| *h).collect();
+
+            let mut ccf = Vec::new();
+            let max_lag = (evo.len() / 2).min(5);
+            for lag in 0..=max_lag {
+                let pairs: Vec<(f64, f64)> = (0..evo.len().saturating_sub(lag + 1))
+                    .map(|i| (ncs[i], h1s[i + lag]))
+                    .collect();
+                if pairs.len() < 3 { ccf.push(0.0); continue; }
+                let p_mean = pairs.iter().map(|(x, _)| x).sum::<f64>() / pairs.len() as f64;
+                let q_mean = pairs.iter().map(|(_, y)| y).sum::<f64>() / pairs.len() as f64;
+                let num: f64 = pairs.iter().map(|(x, y)| (x - p_mean) * (y - q_mean)).sum();
+                let dp: f64 = pairs.iter().map(|(x, _)| (x - p_mean).powi(2)).sum::<f64>().sqrt();
+                let dq: f64 = pairs.iter().map(|(_, y)| (y - q_mean).powi(2)).sum::<f64>().sqrt();
+                let cc = if dp > 0.0 && dq > 0.0 { num / (dp * dq) } else { 0.0 };
+                ccf.push(cc);
+            }
+
+            let has_signal = ccf.iter().any(|&v| v.abs() > 0.05);
+            let (ccf_type, peak_r, peak_lag) = if !has_signal {
+                let nc_min = ncs.iter().cloned().fold(f64::INFINITY, f64::min);
+                let nc_max = ncs.iter().cloned().fold(0.0f64, f64::max);
+                let is_static = nc_max - nc_min <= 0.5;
+                if is_static { ("NULLs".to_string(), 0.0, 0) }
+                else { ("NULLe".to_string(), 0.0, 0) }
+            } else {
+                let peak_idx = ccf.iter()
+                    .map(|&v| v.abs())
+                    .enumerate()
+                    .max_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap())
+                    .map(|(i, _)| i)
+                    .unwrap_or(0);
+                let peak_val = ccf[peak_idx];
+                let monotonic = ccf.windows(2).all(|w| w[1] >= w[0] - 0.01);
+                if monotonic && peak_val > 0.0 { ("MONO+".to_string(), peak_val, peak_idx) }
+                else if monotonic && peak_val < 0.0 { ("MONO-".to_string(), peak_val, peak_idx) }
+                else { ("NONMONO".to_string(), peak_val, peak_idx) }
+            };
+
+            let nc_final = ncs.last().copied().unwrap_or(0.0);
+            let h1_final = h1s.last().copied().unwrap_or(0.0);
+            let max_churn = evo.windows(2).map(|w| 1.0 - w[1].6).fold(0.0, f64::max);
+
+            tm_results.push((wl, ccf_type, peak_r, peak_lag, nc_final, h1_final, max_churn));
+        }
+
+        println!(" done");
+        all_results.push((plan.name.to_string(), tm_results));
+    }
+
+    print!("\n  {:>10}", "L\\TM");
+    for (name, _) in &all_results { print!("  {:>12}", name); }
+    println!();
+    print!("  {:>10}", "----");
+    for _ in &all_results { print!("  {:>12}", "----"); }
+    println!();
+
+    for wi in 0..n_windows {
+        let wl = window_sizes[wi];
+        print!("  L={:>6}", wl);
+        for (_, tm_results) in &all_results {
+            if let Some((_, ccf_type, peak_r, peak_lag, _, _, _)) = tm_results.get(wi) {
+                let display = match ccf_type.as_str() {
+                    "NULLs" => format!("NULLs"),
+                    "NULLe" => format!("NULLe"),
+                    "MONO+" => format!("MONO+ r={:+.2}", peak_r),
+                    "MONO-" => format!("MONO- r={:+.2}", peak_r),
+                    "NONMONO" => format!("NONMO r={:+.2}", peak_r),
+                    _ => ccf_type.clone(),
+                };
+                print!("  {:>12}", display);
+            }
+        }
+        println!();
+    }
+
+    println!("\n  Part 2: Resonance Curve - Peak |r| vs Window Size L");
+    println!("  ─────────────────────────────────────────────────────");
+    print!("  {:>6}", "L");
+    for (name, _) in &all_results { print!("  {:>10}", name); }
+    println!();
+    print!("  {:>6}", "----");
+    for _ in &all_results { print!("  {:>10}", "----"); }
+    println!();
+
+    for wi in 0..n_windows {
+        let wl = window_sizes[wi];
+        print!("  {:>4}", wl);
+        for (_, tm_results) in &all_results {
+            if let Some((_, _, peak_r, peak_lag, _, _, _)) = tm_results.get(wi) {
+                if peak_r.abs() > 0.001 {
+                    print!("  r={:+.3}@{}", peak_r, peak_lag);
+                } else {
+                    print!("  {:>10}", ".");
+                }
+            }
+        }
+        println!();
+    }
+
+    println!("\n  Part 3: Resonance Peak Detection per TM");
+    println!("  ─────────────────────────────────────────");
+    for (name, tm_results) in &all_results {
+        let peak_entry = tm_results.iter()
+            .max_by(|(_, _, a, _, _, _, _), (_, _, b, _, _, _, _)|
+                a.abs().partial_cmp(&b.abs()).unwrap());
+        if let Some((wl, ccf_type, peak_r, peak_lag, _, _, _)) = peak_entry {
+            let has_signal = ccf_type != "NULLs" && ccf_type != "NULLe";
+            let window_range: Vec<usize> = tm_results.iter()
+                .filter(|(_, t, r, _, _, _, _)| t != "NULLs" && t != "NULLe" && r.abs() > 0.05)
+                .map(|(l, _, _, _, _, _, _)| *l)
+                .collect();
+            let rw = if window_range.is_empty() { "none".to_string() }
+                else { format!("[{}, {}]", window_range.first().unwrap(), window_range.last().unwrap()) };
+            println!("  {:>10}: L*={}  peak_r={:+.3}@lag{}  type={:>7}  signal_window={}  detected={}",
+                name, wl, peak_r, peak_lag, ccf_type, rw, has_signal);
+        }
+    }
+
+    println!("\n  Part 4: ISD Classification Stability Across L");
+    println!("  ───────────────────────────────────────────────");
+    for (name, tm_results) in &all_results {
+        let plan = tms.iter().find(|(_, p)| p.name == name.as_str()).map(|(_, p)| p).unwrap();
+        let counts: std::collections::HashMap<&str, usize> = tm_results.iter()
+            .map(|(_, t, _, _, _, _, _)| t.as_str())
+            .fold(std::collections::HashMap::new(), |mut acc, t| {
+                *acc.entry(t).or_insert(0) += 1;
+                acc
+            });
+        let dominant = counts.iter().max_by_key(|(_, c)| *c).map(|(t, c)| (*t, *c)).unwrap_or(("?", 0));
+        let null_count = counts.get("NULLs").unwrap_or(&0) + counts.get("NULLe").unwrap_or(&0);
+        let signal_count = n_windows - null_count;
+
+        let half = n_windows as f64 / 2.0;
+        let majority_type = if *counts.get("NULLs").unwrap_or(&0) as f64 > half { "NULLs" }
+            else if *counts.get("NULLe").unwrap_or(&0) as f64 > half { "NULLe" }
+            else if (counts.get("MONO+").unwrap_or(&0) + counts.get("MONO-").unwrap_or(&0)) as f64 > half { "MONO" }
+            else if *counts.get("NONMONO").unwrap_or(&0) as f64 > half { "NONMONO" }
+            else { "MIXED" };
+
+        let actual = if plan.halts { "HALT" } else { "NON-HALT" };
+        let predicted = match majority_type {
+            "NULLs" => "NON-HALT",
+            "MONO" => "NON-HALT",
+            "NONMONO" => "HALT",
+            "NULLe" => "HALT",
+            _ => "UNCERTAIN",
+        };
+        let correct = if predicted == actual { "OK" } else { "ERR" };
+
+        let stability = if counts.len() == 1 { String::from("CONSTANT") }
+            else if counts.len() == 2 { String::from("BISTABLE") }
+            else { format!("POLY({})", counts.len()) };
+
+        println!("  {:>10}: stability={:>10}  majority={:>7}({}/{})  signal={}/{}  actual={}  pred={}  {}",
+            name, stability, dominant.0, dominant.1, n_windows, signal_count, n_windows, actual, predicted, correct);
+    }
+
+    println!("\n  Part 5: Antihydra Fine Structure");
+    println!("  ────────────────────────────────");
+    if let Some((_, anti_results)) = all_results.iter().find(|(n, _)| n == "Antihydra") {
+        println!("  {:>5} {:>10} {:>10} {:>12} {:>12} {:>10}",
+            "L", "CCF_type", "peak_r", "|C|_final", "H(1)_final", "max_churn");
+        println!("  {:>5} {:>10} {:>10} {:>12} {:>12} {:>10}",
+            "---", "--------", "------", "---------", "---------", "--------");
+        for (wl, ccf_type, peak_r, _, nc_final, h1_final, max_churn) in anti_results {
+            println!("  {:>4} {:>10} {:>10.4} {:>12.1} {:>12.4} {:>10.4}",
+                wl, ccf_type, peak_r, nc_final, h1_final, max_churn);
+        }
+
+        let nc_vals: Vec<f64> = anti_results.iter().map(|(_, _, _, _, nc, _, _)| *nc).collect();
+        let h1_vals: Vec<f64> = anti_results.iter().map(|(_, _, _, _, _, h1, _)| *h1).collect();
+        let nc_m = nc_vals.iter().sum::<f64>() / nc_vals.len() as f64;
+        let nc_s = (nc_vals.iter().map(|x| (x - nc_m).powi(2)).sum::<f64>() / nc_vals.len() as f64).sqrt();
+        let h1_m = h1_vals.iter().sum::<f64>() / h1_vals.len() as f64;
+        let h1_s = (h1_vals.iter().map(|x| (x - h1_m).powi(2)).sum::<f64>() / h1_vals.len() as f64).sqrt();
+        println!("\n  Antihydra cross-L stats:");
+        println!("    |C|: mean={:.1}  sigma={:.1}  CV={:.4}", nc_m, nc_s, if nc_m > 0.0 { nc_s / nc_m } else { 0.0 });
+        println!("    H(1): mean={:.4}  sigma={:.4}  CV={:.4}", h1_m, h1_s, if h1_m > 0.0 { h1_s / h1_m } else { 0.0 });
+    }
+
+    println!("\n{}", "=".repeat(72));
+}
+
+pub fn run_tm_fca_hires() {
+    use crate::tm_fca::{self, TuringMachine};
+
+    println!("\n{}", "=".repeat(72));
+    println!("  B-24 v19: High-Resolution Resonance Scan (DeltaL=1)");
+    println!("  Zooming into L=40-65 to precisely locate CCF resonance peaks");
+    println!("{}", "=".repeat(72));
+
+    let max_concepts = 50000;
+    let time_limit = 120.0;
+    let max_level = 5;
+    let (k_min, k_max) = (2, 5);
+
+    let window_sizes: Vec<usize> = (40..=65).collect();
+    let n_windows = window_sizes.len();
+    let checkpoints: Vec<u64> = (1..=12).map(|i| (i * 600) as u64).collect();
+
+    struct TmPlan {
+        name: &'static str,
+        steps: u64,
+        class: &'static str,
+    }
+
+    let tms: Vec<(TuringMachine, TmPlan)> = vec![
+        (tm_fca::simple_nonhalter(), TmPlan { name: "SimpleNH", steps: 5000, class: "NULL control" }),
+        (tm_fca::bb5_champion(), TmPlan { name: "BB5", steps: 10000, class: "NONMONO probe" }),
+        (tm_fca::antihydra(), TmPlan { name: "Antihydra", steps: 10000, class: "resonance primary" }),
+        (tm_fca::current_champion(), TmPlan { name: "CurrChamp", steps: 10000, class: "mixed probe" }),
+    ];
+
+    println!("\n  Part 1: High-Resolution CCF Resonance Map (L=40..65, DeltaL=1)");
+    println!("  {} L values x {} TMs x {} checkpoints = {} lattice builds", n_windows, tms.len(), checkpoints.len(), n_windows * tms.len() * checkpoints.len());
+    println!();
+
+    let mut all_results: Vec<(String, Vec<(usize, String, f64, usize, f64, f64, f64)>)> = Vec::new();
+
+    for (tm, plan) in &tms {
+        print!("  Computing {} ({}), L=40..65...", plan.name, plan.class);
+        let _ = std::io::Write::flush(&mut std::io::stdout());
+
+        let mut tm_results: Vec<(usize, String, f64, usize, f64, f64, f64)> = Vec::new();
+
+        for &wl in &window_sizes {
+            let max_t = plan.steps;
+            let cps: Vec<u64> = checkpoints.iter()
+                .filter(|&&c| c <= max_t)
+                .copied()
+                .collect();
+            if cps.len() < 3 {
+                tm_results.push((wl, "SKIP".to_string(), 0.0, 0, 0.0, 0.0, 0.0));
+                continue;
+            }
+
+            let evo = tm_fca::compute_time_evolution_with_turnover(
+                tm, max_t, &cps, wl, max_level, k_min, k_max,
+                max_concepts, time_limit,
+            );
+
+            let ncs: Vec<f64> = evo.iter().map(|(_, n, _, _, _, _, _, _)| *n as f64).collect();
+            let h1s: Vec<f64> = evo.iter().map(|(_, _, _, h, _, _, _, _)| *h).collect();
+
+            let mut ccf = Vec::new();
+            let max_lag = (evo.len() / 2).min(5);
+            for lag in 0..=max_lag {
+                let pairs: Vec<(f64, f64)> = (0..evo.len().saturating_sub(lag + 1))
+                    .map(|i| (ncs[i], h1s[i + lag]))
+                    .collect();
+                if pairs.len() < 3 { ccf.push(0.0); continue; }
+                let p_mean = pairs.iter().map(|(x, _)| x).sum::<f64>() / pairs.len() as f64;
+                let q_mean = pairs.iter().map(|(_, y)| y).sum::<f64>() / pairs.len() as f64;
+                let num: f64 = pairs.iter().map(|(x, y)| (x - p_mean) * (y - q_mean)).sum();
+                let dp: f64 = pairs.iter().map(|(x, _)| (x - p_mean).powi(2)).sum::<f64>().sqrt();
+                let dq: f64 = pairs.iter().map(|(_, y)| (y - q_mean).powi(2)).sum::<f64>().sqrt();
+                let cc = if dp > 0.0 && dq > 0.0 { num / (dp * dq) } else { 0.0 };
+                ccf.push(cc);
+            }
+
+            let has_signal = ccf.iter().any(|&v| v.abs() > 0.05);
+            let (ccf_type, peak_r, peak_lag) = if !has_signal {
+                let nc_min = ncs.iter().cloned().fold(f64::INFINITY, f64::min);
+                let nc_max = ncs.iter().cloned().fold(0.0f64, f64::max);
+                let is_static = nc_max - nc_min <= 0.5;
+                if is_static { ("NULLs".to_string(), 0.0, 0) }
+                else { ("NULLe".to_string(), 0.0, 0) }
+            } else {
+                let peak_idx = ccf.iter()
+                    .map(|&v| v.abs())
+                    .enumerate()
+                    .max_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap())
+                    .map(|(i, _)| i)
+                    .unwrap_or(0);
+                let peak_val = ccf[peak_idx];
+                let monotonic = ccf.windows(2).all(|w| w[1] >= w[0] - 0.01);
+                if monotonic && peak_val > 0.0 { ("MONO+".to_string(), peak_val, peak_idx) }
+                else if monotonic && peak_val < 0.0 { ("MONO-".to_string(), peak_val, peak_idx) }
+                else { ("NONMONO".to_string(), peak_val, peak_idx) }
+            };
+
+            let nc_final = ncs.last().copied().unwrap_or(0.0);
+            let h1_final = h1s.last().copied().unwrap_or(0.0);
+            let max_churn = evo.windows(2).map(|w| 1.0 - w[1].6).fold(0.0, f64::max);
+
+            tm_results.push((wl, ccf_type, peak_r, peak_lag, nc_final, h1_final, max_churn));
+        }
+
+        println!(" done");
+        all_results.push((plan.name.to_string(), tm_results));
+    }
+
+    println!("\n  Part 2: High-Resolution CCF Type Map");
+    println!("  L  SimpleNH       BB5            Antihydra      CurrChamp");
+    println!("  ──  ────────       ───            ─────────      ────────");
+
+    for wi in 0..n_windows {
+        let wl = window_sizes[wi];
+        print!("  {:2}", wl);
+        for (_, tm_results) in &all_results {
+            if let Some((_, ccf_type, peak_r, _, _, _, _)) = tm_results.get(wi) {
+                print!("  {:>14}", match ccf_type.as_str() {
+                    "NULLs" => format!("NULLs"),
+                    "NULLe" => format!("NULLe"),
+                    "MONO+" => format!("MONO+ r={:+.2}", peak_r),
+                    "MONO-" => format!("MONO- r={:+.2}", peak_r),
+                    "NONMONO" => format!("NONMONO r={:+.2}", peak_r),
+                    _ => ccf_type.clone(),
+                });
+            }
+        }
+        println!();
+    }
+
+    println!("\n  Part 3: Resonance Peak Localization");
+    println!("  ─────────────────────────────────────");
+
+    for (name, tm_results) in &all_results {
+        let plan = tms.iter().find(|(_, p)| p.name == name.as_str()).map(|(_, p)| p).unwrap();
+        let signals: Vec<_> = tm_results.iter()
+            .filter(|(_, t, r, _, _, _, _)| t != "NULLs" && t != "NULLe" && r.abs() > 0.05)
+            .collect();
+
+        if signals.is_empty() {
+            println!("  {:>12}: NO SIGNAL in L=[40,65]  ({})", name, plan.class);
+            continue;
+        }
+
+        let l_min = signals.first().map(|(l, _, _, _, _, _, _)| *l).unwrap();
+        let l_max = signals.last().map(|(l, _, _, _, _, _, _)| *l).unwrap();
+        let bandwidth = l_max - l_min + 1;
+
+        let peak = signals.iter()
+            .max_by(|(_, _, a, _, _, _, _), (_, _, b, _, _, _, _)| a.abs().partial_cmp(&b.abs()).unwrap());
+
+        if let Some((l_star, ccf_type, r_star, lag, _, _, _)) = peak {
+            let types_in_band: Vec<&str> = signals.iter().map(|(_, t, _, _, _, _, _)| t.as_str()).collect();
+            let mut type_set = std::collections::HashSet::new();
+            for &t in &types_in_band { type_set.insert(t); }
+            let types_uniq: Vec<&str> = type_set.into_iter().collect();
+
+            println!("  {:>12}: L*={}  r*={:+.3}@lag{}  type*={}  band=[{},{}] width={}  n_types_in_band={}",
+                name, l_star, r_star, lag, ccf_type, l_min, l_max, bandwidth, types_uniq.len());
+        }
+
+        println!("    Signal range: {}", signals.iter()
+            .map(|(l, t, r, _, _, _, _)| format!("L{}={}/r={:+.2}", l, t, r))
+            .collect::<Vec<_>>().join("  "));
+    }
+
+    println!("\n  Part 4: Antihydra Resonance Curve Fit");
+    println!("  ──────────────────────────────────────");
+
+    if let Some((_, anti_results)) = all_results.iter().find(|(n, _)| n == "Antihydra") {
+        let r_vals: Vec<(usize, f64)> = anti_results.iter()
+            .map(|(l, _, r, _, _, _, _)| (*l, r.abs()))
+            .collect();
+
+        let max_r = r_vals.iter().map(|(_, r)| r).cloned().fold(0.0f64, f64::max);
+        let max_l = r_vals.iter()
+            .max_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap())
+            .map(|(l, _)| *l)
+            .unwrap_or(50);
+
+        println!("  L_max = {}  r_max = {:.4}", max_l, max_r);
+
+        let half_max = max_r / 2.0;
+        let above_half: Vec<(usize, f64)> = r_vals.iter()
+            .filter(|(_, r)| *r >= half_max)
+            .map(|(l, r)| (*l, *r))
+            .collect();
+
+        if above_half.len() >= 2 {
+            let fwhm_l = above_half.first().unwrap().0;
+            let fwhm_r = above_half.last().unwrap().0;
+            println!("  FWHM: L in [{}, {}]  width={}", fwhm_l, fwhm_r, fwhm_r - fwhm_l + 1);
+            println!("  r values > half-max: {}", above_half.iter()
+                .map(|(l, r)| format!("L{}={:.3}", l, r))
+                .collect::<Vec<_>>().join(", "));
+        } else if above_half.len() == 1 {
+            println!("  FWHM: single point L={} (r={:.4} above no others)", above_half[0].0, above_half[0].1);
+            println!("  Resonance width < DeltaL = 1");
+        } else {
+            println!("  FWHM: undetectable (resonance narrower than DeltaL=1)");
+        }
+
+        println!();
+        for &(l, r) in &r_vals {
+            let bar = (r * 80.0) as usize;
+            print!("  L={:>2} |", l);
+            for i in 0..80 {
+                if i < bar { print!("█"); } else { print!(" "); }
+            }
+            println!("| {:.4}", r);
+        }
+    }
+
+    println!("\n  Part 5: BB5 Phase Transition Location");
+    println!("  ───────────────────────────────────────");
+    if let Some((_, bb5_results)) = all_results.iter().find(|(n, _)| n == "BB5") {
+        let types: Vec<&str> = bb5_results.iter().map(|(_, t, _, _, _, _, _)| t.as_str()).collect();
+        let transitions: Vec<(usize, &str, &str)> = types.windows(2)
+            .enumerate()
+            .filter(|(_, w)| w[0] != w[1])
+            .map(|(i, w)| (window_sizes[i], w[0], w[1]))
+            .collect();
+
+        println!("  Type sequence:");
+        for (&wl, t) in window_sizes.iter().zip(types.iter()) {
+            print!("  L{}={}", wl, t);
+        }
+        println!();
+        println!("  Transitions: {} found", transitions.len());
+        for (l, from, to) in &transitions {
+            println!("    L={}: {} -> {}", l, from, to);
+        }
+
+        println!("\n  BB5 peak r vs L:");
+        for (l, _, r, lag, _, _, _) in bb5_results {
+            if r.abs() > 0.001 {
+                println!("    L={:>2}  r={:+.4}@lag{}", l, r, lag);
+            } else {
+                println!("    L={:>2}  (NULL)", l);
+            }
+        }
+    }
+
+    println!("\n  Part 6: CurrentChampion Phase Map");
+    println!("  ────────────────────────────────────");
+    if let Some((_, curr_results)) = all_results.iter().find(|(n, _)| n == "CurrChamp") {
+        let phases: Vec<(usize, &str, f64)> = curr_results.iter()
+            .map(|(l, t, r, _, _, _, _)| (*l, t.as_str(), *r))
+            .collect();
+
+        let mut current_phase = "";
+        let mut phase_start = window_sizes[0];
+        for (l, phase, r) in &phases {
+            if *phase != current_phase {
+                if !current_phase.is_empty() {
+                    println!("    [{}, {}]: {}", phase_start, l - 1, current_phase);
+                }
+                current_phase = phase;
+                phase_start = *l;
+            }
+        }
+        println!("    [{}, {}]: {}", phase_start, window_sizes.last().unwrap(), current_phase);
+    }
+
+    println!("\n{}", "=".repeat(72));
+}
+
+pub fn run_tm_fca_tdep() {
+    use crate::tm_fca::{self, TuringMachine};
+
+    println!("\n{}", "=".repeat(72));
+    println!("  B-24 v20: Time-Dependent Resonance Peak Tracking");
+    println!("  Testing if Antihydra's L*=50 shifts with simulation time");
+    println!("{}", "=".repeat(72));
+
+    let max_concepts = 50000;
+    let time_limit = 120.0;
+    let max_level = 5;
+    let (k_min, k_max) = (2, 5);
+
+    let window_sizes: Vec<usize> = (40..=65).step_by(2).collect();
+    let n_windows = window_sizes.len();
+    let n_ckpts: usize = 12;
+
+    let time_horizons: Vec<(u64, &str)> = vec![
+        (5000, "T=5K"),
+        (10000, "T=10K"),
+        (15000, "T=15K"),
+        (20000, "T=20K"),
+    ];
+
+    let tm = tm_fca::antihydra();
+
+    println!("\n  Part 1: Multi-Time-Scale CCF Resonance Map");
+    println!("  {} time windows x {} L values x {} checkpoints = {} lattice builds",
+        time_horizons.len(), n_windows, n_ckpts,
+        time_horizons.len() * n_windows * n_ckpts);
+    println!();
+
+    let mut all_results: Vec<(u64, String, Vec<(usize, String, f64, usize, f64, f64, f64)>)> = Vec::new();
+
+    for &(max_t, t_label) in &time_horizons {
+        print!("  Computing {} (max_steps={})...", t_label, max_t);
+        let _ = std::io::Write::flush(&mut std::io::stdout());
+
+        let dt = max_t / n_ckpts as u64;
+        let checkpoints: Vec<u64> = (1..=n_ckpts as u64).map(|i| i * dt).collect();
+
+        let mut tm_results: Vec<(usize, String, f64, usize, f64, f64, f64)> = Vec::new();
+
+        for &wl in &window_sizes {
+            let evo = tm_fca::compute_time_evolution_with_turnover(
+                &tm, max_t, &checkpoints, wl, max_level, k_min, k_max,
+                max_concepts, time_limit,
+            );
+
+            let ncs: Vec<f64> = evo.iter().map(|(_, n, _, _, _, _, _, _)| *n as f64).collect();
+            let h1s: Vec<f64> = evo.iter().map(|(_, _, _, h, _, _, _, _)| *h).collect();
+
+            let mut ccf = Vec::new();
+            let max_lag = (evo.len() / 2).min(5);
+            for lag in 0..=max_lag {
+                let pairs: Vec<(f64, f64)> = (0..evo.len().saturating_sub(lag + 1))
+                    .map(|i| (ncs[i], h1s[i + lag]))
+                    .collect();
+                if pairs.len() < 3 { ccf.push(0.0); continue; }
+                let p_mean = pairs.iter().map(|(x, _)| x).sum::<f64>() / pairs.len() as f64;
+                let q_mean = pairs.iter().map(|(_, y)| y).sum::<f64>() / pairs.len() as f64;
+                let num: f64 = pairs.iter().map(|(x, y)| (x - p_mean) * (y - q_mean)).sum();
+                let dp: f64 = pairs.iter().map(|(x, _)| (x - p_mean).powi(2)).sum::<f64>().sqrt();
+                let dq: f64 = pairs.iter().map(|(_, y)| (y - q_mean).powi(2)).sum::<f64>().sqrt();
+                let cc = if dp > 0.0 && dq > 0.0 { num / (dp * dq) } else { 0.0 };
+                ccf.push(cc);
+            }
+
+            let has_signal = ccf.iter().any(|&v| v.abs() > 0.05);
+            let (ccf_type, peak_r, peak_lag) = if !has_signal {
+                let nc_min = ncs.iter().cloned().fold(f64::INFINITY, f64::min);
+                let nc_max = ncs.iter().cloned().fold(0.0f64, f64::max);
+                let is_static = nc_max - nc_min <= 0.5;
+                if is_static { ("NULLs".to_string(), 0.0, 0) }
+                else { ("NULLe".to_string(), 0.0, 0) }
+            } else {
+                let peak_idx = ccf.iter()
+                    .map(|&v| v.abs())
+                    .enumerate()
+                    .max_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap())
+                    .map(|(i, _)| i)
+                    .unwrap_or(0);
+                let peak_val = ccf[peak_idx];
+                let monotonic = ccf.windows(2).all(|w| w[1] >= w[0] - 0.01);
+                if monotonic && peak_val > 0.0 { ("MONO+".to_string(), peak_val, peak_idx) }
+                else if monotonic && peak_val < 0.0 { ("MONO-".to_string(), peak_val, peak_idx) }
+                else { ("NONMONO".to_string(), peak_val, peak_idx) }
+            };
+
+            let nc_final = ncs.last().copied().unwrap_or(0.0);
+            let h1_final = h1s.last().copied().unwrap_or(0.0);
+            let max_churn = evo.windows(2).map(|w| 1.0 - w[1].6).fold(0.0, f64::max);
+
+            tm_results.push((wl, ccf_type, peak_r, peak_lag, nc_final, h1_final, max_churn));
+        }
+
+        println!(" done");
+        all_results.push((max_t, t_label.to_string(), tm_results));
+    }
+
+    println!("\n  Part 2: L* vs Time - Resonance Peak Position");
+    println!("  ─────────────────────────────────────────────");
+    println!("  {:>6} {:>10} {:>8} {:>10} {:>10} {:>12}", "T", "L*", "type*", "r*", "|C|_end", "H(1)_end");
+    println!("  {:>6} {:>10} {:>8} {:>10} {:>10} {:>12}", "──", "──", "────", "──", "───────", "────────");
+
+    let mut l_star_trend: Vec<(u64, usize, f64)> = Vec::new();
+
+    for (max_t, t_label, tm_results) in &all_results {
+        let signal_results: Vec<_> = tm_results.iter()
+            .filter(|(_, t, r, _, _, _, _)| t != "NULLs" && t != "NULLe" && r.abs() > 0.05)
+            .collect();
+
+        if signal_results.is_empty() {
+            println!("  {:>6} {:>10} {:>8} {:>10} {:>10.1} {:>12.4}",
+                t_label, "NONE", "NULL", "-", tm_results.last().map(|(_,_,_,_,nc,_,_)| *nc).unwrap_or(0.0),
+                tm_results.last().map(|(_,_,_,_,_,h1,_)| *h1).unwrap_or(0.0));
+            continue;
+        }
+
+        let peak = signal_results.iter()
+            .max_by(|(_, _, a, _, _, _, _), (_, _, b, _, _, _, _)| a.abs().partial_cmp(&b.abs()).unwrap())
+            .unwrap();
+        let &&(l_star, ref ccf_type, r_star, lag_star, nc_end, h1_end, _) = peak;
+
+        l_star_trend.push((*max_t, l_star, r_star));
+
+        println!("  {:>6} {:>10} {:>8} r={:+.3}@{}  {:>10.1} {:>12.4}",
+            t_label, format!("L={}", l_star), ccf_type, r_star, lag_star, nc_end, h1_end);
+    }
+
+    println!("\n  Part 3: Resonance Curve for Each Time Window");
+    println!("  ─────────────────────────────────────────────");
+
+    for (max_t, t_label, tm_results) in &all_results {
+        print!("\n  [{} T={}] r(L): ", t_label, max_t);
+        for (wl, _, r, _, _, _, _) in tm_results {
+            if r.abs() > 0.001 {
+                print!(" L{}={:+.3}", wl, r);
+            }
+        }
+        println!();
+    }
+
+    println!("\n  Part 4: Full Resonance Table (L=40..65, DeltaL=2)");
+    println!("  ─────────────────────────────────────────────────");
+    print!("  {:>5}", "L");
+    for (_, t_label, _) in &all_results { print!("  {:>12}", t_label); }
+    println!();
+    print!("  {:>5}", "───");
+    for _ in &all_results { print!("  {:>12}", "────"); }
+    println!();
+
+    for wi in 0..n_windows {
+        let wl = window_sizes[wi];
+        print!("  {:>3}", wl);
+        for (_, _, tm_results) in &all_results {
+            if let Some((_, ccf_type, peak_r, peak_lag, _, _, _)) = tm_results.get(wi) {
+                if ccf_type != "NULLs" && ccf_type != "NULLe" {
+                    print!("  {:>12}", format!("{} r={:+.2}@{}", ccf_type, peak_r, peak_lag));
+                } else {
+                    print!("  {:>12}", ccf_type);
+                }
+            }
+        }
+        println!();
+    }
+
+    println!("\n  Part 5: L* Trend Analysis");
+    println!("  ──────────────────────────");
+    if l_star_trend.len() >= 2 {
+        println!("  Tracking L* across time horizons:");
+        for (t, ls, r) in &l_star_trend {
+            println!("    T={:>5}  L*={}  r*={:+.3}", t, ls, r);
+        }
+
+        let l_first = l_star_trend.first().unwrap().1;
+        let l_last = l_star_trend.last().unwrap().1;
+        let shift = l_last as i64 - l_first as i64;
+
+        if shift == 0 {
+            println!("\n  Conclusion: L*=50 is TIME-INVARIANT (structural constant of the TM)");
+            println!("  This rules out the 'bit-width tracking' hypothesis.");
+            println!("  L* is a fixed property of the TM's transition function, not its runtime state.");
+        } else if shift > 0 {
+            println!("\n  Conclusion: L* DRIFTS UPWARD by {} units ({} → {})", shift, l_first, l_last);
+            println!("  Consistent with 'bit-width tracking' - the Collatz counter grows, L* follows.");
+        } else {
+            println!("\n  Conclusion: L* DRIFTS DOWNWARD by {} units ({} → {})", -shift, l_first, l_last);
+            println!("  Unexpected - L* shrinks with time (possible early overcounting).");
+        }
+    }
+
+    println!("\n  Part 6: |C| and H(1) End-State vs Time");
+    println!("  ─────────────────────────────────────────");
+    for (_, t_label, tm_results) in &all_results {
+        let avg_nc: f64 = tm_results.iter().map(|(_, _, _, _, nc, _, _)| *nc).sum::<f64>() / tm_results.len() as f64;
+        let avg_h1: f64 = tm_results.iter().map(|(_, _, _, _, _, h1, _)| *h1).sum::<f64>() / tm_results.len() as f64;
+        let nc_vals: Vec<f64> = tm_results.iter().map(|(_, _, _, _, nc, _, _)| *nc).collect();
+        let nc_range = nc_vals.iter().cloned().fold(0.0f64, f64::max) - nc_vals.iter().cloned().fold(f64::INFINITY, f64::min);
+        println!("  {:>6}: avg|C|={:.1}  avg_H1={:.4}  range|C|={:.1}", t_label, avg_nc, avg_h1, nc_range);
     }
 
     println!("\n{}", "=".repeat(72));
