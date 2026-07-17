@@ -197,6 +197,7 @@ fn run_single(name: &str) {
         ("run_tm_fca_ms", experiments::run_tm_fca_multiscale),
         ("run_tm_fca_fuzzy", experiments::run_tm_fca_fuzzy),
         ("run_tm_fca_ptree", experiments::run_tm_fca_prefix_tree),
+        ("run_tm_fca_dgaze", experiments::run_tm_fca_downward_gaze),
     ];
     if let Some((_, f)) = fns.iter().find(|(n, _)| *n == name) {
         f();

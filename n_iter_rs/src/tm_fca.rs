@@ -1547,6 +1547,164 @@ pub struct StepSignature {
     pub avg_depth: f64,
 }
 
+// ─── v26: Downward Gaze (↓) Decomposition ─────────────────────────────────────
+
+/// Decomposition metrics for a single time window.
+#[derive(Debug, Clone)]
+pub struct DownwardStepMetrics {
+    pub step_idx: usize,
+    /// How many activated nodes are decomposable (depth < k)?
+    pub n_decomposable: usize,
+    /// ↓_full: both children activated
+    pub down_full: usize,
+    /// ↓_partial: exactly one child activated
+    pub down_partial: usize,
+    /// ↓_empty: neither child activated
+    pub down_empty: usize,
+    /// ↓_support_ratio = down_full / n_decomposable
+    pub down_support: f64,
+}
+
+/// Full signature of downward gaze across all time windows.
+#[derive(Debug, Clone)]
+pub struct DownwardGazeSignature {
+    pub k: usize,
+    pub total_nodes: usize,
+    pub n_steps: usize,
+    pub per_step: Vec<DownwardStepMetrics>,
+    /// Aggregate across all windows
+    pub agg_full: usize,
+    pub agg_partial: usize,
+    pub agg_empty: usize,
+    pub agg_support: f64,
+    /// ↓ decomposed children activation rate by depth
+    pub depth_down_support: Vec<f64>,  // index = depth 0..k-1 (depth k has no children)
+}
+
+/// Build downward gaze (↓) decomposition signature.
+///
+/// For each time window:
+/// 1. Apply ↑ gaze: activate all k-gram prefixes → C(t) (same as v25)
+/// 2. For each activated node n ∈ C(t) at depth d < k:
+///    ↓(n) = {n_left, n_right} — the two child prefixes at depth d+1
+/// 3. Check if children are also activated in C(t) → classify as full/partial/empty
+///
+/// Secret classification (秘密归类): children found in C(t) are automatically
+/// labeled as "part of n" — the decomposition relation n ⋈ {child₀, child₁}.
+pub fn build_downward_gaze_signature(
+    tm: &TuringMachine,
+    max_steps: u64,
+    window_l: usize,
+    sample_every: u64,
+    k: usize,
+) -> DownwardGazeSignature {
+    let (configs, _halted, _steps) = tm.simulate(max_steps, window_l);
+
+    let total_nodes = (1usize << (k + 1)) - 1;
+    let mut per_step: Vec<DownwardStepMetrics> = Vec::new();
+    let mut agg_full = 0usize;
+    let mut agg_partial = 0usize;
+    let mut agg_empty = 0usize;
+    // depth_down: [depth][full, partial, empty]
+    let mut depth_down: Vec<(usize, usize, usize)> = vec![(0, 0, 0); k]; // depth 0..k-1
+
+    for (idx, (_state, _head, window)) in configs.iter().enumerate() {
+        if idx as u64 % sample_every != 0 { continue; }
+        let grams = extract_kgrams(window, k);
+
+        // ↑ gaze: activate all prefixes
+        let mut step_nodes: HashSet<usize> = HashSet::new();
+        for g in grams {
+            let mut prefix = g;
+            for d in (0..=k).rev() {
+                let node_idx = (1usize << d) - 1 + prefix;
+                step_nodes.insert(node_idx);
+                prefix >>= 1;
+            }
+        }
+
+        // ↓ gaze: for each activated node at depth < k, check children
+        let mut n_decomposable = 0usize;
+        let mut down_full = 0usize;
+        let mut down_partial = 0usize;
+        let mut down_empty = 0usize;
+
+        for &node in &step_nodes {
+            // Determine depth of node
+            let mut depth = k + 1; // sentinel
+            for d in 0..=k {
+                let start = (1usize << d) - 1;
+                let end = (1usize << (d + 1)) - 1;
+                if node >= start && node < end {
+                    depth = d;
+                    break;
+                }
+            }
+            if depth >= k { continue; } // leaf nodes can't decompose further
+
+            n_decomposable += 1;
+
+            // Children at depth d+1: left = (1<<(d+1))-1 + 2*value, right = left+1
+            let value_at_d = node - ((1usize << depth) - 1);
+            let left = (1usize << (depth + 1)) - 1 + 2 * value_at_d;
+            let right = left + 1;
+
+            let left_present = step_nodes.contains(&left);
+            let right_present = step_nodes.contains(&right);
+
+            if left_present && right_present {
+                down_full += 1;
+                depth_down[depth].0 += 1;
+            } else if left_present || right_present {
+                down_partial += 1;
+                depth_down[depth].1 += 1;
+            } else {
+                down_empty += 1;
+                depth_down[depth].2 += 1;
+            }
+        }
+
+        let support = if n_decomposable > 0 {
+            down_full as f64 / n_decomposable as f64
+        } else { 0.0 };
+
+        agg_full += down_full;
+        agg_partial += down_partial;
+        agg_empty += down_empty;
+
+        per_step.push(DownwardStepMetrics {
+            step_idx: per_step.len(),
+            n_decomposable,
+            down_full,
+            down_partial,
+            down_empty,
+            down_support: support,
+        });
+    }
+
+    let total_decomp = agg_full + agg_partial + agg_empty;
+    let agg_support = if total_decomp > 0 {
+        agg_full as f64 / total_decomp as f64
+    } else { 0.0 };
+
+    let depth_down_support: Vec<f64> = depth_down.iter().map(|&(f, p, e)| {
+        let t = f + p + e;
+        if t > 0 { f as f64 / t as f64 } else { 0.0 }
+    }).collect();
+
+    DownwardGazeSignature {
+        k,
+        total_nodes,
+        n_steps: per_step.len(),
+        per_step,
+        agg_full,
+        agg_partial,
+        agg_empty,
+        agg_support,
+        depth_down_support,
+    }
+}
+
 pub fn build_transposed_formal_context(
     configs: &[(usize, isize, Vec<u8>)],
     use_first: usize,

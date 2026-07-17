@@ -40817,6 +40817,141 @@ pub fn run_tm_fca_prefix_tree() {
     println!("\n{}", "=".repeat(72));
 }
 
+pub fn run_tm_fca_downward_gaze() {
+    use crate::tm_fca::{self, TuringMachine};
+
+    println!("\n{}", "=".repeat(72));
+    println!("  B-24 v26: Downward Gaze (↓) Decomposition — Secret Classification");
+    println!("  ↓(n) = {{n_left, n_right}} on prefix tree T_5");
+    println!("  Measures structural completeness of k-gram prefix decomposition");
+    println!("{}", "=".repeat(72));
+
+    let window_l = 50;
+    let k = 5usize;
+    let sample_every = 4u64;
+
+    let tms: Vec<(TuringMachine, &str, u64)> = vec![
+        (tm_fca::simple_nonhalter(), "SimpleNH", 5000),
+        (tm_fca::periodic3_nonhalter(), "Per3NH", 10000),
+        (tm_fca::translator_nonhalter(), "TransNH", 10000),
+        (tm_fca::bb4_champion(), "BB4", 10000),
+        (tm_fca::bb5_champion(), "BB5", 20000),
+        (tm_fca::antihydra(), "Antihydra", 20000),
+        (tm_fca::current_champion(), "CurrChamp", 20000),
+    ];
+
+    let total_nodes = (1usize << (k + 1)) - 1;
+    println!("\n  Prefix tree T_{}: {} total nodes, decomposable depths: 0..{}", k, total_nodes, k - 1);
+
+    println!("\n  {:>12} {:>6} {:>8} {:>8} {:>8} {:>10} {:>10}",
+        "TM", "n_win", "full", "partial", "empty", "support%", "↓_time_s");
+    println!("  {:>12} {:>6} {:>8} {:>8} {:>8} {:>10} {:>10}",
+        "────", "──────", "────", "───────", "─────", "────────", "─────────");
+
+    let mut all_sigs: Vec<(String, tm_fca::DownwardGazeSignature)> = Vec::new();
+
+    for (tm, name, max_steps) in &tms {
+        let t0 = std::time::Instant::now();
+        let sig = tm_fca::build_downward_gaze_signature(tm, *max_steps, window_l, sample_every, k);
+        let bt = t0.elapsed().as_secs_f64();
+
+        let support_pct = 100.0 * sig.agg_support;
+
+        println!("  {:>12} {:>6} {:>8} {:>8} {:>8} {:>9.1}% {:>9.2}",
+            name, sig.n_steps, sig.agg_full, sig.agg_partial, sig.agg_empty,
+            support_pct, bt);
+
+        // Per-depth ↓ support
+        print!("    depth↓: ");
+        for d in 0..sig.depth_down_support.len() {
+            print!("d{}:{:.1}% ", d, 100.0 * sig.depth_down_support[d]);
+        }
+        println!();
+
+        all_sigs.push((name.to_string(), sig));
+    }
+
+    // Part 2: Temporal stability of ↓ support
+    println!("\n  Part 2: Temporal Stability of ↓ Support (last 20% windows)");
+    println!("  {:>12} {:>12} {:>12} {:>12}",
+        "TM", "↓_support", "↓_std", "↓_range");
+    println!("  {:>12} {:>12} {:>12} {:>12}",
+        "────", "─────────", "──────", "───────");
+
+    for (name, sig) in &all_sigs {
+        let n = sig.per_step.len();
+        let tail_start = (n * 4 / 5).max(1);
+        let tail: Vec<f64> = sig.per_step[tail_start..].iter()
+            .map(|s| s.down_support).collect();
+        let avg = tail.iter().sum::<f64>() / tail.len() as f64;
+        let var = tail.iter().map(|v| (v - avg).powi(2)).sum::<f64>() / tail.len() as f64;
+        let std = var.sqrt();
+        let min = tail.iter().cloned().fold(f64::INFINITY, f64::min);
+        let max = tail.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
+
+        println!("  {:>12} {:>11.3}% {:>11.4} {:>11.4}",
+            name, 100.0 * avg, std, max - min);
+    }
+
+    // Part 3: ↓ vs ↑ cross-analysis
+    println!("\n  Part 3: Cross-Analysis: ↓ Support vs ↑ Coverage");
+    println!("  ──────────────────────────────────────────────────");
+
+    let mut cross_data: Vec<(String, f64, f64)> = Vec::new();
+    for (name, sig) in &all_sigs {
+        let n = sig.per_step.len();
+        let tail = &sig.per_step[(n * 4 / 5).max(1)..];
+        let avg_support = tail.iter().map(|s| s.down_support).sum::<f64>() / tail.len() as f64;
+        // For ↑ coverage, run prefix tree (reuse v25 results pattern)
+        let pt_sig = tm_fca::build_prefix_tree_signature(
+            &tms.iter().find(|(_, n, _)| n == name).unwrap().0,
+            tms.iter().find(|(_, n, _)| n == name).unwrap().2,
+            window_l, sample_every, k,
+        );
+        let cov_pct = 100.0 * pt_sig.cumulative_nodes as f64 / total_nodes as f64;
+        cross_data.push((name.clone(), avg_support, cov_pct));
+    }
+
+    println!("  {:>12} {:>14} {:>14} {:>14}",
+        "TM", "↓_support%", "↑_coverage%", "↓/↑ ratio");
+    println!("  {:>12} {:>14} {:>14} {:>14}",
+        "────", "──────────", "──────────", "──────────");
+
+    let mut ratios: Vec<f64> = Vec::new();
+    for (name, support, coverage) in &cross_data {
+        let cov_frac = coverage / 100.0;
+        let ratio = if cov_frac > 0.0 { support / cov_frac } else { 0.0 };
+        ratios.push(ratio);
+        println!("  {:>12} {:>13.1}% {:>13.1}% {:>13.3}",
+            name, 100.0 * support, coverage, ratio);
+    }
+
+    // CV of ↓ support
+    let supports: Vec<f64> = cross_data.iter().map(|(_, s, _)| *s).collect();
+    let mean_s = supports.iter().sum::<f64>() / supports.len() as f64;
+    let var_s = supports.iter().map(|s| (s - mean_s).powi(2)).sum::<f64>() / supports.len() as f64;
+    let cv_s = if mean_s > 0.0 { var_s.sqrt() / mean_s } else { 0.0 };
+    println!("\n  ↓_support CV = {:.3} (v25 ↑_coverage CV = 0.28)", cv_s);
+
+    // Verdict
+    println!("\n  VERDICT:");
+    if cv_s > 0.05 {
+        println!("  ↓ gaze decomposition DIFFERENTIATES TMs via structural completeness.");
+        println!("  Secret classification reveals asymmetry: not all prefixes decompose coherently.");
+    } else {
+        println!("  ↓ decomposition support is uniform across TMs.");
+        println!("  The prefix tree may be too shallow (k=5) for ↓ to differentiate.");
+    }
+    if cv_s > 0.10 {
+        println!("  Strong signal: ↓ is an independent dimension from ↑ coverage.");
+    }
+    if ratios.iter().any(|&r| r < 0.5) || ratios.iter().any(|&r| r > 0.9) {
+        println!("  ↓/↑ ratio varies: structural completeness ≠ cumulative activation.");
+    }
+
+    println!("\n{}", "=".repeat(72));
+}
+
 pub fn run_tm_fca_halting_analysis() {
 
     let params = DynamicsParams::uniform();
